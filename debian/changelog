@@ -5,8 +5,10 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
     - set Conflicts: xkb-data (<< 0.9), since xkb-path is
       different compared to Dapper.
     - xvfb Depends on xauth, xfonts-base.
+  * debian/rules:
+    - --with-os-vendor=Ubuntu
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 13:32:05 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 13:39:18 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
