@@ -33,3 +33,4 @@
 133_psb_auto.patch
 138_fedora_xserver-1.3.0-default-dpi.patch
 139_fedora_xserver-1.3.0-document-fontpath-correctly.patch
+142_fedora_xserver-1.3.0-no-pseudocolor-composite.patch
