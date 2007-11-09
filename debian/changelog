@@ -7,8 +7,12 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
     - xvfb Depends on xauth, xfonts-base.
   * debian/rules:
     - --with-os-vendor=Ubuntu
+  * debian/patches:
+    - 100_avoid_acpi_insanity.diff
+      Don't send a configuration change event just because somebody's pressed
+      a brightness key.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 13:39:18 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 15:05:12 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
