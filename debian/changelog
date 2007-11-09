@@ -27,8 +27,11 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
       killing GDM from the console.
     - 123_no_composite_for_xvfb_run.patch
       Use "-extension Composite" to fix xvfb-run crashing.
+    - 133_psb_auto.patch
+      Add automatic detection of Poulsbo hardware when running
+      without a Device definition.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 17:37:23 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 21:38:07 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
