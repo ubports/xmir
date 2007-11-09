@@ -11,8 +11,10 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
     - 100_avoid_acpi_insanity.diff
       Don't send a configuration change event just because somebody's pressed
       a brightness key.
+    - 102_ubuntu_sharevts_load_cpu.patch:
+      Close console fd only when using --sharevts.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 15:05:12 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:26:48 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
