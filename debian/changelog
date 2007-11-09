@@ -20,8 +20,10 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
     - 107_fedora_dont_backfill_bg_none.patch
       Disable backfilling of windows created with bg=none, which
       otherwise would force a framebuffer readback.
+    - 110_fedora_no_move_damage.patch
+      Disable damage notifications on move for manually redirected windows.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:56:26 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 17:22:18 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
