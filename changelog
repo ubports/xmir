@@ -34,8 +34,11 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
       Changes default dpi to 100.
     - 139_fedora_xserver-1.3.0-document-fontpath-correctly.patch
       Fixes document fontpaths shown in the man page.
+    - 142_fedora_xserver-1.3.0-no-pseudocolor-composite.patch
+      Composite on 8bpp pseudocolor root windows appears to fail, so just disable
+      it on anything pseudocolor for safety.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 21:45:41 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 21:48:48 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
