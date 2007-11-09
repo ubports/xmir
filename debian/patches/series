@@ -26,3 +26,4 @@
 102_ubuntu_sharevts_load_cpu.patch
 104_fedora_init_origins_fix.patch
 106_ubuntu_fpic_libxf86config.patch
+107_fedora_dont_backfill_bg_none.patch

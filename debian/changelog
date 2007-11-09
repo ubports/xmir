@@ -17,8 +17,11 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
       Multihead initialization.
     - 106_ubuntu_fpic_libxf86config.patch
       Add -fPIC to makefiles for xfree86/parser.
+    - 107_fedora_dont_backfill_bg_none.patch
+      Disable backfilling of windows created with bg=none, which
+      otherwise would force a framebuffer readback.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:52:19 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:56:26 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
