@@ -31,3 +31,4 @@
 121_only_switch_vt_when_active.diff
 123_no_composite_for_xvfb_run.patch
 133_psb_auto.patch
+138_fedora_xserver-1.3.0-default-dpi.patch
