@@ -15,8 +15,10 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
       Close console fd only when using --sharevts.
     - 104_fedora_init_origins_fix.patch
       Multihead initialization.
+    - 106_ubuntu_fpic_libxf86config.patch
+      Add -fPIC to makefiles for xfree86/parser.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:34:15 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:52:19 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
