@@ -1,0 +1,28 @@
+This patch adds autodetection support for the Poulsbo ("psb") driver
+needed by moblin.org for the Intel mobile chipset.  Rather than add an
+else if, I restructured things with a case statement to make it conform
+in style to the savage driver section.
+
+Bryce Harrington  23-Aug-2007
+
+--- xorg-server-1.3.0.0.dfsg-12ubuntu1/hw/xfree86/common/xf86AutoConfig.c.orig	2007-08-23 10:05:57.000000000 -0700
++++ xorg-server-1.3.0.0.dfsg-12ubuntu1/hw/xfree86/common/xf86AutoConfig.c	2007-08-23 10:13:43.000000000 -0700
+@@ -173,9 +173,15 @@ videoPtrToDriverName(pciVideoPtr info)
+ 	case 0x102c:		    return "chips";
+ 	case 0x1013:		    return "cirrus";
+ 	case 0x8086:
+-	    if ((info->chipType == 0x00d1) || (info->chipType == 0x7800))
+-		return "i740";
+-	    else return "i810";
++            switch (info->chipType)
++            {
++                case 0x00d1: case 0x7800:
++                    return "i740";
++                case 0x8108:
++                    return "psb";
++                default:
++                    return "i810";
++            }
+ 	case 0x102b:		    return "mga";
+ 	case 0x10c8:		    return "neomagic";
+ 	case 0x105d:		    return "i128";
