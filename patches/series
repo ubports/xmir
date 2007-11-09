@@ -34,3 +34,4 @@
 138_fedora_xserver-1.3.0-default-dpi.patch
 139_fedora_xserver-1.3.0-document-fontpath-correctly.patch
 142_fedora_xserver-1.3.0-no-pseudocolor-composite.patch
+144_fedora_xserver-1.3.0-xnest-exposures.patch
