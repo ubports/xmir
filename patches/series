@@ -25,3 +25,4 @@
 100_avoid_acpi_insanity.diff
 102_ubuntu_sharevts_load_cpu.patch
 104_fedora_init_origins_fix.patch
+106_ubuntu_fpic_libxf86config.patch
