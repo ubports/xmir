@@ -23,3 +23,4 @@
 93_spooltodir_check_file_exists
 93_xprint_fonts_fix
 100_avoid_acpi_insanity.diff
+102_ubuntu_sharevts_load_cpu.patch
