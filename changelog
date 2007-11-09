@@ -13,8 +13,10 @@ xorg-server (2:1.4.1~git20071105-1ubuntu1) hardy; urgency=low
       a brightness key.
     - 102_ubuntu_sharevts_load_cpu.patch:
       Close console fd only when using --sharevts.
+    - 104_fedora_init_origins_fix.patch
+      Multihead initialization.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:26:48 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 09 Nov 2007 16:34:15 +0200
 
 xorg-server (2:1.4.1~git20071105-1) unstable; urgency=low
 
