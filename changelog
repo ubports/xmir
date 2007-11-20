@@ -1,4 +1,4 @@
-xorg-server (2:1.4.1~git20071119-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.4.1~git20071119-1ubuntu1) hardy; urgency=low
 
   * Merge with Debian unstable, remaining changes:
   * debian/control:
@@ -45,7 +45,7 @@ xorg-server (2:1.4.1~git20071119-1ubuntu1) UNRELEASED; urgency=low
     - New version of the hack to copy textures from video memory. Shouldn't
       break EXA anymore.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 20 Nov 2007 15:25:52 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 20 Nov 2007 15:35:59 +0200
 
 xorg-server (2:1.4.1~git20071119-1) unstable; urgency=low
 
