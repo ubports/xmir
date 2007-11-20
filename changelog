@@ -40,8 +40,9 @@ xorg-server (2:1.4.1~git20071119-1ubuntu1) UNRELEASED; urgency=low
       disable it on anything pseudocolor for safety.
     - 144_fedora_xserver-1.3.0-xnest-exposures.patch:
       Only collect xnest exposures for xexposes with non-zero height and width.
+  * Bring back old changelog entries.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 10 Nov 2007 13:07:55 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 20 Nov 2007 15:22:53 +0200
 
 xorg-server (2:1.4.1~git20071119-1) unstable; urgency=low
 
@@ -352,6 +353,188 @@ xorg-server (2:1.3.0.0.dfsg-13) UNRELEASED; urgency=low
 
  -- Christian Perrier <bubulle@debian.org>  Sun, 26 Aug 2007 12:09:52 +0200
 
+xorg-server (2:1.3.0.0.dfsg-12ubuntu8) gutsy; urgency=low
+
+  * Add 145_glx_visuals_bound_check.patch to fix issue where mesa
+    incorrectly counts its visuals and can free too many of them during
+    video mode changes (VT switch, restart, hibernate, etc.) such as
+    when running Compiz.  (closes LP: #127101)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 28 Sep 2007 15:48:08 -0700
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu7) gutsy; urgency=low
+
+  * Drop 143_fedora_xserver-1.3.0-randr12-config-hack.patch
+    as it causes failure to detect proper resolution on some intel
+    hardware.  (closes LP: #144956)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 25 Sep 2007 14:42:59 -0700
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu6) gutsy; urgency=low
+
+  * Drop 214_Bug_9680-_Remove_bogus_blank_length_limiting_in_xf86SetModeCrtc.patch
+    as it is causing black bars to appear on screen for i810 users.
+    (closes LP: #137604 + several dupes)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 20 Sep 2007 14:35:54 -0700
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu5) gutsy; urgency=low
+
+  [ Kees Cook ]
+  * debian/patches/132_composite-no-clipping.diff: Adjusted WindowRec
+    structure order and RedirectDraw logic to avoid nvidia crashes
+    (fixes LP: #130325).
+  * debian/patches/100_security_fdo-bug-7447.diff: Composite used for
+    pixmap population on redirect. [CVE-2007-4730]
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 18 Sep 2007 17:20:14 -0700
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu4) gutsy; urgency=low
+
+  * debian/patches/133_psb_auto.patch:  Add automatic detection of
+    Poulsbo hardware when running without a Device definition.
+  * Added some cherry-picked patches from fedora:
+    - 134_fedorda_xorg-x11-server-1.1.1-vt-activate-is-a-terrible-api.patch:
+      Fixes race condition where someone does a VT_ACTIVATE
+      between another ACTIVATE/WAITACTIVE by adding a fail.
+      (Potentially might address Ubuntu bugs 134478 and/or 134982)
+    - 135_fedora_xorg-x11-server-1.1.1-xkb-in-xnest.patch:  Fixes issue when
+      starting a session in an xnest nest environment as a different user,
+      where keyboard map does not get preserved.  Removes
+      NO_HW_ONLY_EXTS check to address this issue.  (RedHat bug 193431;
+      Potentially may address Ubuntu bug 44846)
+    - 136_fedora_xserver-1.2.0-honor-displaysize.patch:  Fixes issue if monitor
+      width and height have been specified, xserver would override them
+      with the hsize/vsize detected from DDC.
+    - 137_fedora_xserver-1.2.0-vfprintf.patch:  Fixes typo 'vfprinf'
+    - 138_fedora_xserver-1.3.0-default-dpi.patch:  Changes default dpi to 100.
+      (Addresses Ubuntu bugs 118745, 107320, many others...)
+    - 139_fedora_xserver-1.3.0-document-fontpath-correctly.patch: Fixes
+      document fontpaths shown in the man page.
+    - 140_fedora_xserver-1.3.0-domain-obiwan.patch:  Fixes longstanding bug in
+      domain support.
+    - 141_fedora_xserver-1.3.0-edid-quirk-backports.patch: Adds quirk for
+      Samsung SyncMaster 225BW.
+    - 142_fedora_xserver-1.3.0-no-pseudocolor-composite.patch:  Composite on
+      8bpp pseudocolor root windows appears to fail, so just disable it
+      on anything pseudocolor for safety.
+    - 143_fedora_xserver-1.3.0-randr12-config-hack.patch:  Adds check to use
+      the screen's xrandr modes if a preferred mode was not specified.
+    - 144_fedora_xserver-1.3.0-xnest-exposures.patch:  Only collect xnest
+      exposures for xexposes with non-zero height and width.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri,  7 Sep 2007 14:23:23 -0700
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu3) gutsy; urgency=low
+
+  * Added some cherry-picked patches from xserver 1.3.99:
+    - 202_Add_quirk_for_Acer_AL1706_monitor_to_force_60hz_refresh.patch:
+      The Acer AL1706 monitor reports support for 75hz via EDID, but
+      does not sync when this range is given, so force it to 60hz.
+    - 205_Bug_10770-_Inputdevs_isnt_a_valid_config_file_keyword.patch:
+      Fixes typo in config file parser.
+    - 208_Bug_6620-_Fixed_a_missing_else_in_ATIPseudoDMAInit.patch:
+      Fixes issue where registers were written twice on R200, sometimes
+      also putting bad values in atis->cce_pri_size.
+    - 214_Bug_9680-_Remove_bogus_blank_length_limiting_in_xf86SetModeCrtc.patch:
+      Fixes situation where when a specific mode is requested by monitor
+      or user, xorg would tweak it to something incorrect.
+    - 216_Bug_9041-_Check_the_return_code_in_xf86MapDomainMemory.patch:
+      Fixes issue where mmap return value was being ignored and failing
+      to issue fatal error as it should.
+    - 221_ExaOffscreenMarkUsed-_Dont_crash_when_theres_no_offscreen_memory.patch:
+      Fixes crash when there is no offscreen memory for EXA.
+    - 222_Fix_a_crash_when_rotating_the_screen.patch:
+      Fixes crash when rotating screen with xrandr.
+    - 223_Fix_bug_8871-scrolling_corruption_with_a_compositing_manager.patch:
+      Fixes scrolling corruption with composite due to incorrectly
+      generated GraphicsExposes.
+    - 224_Fix_calculations_in_x86_emulator_for_the_long_long_case_Andreas_Schwab.patch:
+      Fixes long long multiplication when in x86 emulator.
+    - 227_Fix_sync_polarity_on_Samsung_SyncMaster_205BW_monitor.patch:
+      Adds quirk for Samsung SyncMaster 205BW
+    - 230_In___glXCreateARGBConfig_insert_the_new_GL_mode_at_the__end__of_the_linked_list.patch:
+      Fixes insertion order of linked list that can cause GLX clients to
+      fail when attempting to use the last GLX mode/visual.
+    - 231_In_dmxBackendMouGetInfo_initialize_the_info-minval_maxval_arrays_to_the_size_of_the_backend_display.patch:
+      Fixes potential issue in X input where axis clipping code in
+      GetPointerEvents() constrains the pointer's coordinate range to a
+      max of 0, causing the mouse to not move.
+    - 234_Reapply_patch_to_fix_AMD_CPU_detection.patch:
+      Fixes AMD Geode CPU detection.
+    - 236_Syncmaster_226_monitor_needs_60Hz_refresh_10545.patch:
+      Adds quirk for Samsung SyncMaster 226BW.
+    - 238_Update_pci.ids_to_2007-07-16_snapshot.patch:
+      Updates our pci ids to support more current hardware.
+      Remove nvidia ids in extrapci.ids that are now in pci.ids.
+      Add nvidia ids to extrapci.ids that are in xf86-video-nv but not pci.ids
+    - 241_XFree86-_Treat_evdev_and_vmmouse_as_mouse_drivers_bug_10512_10559.patch:
+      Fix issue where a default mouse device gets automatically added
+      when an evdev or vmmouse section has already been specified.
+    - 243_exaDriverInit-_Fail_if_pScreenInfo_or_a_member_of_it_is_invalid.patch:
+      Fix crash in EXA when pScreenInfo or a member of it is invalid.
+    - 244_fix_an_occasional_crash_in_GetWindowName_bug-_9798.patch:
+      Fixes crash by adding check of XmbTextPropertyToTextList()'s
+      return code.
+    - 245_regenerated_to_fix_bug_10371.patch:
+      Fixes issue where if DRI is disabled, GL_MAX_TEXTURE_COORDS_ARB
+      value is not returned correctly from glGetIntegerv().
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 31 Aug 2007 18:36:22 -0700
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu2) gutsy; urgency=low
+
+  * Don't send a configuration change event just because somebody's pressed
+    a brightness key 
+
+ -- Matthew Garrett <mjg59@srcf.ucam.org>  Sun, 26 Aug 2007 16:17:15 +0100
+
+xorg-server (2:1.3.0.0.dfsg-12ubuntu1) gutsy; urgency=low
+
+  * Merge from debian unstable, remaining changes:
+    - debian/control:
+      + set Conflicts: xkb-data (<< 0.9), since xkb-path is
+        different from previous releases
+      + do not Conflict with xserver-xorg-video
+      + xvfb Depends on xauth, xfonts-base
+      + Set Maintainer to Ubuntu Core Developers
+    - debian/rules:
+      + --with-os-vendor=Ubuntu
+    - debian/xserver-xorg-core.install:
+      + Add ioport, pcitweak, scanpci scripts & man pages
+    - debian/patches:
+      + 102_ubuntu_sharevts_load_cpu.patch:
+        close console fd only when ShareVTs
+      + 104_fedora_init_origins_fix.patch:
+        multihead initialization
+      + 106_ubuntu_fpic_libxf86config.patch:
+        Add -fPIC to makefiles for xfree86/parser
+      + 107_fedora_dont_backfill_bg_none.patch
+        110_fedora_no_move_damage.patch,
+        114_fedora_no_composite_in_xnest.patch,
+        120_fedora_disable_offscreen_pixmaps.patch:
+        further aiglx support
+      + 119_ubuntu_enable_composite.diff:
+        enable composite
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 123_no_composite_for_xvfb_run.patch:
+        use "-extension Composite" to fix xvfb-run crashing
+      + 125_glx_remove-stray__GLinterface.diff,
+        126_glxproxy_remove-stray__GLinterface.diff,
+        127_mesa-6.5.3-compat.diff:
+        Patches needed to build against newer Mesa.
+      + 132_composite-no-clipping.diff:
+        Change the semantics of manual-redirect Composite windows so that
+        they do not clip sibling or parent drawing.  Needed by hildon-desktop
+        to prevent home applets from clipping.
+    - debian/apport.py: Add apport hook for automatically attaching
+      files useful for debugging X crashes:  Xorg.0.log, xorg.conf,
+      lsmod, lspci, and /proc/version
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 21 Aug 2007 22:01:38 +0300
+
 xorg-server (2:1.3.0.0.dfsg-12) unstable; urgency=low
 
   [ Brice Goglin ]
@@ -436,6 +619,73 @@ xorg-server (2:1.3.0.0.dfsg-7) unstable; urgency=low
 
  -- Julien Cristau <jcristau@debian.org>  Wed, 04 Jul 2007 23:42:40 +0200
 
+xorg-server (2:1.3.0.0.dfsg-6ubuntu3) gutsy; urgency=low
+
+  * debian/patches/series:
+    - Re-enable 132_composite-no-clipping.diff with fix from upstream
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 25 Jul 2007 16:39:29 -0700
+
+xorg-server (2:1.3.0.0.dfsg-6ubuntu2) gutsy; urgency=low
+
+  * debian/patches/series:
+    - don't apply 132_composite-no-clipping.diff for now, it doesn't work 
+      correctly when using compiz
+
+ -- Sebastien Bacher <seb128@canonical.com>  Fri, 13 Jul 2007 17:03:42 +0100
+
+xorg-server (2:1.3.0.0.dfsg-6ubuntu1) gutsy; urgency=low
+
+  * Merge from Debian unstable. Remaining Ubuntu changes:
+    - debian/control:
+      + set Conflicts: xkb-data (<< 0.9), since xkb-path is
+        different from previous releases
+      + do not Conflict with xserver-xorg-video
+      + xvfb Depends on xauth, xfonts-base
+      + Set Maintainer to Ubuntu Core Developers
+    - debian/rules:
+      + build using -fno-stack-protector
+      + --with-os-vendor=Ubuntu
+    - debian/xserver-xorg-core.install:
+      + Add ioport, pcitweak, scanpci scripts & man pages
+    - debian/patches:
+      + 102_ubuntu_sharevts_load_cpu.patch:
+        close console fd only when ShareVTs
+      + 104_fedora_init_origins_fix.patch:
+        multihead initialization
+      + 106_ubuntu_fpic_libxf86config.patch:
+        Add -fPIC to makefiles for xfree86/parser
+      + 107_fedora_dont_backfill_bg_none.patch:
+        Re-enable to see if it helps with performance regressions.
+      + 108_fedora_gl_include_inferiors.patch,
+        110_fedora_no_move_damage.patch,
+        114_fedora_no_composite_in_xnest.patch:
+        further aiglx support
+      + 119_ubuntu_enable_composite.diff:
+        enable composite
+      + 120_fedora_disable_offscreen_pixmaps.patch:
+        update to the latest version from Fedora (rev. 1.6, was 1.1)
+        Despite being a hack, it works and is needed for compositing
+        managers to work properly.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 123_no_composite_for_xvfb_run.patch:
+        use "-extension Composite" to fix xvfb-run crashing
+      - 125_glx_remove-stray__GLinterface.diff,
+        126_glxproxy_remove-stray__GLinterface.diff,
+        127_mesa-6.5.3-compat.diff:
+        Mesa 6.5.3 build support
+  * debian/apport.py:  Add apport hook for automatically attaching
+    files useful for debugging X crashes:  Xorg.0.log, xorg.conf,
+    lsmod, lspci, and /proc/version
+  * debian/patches/132_composite-no-clipping.diff:  Change the
+    semantics of manual-redirect Composite windows so that they do not
+    clip sibling or parent drawing.  Needed by hildon-desktop to prevent
+    home applets from clipping.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon,  2 Jul 2007 12:47:44 -0700
+
 xorg-server (2:1.3.0.0.dfsg-6) unstable; urgency=low
 
   * Change fglrx conflict to << 8.37.6 (closes: #424975).
@@ -468,6 +718,59 @@ xorg-server (2:1.3.0.0.dfsg-5) unstable; urgency=low
     We'll need to make this versioned (or drop it) when fglrx is fixed.
 
  -- Julien Cristau <jcristau@debian.org>  Wed, 16 May 2007 15:17:55 +0200
+
+xorg-server (2:1.3.0.0.dfsg-4ubuntu2) gutsy; urgency=low
+
+  * Build-Depend on mesa 6.5.3
+  * Apply Mandriva patches to build against mesa 6.5.3
+    - 125_glx_remove-stray__GLinterface.diff
+    - 126_glxproxy_remove-stray__GLinterface.diff
+    - 127_mesa-6.5.3-compat.diff
+
+ -- Kyle McMartin <kyle@ubuntu.com>  Sat, 26 May 2007 18:12:35 +0000
+
+xorg-server (2:1.3.0.0.dfsg-4ubuntu1) gutsy; urgency=low
+
+  * Merge from Debian unstable. Remaining Ubuntu changes:
+    - debian/control:
+      + set Conflicts: xkb-data (<< 0.9), since xkb-path is
+        different from previous releases
+      + do not Conflict with xserver-xorg-video
+      + xvfb Depends on xauth, xfonts-base
+      + Set Maintainer to Ubuntu Core Developers
+    - debian/rules:
+      + build using -fno-stack-protector
+      + --with-os-vendor=Ubuntu
+    - debian/xserver-xorg-core.install:
+      + Add ioport, pcitweak, scanpci scripts & man pages
+    - debian/patches:
+      + 102_ubuntu_sharevts_load_cpu.patch:
+        close console fd only when ShareVTs
+      + 104_fedora_init_origins_fix.patch:
+        multihead initialization
+      + 106_ubuntu_fpic_libxf86config.patch:
+        Add -fPIC to makefiles for xfree86/parser
+      + 107_fedora_dont_backfill_bg_none.patch:
+        Re-enable to see if it helps with performance regressions.
+      + 108_fedora_gl_include_inferiors.patch,
+        110_fedora_no_move_damage.patch,
+        114_fedora_no_composite_in_xnest.patch:
+        further aiglx support
+      + 119_ubuntu_enable_composite.diff:
+        enable composite
+      + 120_fedora_disable_offscreen_pixmaps.patch:
+        update to the latest version from Fedora (rev. 1.6, was 1.1)
+        Despite being a hack, it works and is needed for compositing
+        managers to work properly.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 123_no_composite_for_xvfb_run.patch:
+        use "-extension Composite" to fix xvfb-run crashing
+  * Drop 124_fix-pdripriv_null_deref.patch.  Already fixed in GLX code.
+    See upstream FDO bug #8537
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 14 May 2007 16:40:03 -0700
 
 xorg-server (2:1.3.0.0.dfsg-4) unstable; urgency=low
 
@@ -640,6 +943,126 @@ xorg-server (2:1.2.0-4) experimental; urgency=low
   * Bump the serverminver to 2:1.2.0-4 because of this change
 
  -- David Nusinow <dnusinow@debian.org>  Wed, 21 Feb 2007 21:53:51 -0500
+
+xorg-server (2:1.2.0-3ubuntu8) feisty; urgency=low
+
+  * SECURITY UPDATE: arbitrary code execution with root privs via integer
+    overflows in MISC-XC.
+  * Add debian/patches/131_misc_xc_overflows.patch: upstream fixes.
+  * References
+    CVE-2007-1003
+
+ -- Kees Cook <kees@ubuntu.com>  Thu, 29 Mar 2007 17:46:44 -0700
+
+xorg-server (2:1.2.0-3ubuntu7) feisty; urgency=low
+
+  * debian/patches/120_fedora_disable_offscreen_pixmaps.patch
+    - update to the latest version from Fedora (rev. 1.6, was 1.1)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 30 Mar 2007 10:39:01 +0300
+
+xorg-server (2:1.2.0-3ubuntu6) feisty; urgency=low
+
+  * debian/{rules,xsfbs/xsfbs.mk,serverminver,inputabiver}
+    - Import changes from current debian package, needed for the new intel
+      driver.
+    - Rename serverabiver to videoabiver, value 1.0.
+    - Set serverminver as this version.
+  * debian/patches:
+    129_remove_extra_i2c_bittimeout.patch
+    130_slow_down_ddc_i2c.patch
+    - Patches from server-1.3 branch, which make probing the monitor more
+      robust.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 29 Mar 2007 00:56:17 +0300
+
+xorg-server (2:1.2.0-3ubuntu5) feisty; urgency=low
+
+  * debian/patches/120_fedora_disable_offscreen_pixmaps.diff
+    - Re-enable. Despite being a hack, it works and is needed for compositing
+      managers to work properly. (LP: #89189)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 27 Mar 2007 02:33:31 +0300
+
+xorg-server (2:1.2.0-3ubuntu4) feisty; urgency=low
+
+  * debian/patches/107_fedora_dont_backfill_bg_none.patch:
+    - Re-enable to see if it helps with performance regressions.
+  * debian/patches/127_check_for_clientgone.patch:
+    - A fix from upstream. (LP: #60288)
+  * debian/patches/128_fix_client_privates_leak.patch
+    - Plug a memory leak. (LP: #92882)
+  * debian/rules
+    - Fix a typo in --with-default-font-path.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 17 Mar 2007 00:38:09 +0200
+
+xorg-server (2:1.2.0-3ubuntu3) feisty; urgency=low
+
+  * debian/patches:
+    - Rename 019_ubuntu_enable_composite.diff to 119_* so that it is in line
+      with the rest of our patches
+    - Re-add 126_debian_always_use_default_font_path.diff. This was dropped
+      by Debian but needed by us since we still have legacy fontpaths in
+      old configurations, so new paths need to be appended to the list.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 28 Feb 2007 11:54:18 +0200
+
+xorg-server (2:1.2.0-3ubuntu2) feisty; urgency=low
+
+  * debian/control:
+    - xvfb Depends on xauth, xfonts-base
+
+ -- Sebastien Bacher <seb128@canonical.com>  Tue, 27 Feb 2007 23:31:06 +0100
+
+xorg-server (2:1.2.0-3ubuntu1) feisty; urgency=low
+
+  * Don't drop 42_build_int10_submodules.diff, it's useful
+  * 019_ubuntu_enable_composite.diff:
+    - enable composite
+  * debian/control:
+    - fixed Maintainer email
+  * debian/xserver-xorg-core.install:
+    - list ioport, gtf, pcitweak and scanpci 
+      and manpages for scanpci, gtf, pcitweak
+
+  [ Timo Aaltonen ]
+  * Merge with Debian, remaining changes:
+    - debian/rules:
+      + build using -fno-stack-protector
+      + --with-os-vendor=Ubuntu
+    - debian/control:
+      + don't Conflict with xserver-xorg-video
+    - refreshed and renamed patches
+      102_ubuntu_sharevts_load_cpu.patch
+      104_fedora_init_origins_fix.patch
+      106_ubuntu_fpic_libxf86config.patch
+      114_fedora_no_composite_in_xnest.patch
+      121_only_switch_vt_when_active.diff
+      124_fix-pdripriv_null_deref.patch
+    - dropped for now:
+      42_build_int10_submodules.diff - causes "some regression"
+  * dropped patches (comments from Michel Daenzer):
+    - 107_fedora_dont_backfill_bg_none.patch
+      "Breaks X semantics and thus can't go in upstream. Apps/toolkits
+       need to be fixed not to use background none windows."
+    - 108_fedora_gl_include_inferiors.patch
+      "Breaks GLX semantics and should no longer be necessary now that
+       the GLX compositing managers default to using the Composite
+       Overlay Window."
+    - 120_fedora_disable_offscreen_pixmaps.diff
+      "Last time I looked at this, it was a gross hack to work around XAA
+       deficiencies in offscreen pixmap handling, which makes the server
+       die immediately when trying to use GLX_EXT_texture_from_pixmap
+       with EXA, due to calling XAA functions without checking it's
+       active or even loaded."
+  * debian/control:
+    - set Conflicts: xkb-data (<< 0.9), since xkb-path is
+      different from previous releases
+  * debian/patches/125_randr-version-supported.diff:
+    - The server supports protocol 1.1, make sure we use it.
+
+ -- Sebastien Bacher <seb128@canonical.com>  Mon, 26 Feb 2007 09:36:38 +0100
 
 xorg-server (2:1.2.0-3) experimental; urgency=low
 
@@ -1059,6 +1482,228 @@ xorg-server (2:1.0.2-10) unstable; urgency=low
 
  -- David Nusinow <dnusinow@debian.org>  Tue, 22 Aug 2006 19:31:08 +0000
 
+xorg-server (1:1.1.1-0ubuntu14) feisty; urgency=low
+
+  * Add 'debian/patches/38_Fix-pDRIPriv_NULL_deref.patch': NULL-init DRI
+    screen private data, thanks to Tormod Volden (LP: #60288).
+
+ -- Kees Cook <kees@ubuntu.com>  Sat, 10 Feb 2007 20:27:44 -0800
+
+xorg-server (1:1.1.1-0ubuntu13) feisty; urgency=low
+
+  * 19_revert_xkb_change_breaking_XkbGetKeyboard.patch:
+    - patch from fedora (with extra Makefile.in change), revert change that 
+      broke XkbGetKeyboard() (Ubuntu: #58083)
+  * 37_Fix-__glXDRIbindTexImage-for-32-bpp-on-big-endian-platforms.diff:
+    - upstream patch copied from the Debian package, fix blue screen with 
+      compiz on ppc (Ubuntu: #58373)
+
+ -- Sebastien Bacher <seb128@canonical.com>  Fri, 12 Jan 2007 12:17:28 +0100
+
+xorg-server (1:1.1.1-0ubuntu12.1) edgy-security; urgency=low
+
+  * SECURITY UPDATE: Arbitrary code execution with root privileges via heap
+    overflows in DBE and Render extensions.
+  * Add 'debian/patches/021_ubuntu_dbe-render_overflows.diff' from
+    upstream
+  * References
+    CVE-2006-6101 CVE-2006-6102 CVE-2006-6103
+
+ -- Kees Cook <kees@ubuntu.com>  Mon,  8 Jan 2007 12:45:41 -0800
+
+xorg-server (1:1.1.1-0ubuntu12) edgy; urgency=low
+
+  * debian/patches/17_no_composite_for_xvfb.patch:
+    - fix a crasher by not using composite for Xvfb when using -render
+  * debian/patches/18_no_composite_for_xvfb_run.patch:
+    - use "-extension Composite" to fix xvfb-run crashing
+
+ -- Sebastien Bacher <seb128@canonical.com>  Fri, 13 Oct 2006 17:12:49 +0200
+
+xorg-server (1:1.1.1-0ubuntu11) edgy; urgency=low
+
+  * debian/patches/16_only_switch_vt_when_active.patch:
+    Add a check to prevent the X server from changing the VT when killing
+    GDM from the console.
+
+ -- Ryan Lortie <desrt@ubuntu.com>  Thu, 21 Sep 2006 01:26:35 -0400
+
+xorg-server (1:1.1.1-0ubuntu10) edgy; urgency=low
+
+  * Build xserver-xephyr from xorg-server package.  Malone: #57077, #57084
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Wed,  6 Sep 2006 12:57:32 +0200
+
+xorg-server (1:1.1.1-0ubuntu9) edgy; urgency=low
+
+  * Enable composite extension by default
+  * Add patch from fd.o bugzilla #7916 to avoid aiglx hangs on vt 
+    switches
+
+ -- Matthew Garrett <mjg59@srcf.ucam.org>  Sat, 26 Aug 2006 03:20:31 +0100
+
+xorg-server (1:1.1.1-0ubuntu8) edgy; urgency=low
+
+  * Steal patch from Fedora to allow compiz to trigger the disabling of 
+   XAA off-screen pixmaps
+
+ -- Matthew Garrett <mjg59@srcf.ucam.org>  Wed, 23 Aug 2006 21:26:08 +0100
+
+xorg-server (1:1.1.1-0ubuntu7) edgy; urgency=low
+
+  * (temporarily) Removed Breaks: section from xserver-xorg-core (necessary
+    until apt-get properly supports this feature)
+  * Tightened Build-Depends: mesa-swx11-source to >=
+    6.5.0.git.20060810-0ubuntu1
+  * Tightened Build-Depends of libgl1-mesa-dev to >=
+    6.5.0.git.20060810-0ubuntu1
+
+ -- Rodrigo Parra Novo <rodarvus@ubuntu.com>  Tue, 15 Aug 2006 07:26:07 -0300
+
+xorg-server (1:1.1.1-0ubuntu6) edgy; urgency=low
+
+  * Tightened Build-Depends of mesa-swx11-source to version 6.5.0.git.20060809
+  * Removed patch 003_fedora_root_window_black_pattern.patch (not necessary
+    for Ubuntu)
+
+ -- Rodrigo Parra Novo <rodarvus@ubuntu.com>  Fri, 11 Aug 2006 11:41:29 -0300
+
+xorg-server (1:1.1.1-0ubuntu5) edgy; urgency=low
+
+  * Renamed 003_ubuntu_sharevts_load_cpu.patch to
+    002_ubuntu_sharevts_load_cpu.patch
+  * Added 003_fedora_root_window_black_pattern.patch (black background
+    pattern instead of default X background pattern. Feel free to revert if
+    you feel strongly against this one)
+  * Added 005_fdo4320_composite_fastpath.patch and
+    016_fdo7482_xdmx_render_fix.patch (upstream bug fixes, bug numbers
+    annotated on patch names)
+  * Added 004_fedora_init_origins_fix.patch (multihead initialization)
+  * Added 006_ubuntu_fpic_libxf86config.patch
+  * Added 007_fedora_dont_backfill_bg_none.patch
+  * Added 008_fedora_gl_include_inferiors.patch,
+    009_fedora_mesa_copy_sub_buffer.patch,
+    010_fedora_no_move_damage.patch,
+    012_fedora_tfp_damage.patch and
+    014_fedora_no_composite_in_xnest.patch (further aiglx support)
+  * 011_fedora_pci_scan_fixes.patch (pci scan fixes - testing is needed to
+    check if an extra upstream patch for pci domains is also necessary)
+  * Added 015_fedora_sane_default_mode.patch (tweak default mode - please feel
+    free to revert this patch if you feel strongly against it)
+  * Added 017_fedora_add_missing_headers_to_sdk.patch
+  * Added 018_ubuntu_linux_kernel_include_fixes.patch and
+    013_ubuntu_symlink_mesa_source.patch (build fixes against current
+    linux-kernel-modules * mesa-swx11-source - these already existed before,
+    but were applied directly to the source tree, instead of being quilt
+    patches)
+  * Just for reference: debian patch #02 is candidate for removal on next
+    upload. I'll refrain from removing it now to diminish the chances of this
+    being a breaks-for-everyone release
+  * Moved SecurityPolicy example from /usr/share/doc/examples/ to
+    /usr/share/doc/xserver-xorg-core/
+
+ -- Rodrigo Parra Novo <rodarvus@ubuntu.com>  Mon,  7 Aug 2006 17:21:05 -0300
+
+xorg-server (1:1.1.1-0ubuntu4) edgy; urgency=low
+
+  * Added new Breaks: section to xorg-server-core:
+      xserver-xorg-driver-all, xserver-xorg-driver-apm,
+      xserver-xorg-driver-ark, xserver-xorg-driver-ati,
+      xserver-xorg-driver-chips, xserver-xorg-driver-cirrus,
+      xserver-xorg-driver-cyrix, xserver-xorg-driver-dummy,
+      xserver-xorg-driver-fbdev, xserver-xorg-driver-glint,
+      xserver-xorg-driver-i128, xserver-xorg-driver-i740,
+      xserver-xorg-driver-i810, xserver-xorg-driver-imstt,
+      xserver-xorg-driver-mga, xserver-xorg-driver-neomagic,
+      xserver-xorg-driver-newport, xserver-xorg-driver-nsc,
+      xserver-xorg-driver-nv, xserver-xorg-driver-rendition,
+      xserver-xorg-driver-s3, xserver-xorg-driver-s3virge,
+      xserver-xorg-driver-savage, xserver-xorg-driver-siliconmotion,
+      xserver-xorg-driver-sis, xserver-xorg-driver-sisusb,
+      xserver-xorg-driver-tdfx, xserver-xorg-driver-tga,
+      xserver-xorg-driver-trident, xserver-xorg-driver-tseng,
+      xserver-xorg-driver-v4l, xserver-xorg-driver-vesa,
+      xserver-xorg-driver-vga, xserver-xorg-driver-via,
+      xserver-xorg-driver-vmware, xserver-xorg-driver-voodoo,
+      xserver-xorg-video-all (<< 7.0.22ubuntu7),
+      xserver-xorg-video-apm (<< 1:1.1.1-0ubuntu1),
+      xserver-xorg-video-ark (<< 1:0.6.0-0ubuntu1),
+      xserver-xorg-video-ati (<< 1:6.6.1-0ubuntu1),
+      xserver-xorg-video-chips (<< 1:1.1.1-0ubuntu1),
+      xserver-xorg-video-cirrus (<< 1:1.1.0-0ubuntu1),
+      xserver-xorg-video-cyrix (<< 1:1.1.0-0ubuntu1),
+      xserver-xorg-video-dummy (<< 1:0.2.0-0ubuntu1),
+      xserver-xorg-video-fbdev (<< 1:0.3.0-0ubuntu1),
+      xserver-xorg-video-glint (<< 1:1.1.1-0ubuntu1),
+      xserver-xorg-video-i128 (<< 1:1.2.0-0ubuntu1),
+      xserver-xorg-video-i740 (<< 1:1.1.0-0ubuntu1),
+      xserver-xorg-video-i810 (<< 1:1.6.1-0ubuntu1),
+      xserver-xorg-video-imstt (<< 1:1.1.0-0ubuntu1),
+      xserver-xorg-video-mga (<< 1:1.4.1-0ubuntu1),
+      xserver-xorg-video-neomagic (<< 1:1.1.1-0ubuntu1),
+      xserver-xorg-video-newport (<< 1:0.2.0-0ubuntu1),
+      xserver-xorg-video-nsc (<< 1:2.8.1-0ubuntu1),
+      xserver-xorg-video-nv (<< 1:1.2.0-0ubuntu1),
+      xserver-xorg-video-rendition (<< 1:4.1.0-0ubuntu1),
+      xserver-xorg-video-s3 (<< 1:0.4.1-0ubuntu1),
+      xserver-xorg-video-s3virge (<< 1:1.9.1-0ubuntu1),
+      xserver-xorg-video-savage (<< 1:2.1.1-0ubuntu1),
+      xserver-xorg-video-siliconmotion (<< 1:1.4.1-0ubuntu1),
+      xserver-xorg-video-sis (<< 1:0.9.1-0ubuntu1),
+      xserver-xorg-video-sisusb (<< 1:0.8.1-0ubuntu1),
+      xserver-xorg-video-tdfx (<< 1:1.2.1-0ubuntu1),
+      xserver-xorg-video-tga (<< 1:1.1.0-0ubuntu1),
+      xserver-xorg-video-trident (<< 1:1.2.1-0ubuntu1),
+      xserver-xorg-video-tseng (<< 1:1.1.0-0ubuntu1),
+      xserver-xorg-video-v4l (<< 1:0.1.1-0ubuntu1),
+      xserver-xorg-video-vesa (<< 1:1.2.1-0ubuntu1),
+      xserver-xorg-video-vga (<< 1:4.1.0-0ubuntu1),
+      xserver-xorg-video-via (<< 1:0.2.1-0ubuntu1),
+      xserver-xorg-video-vmware (<< 1:10.13.0-0ubuntu1),
+      xserver-xorg-video-voodoo (<< 1:1.1.0-oubuntu1)
+
+ -- Rodrigo Parra Novo <rodarvus@ubuntu.com>  Tue,  1 Aug 2006 22:59:55 -0300
+
+xorg-server (1:1.1.1-0ubuntu3) edgy; urgency=low
+
+  * Build with -fno-stack-protector (see LP#54650)
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Mon, 31 Jul 2006 16:28:59 -0700
+
+xorg-server (1:1.1.1-0ubuntu2) edgy; urgency=low
+
+  * (sparc only) removed stale inclusion of asm/kbio.h on
+    hw/xfree86/os-support/linux/lnx_io.c and
+    hw/xfree86/os-support/linux/lnx_kbd.c
+  * Update debian/serverabiver to 1:1.1.1
+
+ -- Rodrigo Parra Novo <rodarvus@ubuntu.com>  Mon, 31 Jul 2006 12:53:22 -0300
+
+xorg-server (1:1.1.1-0ubuntu1) edgy; urgency=low
+
+  * New Upstream version
+  * Changed Build-Depends from mesa-swrast-source to mesa-swx11-source,
+    following Debian package nomenclature
+  * Re-did 12_security_policy_in_etc.diff for 1.1.1
+  * Dropped 15_security_allocate_local.diff (applied upstream)
+  * Dropped 16_SECURITY_setuid.diff (applied upstream)
+  * Dropped 000_ubuntu_fix_read_kernel_mapping.patch (applied upstream)
+  * Dropped 002_ubuntu_fix_for_certain_intel_chipsets.patch (applied upstream)
+  * Updated versioned Build-Depends on mesa-swx11-source to version
+    6.5.0.cvs.20060725-0ubuntu1
+  * Added arrayobj.c, arrayobj.h, bitset.h & rbadaptors.h to
+    GL/symlink-mesa.sh (linked from mesa-swx11-source)
+  * Added arrayobj.c to default build target on GL/mesa/main
+
+ -- Rodrigo Parra Novo <rodarvus@ubuntu.com>  Tue, 25 Jul 2006 20:06:28 -0300
+
+xorg-server (2:1.0.2-10) unstable; urgency=low
+
+  * Upload to unstable to fixed messed up last upload which was supposed to go
+    to experimental. Brown bag o' joy.
+
+ -- David Nusinow <dnusinow@debian.org>  Tue, 22 Aug 2006 19:31:08 +0000
+
 xorg-server (1:1.0.2-9) UNRELEASED; urgency=high
 
   [ Denis Barbier ]
@@ -1171,6 +1816,94 @@ xorg-server (1:1.0.2-1) experimental; urgency=low
 
  -- David Nusinow <dnusinow@debian.org>  Mon, 20 Mar 2006 21:41:04 -0500
 
+xorg-server (1:1.0.2-0ubuntu10) dapper; urgency=low
+
+  * Backport a fix for Intel bridge handling:
+  debian/patches/002_fix_for_certain_intel_chipsets.patch
+  (Closes Ubuntu: #29880)
+
+ -- Paul Sladen <ubuntu@paul.sladen.org>  Sun, 14 May 2006 19:01:32 +0100
+
+xorg-server (1:1.0.2-0ubuntu9) dapper; urgency=low
+
+  * Add 1680x1050 60 and 85Hz Modelines. Thanks to Bart Verwilst for the data.
+  (Closes Ubuntu: #6096)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 05 May 2006 12:38:22 +0200
+
+xorg-server (1:1.0.2-0ubuntu8) dapper; urgency=low
+
+  * Fix "XCB rendertest crashes server":
+    - Add patch 001-CVE-2006-1526.patch.dpatch.
+  (CVE-2006-1526)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Wed, 03 May 2006 09:01:09 +0200
+
+xorg-server (1:1.0.2-0ubuntu7) dapper; urgency=low
+
+  * Ship again xorg.conf(5)
+  (Closes Ubuntu: #33703)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Mon, 01 May 2006 13:37:40 +0200
+
+xorg-server (1:1.0.2-0ubuntu6) dapper; urgency=low
+
+  * Fix severe internal memory corruption:
+    - Add patch: 000-fix-read-kernel-mapping.patch.dpatch.
+    (freedesktop bugzilla: #6472)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 21 Apr 2006 08:07:33 +0200
+
+xorg-server (1:1.0.2-0ubuntu5) dapper; urgency=low
+
+  * Fix CPU load when using -sharevts:
+    - Add patch: 991_sharevts-load-cpu.patch
+    (Thanks for the initial patch to Michael Witrant)
+    (Closes Ubuntu: #33611)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Mon, 10 Apr 2006 13:30:26 +0200
+
+xorg-server (1:1.0.2-0ubuntu4) dapper; urgency=low
+
+  * Fix SecurityPolicy path to /etc/X11/xserver/SecurityPolicy
+    and ship an example. NOTE: this file is NOT installed by default,
+    the WARNING you see in Xorg.0.log is an harmless WARNING.
+    Add patch: 990_ubuntu_fix_security_policy_path.patch.
+    (Close Ubuntu: #31608)
+
+  * Readd manpages to the different packages.
+
+  * Ship again ioport, gtf, pcitweak and scanpci.
+    (Closes Ubuntu: #37720)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Tue, 04 Apr 2006 16:33:00 +0200
+
+xorg-server (1:1.0.2-0ubuntu3) dapper; urgency=low
+
+  * What about shipping xorg-server.m4 to make developer life easier?
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 23 Mar 2006 10:32:55 +0100
+
+xorg-server (1:1.0.2-0ubuntu2) dapper; urgency=low
+
+  * xserver-xorg-dev Depends: x11proto-randr-dev.
+  (Closes Ubuntu: #35594)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Wed, 22 Mar 2006 08:09:46 +0100
+
+xorg-server (1:1.0.2-0ubuntu1) dapper; urgency=low
+
+  * New upstream release:
+    - Drop patches:
+      + CVE-2006-0745
+      + add-missing-sparc-include
+      + fix-backtrace
+      + fix-crash-on-null-addr
+
+  * UVF execption granted by mdz.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Tue, 21 Mar 2006 05:39:01 +0100
+
 xorg-server (1:1.0.1-2) experimental; urgency=low
 
   [ David Nusinow ]
@@ -1219,6 +1952,116 @@ xorg-server (1:1.0.1-1) experimental; urgency=low
     /usr/share/X11/fonts. Thanks Eugene Konev.
 
  -- David Nusinow <dnusinow@debian.org>  Mon, 20 Feb 2006 00:18:45 -0500
+
+xorg-server (1:1.0.1-0ubuntu8) dapper; urgency=low
+
+  * [SECURITY] Fix CVE-2006-0745.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Tue, 21 Mar 2006 05:33:50 +0100
+
+xorg-server (1:1.0.1-0ubuntu7) dapper; urgency=low
+
+  * debian/control:
+    - xvfb Depends on xfonts-base too, fix pointed by fabbione
+
+ -- Sebastien Bacher <seb128@canonical.com>  Fri,  3 Mar 2006 22:21:56 +0100
+
+xorg-server (1:1.0.1-0ubuntu5) dapper; urgency=low
+
+  * Add missing include on sparc. Fix FTBFS.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Wed, 01 Feb 2006 13:45:41 +0100
+
+xorg-server (1:1.0.1-0ubuntu4) dapper; urgency=low
+
+  * Backport from upstream HEAD at Daniel's request:
+    - Add forgotten HAVE_BACKTRACE define, so that we actually get
+      backtraces when Xorg segfaults.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 27 Jan 2006 13:47:56 +0000
+
+xorg-server (1:1.0.1-0ubuntu3) dapper; urgency=low
+
+  * Depend on x11-common rather than xorg-common and xserver-common
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Wed, 18 Jan 2006 17:13:12 +0100
+
+xorg-server (1:1.0.1-0ubuntu2) dapper; urgency=low
+
+  * Add flex to build-deps, fixing FTBFS.
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Wed, 18 Jan 2006 12:34:03 +0100
+
+xorg-server (1:1.0.1-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Fri,  6 Jan 2006 08:00:52 +1100
+
+xorg-server (1:1.0.0-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+    + fbCompositeGeneral is now around 97.3% less stuffed (closes:
+      Ubuntu#20286).
+    + 'Fix' mouse issues in the DIX by adding XFree86Server defines (sigh;
+      closes: Ubuntu#20200).
+    + Fix Emulate3Buttons mouse posting (closes: Ubuntu#11308).
+  * Bump Build-Depends on libxt-dev (appdefaultdir), libdrm-dev (libdrm2), and
+    mesa-swrast-source (new files).
+  * Add --with-fontdir and scotch --with-default-font-path to fix font paths
+    for non-Xorg servers (closes: Ubuntu#20157).
+  * Fix path to SecurityPolicy and RGB_DB.
+  * Move update-linux-hardened-support call to xserver-xorg-core postinst
+    (from xserver-xorg postinst).
+  * Add patch to os/access.c so we don't crash on a null-addressed interface
+    (closes: Ubuntu#20414).
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Tue, 13 Dec 2005 07:27:13 +1100
+
+xorg-server (1:0.99.3-0ubuntu6) dapper; urgency=low
+
+  * Fix xserver-xorg-dev Depends field to only depend on the headers this
+    this package actually uses.
+  * Re-add xvfb-run to xfvb (closes: Ubuntu#20157).
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Mon,  5 Dec 2005 15:04:14 +1100
+
+xorg-server (1:0.99.3-0ubuntu5) dapper; urgency=low
+
+  * Add -ffunction-sections where needed
+  * Depend: xserver-common: needed for dexconf and /usr/X11R6/bin/X
+
+ -- LaMont Jones <lamont@ubuntu.com>  Sat, 26 Nov 2005 05:15:36 +0000
+
+xorg-server (1:0.99.3-0ubuntu4) dapper; urgency=low
+
+  * Add two more dependencies to build the other half of the video drivers:
+    - x11proto-xext-dev, x11proto-video-dev
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 25 Nov 2005 02:36:44 +1100
+
+xorg-server (1:0.99.3-0ubuntu3) dapper; urgency=low
+
+  * Add a few dependencies to xorg-server-dev as the path of least resistance
+    to get all the various input and video drivers to build again:
+    - For the video drivers: x11proto-randr-dev, x11proto-render-dev,
+      x11proto-fonts-dev, x11proto-xf86dri-dev, libdrm-dev
+    - For the input drivers: x11proto-core-dev, x11proto-input-dev,
+      x11proto-randr-dev (why do input drivers want randr?)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu, 24 Nov 2005 18:51:25 +1100
+
+xorg-server (1:0.99.3-0ubuntu2) dapper; urgency=low
+
+  * Add missing libfreetype6-dev build-depends.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Thu, 24 Nov 2005 10:26:44 +1100
+
+xorg-server (1:0.99.3-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Mon, 21 Nov 2005 14:13:41 +1100
 
 xorg-server (1:0.99.2+cvs.20051025-3) dapper; urgency=low
 
