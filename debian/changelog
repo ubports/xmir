@@ -1,3 +1,11 @@
+xorg-server (2:1.4.1~git20071212-1ubuntu2) hardy; urgency=low
+
+  * debian/patches/101_fedora-apm-typedefs.patch:
+    - Temporary hack from Fedora for broken kernels that don't publish the
+      /dev/apm_bios types.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 17 Dec 2007 11:54:46 +0200
+
 xorg-server (2:1.4.1~git20071212-1ubuntu1) hardy; urgency=low
 
   * Merge with Debian unstable, remaining changes:
