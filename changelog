@@ -46,8 +46,11 @@ xorg-server (2:1.4.1~git20080131-1ubuntu1) UNRELEASED; urgency=low
       disable it on anything pseudocolor for safety.
     - 144_fedora_xserver-1.3.0-xnest-exposures.patch:
       Only collect xnest exposures for xexposes with non-zero height and width.
+  * 108_fedora_honor_displaysize.patch:
+    - Patch from upstream/Fedora to honor the DisplaySize-setting.
+      (LP: #135738, b.fd.o #9758)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 19 Jan 2008 02:40:00 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Feb 2008 18:34:06 +0200
 
 xorg-server (2:1.4.1~git20080131-1) unstable; urgency=low
 
