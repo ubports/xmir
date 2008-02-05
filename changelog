@@ -1,5 +1,6 @@
-xorg-server (2:1.4.1~git20080131-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.4.1~git20080131-1ubuntu1) hardy; urgency=low
 
+  [ Timo Aaltonen ]
   * Merge with Debian unstable, remaining changes:
   * debian/control:
     - Change maintainer address.
@@ -49,8 +50,16 @@ xorg-server (2:1.4.1~git20080131-1ubuntu1) UNRELEASED; urgency=low
   * 108_fedora_honor_displaysize.patch:
     - Patch from upstream/Fedora to honor the DisplaySize-setting.
       (LP: #135738, b.fd.o #9758)
+  
+  [ Bart Trojanowski, Martin-Eric Racine ]
+  * 146_X86EMU-added-blacklist-for-I-O-port-in-0-0xFF-range.patch
+    - Restrict access to I/O ports in range 0-0xFF from x86emu.
+    (LP: #140051)
+  * 147_X86EMU-pass-the-correct-bus-dev-fn-tag-to-pci-emula.patch
+    - Fix improper emulation of PCI access General Software BIOS.
+    (LP: #140051)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Feb 2008 18:34:06 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Feb 2008 18:46:07 +0200
 
 xorg-server (2:1.4.1~git20080131-1) unstable; urgency=low
 
