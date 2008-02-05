@@ -8,9 +8,6 @@ xorg-server (2:1.4.1~git20080131-1ubuntu1) hardy; urgency=low
       different compared to Dapper.
     - xvfb Depends on xauth, xfonts-base.
   * debian/patches:
-    - 100_avoid_acpi_insanity.diff
-      Don't send a configuration change event just because somebody's pressed
-      a brightness key.
     - 101_fedora-apm-typedefs.patch:
       Temporary hack from Fedora for broken kernels that don't publish the
       /dev/apm_bios types.
@@ -50,7 +47,8 @@ xorg-server (2:1.4.1~git20080131-1ubuntu1) hardy; urgency=low
   * 108_fedora_honor_displaysize.patch:
     - Patch from upstream/Fedora to honor the DisplaySize-setting.
       (LP: #135738, b.fd.o #9758)
-  
+  * Drop patch 100_avoid_acpi_insanity.diff, superseded by patch 45.
+
   [ Bart Trojanowski, Martin-Eric Racine ]
   * 146_X86EMU-added-blacklist-for-I-O-port-in-0-0xFF-range.patch
     - Restrict access to I/O ports in range 0-0xFF from x86emu.
@@ -59,7 +57,7 @@ xorg-server (2:1.4.1~git20080131-1ubuntu1) hardy; urgency=low
     - Fix improper emulation of PCI access General Software BIOS.
     (LP: #140051)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Feb 2008 18:46:07 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Feb 2008 18:57:14 +0200
 
 xorg-server (2:1.4.1~git20080131-1) unstable; urgency=low
 
