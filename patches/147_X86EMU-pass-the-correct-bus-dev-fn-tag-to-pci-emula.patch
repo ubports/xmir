@@ -1,5 +1,5 @@
 From 9c17439807c80876bf7027b17859714b31401ab9 Mon Sep 17 00:00:00 2001
-From: Bart Trojanowski <bart@jukie.net>
+From: Bart Trojanowski <bart@symbio-technologies.com>
 Date: Fri, 11 Jan 2008 19:59:54 -0500
 Subject: [PATCH] X86EMU: pass the correct bus:dev:fn tag to pci emulation
 
