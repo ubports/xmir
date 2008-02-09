@@ -41,3 +41,4 @@
 144_fedora_xserver-1.3.0-xnest-exposures.patch
 146_X86EMU-added-blacklist-for-I-O-port-in-0-0xFF-range.patch
 147_X86EMU-pass-the-correct-bus-dev-fn-tag-to-pci-emula.patch
+148_dix_touchscreen_fixes.diff
