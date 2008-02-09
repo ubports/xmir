@@ -1,3 +1,11 @@
+xorg-server (2:1.4.1~git20080131-1ubuntu2) hardy; urgency=low
+
+    * Add patch 148_dix_touchscreen_fixes.diff from Matthew Garrett to fix
+      touchscreen issues with DIX.
+      http://lists.freedesktop.org/archives/xorg-commit/2008-February/014648.html
+
+ -- Steve Kowalik <stevenk@ubuntu.com>  Fri, 08 Feb 2008 10:30:04 +1100
+
 xorg-server (2:1.4.1~git20080131-1ubuntu1) hardy; urgency=low
 
   [ Timo Aaltonen ]
