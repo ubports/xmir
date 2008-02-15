@@ -1,0 +1,14 @@
+--- xorg-server-patched/hw/xfree86/modes/xf86EdidModes.c.orig	2008-02-14 17:21:03.000000000 -0800
++++ xorg-server-patched/hw/xfree86/modes/xf86EdidModes.c	2008-02-14 17:22:43.000000000 -0800
+@@ -110,6 +110,11 @@ static Bool quirk_detailed_h_in_cm (int 
+ 	DDC->vendor.prod_id == 0)
+ 	return TRUE;
+ 
++    /* LP Bug #127827; "LGPhilipsLCD LP154W01-TLAE" */
++    if (memcmp (DDC->vendor.name, "LPL", 4) == 0 &&
++        DDC->vendor.prod_id == 10752)
++        return TRUE;
++
+     /* Bug #11603: Funai Electronics PM36B */
+     if (memcmp (DDC->vendor.name, "FCM", 4) == 0 &&
+ 	DDC->vendor.prod_id == 13600)
