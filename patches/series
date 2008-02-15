@@ -42,3 +42,4 @@
 146_X86EMU-added-blacklist-for-I-O-port-in-0-0xFF-range.patch
 147_X86EMU-pass-the-correct-bus-dev-fn-tag-to-pci-emula.patch
 148_dix_touchscreen_fixes.diff
+149_add_quirks_for_physical_screen_size_issues.patch
