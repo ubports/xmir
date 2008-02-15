@@ -1,11 +1,13 @@
 xorg-server (2:1.4.1~git20080131-1ubuntu3) UNRELEASED; urgency=low
 
   [Bryce Harrington]
+  * Add 150_config_file_preferred_mode.patch to make user-specified modes
+    preferred when set in xorg.conf.  (LP: #151311)
   * Add 149_add_quirks_for_physical_screen_size_issues.patch to help
     address various common EDID issues (like monitors that report in
     centimeters instead of millimeters, etc.)  (LP: #151311)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 14 Feb 2008 16:23:47 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 14 Feb 2008 17:10:05 -0800
 
 xorg-server (2:1.4.1~git20080131-1ubuntu2) hardy; urgency=low
 
