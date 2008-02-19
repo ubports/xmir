@@ -1,8 +1,13 @@
+xorg-server (2:1.4.1~git20080131-1ubuntu4) hardy; urgency=low
+
+  * Add 152_xserver_exa_force_greedy.patch to provide a mechanism for
+    drivers to force greedy mode on.  (LP: #177492, others)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 19 Feb 2008 13:38:16 -0800
+
 xorg-server (2:1.4.1~git20080131-1ubuntu3) hardy; urgency=low
 
   [ Bryce Harrington ]
-  * Add 152_xserver_exa_force_greedy.patch to provide a mechanism for
-    drivers to force greedy mode on.  (LP: #177492, others)
   * Add 150_edid_quirk_lp154w01.patch to fix font size on LGPhilipsLCD
     LP154W01-TLAE (LP: #127827)
   * Add 149_add_quirks_for_physical_screen_size_issues.patch to help
@@ -13,7 +18,7 @@ xorg-server (2:1.4.1~git20080131-1ubuntu3) hardy; urgency=low
   * Add 151_x86emu_handle_cpuid.patch to fix X86EMU CPUID handling.
     (LP: #180742)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Tue, 19 Feb 2008 13:38:16 -0800
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 19 Feb 2008 17:48:05 +0200
 
 xorg-server (2:1.4.1~git20080131-1ubuntu2) hardy; urgency=low
 
