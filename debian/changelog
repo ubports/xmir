@@ -1,6 +1,7 @@
-xorg-server (2:1.4.1~git20080131-1ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.4.1~git20080131-1ubuntu3) hardy; urgency=low
 
-  [Bryce Harrington]
+  * Add 151_xserver_exa_force_greedy.patch to provide a mechanism for
+    drivers to force greedy mode on.  (LP: #177492, others)
   * Add 150_edid_quirk_lp154w01.patch to fix font size on LGPhilipsLCD
     LP154W01-TLAE (LP: #127827)
   * Add 149_add_quirks_for_physical_screen_size_issues.patch to help
