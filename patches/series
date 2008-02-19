@@ -44,4 +44,5 @@
 148_dix_touchscreen_fixes.diff
 149_add_quirks_for_physical_screen_size_issues.patch
 150_edid_quirk_lp154w01.patch
-151_xserver_exa_force_greedy.patch
+151_x86emu_handle_cpuid.patch
+152_xserver_exa_force_greedy.patch
