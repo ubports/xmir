@@ -1,4 +1,4 @@
-xorg-server (2:1.4.1~git20080131-1ubuntu5) UNRELEASED; urgency=low
+xorg-server (2:1.4.1~git20080131-1ubuntu5) hardy; urgency=low
 
   * Add some patches from upstream 1.4-branch or proposed set:
     - 109_glx_fail_if_no_texture_bound.diff
@@ -14,7 +14,7 @@ xorg-server (2:1.4.1~git20080131-1ubuntu5) UNRELEASED; urgency=low
       + Resize composite overlay window when the root window changes.
         (LP: #199700)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 13 Mar 2008 10:57:33 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 13 Mar 2008 18:21:41 +0200
 
 xorg-server (2:1.4.1~git20080131-1ubuntu4) hardy; urgency=low
 
