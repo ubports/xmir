@@ -31,6 +31,7 @@
 106_ubuntu_fpic_libxf86config.patch
 107_fedora_dont_backfill_bg_none.patch
 108_fedora_honor_displaysize.patch
+109_glx_fail_if_no_texture_bound.diff
 110_fedora_no_move_damage.patch
 120_fedora_xserver-xaa-evict-pixmaps.patch
 121_only_switch_vt_when_active.diff
@@ -46,3 +47,7 @@
 150_edid_quirk_lp154w01.patch
 151_x86emu_handle_cpuid.patch
 152_xserver_exa_force_greedy.patch
+153_exa_skip_empty_glyphs.diff
+154_fix_rotation_for_multimon.diff
+155_exa_fix_off-by-one.diff
+156_resize_composite_overlay.diff

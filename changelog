@@ -1,3 +1,21 @@
+xorg-server (2:1.4.1~git20080131-1ubuntu5) UNRELEASED; urgency=low
+
+  * Add some patches from upstream 1.4-branch or proposed set:
+    - 109_glx_fail_if_no_texture_bound.diff
+      + __glXDRIbindTexImage: Fail if no texture bound to pixmap's texture
+        target.
+    - 153_exa_skip_empty_glyphs.diff
+      + Fix a crasher when EXA and RenderAccel is in use.
+    - 154_fix_rotation_for_multimon.diff
+      + Fix rotation for multi-monitor situation.
+    - 155_exa_fix_off-by-one.diff
+      + Fix off-by-one in polyline drawing.
+    - 156_resize_composite_overlay.diff
+      + Resize composite overlay window when the root window changes.
+        (LP: #199700)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 13 Mar 2008 10:57:33 +0200
+
 xorg-server (2:1.4.1~git20080131-1ubuntu4) hardy; urgency=low
 
   * Add 152_xserver_exa_force_greedy.patch to provide a mechanism for
