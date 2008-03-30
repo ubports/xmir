@@ -1,3 +1,10 @@
+xorg-server (2:1.4.1~git20080131-1ubuntu6) UNRELEASED; urgency=low
+
+  * 157_fix_exa_pixmap_width.diff:
+    A patch from upstream to allow wider pixmaps with EXA (LP: #205599)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sun, 30 Mar 2008 16:12:54 +0300
+
 xorg-server (2:1.4.1~git20080131-1ubuntu5) hardy; urgency=low
 
   * Add some patches from upstream 1.4-branch or proposed set:
