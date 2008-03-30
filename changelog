@@ -5,8 +5,11 @@ xorg-server (2:1.4.1~git20080131-1ubuntu6) UNRELEASED; urgency=low
   * 158_xkb_wrapping.diff:
     A patch reviewed by upstream that prevents keys from getting stuck under
     certain situations. (LP: #194214)
+  * 51_xkb-and-loathing.diff:
+    Re-enable. Ignore SIGALRM around calls to Popen()/Pclose() to fix a hang
+    when opening menus in OpenOffice.org. (LP: #204137)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sun, 30 Mar 2008 16:32:23 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sun, 30 Mar 2008 19:11:07 +0300
 
 xorg-server (2:1.4.1~git20080131-1ubuntu5) hardy; urgency=low
 
