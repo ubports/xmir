@@ -53,3 +53,4 @@
 156_resize_composite_overlay.diff
 157_fix_exa_pixmap_width.diff
 158_xkb_wrapping.diff
+159_xkb_default_to_null.diff
