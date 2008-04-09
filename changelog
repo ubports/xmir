@@ -1,10 +1,22 @@
-xorg-server (2:1.4.1~git20080131-1ubuntu7) UNRELEASED; urgency=low
+xorg-server (2:1.4.1~git20080131-1ubuntu7) hardy; urgency=low
 
   * 159_xkb_default_to_null.diff:
     When copying the keymap, make sure the structs default to 0/NULL.
     (LP: #184651)
+  * 160_default_to_intel.diff:
+    Default to using intel instead of i810. (LP: #158709)
+  * 161_fix_big_endian_cursor.diff:
+    Fix RandR 1.2 driver interface conversion of two colour cursors to
+    ARGB. (LP: #141118)
+  * Fixes from the upstream 1.4-branch:
+    - 162_cve-2007-6429.diff:
+      CVE-2007-6429: Always test for size+offset wrapping.
+    - 163_fix_untrusted_access.diff:
+      Security: Fix for fdo bug #14480: untrusted access broken in 7.3.
+    - 164_fix_context_sharing.diff:
+      Fix context sharing between direct/indirect contexts
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 31 Mar 2008 09:49:57 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 09 Apr 2008 11:06:04 +0300
 
 xorg-server (2:1.4.1~git20080131-1ubuntu6) hardy; urgency=low
 
