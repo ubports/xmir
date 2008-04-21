@@ -1,0 +1,73 @@
+From a01ca030c7a1f38e411281d888f0acf2c3fb40f3 Mon Sep 17 00:00:00 2001
+From: Adam Jackson <ajax@redhat.com>
+Date: Thu, 13 Mar 2008 13:38:02 -0400
+Subject: [PATCH] Disable XAA offscreen pixmaps by default.
+
+Say Option "XaaOffscreenPixmaps" to turn them back on.
+---
+ hw/xfree86/xaa/xaaInitAccel.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: xorg-server-1.4.1~git20080131/hw/xfree86/xaa/xaaInitAccel.c
+===================================================================
+--- xorg-server-1.4.1~git20080131.orig/hw/xfree86/xaa/xaaInitAccel.c
++++ xorg-server-1.4.1~git20080131/hw/xfree86/xaa/xaaInitAccel.c
+@@ -38,17 +38,18 @@
+     XAAOPT_CPU_TO_SCREEN_COL_EXP_FILL,
+     XAAOPT_SCANLINE_CPU_TO_SCREEN_COL_EXP_FILL,
+     XAAOPT_SCREEN_TO_SCREEN_COL_EXP_FILL,
+     XAAOPT_IMAGE_WRITE_RECT,
+     XAAOPT_SCANLINE_IMAGE_WRITE_RECT,
+     XAAOPT_WRITE_BITMAP,
+     XAAOPT_WRITE_PIXMAP,
+     XAAOPT_PIXMAP_CACHE,
+-    XAAOPT_OFFSCREEN_PIXMAPS
++    XAAOPT_OFFSCREEN_PIXMAPS,
++    XAAOPT_HAS_DUMB_INVERTED_OPTION_SENSE
+ } XAAOpts;
+ 
+ static const OptionInfoRec XAAOptions[] = {
+     {XAAOPT_SCREEN_TO_SCREEN_COPY,	"XaaNoScreenToScreenCopy",
+ 				OPTV_BOOLEAN,	{0}, FALSE },
+     {XAAOPT_SOLID_FILL_RECT,		"XaaNoSolidFillRect",
+ 				OPTV_BOOLEAN,	{0}, FALSE },
+     {XAAOPT_SOLID_FILL_TRAP,		"XaaNoSolidFillTrap",
+@@ -84,16 +85,18 @@
+     {XAAOPT_WRITE_BITMAP,		"XaaNoWriteBitmap",
+ 				OPTV_BOOLEAN,	{0}, FALSE },
+     {XAAOPT_WRITE_PIXMAP,		"XaaNoWritePixmap",
+ 				OPTV_BOOLEAN,	{0}, FALSE },
+     {XAAOPT_PIXMAP_CACHE,		"XaaNoPixmapCache",
+ 				OPTV_BOOLEAN,	{0}, FALSE },
+     {XAAOPT_OFFSCREEN_PIXMAPS,		"XaaNoOffscreenPixmaps",
+ 				OPTV_BOOLEAN,	{0}, FALSE },
++    {XAAOPT_HAS_DUMB_INVERTED_OPTION_SENSE, "XaaOffscreenPixmaps",
++				OPTV_BOOLEAN,   {0}, FALSE },
+     { -1,				NULL,
+ 				OPTV_NONE,	{0}, FALSE }
+ };
+ 
+ static MODULESETUPPROTO(xaaSetup);
+ 
+ static XF86ModuleVersionInfo xaaVersRec =
+ {
+@@ -537,17 +540,18 @@
+ 	else if(HaveScanlineImageWriteRect)
+ 	    xf86ErrorF("\tScanline Image Writes\n");
+ 
+     }
+ 
+ #define XAAMSG(s) do { if (serverGeneration == 1) xf86ErrorF(s); } while (0)
+ 
+     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && HaveScreenToScreenCopy &&
+-		!xf86IsOptionSet(options, XAAOPT_OFFSCREEN_PIXMAPS)) {
++		xf86IsOptionSet(options, XAAOPT_HAS_DUMB_INVERTED_OPTION_SENSE))
++    {
+ 	XAAMSG("\tOffscreen Pixmaps\n");
+     } else {
+ 	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
+     }
+ 
+ 
+     /************** Mid Level *************/
+ 

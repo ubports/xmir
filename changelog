@@ -1,3 +1,28 @@
+xorg-server (2:1.4.1~git20080131-1ubuntu9) hardy; urgency=low
+
+  * debian/patches/series,
+    debian/patches/165_fedora_xserver-1.5.0-xaa-option-inversion.patch:
+    - Turn on patch included in previous commit - obviously accidentially
+      forgotten.
+    - Now that its really enabled, make it apply to 1.4.1 code base
+      accordingly. (LP: #182038)
+
+ -- Alexander Sack <asac@ubuntu.com>  Tue, 15 Apr 2008 18:23:51 +0200
+
+xorg-server (2:1.4.1~git20080131-1ubuntu8) hardy; urgency=low
+
+  * debian/patches/165_fedora_xserver-1.5.0-xaa-option-inversion.patch:
+    - Turn XAA Offscreen Pixmaps off by default, and use
+      XaaOffscreenPixmaps "true" to turn them on.  This setting was an
+      early pre-EXA HW optimization attempt that didn't pan out; upstream is
+      deprecating XAA in favor of EXA generally, and for situations where
+      XAA is still in use recommends NOT using this optimization hack, since
+      they found it often just made performance worse, and sometimes created
+      visualization bugs.  People wishing to gain added performance should be
+      experimenting with EXA anyway, not this setting.  (closes LP: #182038)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 21 Apr 2008 12:30:53 -0700
+
 xorg-server (2:1.4.1~git20080131-1ubuntu7) hardy; urgency=low
 
   * 159_xkb_default_to_null.diff:
