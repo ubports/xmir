@@ -1,0 +1,18 @@
+--- xorg-server-patched/hw/xfree86/common/xf86AutoConfig.c~	2008-02-19 11:16:36.000000000 -0800
++++ xorg-server-patched/hw/xfree86/common/xf86AutoConfig.c	2008-04-18 15:18:36.000000000 -0700
+@@ -450,6 +450,7 @@ chooseVideoDriver(void)
+             }
+             direntry = readdir(idsdir);
+         }
++        closedir(idsdir);
+     }
+ 
+     /* TODO Handle multiple drivers claiming to support the same PCI ID */
+@@ -478,7 +479,6 @@ chooseVideoDriver(void)
+         i++;
+     }
+     xfree(line);
+-    closedir(idsdir);
+ 
+     return chosen_driver;
+ }
