@@ -2,8 +2,10 @@ xorg-server (2:1.4.1~git20080131-1ubuntu10) UNRELEASED; urgency=low
 
   * 166_fix_lpl_monitors.diff:
     - fix LPL monitors properly (LP: #204065)
+  * 167_xf86AutoConfig_geode_addition.diff:
+    - Autodetect geode video devices (LP: #219630)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 22 Apr 2008 10:13:42 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 22 Apr 2008 11:56:55 +0300
 
 xorg-server (2:1.4.1~git20080131-1ubuntu9) hardy; urgency=low
 
