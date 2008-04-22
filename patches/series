@@ -60,3 +60,4 @@
 163_fix_untrusted_access.diff
 164_fix_context_sharing.diff
 165_fedora_xserver-1.5.0-xaa-option-inversion.patch
+166_fix_lpl_monitors.diff
