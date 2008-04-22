@@ -1,9 +1,15 @@
 xorg-server (2:1.4.1~git20080131-1ubuntu10) UNRELEASED; urgency=low
 
+  [Timo Aaltonen]
   * 166_fix_lpl_monitors.diff:
     - fix LPL monitors properly (LP: #204065)
   * 167_xf86AutoConfig_geode_addition.diff:
     - Autodetect geode video devices (LP: #219630)
+
+  [Bryce Harrington]
+  * 168_closedir.patch:
+    - Fix crash on PS3 due to closing a dir that wasn't successfully opened
+      (LP: #217647)
 
  -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 22 Apr 2008 11:56:55 +0300
 
