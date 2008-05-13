@@ -61,5 +61,5 @@
 164_fix_context_sharing.diff
 165_fedora_xserver-1.5.0-xaa-option-inversion.patch
 166_fix_lpl_monitors.diff
-167_xf86AutoConfig_geode_addition.diff
+167_xf86AutoConfig_geode_addition.diff -p0
 168_closedir.patch
