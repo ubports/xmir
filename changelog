@@ -1,9 +1,9 @@
-xorg-server (2:1.4.1~git20080131-1ubuntu10) UNRELEASED; urgency=low
+xorg-server (2:1.4.1~git20080131-1ubuntu10) intrepid; urgency=low
 
   [Timo Aaltonen]
   * 166_fix_lpl_monitors.diff:
     - fix LPL monitors properly (LP: #204065)
-  
+
   [Martin-Eric Racine]
   * 167_xf86AutoConfig_geode_addition.diff:
     - Autodetect geode video devices (LP: #219630)
@@ -15,7 +15,7 @@ xorg-server (2:1.4.1~git20080131-1ubuntu10) UNRELEASED; urgency=low
     - Fix crash on PS3 due to closing a dir that wasn't successfully opened
       (LP: #217647)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Mon, 12 May 2008 23:32:40 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 13 May 2008 00:03:40 -0700
 
 xorg-server (2:1.4.1~git20080131-1ubuntu9) hardy; urgency=low
 
