@@ -63,3 +63,4 @@
 166_fix_lpl_monitors.diff
 167_xf86AutoConfig_geode_addition.diff -p0
 168_closedir.patch
+169_xf86AutoConfig_choose_default_driver_if_no_pci.patch
