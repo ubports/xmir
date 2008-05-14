@@ -1,3 +1,14 @@
+xorg-server (2:1.4.1~git20080131-1ubuntu11) intrepid; urgency=low
+
+  * 169_xf86AutoConfig_choose_default_driver_if_no_pci.patch
+    - Choose the default driver for the platform instead of the generic
+      default (vesa) if there is no PCI info.  Without this, on platforms
+      like PS3 where fbdev should be used rather than vesa, the system
+      will fail to start up.  (LP: #219424)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 13 May 2008 13:09:17 -0700
+  
+
 xorg-server (2:1.4.1~git20080131-1ubuntu10) intrepid; urgency=low
 
   [Timo Aaltonen]
