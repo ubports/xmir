@@ -64,3 +64,8 @@
 167_xf86AutoConfig_geode_addition.diff -p0
 168_closedir.patch
 169_xf86AutoConfig_choose_default_driver_if_no_pci.patch
+170_xorg-xserver-1.4-cve-2008-1377.diff
+171_xorg-xserver-1.4-cve-2008-1379.diff
+172_xorg-xserver-1.4-cve-2008-2360.diff
+173_xorg-xserver-1.4-cve-2008-2361.diff
+174_xorg-xserver-1.4-cve-2008-2362.diff
