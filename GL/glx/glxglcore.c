@@ -46,7 +46,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <glxcontext.h>
 #include <glxutil.h>
 
-#include "glcontextmodes.h"
 #include "os.h"
 
 typedef struct __GLXMESAscreen   __GLXMESAscreen;
@@ -70,7 +69,7 @@ struct __GLXMESAdrawable {
     XMesaBuffer   xm_buf;
 };
 
-static XMesaVisual find_mesa_visual(__GLXscreen *screen, VisualID vid);
+static XMesaVisual find_mesa_visual(__GLXscreen *screen, XID fbconfigID);
 
 
 static void
@@ -118,9 +117,9 @@ __glXMesaDrawableSwapBuffers(__GLXdrawable *base)
 
 static __GLXdrawable *
 __glXMesaScreenCreateDrawable(__GLXscreen *screen,
-			      DrawablePtr pDraw,
+			      DrawablePtr pDraw, int type,
 			      XID drawId,
-			      __GLcontextModes *modes)
+			      __GLXconfig *modes)
 {
     __GLXMESAdrawable *glxPriv;
     XMesaVisual xm_vis;
@@ -131,7 +130,8 @@ __glXMesaScreenCreateDrawable(__GLXscreen *screen,
 
     memset(glxPriv, 0, sizeof *glxPriv);
 
-    if (!__glXDrawableInit(&glxPriv->base, screen, pDraw, drawId, modes)) {
+    if (!__glXDrawableInit(&glxPriv->base, screen,
+			   pDraw, type, drawId, modes)) {
         xfree(glxPriv);
 	return NULL;
     }
@@ -140,7 +140,7 @@ __glXMesaScreenCreateDrawable(__GLXscreen *screen,
     glxPriv->base.resize      = __glXMesaDrawableResize;
     glxPriv->base.swapBuffers = __glXMesaDrawableSwapBuffers;
 
-    xm_vis = find_mesa_visual(screen, modes->visualID);
+    xm_vis = find_mesa_visual(screen, modes->fbconfigID);
     if (xm_vis == NULL) {
 	ErrorF("find_mesa_visual returned NULL for visualID = 0x%04x\n",
 	       modes->visualID);
@@ -152,6 +152,11 @@ __glXMesaScreenCreateDrawable(__GLXscreen *screen,
 	glxPriv->xm_buf = XMesaCreateWindowBuffer(xm_vis, (WindowPtr)pDraw);
     } else {
 	glxPriv->xm_buf = XMesaCreatePixmapBuffer(xm_vis, (PixmapPtr)pDraw, 0);
+    }
+
+    if (glxPriv->xm_buf == NULL) {
+	xfree(glxPriv);
+	return NULL;
     }
 
     return &glxPriv->base;
@@ -211,7 +216,7 @@ __glXMesaContextForceCurrent(__GLXcontext *baseContext)
 
 static __GLXcontext *
 __glXMesaScreenCreateContext(__GLXscreen *screen,
-			     __GLcontextModes *modes,
+			     __GLXconfig *config,
 			     __GLXcontext *baseShareContext)
 {
     __GLXMESAcontext *context;
@@ -226,7 +231,7 @@ __glXMesaScreenCreateContext(__GLXscreen *screen,
     memset(context, 0, sizeof *context);
 
     context->base.pGlxScreen = screen;
-    context->base.modes      = modes;
+    context->base.config     = config;
 
     context->base.destroy        = __glXMesaContextDestroy;
     context->base.makeCurrent    = __glXMesaContextMakeCurrent;
@@ -234,10 +239,10 @@ __glXMesaScreenCreateContext(__GLXscreen *screen,
     context->base.copy           = __glXMesaContextCopy;
     context->base.forceCurrent   = __glXMesaContextForceCurrent;
 
-    xm_vis = find_mesa_visual(screen, modes->visualID);
+    xm_vis = find_mesa_visual(screen, config->fbconfigID);
     if (!xm_vis) {
 	ErrorF("find_mesa_visual returned NULL for visualID = 0x%04x\n",
-	       modes->visualID);
+	       config->visualID);
 	xfree(context);
 	return NULL;
     }
@@ -259,7 +264,7 @@ __glXMesaScreenDestroy(__GLXscreen *screen)
     int i;
 
     if (mesaScreen->xm_vis) {
-	for (i = 0; i < mesaScreen->num_vis; i++) {
+	for (i = 0; i < mesaScreen->base.numFBConfigs; i++) {
 	    if (mesaScreen->xm_vis[i])
 		XMesaDestroyVisual(mesaScreen->xm_vis[i]);
 	}
@@ -273,107 +278,135 @@ __glXMesaScreenDestroy(__GLXscreen *screen)
 }
 
 static XMesaVisual
-find_mesa_visual(__GLXscreen *screen, VisualID vid)
+find_mesa_visual(__GLXscreen *screen, XID fbconfigID)
 {
     __GLXMESAscreen *mesaScreen = (__GLXMESAscreen *) screen;
-    const __GLcontextModes *modes;
+    const __GLXconfig *config;
     unsigned i = 0;
 
-    for ( modes = screen->modes ; modes != NULL ; modes = modes->next ) {
-	if ( modes->visualID == vid ) {
-	    break;
-	}
-
+    for (config = screen->fbconfigs; config != NULL; config = config->next) {
+ 	if (config->fbconfigID == fbconfigID)
+	    return mesaScreen->xm_vis[i];
 	i++;
     }
 
-    return (modes != NULL) ? mesaScreen->xm_vis[i] : NULL;
+    return NULL;
 }
 
-static void init_screen_visuals(__GLXMESAscreen *screen)
+const static int numBack = 2;
+const static int numDepth = 2;
+const static int numStencil = 2;
+
+static const int glx_visual_types[] = {
+    GLX_STATIC_GRAY,
+    GLX_GRAY_SCALE,
+    GLX_STATIC_COLOR,
+    GLX_PSEUDO_COLOR,
+    GLX_TRUE_COLOR,
+    GLX_DIRECT_COLOR
+};
+
+static __GLXconfig *
+createFBConfigsForVisual(__GLXscreen *screen, ScreenPtr pScreen,
+			 VisualPtr visual, __GLXconfig *config)
 {
-    ScreenPtr pScreen = screen->base.pScreen;
-    __GLcontextModes *modes;
-    XMesaVisual *pXMesaVisual;
-    int *used;
-    int num_vis, j, size;
+    int back, depth, stencil;
 
-    /* Alloc space for the list of XMesa visuals */
-    size = screen->base.numVisuals * sizeof(XMesaVisual);
-    pXMesaVisual = (XMesaVisual *) xalloc(size);
-    memset(pXMesaVisual, 0, size);
+    /* FIXME: Ok, I'm making all this up... anybody has a better idea? */
 
-    /* FIXME: Change 'used' to be a array of bits (rather than of ints),
-     * FIXME: create a stack array of 8 or 16 bytes.  If 'numVisuals' is less
-     * FIXME: than 64 or 128 the stack array can be used instead of calling
-     * FIXME: __glXMalloc / __glXFree.  If nothing else, convert 'used' to
-     * FIXME: array of bytes instead of ints!
-     */
-    used = (int *) xalloc(pScreen->numVisuals * sizeof(int));
-    memset(used, 0, pScreen->numVisuals * sizeof(int));
+    for (back = numBack - 1; back >= 0; back--)
+	for (depth = 0; depth < numDepth; depth++)
+	    for (stencil = 0; stencil < numStencil; stencil++) {
+		config->next = xcalloc(sizeof(*config), 1);
+		config = config->next;
 
-    num_vis = 0;
-    for ( modes = screen->base.modes; modes != NULL; modes = modes->next ) {
-	const int vis_class = _gl_convert_to_x_visual_type( modes->visualType );
-	const int nplanes = (modes->rgbBits - modes->alphaBits);
-	const VisualPtr pVis = pScreen->visuals;
+		config->visualRating = GLX_NONE;
+		config->visualType = glx_visual_types[visual->class];
+		config->xRenderable = GL_TRUE;
+		config->drawableType = GLX_WINDOW_BIT | GLX_PIXMAP_BIT;
+		config->rgbMode = (visual->class >= TrueColor);
+		config->colorIndexMode = !config->rgbMode;
+		config->renderType =
+		    (config->rgbMode) ? GLX_RGBA_BIT : GLX_COLOR_INDEX_BIT;
+		config->doubleBufferMode = back;
+		config->haveDepthBuffer = depth;
+		config->depthBits = depth ? visual->nplanes : 0;
+		config->haveStencilBuffer = stencil;
+		config->stencilBits = stencil ? visual->bitsPerRGBValue : 0;
+		config->haveAccumBuffer = 0;
 
-	for (j = 0; j < pScreen->numVisuals; j++) {
-	    if (pVis[j].class     == vis_class &&
-		pVis[j].nplanes   == nplanes &&
-		pVis[j].redMask   == modes->redMask &&
-		pVis[j].greenMask == modes->greenMask &&
-		pVis[j].blueMask  == modes->blueMask &&
-		!used[j]) {
+		config->redBits = Ones(visual->redMask);
+		config->greenBits = Ones(visual->greenMask);
+		config->blueBits = Ones(visual->blueMask);
+		config->alphaBits = 0;
+		config->redMask = visual->redMask;
+		config->greenMask = visual->greenMask;
+		config->blueMask = visual->blueMask;
+		config->alphaMask = 0;
+		config->rgbBits = config->rgbMode ? visual->nplanes : 0;
+		config->indexBits = config->colorIndexMode ? visual->nplanes : 0;
+	    }
 
-		/* Create the XMesa visual */
-                assert(num_vis < screen->base.numVisuals);
-		pXMesaVisual[num_vis] =
-		    XMesaCreateVisual(pScreen,
-				      &pVis[j],
-				      modes->rgbMode,
-				      (modes->alphaBits > 0),
-				      modes->doubleBufferMode,
-				      modes->stereoMode,
-				      GL_TRUE, /* ximage_flag */
-				      modes->depthBits,
-				      modes->stencilBits,
-				      modes->accumRedBits,
-				      modes->accumGreenBits,
-				      modes->accumBlueBits,
-				      modes->accumAlphaBits,
-				      modes->samples,
-				      modes->level,
-				      modes->visualRating);
-		/* Set the VisualID */
-		modes->visualID = pVis[j].vid;
+    return config;
+}
 
-		/* Mark this visual used */
-		used[j] = 1;
+static void
+createFBConfigs(__GLXscreen *pGlxScreen, ScreenPtr pScreen)
+{
+    __GLXconfig head, *tail;
+    int i;
+
+    /* We assume here that each existing visual correspond to a
+     * different visual class.  Note, this runs before COMPOSITE adds
+     * its visual, so it's not entirely crazy. */
+    pGlxScreen->numFBConfigs = pScreen->numVisuals * numBack * numDepth * numStencil;
+    
+    head.next = NULL;
+    tail = &head;
+    for (i = 0; i < pScreen->numVisuals; i++)
+	tail = createFBConfigsForVisual(pGlxScreen, pScreen,
+					&pScreen->visuals[i], tail);
+
+    pGlxScreen->fbconfigs = head.next;
+}
+
+static void
+createMesaVisuals(__GLXMESAscreen *pMesaScreen)
+{
+    __GLXconfig *config;
+    ScreenPtr pScreen;
+    VisualPtr visual = NULL;
+    int i, j;
+
+    i = 0;
+    pScreen = pMesaScreen->base.pScreen;
+    pMesaScreen->xm_vis =
+	xcalloc(pMesaScreen->base.numFBConfigs, sizeof (XMesaVisual));
+    for (config = pMesaScreen->base.fbconfigs; config != NULL; config = config->next) {
+	for (j = 0; j < pScreen->numVisuals; j++)
+	    if (pScreen->visuals[j].vid == config->visualID) {
+		visual = &pScreen->visuals[j];
 		break;
 	    }
-	}
 
-	if ( j == pScreen->numVisuals ) {
-	    ErrorF("No matching visual for __GLcontextMode with "
-		   "visual class = %d (%d), nplanes = %u\n",
-		   vis_class, 
-		   modes->visualType,
-		   (modes->rgbBits - modes->alphaBits) );
-	}
-	else if ( modes->visualID == -1 ) {
-	    FatalError( "Matching visual found, but visualID still -1!\n" );
-	}
-
-	num_vis++;
+	pMesaScreen->xm_vis[i++] =
+	    XMesaCreateVisual(pScreen,
+			      visual,
+			      config->rgbMode,
+			      (config->alphaBits > 0),
+			      config->doubleBufferMode,
+			      config->stereoMode,
+			      GL_TRUE, /* ximage_flag */
+			      config->depthBits,
+			      config->stencilBits,
+			      config->accumRedBits,
+			      config->accumGreenBits,
+			      config->accumBlueBits,
+			      config->accumAlphaBits,
+			      config->samples,
+			      config->level,
+			      config->visualRating);
     }
-
-    xfree(used);
-
-    screen->num_vis = num_vis;
-    screen->xm_vis = pXMesaVisual;
-
-    assert(screen->num_vis <= screen->base.numVisuals);
 }
 
 static __GLXscreen *
@@ -385,18 +418,22 @@ __glXMesaScreenProbe(ScreenPtr pScreen)
     if (screen == NULL)
 	return NULL;
 
-    __glXScreenInit(&screen->base, pScreen);
-
-    screen->base.destroy        = __glXMesaScreenDestroy;
-    screen->base.createContext  = __glXMesaScreenCreateContext;
-    screen->base.createDrawable = __glXMesaScreenCreateDrawable;
-    screen->base.pScreen       = pScreen;
-
     /*
      * Find the GLX visuals that are supported by this screen and create
      * XMesa's visuals.
      */
-    init_screen_visuals(screen);
+    createFBConfigs(&screen->base, pScreen);
+
+    __glXScreenInit(&screen->base, pScreen);
+
+    /* Now that GLX has created the corresponding X visual, create the mesa visuals. */
+    createMesaVisuals(screen);
+
+    screen->base.destroy        = __glXMesaScreenDestroy;
+    screen->base.createContext  = __glXMesaScreenCreateContext;
+    screen->base.createDrawable = __glXMesaScreenCreateDrawable;
+    screen->base.swapInterval  = NULL;
+    screen->base.pScreen       = pScreen;
 
     return &screen->base;
 }
