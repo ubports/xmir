@@ -1,3 +1,69 @@
+xorg-server (2:1.4.99.902-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge with Debian experimental, remaining changes:
+  * debian/control:
+    - Change maintainer address.
+    - xvfb Depends on xauth, xfonts-base.
+  * debian/patches:
+    - 100_xserver_exa_force_greedy.patch
+      Provide a mechanism for drivers to force greedy mode on.
+    - 101_fedora_xserver-1.3.0-document-fontpath-correctly.patch
+      Fixes document fontpaths shown in the man page.
+    - 102_ubuntu_sharevts_load_cpu.patch
+      Close console fd only when using --sharevts.
+    - 103_fedora_xserver-1.5.0-xaa-option-inversion.patch
+      Turn XAA Offscreen Pixmaps off by default, and use XaaOffscreenPixmaps
+      "true" to turn them on.
+    - 104_psb_auto.patch
+      Add automatic detection of Poulsbo hardware when running without a
+      Device definition.
+    - 107_fedora_dont_backfill_bg_none.patch
+      Disable backfilling of windows created with bg=none, which
+      would otherwise force a framebuffer readback.
+    - 110_fedora_no_move_damage.patch
+      Disable damage notifications on move for manually redirected windows.
+    - 120_fedora_xserver-xaa-evict-pixmaps.patch
+      A hack to evict XAA pixmaps and disable the pixmap cache when the first
+      texture is bound.
+    - 121_only_switch_vt_when_active.diff
+      Add a check to prevent the X server from changing the VT when
+      killing GDM from the console.
+    - 123_no_composite_for_xvfb_run.patch
+      Use "-extension Composite" to fix xvfb-run crashing.
+  * Cleaned up patches:
+    - upstream, either directly or otherwise implemented:
+      103_fedora_openchrome.patch, 105_reduce_wakeups_from_smart_scheduler.diff
+      108_fedora_honor_displaysize.patch, 109_glx_fail_if_no_texture_bound.diff
+      144_fedora_xserver-1.3.0-xnest-exposures.patch,
+      146_X86EMU-added-blacklist-for-I-O-port-in-0-0xFF-range.patch,
+      147_X86EMU-pass-the-correct-bus-dev-fn-tag-to-pci-emula.patch,
+      148_dix_touchscreen_fixes.diff,
+      149_add_quirks_for_physical_screen_size_issues.patch,
+      150_edid_quirk_lp154w01.patch, 151_x86emu_handle_cpuid.patch,
+      153_exa_skip_empty_glyphs.diff, 154_fix_rotation_for_multimon.diff,
+      155_exa_fix_off-by-one.diff, 156_resize_composite_overlay.diff,
+      157_fix_exa_pixmap_width.diff, 158_xkb_wrapping.diff,
+      159_xkb_default_to_null.diff, 160_default_to_intel.diff,
+      161_fix_big_endian_cursor.diff, 162_cve-2007-6429.diff,
+      163_fix_untrusted_access.diff, 164_fix_context_sharing.diff,
+      166_fix_lpl_monitors.diff, 167_xf86AutoConfig_geode_addition.diff,
+      170_xorg-xserver-1.4-cve-2008-1377.diff,
+      171_xorg-xserver-1.4-cve-2008-1379.diff,
+      172_xorg-xserver-1.4-cve-2008-2360.diff,
+      173_xorg-xserver-1.4-cve-2008-2361.diff,
+      174_xorg-xserver-1.4-cve-2008-2362.diff
+    - obsolete:
+      101_fedora-apm-typedefs.patch
+      104_fedora_init_origins_fix.patch
+      142_fedora_xserver-1.3.0-no-pseudocolor-composite.patch
+      169_xf86AutoConfig_choose_default_driver_if_no_pci.patch
+    - unnecessary:
+      106_ubuntu_fpic_libxf86config.patch (the lib is not shipped)
+    - applied to master, waiting for upstream to cherry-pick the equivalent:
+      168_closedir.patch
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 18 Jun 2008 13:24:40 +0300
+
 xorg-server (2:1.4.99.902-1) experimental; urgency=low
 
   * Add postrm script for xserver-xorg-core, to remove

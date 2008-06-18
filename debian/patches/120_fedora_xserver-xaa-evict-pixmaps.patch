@@ -12,11 +12,11 @@ is bound.
  hw/xfree86/xaa/xaaInit.c |   24 ++++++++++++++++++++++++
  2 files changed, 40 insertions(+), 0 deletions(-)
 
-diff --git a/GL/glx/glxdri.c b/GL/glx/glxdri.c
-index c0da07b..6c4faed 100644
---- a/GL/glx/glxdri.c
-+++ b/GL/glx/glxdri.c
-@@ -360,6 +360,22 @@ __glXDRIbindTexImage(__GLXcontext *baseContext,
+Index: xorg-server/GL/glx/glxdri.c
+===================================================================
+--- xorg-server.orig/GL/glx/glxdri.c	2008-06-18 12:43:50.000000000 +0300
++++ xorg-server/GL/glx/glxdri.c	2008-06-18 12:43:53.000000000 +0300
+@@ -410,6 +410,22 @@
  
      pixmap = (PixmapPtr) glxPixmap->pDraw;
  
@@ -36,14 +36,14 @@ index c0da07b..6c4faed 100644
 +         }
 +    }
 +
-     if (screen->texOffsetStart && screen->driScreen.setTexOffset) {
-         __GLXpixmap **texOffsetOverride = screen->texOffsetOverride;
-         int i, firstEmpty = 16, texname;
-diff --git a/hw/xfree86/xaa/xaaInit.c b/hw/xfree86/xaa/xaaInit.c
-index 4222425..602b525 100644
---- a/hw/xfree86/xaa/xaaInit.c
-+++ b/hw/xfree86/xaa/xaaInit.c
-@@ -88,6 +88,30 @@ XAADestroyInfoRec(XAAInfoRecPtr infoRec)
+     if (screen->texOffsetStart && screen->texOffset) {
+ 	__GLXDRIdrawable **texOffsetOverride = screen->texOffsetOverride;
+ 	int i, firstEmpty = 16;
+Index: xorg-server/hw/xfree86/xaa/xaaInit.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/xaa/xaaInit.c	2008-06-18 12:43:50.000000000 +0300
++++ xorg-server/hw/xfree86/xaa/xaaInit.c	2008-06-18 12:43:53.000000000 +0300
+@@ -87,6 +87,30 @@
      xfree(infoRec);
  }
  
@@ -61,7 +61,7 @@ index 4222425..602b525 100644
 +	pScreen = screenInfo.screens[i];
 +	infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 +
-+	pScreenPriv = pScreen->devPrivates[XAAScreenIndex].ptr;
++	pScreenPriv = dixLookupPrivate(&pScreen->devPrivates, XAAScreenKey);
 +	infoRec = pScreenPriv->AccelInfoRec;
 +
 +	infoRec->offscreenDepths = 0;
@@ -74,6 +74,3 @@ index 4222425..602b525 100644
  
  Bool 
  XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
--- 
-1.5.3.4
-
