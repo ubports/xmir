@@ -14,8 +14,8 @@ is bound.
 
 Index: xorg-server/GL/glx/glxdri.c
 ===================================================================
---- xorg-server.orig/GL/glx/glxdri.c	2008-06-18 12:43:50.000000000 +0300
-+++ xorg-server/GL/glx/glxdri.c	2008-06-18 12:43:53.000000000 +0300
+--- xorg-server.orig/glx/glxdri.c	2008-06-18 12:43:50.000000000 +0300
++++ xorg-server/glx/glxdri.c	2008-06-18 12:43:53.000000000 +0300
 @@ -410,6 +410,22 @@
  
      pixmap = (PixmapPtr) glxPixmap->pDraw;
