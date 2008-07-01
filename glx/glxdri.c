@@ -52,6 +52,7 @@
 #define DRI_NEW_INTERFACE_ONLY
 #include "glxserver.h"
 #include "glxutil.h"
+#include "glxdricommon.h"
 
 #include "g_disptab.h"
 #include "glapitable.h"
@@ -63,7 +64,6 @@
 typedef struct __GLXDRIscreen   __GLXDRIscreen;
 typedef struct __GLXDRIcontext  __GLXDRIcontext;
 typedef struct __GLXDRIdrawable __GLXDRIdrawable;
-typedef struct __GLXDRIconfig	__GLXDRIconfig;
 
 struct __GLXDRIscreen {
     __GLXscreen		 base;
@@ -106,11 +106,6 @@ struct __GLXDRIdrawable {
     unsigned long offset;
     DamagePtr pDamage;
 #endif
-};
-
-struct __GLXDRIconfig {
-    __GLXconfig config;
-    __DRIconfig *driConfig;
 };
 
 static void
@@ -490,9 +485,11 @@ nooverride:
 
 	    data = xalloc(pitch * pixmap->drawable.height);
 
+	    __glXenterServer(GL_FALSE);
 	    pScreen->GetImage(&pixmap->drawable, 0 /*pixmap->drawable.x*/,
 			      0 /*pixmap->drawable.y*/, pixmap->drawable.width,
 			      pixmap->drawable.height, ZPixmap, ~0, data);
+	    __glXleaveServer(GL_FALSE);
 
 	    if (pixmap->drawable.depth == 24)
 		glxFillAlphaChannel(data,
@@ -534,9 +531,11 @@ nooverride:
 					   pixmap->drawable.depth);
 	    void *data = xalloc(pitch * (p[i].y2 - p[i].y1));
 
+	    __glXenterServer(GL_FALSE);
 	    pScreen->GetImage(&pixmap->drawable, /*pixmap->drawable.x +*/ p[i].x1,
 			      /*pixmap->drawable.y*/ + p[i].y1, p[i].x2 - p[i].x1,
 			      p[i].y2 - p[i].y1, ZPixmap, ~0, data);
+	    __glXleaveServer(GL_FALSE);
 
 	    if (pixmap->drawable.depth == 24)
 		glxFillAlphaChannel(data,
@@ -797,22 +796,6 @@ getDrawableInfo(__DRIdrawable *driDrawable,
     return retval;
 }
 
-static int
-getUST(int64_t *ust)
-{
-    struct timeval  tv;
-    
-    if (ust == NULL)
-	return -EFAULT;
-
-    if (gettimeofday(&tv, NULL) == 0) {
-	ust[0] = (tv.tv_sec * 1000000) + tv.tv_usec;
-	return 0;
-    } else {
-	return -errno;
-    }
-}
-
 static void __glXReportDamage(__DRIdrawable *driDraw,
 			      int x, int y,
 			      drm_clip_rect_t *rects, int num_rects,
@@ -832,12 +815,6 @@ static void __glXReportDamage(__DRIdrawable *driDraw,
 
     __glXleaveServer(GL_FALSE);
 }
-
-static const __DRIsystemTimeExtension systemTimeExtension = {
-    { __DRI_SYSTEM_TIME, __DRI_SYSTEM_TIME_VERSION },
-    getUST,
-    NULL,
-};
 
 static const __DRIgetDrawableInfoExtension getDrawableInfoExtension = {
     { __DRI_GET_DRAWABLE_INFO, __DRI_GET_DRAWABLE_INFO_VERSION },

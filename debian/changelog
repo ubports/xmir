@@ -1,4 +1,4 @@
-xorg-server (2:1.4.99.902-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.4.99.905-1ubuntu1) UNRELEASED; urgency=low
 
   * Merge with Debian experimental, remaining changes:
   * debian/control:
@@ -63,6 +63,29 @@ xorg-server (2:1.4.99.902-1ubuntu1) UNRELEASED; urgency=low
       168_closedir.patch
 
  -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 18 Jun 2008 13:24:40 +0300
+
+xorg-server (2:1.4.99.905-1) UNRELEASED; urgency=low
+
+  [ Julien Cristau ]
+  * New upstream release candidate
+    - fixes FTBFS on alpha (closes: #472205); won't work, though, because
+      of #485528
+    - fixes FTBFS on GNU/kFreeBSD (closes: #482550)
+  * 001_ubuntu_add_extra_modelines_from_xorg.patch: remove, replace with
+    001_fedora_extramodes.patch stolen from fedora 9 cvs, rev 1.8.
+  * xvfb: recommend xauth instead of xbase-clients.
+  * xserver-xfbdev: recommend xfonts-base.
+  * debian/rules: drop our special handling for stripping modules, which I
+    think dates back to the days of the custom module loader.
+  * debian/rules: drop some remaining xprintisms.
+  * bump serverminver to 2:1.4.99.905.
+  * Stop build-depending on mesa-swx11-source (mesa 7.1 will build the
+    software driver itself), and don't pass --with-mesa-source to configure.
+
+  [ Timo Aaltonen ]
+  * Re-enable dri & glx.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 01 Jul 2008 19:34:39 +0300
 
 xorg-server (2:1.4.99.902-1) experimental; urgency=low
 
@@ -134,6 +157,43 @@ xorg-server (2:1.4.99.901-1) experimental; urgency=low
     closes: #439764.
 
  -- Julien Cristau <jcristau@debian.org>  Fri, 14 Mar 2008 13:46:48 +0100
+
+xorg-server (2:1.4.2-1) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * New upstream release.
+  * Security fixes from the previous upload are included upstream.
+  * Cherry-pick patches from upstream git to make the LeftOf and Above options
+    in xorg.conf actually work (closes: #466526).
+  * 48_xaa_nooffscreenpixmaps.diff: disable XAA offscreen pixmaps by default;
+    they can be enabled with Option "XaaOffscreenPixmaps" (closes: #478277,
+    #433331).
+  * Cherry-pick various patches from upstream for Xorg's modes code:
+    - add quirks for monitors with broken EDID (closes: #473260)
+    - fix max clock computation
+    - inherit the preferred mode from the global configuration (so if you have
+      Modes "800x600" in the Display subsection the server will honor it
+      instead of ignoring it)
+  * Backport patch from upstream git to fix emulation of int1A PCI BIOS
+    services (closes: #404885).  Thanks, Robert de Bath!
+
+  [ Brice Goglin ]
+  * Update patches to not require -p0, closes: #485185.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 26 Jun 2008 01:57:18 +0200
+
+xorg-server (2:1.4.1~git20080517-2) unstable; urgency=high
+
+  * High urgency upload for security fixes.
+  * New patch from upstream to fix multiple security issues reported by
+    iDefense:
+    CVE-2008-2360 - RENDER Extension heap buffer overflow
+    CVE-2008-2361 - RENDER Extension crash
+    CVE-2008-2362 - RENDER Extension memory corruption
+    CVE-2008-1379 - MIT-SHM arbitrary memory read
+    CVE-2008-1377 - RECORD and Security extensions memory corruption
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 09 Jun 2008 14:59:04 +0200
 
 xorg-server (2:1.4.1~git20080517-1) unstable; urgency=low
 

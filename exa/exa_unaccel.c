@@ -350,6 +350,20 @@ ExaCheckComposite (CARD8      op,
     REGION_UNINIT(pScreen, &region);
 }
 
+void
+ExaCheckAddTraps (PicturePtr	pPicture,
+		  INT16		x_off,
+		  INT16		y_off,
+		  int		ntrap,
+		  xTrap		*traps)
+{
+    EXA_FALLBACK(("to pict %p (%c)\n",
+		  exaDrawableLocation(pPicture->pDrawable)));
+    exaPrepareAccess(pPicture->pDrawable, EXA_PREPARE_DEST);
+    fbAddTraps (pPicture, x_off, y_off, ntrap, traps);
+    exaFinishAccess(pPicture->pDrawable, EXA_PREPARE_DEST);
+}
+
 /**
  * Gets the 0,0 pixel of a pixmap.  Used for doing solid fills of tiled pixmaps
  * that happen to be 1x1.  Pixmap must be at least 8bpp.
@@ -359,6 +373,7 @@ ExaCheckComposite (CARD8      op,
 CARD32
 exaGetPixmapFirstPixel (PixmapPtr pPixmap)
 {
+    ExaScreenPriv(pPixmap->drawable.pScreen);
     CARD32 pixel;
     void *fb;
     Bool need_finish = FALSE;
@@ -373,7 +388,8 @@ exaGetPixmapFirstPixel (PixmapPtr pPixmap)
     fb = pExaPixmap->sys_ptr;
 
     /* Try to avoid framebuffer readbacks */
-    if ((!offscreen && !sys_valid && !damaged) ||
+    if (pExaScr->info->CreatePixmap ||
+	(!offscreen && !sys_valid && !damaged) ||
 	(offscreen && (!sys_valid || damaged)))
     {
 	box.x1 = 0;
