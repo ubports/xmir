@@ -11,9 +11,6 @@ xorg-server (2:1.4.99.905-1ubuntu1) UNRELEASED; urgency=low
       Fixes document fontpaths shown in the man page.
     - 102_ubuntu_sharevts_load_cpu.patch
       Close console fd only when using --sharevts.
-    - 103_fedora_xserver-1.5.0-xaa-option-inversion.patch
-      Turn XAA Offscreen Pixmaps off by default, and use XaaOffscreenPixmaps
-      "true" to turn them on.
     - 104_psb_auto.patch
       Add automatic detection of Poulsbo hardware when running without a
       Device definition.
@@ -46,6 +43,7 @@ xorg-server (2:1.4.99.905-1ubuntu1) UNRELEASED; urgency=low
       159_xkb_default_to_null.diff, 160_default_to_intel.diff,
       161_fix_big_endian_cursor.diff, 162_cve-2007-6429.diff,
       163_fix_untrusted_access.diff, 164_fix_context_sharing.diff,
+      165_fedora_xserver-1.5.0-xaa-option-inversion.patch,
       166_fix_lpl_monitors.diff, 167_xf86AutoConfig_geode_addition.diff,
       170_xorg-xserver-1.4-cve-2008-1377.diff,
       171_xorg-xserver-1.4-cve-2008-1379.diff,
