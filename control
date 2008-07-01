@@ -24,7 +24,6 @@ Build-Depends: debhelper (>= 4.0.0), lsb-release, pkg-config, bison, flex,
  libpciaccess-dev, libssl-dev,
  x11proto-xf86dri-dev, libdrm-dev (>= 2.3.0) [!hurd-i386], 
  x11proto-print-dev, libfreetype6-dev, xfonts-utils,
- mesa-swx11-source (>> 7.0.1~rc2-1),
  x11proto-gl-dev (>= 1.4.9), libgl1-mesa-dev (>= 6.5.1),
  libxmuu-dev (>= 1:0.99.1), libxext-dev (>= 1:0.99.1),
  libx11-dev (>= 1:0.99.2), libxrender-dev (>= 1:0.9.0),
@@ -147,8 +146,7 @@ Description: Nested X server
 
 Package: xvfb
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, xauth, xfonts-base
-Recommends: xbase-clients
+Depends: x11-common, ${shlibs:Depends}, ${misc:Depends}, xauth, xfonts-base
 Description: Virtual Framebuffer 'fake' X server
  Xvfb provides an X server that can run on machines with no display hardware
  and no physical input devices. It emulates a dumb framebuffer using virtual
@@ -192,7 +190,7 @@ Description: nested X server
 Package: xserver-xfbdev
 Architecture: alpha amd64 arm armeb armel hppa i386 ia64 lpia m32r m68k mips mipsel powerpc ppc64 sh3 sh3eb sh4 sh4eb sparc
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: xbase-clients
+Recommends: xbase-clients, xfonts-base
 Description: Linux framebuffer device tiny X server
  xserver-xfbdev is a Linux framebuffer device tiny X server based on the
  kdrive X server.
