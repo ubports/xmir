@@ -45,6 +45,7 @@ xorg-server (2:1.4.99.905-1ubuntu1) UNRELEASED; urgency=low
       163_fix_untrusted_access.diff, 164_fix_context_sharing.diff,
       165_fedora_xserver-1.5.0-xaa-option-inversion.patch,
       166_fix_lpl_monitors.diff, 167_xf86AutoConfig_geode_addition.diff,
+      168_closedir.patch,
       170_xorg-xserver-1.4-cve-2008-1377.diff,
       171_xorg-xserver-1.4-cve-2008-1379.diff,
       172_xorg-xserver-1.4-cve-2008-2360.diff,
@@ -57,8 +58,6 @@ xorg-server (2:1.4.99.905-1ubuntu1) UNRELEASED; urgency=low
       169_xf86AutoConfig_choose_default_driver_if_no_pci.patch
     - unnecessary:
       106_ubuntu_fpic_libxf86config.patch (the lib is not shipped)
-    - applied to master, waiting for upstream to cherry-pick the equivalent:
-      168_closedir.patch
 
  -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 18 Jun 2008 13:24:40 +0300
 
