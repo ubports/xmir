@@ -10,3 +10,4 @@
 120_fedora_xserver-xaa-evict-pixmaps.patch
 121_only_switch_vt_when_active.diff
 123_no_composite_for_xvfb_run.patch
+124_fix_randr_no_crtc.patch

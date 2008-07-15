@@ -1,3 +1,14 @@
+xorg-server (2:1.4.99.905-0ubuntu3) intrepid; urgency=low
+
+   * patches/124_fix_randr_no_crtc.patch:
+     + In certain circumstances, xrandr multiscreen initialization fails
+       to associate crtcs with monitors, resulting in startup failures
+       in some GDK-based applications when using -vesa.  This occurs
+       because mode-Clock, mode->HTotal, and mode->VTotal are all 0. 
+       (LP: #246585)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 15 Jul 2008 07:01:13 -0700
+
 xorg-server (2:1.4.99.905-0ubuntu1) intrepid; urgency=low
 
   * Merge with Debian experimental, remaining changes:
