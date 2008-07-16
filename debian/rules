@@ -51,6 +51,8 @@ confflags += --disable-static \
 	     --enable-vfb \
 	     --enable-kdrive \
 	     --enable-xephyr \
+	     --enable-xcsecurity \
+	     --enable-appgroup \
 	     --disable-xsdl \
 	     --disable-xfake \
 	     $(build_xfbdev) \
