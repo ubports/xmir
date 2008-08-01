@@ -1,3 +1,13 @@
+xorg-server (2:1.4.99.905-0ubuntu4) intrepid; urgency=low
+
+  * debian/rules:
+    Add --enable-xcsecurity --enable-appgroup.  The SECURITY module was
+    disabled by default in commit 86b2e59bfb79bd042a13c35fbb4ccecec576f629,
+    as part of the SELinux merge.  However, we need the security module
+    for xauth on Kubuntu, else ubiquity fails.  (Ref. LP 247537)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 16 Jul 2008 06:01:45 -0700
+
 xorg-server (2:1.4.99.905-0ubuntu3) intrepid; urgency=low
 
    * patches/124_fix_randr_no_crtc.patch:
