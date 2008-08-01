@@ -1,3 +1,11 @@
+xorg-server (2:1.4.99.905-0ubuntu5) intrepid; urgency=low
+
+  * debian/rules:
+    Added --enable-record.  By default, xorg-server does not build the 
+    RECORD extension.  Added the record module (for Xnee and other purposes).
+
+ -- Chris Nasho <chris.nasho@sympatico.ca>  Thu, 31 Jul 2008 17:26:00 -0400
+
 xorg-server (2:1.4.99.905-0ubuntu4) intrepid; urgency=low
 
   * debian/rules:
