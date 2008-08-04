@@ -1,3 +1,11 @@
+xorg-server (2:1.4.99.906-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge with debian experimental, 1.5RC6 (LP: #247120, #253021)
+  * Drop 120_fedora_xserver-xaa-evict-pixmaps.patch, because offscreen
+    pixmaps are already disabled by default. 
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 04 Aug 2008 22:49:41 +0300
+
 xorg-server (2:1.4.99.906-1) experimental; urgency=low
 
   * debian/rules: drop useless handling of nostrip in DEB_BUILD_OPTIONS (this
