@@ -1,4 +1,4 @@
-xorg-server (2:1.4.99.906-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.4.99.906-1ubuntu1) intrepid; urgency=low
 
   * Merge with debian experimental, 1.5RC6 (LP: #247120, #253021)
   * Drop 120_fedora_xserver-xaa-evict-pixmaps.patch, because offscreen
@@ -8,7 +8,7 @@ xorg-server (2:1.4.99.906-1ubuntu1) UNRELEASED; urgency=low
     #16364. Breaks if the first hotplugged keyboard is not the wanted 
     keyboard.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 04 Aug 2008 23:23:08 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Aug 2008 00:07:38 +0300
 
 xorg-server (2:1.4.99.906-1) experimental; urgency=low
 
