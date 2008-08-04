@@ -7,8 +7,17 @@ xorg-server (2:1.4.99.906-1ubuntu1) intrepid; urgency=low
   * Add 130_fedora_call_switchcorekeyboard.patch, a hack to fix fd.o bug 
     #16364. Breaks if the first hotplugged keyboard is not the wanted 
     keyboard.
+  * Patches from upstream master:
+    131_remove_open-coded_strcasestr.patch
+    - pre-requisite for the rest
+    132_add_parsing_for_xkb.options.patch
+    - parsing xkb.options didn't work (fd.o #16874)
+    133_support_strlist_for_xkboptions.patch
+    - allow using a list for xkb.options like before.
+    134_protect_against_out_of_bounds.patch
+    - protect against potential out-of-bounds indexing.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Aug 2008 00:07:38 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 05 Aug 2008 01:49:42 +0300
 
 xorg-server (2:1.4.99.906-1) experimental; urgency=low
 
