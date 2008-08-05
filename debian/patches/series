@@ -7,7 +7,10 @@
 104_psb_auto.patch
 107_fedora_dont_backfill_bg_none.patch
 110_fedora_no_move_damage.patch
-120_fedora_xserver-xaa-evict-pixmaps.patch
 121_only_switch_vt_when_active.diff
 123_no_composite_for_xvfb_run.patch
-124_fix_randr_no_crtc.patch
+130_fedora_call_switchcorekeyboard.patch
+131_remove_open-coded_strcasestr.patch
+132_add_parsing_for_xkb.options.patch
+133_support_strlist_for_xkboptions.patch
+134_protect_against_out_of_bounds.patch
