@@ -14,3 +14,4 @@
 132_add_parsing_for_xkb.options.patch
 133_support_strlist_for_xkboptions.patch
 134_protect_against_out_of_bounds.patch
+135_rethrow_signals.patch

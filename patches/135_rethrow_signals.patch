@@ -1,0 +1,19 @@
+diff -Nurp xorg-server-1.4.99.905/hw/xfree86/common/xf86Events.c xorg-server-1.4.99.905-working/hw/xfree86/common/xf86Events.c
+--- xorg-server-1.4.99.905/hw/xfree86/common/xf86Events.c	2008-06-30 13:11:03.000000000 -0700
++++ xorg-server-1.4.99.905-working/hw/xfree86/common/xf86Events.c	2008-07-14 08:23:51.000000000 -0700
+@@ -763,6 +763,15 @@ xf86SigHandler(int signo)
+ 
+   xorg_backtrace();
+ 
++  switch (signo) {
++  case SIGSEGV:
++  case SIGBUS:
++  case SIGILL:
++  case SIGFPE:
++      ErrorF ("Caught signal %d.  Server aborting\n", signo);
++      raise (signo);
++  }
++
+   FatalError("Caught signal %d.  Server aborting\n", signo);
+ }
+ 
