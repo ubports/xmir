@@ -1,3 +1,12 @@
+xorg-server (2:1.4.99.906-1ubuntu3) intrepid; urgency=low
+
+  * 130_fedora_fix_procxkbsetxyz_to_work_on_all.patch
+    136_fedora_force_switchcorekeyboard_for_evdev.patch
+    - Allow clients to set the layout.
+  * Drop 130_fedora_call_switchcorekeyboard.patch, obsoleted.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 06 Aug 2008 13:30:28 +0300
+
 xorg-server (2:1.4.99.906-1ubuntu2) intrepid; urgency=low
 
   * Add 135_rethrow_signals.patch
