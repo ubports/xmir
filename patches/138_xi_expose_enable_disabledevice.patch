@@ -1,0 +1,201 @@
+From 5f1334f3e81dec124d771807d4befb9b90348849 Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@redhat.com>
+Date: Wed, 13 Aug 2008 15:55:59 +0930
+Subject: [PATCH] Xi: expose Enable/DisableDevice through XI_PROP_ENABLED property.
+
+(cherry picked from commit 5bcc45e07e8726a5442567472dd29cfb5c901f2d)
+
+Conflicts:
+
+	dix/devices.c
+---
+ Xi/extinit.c       |    2 ++
+ Xi/xiproperty.c    |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ Xi/xiproperty.h    |    2 ++
+ dix/devices.c      |   38 ++++++++++++++++++++++++++++++++++++++
+ include/exevents.h |    4 ++++
+ 5 files changed, 92 insertions(+), 0 deletions(-)
+
+diff --git a/Xi/extinit.c b/Xi/extinit.c
+index 86160c4..dd8c341 100644
+--- a/Xi/extinit.c
++++ b/Xi/extinit.c
+@@ -110,6 +110,7 @@ SOFTWARE.
+ #include "ungrdevb.h"
+ #include "ungrdevk.h"
+ #include "xiproperty.c"
++#include "xiproperty.h"
+ 
+ 
+ static Mask lastExtEventMask = 1;
+@@ -972,6 +973,7 @@ XInputExtensionInit(void)
+ 	IReqCode = extEntry->base;
+ 	AllExtensionVersions[IReqCode - 128] = thisversion;
+ 	MakeDeviceTypeAtoms();
++	XIInitKnownProperties();
+ 	RT_INPUTCLIENT = CreateNewResourceType((DeleteType) InputClientGone);
+ 	RegisterResourceName(RT_INPUTCLIENT, "INPUTCLIENT");
+ 	FixExtensionEvents(extEntry);
+diff --git a/Xi/xiproperty.c b/Xi/xiproperty.c
+index 85a3caa..0b97328 100644
+--- a/Xi/xiproperty.c
++++ b/Xi/xiproperty.c
+@@ -39,8 +39,54 @@
+ 
+ #include "xiproperty.h"
+ 
++/**
++ * Properties used or alloced from inside the server.
++ */
++static struct dev_properties
++{
++    Atom type;
++    char *name;
++} dev_properties[] = {
++    {0, XI_PROP_ENABLED}
++};
++
+ static long XIPropHandlerID = 1;
+ 
++/**
++ * Return the type assigned to the specified atom or 0 if the atom isn't known
++ * to the DIX.
++ */
++_X_EXPORT Atom
++XIGetKnownProperty(char *name)
++{
++    int i;
++    for (i = 0; i < (sizeof(dev_properties)/sizeof(struct dev_properties)); i++)
++    {
++        if (strcmp(name, dev_properties[i].name) == 0)
++            return dev_properties[i].type;
++    }
++
++    return 0;
++}
++
++/**
++ * Init those properties that are allocated by the server and most likely used
++ * by the DIX or the DDX.
++ */
++void
++XIInitKnownProperties(void)
++{
++    int i;
++    for (i = 0; i < (sizeof(dev_properties)/sizeof(struct dev_properties)); i++)
++    {
++        dev_properties[i].type =
++            MakeAtom(dev_properties[i].name,
++                     strlen(dev_properties[i].name),
++                     TRUE);
++    }
++}
++
++
+ /* Registers a new property handler on the given device and returns a unique
+  * identifier for this handler. This identifier is required to unregister the
+  * property handler again.
+diff --git a/Xi/xiproperty.h b/Xi/xiproperty.h
+index e31cdad..47ba0ea 100644
+--- a/Xi/xiproperty.h
++++ b/Xi/xiproperty.h
+@@ -40,4 +40,6 @@ int SProcXChangeDeviceProperty    (ClientPtr client);
+ int SProcXDeleteDeviceProperty    (ClientPtr client);
+ int SProcXGetDeviceProperty       (ClientPtr client);
+ 
++void XIInitKnownProperties(void);
++
+ #endif /* XIPROPERTY_C */
+diff --git a/dix/devices.c b/dix/devices.c
+index 3c8e4ad..3df4715 100644
+--- a/dix/devices.c
++++ b/dix/devices.c
+@@ -57,6 +57,7 @@ SOFTWARE.
+ #define NEED_EVENTS
+ #define NEED_REPLIES
+ #include <X11/Xproto.h>
++#include <X11/Xatom.h>
+ #include "windowstr.h"
+ #include "inputstr.h"
+ #include "scrnintstr.h"
+@@ -88,6 +89,30 @@ SOFTWARE.
+ 
+ DevPrivateKey CoreDevicePrivateKey = &CoreDevicePrivateKey;
+ 
++
++/**
++ * DIX property handler.
++ */
++static Bool
++DeviceSetProperty(DeviceIntPtr dev, Atom property, XIPropertyValuePtr prop)
++{
++    if (property == XIGetKnownProperty(XI_PROP_ENABLED))
++    {
++        if (prop->format != 8 || prop->type != XA_INTEGER || prop->size != 1)
++            return FALSE;
++
++        if ((*((CARD8*)prop->data)) && !dev->enabled)
++            EnableDevice(dev);
++        else if (!(*((CARD8*)prop->data)) && dev->enabled)
++            DisableDevice(dev);
++        return TRUE;
++    }
++
++    return TRUE;
++}
++
++
++
+ /**
+  * Create a new input device and init it to sane values. The device is added
+  * to the server's off_devices list.
+@@ -175,6 +200,11 @@ AddInputDevice(DeviceProc deviceProc, Bool autoStart)
+     *prev = dev;
+     dev->next = NULL;
+ 
++    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_ENABLED),
++                           XA_INTEGER, 8, PropModeReplace, 1, &dev->enabled,
++                           FALSE, FALSE, FALSE);
++    XIRegisterPropertyHandler(dev, DeviceSetProperty, NULL);
++
+     return dev;
+ }
+ 
+@@ -212,6 +242,10 @@ EnableDevice(DeviceIntPtr dev)
+     *prev = dev;
+     dev->next = NULL;
+ 
++    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_ENABLED),
++                           XA_INTEGER, 8, PropModeReplace, 1, &dev->enabled,
++                           TRUE, FALSE, FALSE);
++
+     ev.type = DevicePresenceNotify;
+     ev.time = currentTime.milliseconds;
+     ev.devchange = DeviceEnabled;
+@@ -249,6 +283,10 @@ DisableDevice(DeviceIntPtr dev)
+     dev->next = inputInfo.off_devices;
+     inputInfo.off_devices = dev;
+ 
++    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_ENABLED),
++                           XA_INTEGER, 8, PropModeReplace, 1, &dev->enabled,
++                           TRUE, FALSE, FALSE);
++
+     ev.type = DevicePresenceNotify;
+     ev.time = currentTime.milliseconds;
+     ev.devchange = DeviceDisabled;
+diff --git a/include/exevents.h b/include/exevents.h
+index 6d6f1e8..fb0844a 100644
+--- a/include/exevents.h
++++ b/include/exevents.h
+@@ -238,4 +238,8 @@ extern void XIUnRegisterPropertyHandler(
+         long                  id
+ );
+ 
++extern Atom XIGetKnownProperty(
++        char*                 name
++);
++
+ #endif /* EXEVENTS_H */
+-- 
+1.5.5.1
+

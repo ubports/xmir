@@ -16,3 +16,6 @@
 134_protect_against_out_of_bounds.patch
 135_rethrow_signals.patch
 136_fedora_force_switchcorekeyboard_for_evdev.patch
+137_add_device_property_support.patch
+138_xi_expose_enable_disabledevice.patch
+139_xi_protect_against_null_handlers.patch
