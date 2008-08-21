@@ -4,8 +4,10 @@ xorg-server (2:1.4.99.906-1ubuntu4) UNRELEASED; urgency=low
     138_xi_expose_enable_disabledevice.patch,
     139_xi_protect_against_null_handlers.patch:
     - Add support for input-device properties.
+  * debian/control: Bump the build-depends on x11proto-input-dev
+    and libxi-dev.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 13 Aug 2008 10:45:48 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 21 Aug 2008 16:35:24 +0300
 
 xorg-server (2:1.4.99.906-1ubuntu3) intrepid; urgency=low
 
