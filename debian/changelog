@@ -1,4 +1,4 @@
-xorg-server (2:1.4.99.906-1ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.4.99.906-1ubuntu4) intrepid; urgency=low
 
   * 137_add_device_property_support.patch,
     138_xi_expose_enable_disabledevice.patch,
@@ -7,7 +7,7 @@ xorg-server (2:1.4.99.906-1ubuntu4) UNRELEASED; urgency=low
   * debian/control: Bump the build-depends on x11proto-input-dev
     and libxi-dev.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 21 Aug 2008 16:35:24 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 22 Aug 2008 09:00:14 +0300
 
 xorg-server (2:1.4.99.906-1ubuntu3) intrepid; urgency=low
 
