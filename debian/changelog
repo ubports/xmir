@@ -1,3 +1,10 @@
+xorg-server (2:1.4.99.906-2ubuntu2) intrepid; urgency=low
+
+  * 103_inputproto_1.4.3_is_fine.patch:
+    - Don't require inputproto 1.4.4 in configure.ac..
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 28 Aug 2008 13:24:05 +0300
+
 xorg-server (2:1.4.99.906-2ubuntu1) intrepid; urgency=low
 
   * Merge with Debian experimental.
