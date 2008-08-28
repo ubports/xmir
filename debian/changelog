@@ -1,4 +1,4 @@
-xorg-server (2:1.4.99.906-2ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.4.99.906-2ubuntu1) intrepid; urgency=low
 
   * Merge with Debian experimental.
   * Dropped patches, upstream:
@@ -10,7 +10,7 @@ xorg-server (2:1.4.99.906-2ubuntu1) UNRELEASED; urgency=low
   * control: Fix build-dep on inputproto to >= 1.4.3-2ubuntu2 for
     DeviceControlChanged.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 28 Aug 2008 12:29:42 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 28 Aug 2008 12:39:33 +0300
 
 xorg-server (2:1.4.99.906-2) experimental; urgency=low
 
