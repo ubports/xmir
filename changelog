@@ -7,8 +7,10 @@ xorg-server (2:1.4.99.906-2ubuntu1) UNRELEASED; urgency=low
     132_add_parsing_for_xkb.options.patch
     133_support_strlist_for_xkboptions.patch
     134_protect_against_out_of_bounds.patch
+  * control: Fix build-dep on inputproto to >= 1.4.3-2ubuntu2 for
+    DeviceControlChanged.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 28 Aug 2008 09:47:23 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 28 Aug 2008 12:29:42 +0300
 
 xorg-server (2:1.4.99.906-2) experimental; urgency=low
 
