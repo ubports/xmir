@@ -1,3 +1,15 @@
+xorg-server (2:1.4.99.906-2ubuntu1) UNRELEASED; urgency=low
+
+  * Merge with Debian experimental.
+  * Dropped patches, upstream:
+    130_fedora_fix_procxkbsetxyz_to_work_on_all.patch
+    131_remove_open-coded_strcasestr.patch
+    132_add_parsing_for_xkb.options.patch
+    133_support_strlist_for_xkboptions.patch
+    134_protect_against_out_of_bounds.patch
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 28 Aug 2008 09:47:23 +0300
+
 xorg-server (2:1.4.99.906-2) experimental; urgency=low
 
   * Pull from server-1.5-branch as of Aug 27th
