@@ -16,3 +16,4 @@
 137_add_device_property_support.patch
 138_xi_expose_enable_disabledevice.patch
 139_xi_protect_against_null_handlers.patch
+140_quell_acpi_errmsgs.patch
