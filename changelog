@@ -1,3 +1,11 @@
+xorg-server (2:1.4.99.906-2ubuntu3) intrepid; urgency=low
+
+  * 135_rethrow_signals.patch:  Update to make it catch and throw a
+    wider variety of signals, and do a clean shutdown of the X server
+    (code borrowed from FatalError()).
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 01 Sep 2008 13:19:46 -0700
+
 xorg-server (2:1.4.99.906-2ubuntu2) intrepid; urgency=low
 
   * 103_inputproto_1.4.3_is_fine.patch:
