@@ -1,13 +1,19 @@
-xorg-server (2:1.4.99.906-2ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.4.99.906-2ubuntu4) intrepid; urgency=low
+
+  [ Bryce Harrington ]
+  * 140_quell_acpid_errmsgs.patch: Don't fill the server log with errors
+    from not being able to connect to acpid. (LP: #247195)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 03 Sep 2008 10:48:24 +0300
+
+xorg-server (2:1.4.99.906-2ubuntu3) intrepid; urgency=low
 
   [ Bryce Harrington ]
   * 135_rethrow_signals.patch:  Update to make it catch and throw a
     wider variety of signals, and do a clean shutdown of the X server
     (code borrowed from FatalError()).
-  * 140_quell_acpid_errmsgs.patch: Don't fill the server log with errors
-    from not being able to connect to acpid.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 02 Sep 2008 09:44:22 +0300
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 01 Sep 2008 13:19:46 -0700
 
 xorg-server (2:1.4.99.906-2ubuntu2) intrepid; urgency=low
 
