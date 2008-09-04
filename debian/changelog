@@ -1,3 +1,9 @@
+xorg-server (2:1.5.0-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge with Debian experimental.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 04 Sep 2008 11:37:51 +0300
+
 xorg-server (2:1.5.0-1) experimental; urgency=low
 
   * New upstream release.
