@@ -1,3 +1,13 @@
+xorg-server (2:1.5.0-1) experimental; urgency=low
+
+  * New upstream release.
+  * Kill patch 50_Make-RandRQueryVersion-return-1.1-for-swapped-client.patch,
+    1.2 requests are properly swapped now.
+  * Bump videoabiver to 4 to match ABI_VIDEODRV_VERSION.  Yes, that means
+    rebuilding video drivers; sorry about that.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 04 Sep 2008 02:05:47 +0200
+
 xorg-server (2:1.4.99.906-2ubuntu5) intrepid; urgency=low
 
   * Bump the serverminver because of input properties.
