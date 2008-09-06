@@ -1,8 +1,14 @@
 xorg-server (2:1.5.0-1ubuntu1) UNRELEASED; urgency=low
 
   * Merge with Debian experimental.
+  * 141_improved_driver_selection.patch
+    - Allow returning multiple drivers to try for a given PCI id.
+      Also includes support for fallback drivers, but only when
+      not using an xorg.conf.
+  * 142_psb_auto.patch
+    - Renamed, refreshed.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 04 Sep 2008 11:37:51 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 06 Sep 2008 11:08:37 +0300
 
 xorg-server (2:1.5.0-1) experimental; urgency=low
 
