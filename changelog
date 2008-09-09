@@ -1,4 +1,4 @@
-xorg-server (2:1.5.0-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.5.0-1ubuntu1) intrepid; urgency=low
 
   * Merge with Debian experimental.
   * 141_improved_driver_selection.patch
@@ -8,7 +8,7 @@ xorg-server (2:1.5.0-1ubuntu1) UNRELEASED; urgency=low
   * 142_psb_auto.patch
     - Renamed, refreshed.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 06 Sep 2008 11:08:37 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 09 Sep 2008 11:44:13 +0300
 
 xorg-server (2:1.5.0-1) experimental; urgency=low
 
