@@ -3,9 +3,9 @@ xorg-server (2:1.5.1-1ubuntu3) UNRELEASED; urgency=low
   * Merge patches 138 and 139 into 137, and update the properties API to
     match the current version in master (final API for XI 1.5).
     (LP: #274728)
-  * Bump the build-dep on x11proto-input-dev.
+  * Bump the build-dep on x11proto-input-dev and libxi-dev.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 29 Sep 2008 09:19:48 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 29 Sep 2008 09:30:04 +0300
 
 xorg-server (2:1.5.1-1ubuntu2) intrepid; urgency=low
 
