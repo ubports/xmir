@@ -7,8 +7,8 @@ Bryce Harrington  23-Aug-2007
 
 Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
 ===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2008-09-02 10:47:16.000000000 +0300
-+++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2008-09-02 10:58:57.000000000 +0300
+--- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2008-09-26 22:33:11.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2008-09-26 22:33:11.000000000 +0300
 @@ -166,11 +166,16 @@
  	case 0x102c:		    driverList[0] = "chips"; break;
  	case 0x1013:		    driverList[0] = "cirrus"; break;

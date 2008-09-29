@@ -1,39 +1,22 @@
-From 80f706255859726a584a4190ddecb6273d1c9f08 Mon Sep 17 00:00:00 2001
-From: Peter Hutterer <peter.hutterer@redhat.com>
-Date: Wed, 13 Aug 2008 15:48:11 +0930
-Subject: [PATCH] Add device property support.
-
-Cherry-picked from master, with the commits fixed and squashed.
----
- Xi/Makefile.am     |    2 +
- Xi/exglobals.h     |    2 +
- Xi/extinit.c       |   36 +++
- Xi/xiproperty.c    |  822 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- Xi/xiproperty.h    |   43 +++
- dix/devices.c      |    8 +
- include/exevents.h |   61 ++++-
- include/inputstr.h |   48 +++
- 8 files changed, 1021 insertions(+), 1 deletions(-)
- create mode 100644 Xi/xiproperty.c
- create mode 100644 Xi/xiproperty.h
-
-diff --git a/Xi/Makefile.am b/Xi/Makefile.am
-index fbe4385..b08bbf0 100644
---- a/Xi/Makefile.am
-+++ b/Xi/Makefile.am
-@@ -76,5 +76,7 @@ libXi_la_SOURCES =	\
+Index: xorg-server/Xi/Makefile.am
+===================================================================
+--- xorg-server.orig/Xi/Makefile.am	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/Xi/Makefile.am	2008-09-27 00:32:51.000000000 +0300
+@@ -75,6 +75,8 @@
+ 	ungrdevb.c \
  	ungrdevb.h \
  	ungrdevk.c \
- 	ungrdevk.h
+-	ungrdevk.h
++	ungrdevk.h \
 +	xiproperty.c \
-+	xiproperty.h 
++	xiproperty.h
  
  EXTRA_DIST = stubs.c
-diff --git a/Xi/exglobals.h b/Xi/exglobals.h
-index 50bb33f..1740c29 100644
---- a/Xi/exglobals.h
-+++ b/Xi/exglobals.h
-@@ -50,6 +50,7 @@ extern Mask DeviceOwnerGrabButtonMask;
+Index: xorg-server/Xi/exglobals.h
+===================================================================
+--- xorg-server.orig/Xi/exglobals.h	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/Xi/exglobals.h	2008-09-27 00:32:51.000000000 +0300
+@@ -50,6 +50,7 @@
  extern Mask DeviceButtonGrabMask;
  extern Mask DeviceButtonMotionMask;
  extern Mask DevicePresenceNotifyMask;
@@ -41,7 +24,7 @@ index 50bb33f..1740c29 100644
  extern Mask PropagateMask[];
  
  extern int DeviceValuator;
-@@ -68,6 +69,7 @@ extern int DeviceButtonStateNotify;
+@@ -68,6 +69,7 @@
  extern int DeviceMappingNotify;
  extern int ChangeDeviceNotify;
  extern int DevicePresenceNotify;
@@ -49,20 +32,20 @@ index 50bb33f..1740c29 100644
  
  extern int RT_INPUTCLIENT;
  
-diff --git a/Xi/extinit.c b/Xi/extinit.c
-index 2ffdafb..86160c4 100644
---- a/Xi/extinit.c
-+++ b/Xi/extinit.c
-@@ -109,6 +109,8 @@ SOFTWARE.
+Index: xorg-server/Xi/extinit.c
+===================================================================
+--- xorg-server.orig/Xi/extinit.c	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/Xi/extinit.c	2008-09-27 00:32:51.000000000 +0300
+@@ -109,6 +109,8 @@
  #include "ungrdev.h"
  #include "ungrdevb.h"
  #include "ungrdevk.h"
 +#include "xiproperty.c"
-+
++#include "xiproperty.h"
  
  static Mask lastExtEventMask = 1;
  int ExtEventIndex;
-@@ -166,6 +168,7 @@ Mask DeviceOwnerGrabButtonMask;
+@@ -166,6 +168,7 @@
  Mask DeviceButtonGrabMask;
  Mask DeviceButtonMotionMask;
  Mask DevicePresenceNotifyMask;
@@ -70,7 +53,7 @@ index 2ffdafb..86160c4 100644
  
  int DeviceValuator;
  int DeviceKeyPress;
-@@ -183,6 +186,7 @@ int DeviceButtonStateNotify;
+@@ -183,6 +186,7 @@
  int DeviceMappingNotify;
  int ChangeDeviceNotify;
  int DevicePresenceNotify;
@@ -78,16 +61,12 @@ index 2ffdafb..86160c4 100644
  
  int RT_INPUTCLIENT;
  
-@@ -288,6 +292,18 @@ ProcIDispatch(ClientPtr client)
+@@ -288,6 +292,14 @@
  	return (ProcXGetDeviceControl(client));
      else if (stuff->data == X_ChangeDeviceControl)
  	return (ProcXChangeDeviceControl(client));
 +    else if (stuff->data == X_ListDeviceProperties)
 +        return (ProcXListDeviceProperties(client));
-+    else if (stuff->data == X_QueryDeviceProperty)
-+        return (ProcXQueryDeviceProperty(client));
-+    else if (stuff->data == X_ConfigureDeviceProperty)
-+        return ProcXConfigureDeviceProperty(client);
 +    else if (stuff->data == X_ChangeDeviceProperty)
 +        return ProcXChangeDeviceProperty(client);
 +    else if (stuff->data == X_DeleteDeviceProperty)
@@ -97,7 +76,33 @@ index 2ffdafb..86160c4 100644
  
      return (BadRequest);
  }
-@@ -550,6 +566,17 @@ SDevicePresenceNotifyEvent (devicePresenceNotify *from, devicePresenceNotify *to
+@@ -375,6 +387,14 @@
+ 	return (SProcXGetDeviceControl(client));
+     else if (stuff->data == X_ChangeDeviceControl)
+ 	return (SProcXChangeDeviceControl(client));
++    else if (stuff->data == X_ListDeviceProperties)
++        return (SProcXListDeviceProperties(client));
++    else if (stuff->data == X_ChangeDeviceProperty)
++        return (SProcXChangeDeviceProperty(client));
++    else if (stuff->data == X_DeleteDeviceProperty)
++        return (SProcXDeleteDeviceProperty(client));
++    else if (stuff->data == X_GetDeviceProperty)
++        return (SProcXGetDeviceProperty(client));
+ 
+     return (BadRequest);
+ }
+@@ -445,6 +465,10 @@
+     else if (rep->RepType == X_ChangeDeviceControl)
+ 	SRepXChangeDeviceControl(client, len,
+ 				 (xChangeDeviceControlReply *) rep);
++    else if (rep->RepType == X_ListDeviceProperties)
++        SRepXListDeviceProperties(client, len, (xListDevicePropertiesReply*)rep);
++    else if (rep->RepType == X_GetDeviceProperty)
++         SRepXGetDeviceProperty(client, len, (xGetDevicePropertyReply *) rep);
+     else {
+ 	FatalError("XINPUT confused sending swapped reply");
+     }
+@@ -550,6 +574,17 @@
      swaps(&to->control, n);
  }
  
@@ -115,7 +120,7 @@ index 2ffdafb..86160c4 100644
  /**************************************************************************
   *
   * Allow the specified event to have its propagation suppressed.
-@@ -670,6 +697,7 @@ FixExtensionEvents(ExtensionEntry * extEntry)
+@@ -670,6 +705,7 @@
      DeviceKeyStateNotify = ChangeDeviceNotify + 1;
      DeviceButtonStateNotify = DeviceKeyStateNotify + 1;
      DevicePresenceNotify = DeviceButtonStateNotify + 1;
@@ -123,7 +128,7 @@ index 2ffdafb..86160c4 100644
  
      event_base[KeyClass] = DeviceKeyPress;
      event_base[ButtonClass] = DeviceButtonPress;
-@@ -745,6 +773,10 @@ FixExtensionEvents(ExtensionEntry * extEntry)
+@@ -745,6 +781,10 @@
  
      DevicePresenceNotifyMask = GetNextExtEventMask();
      SetEventInfo(DevicePresenceNotifyMask, _devicePresence);
@@ -134,7 +139,7 @@ index 2ffdafb..86160c4 100644
      SetEventInfo(0, _noExtensionEvent);
  }
  
-@@ -786,6 +818,7 @@ RestoreExtensionEvents(void)
+@@ -786,6 +826,7 @@
      DeviceKeyStateNotify = 13;
      DeviceButtonStateNotify = 13;
      DevicePresenceNotify = 14;
@@ -142,7 +147,7 @@ index 2ffdafb..86160c4 100644
  
      BadDevice = 0;
      BadEvent = 1;
-@@ -824,6 +857,7 @@ IResetProc(ExtensionEntry * unused)
+@@ -824,6 +865,7 @@
      EventSwapVector[DeviceMappingNotify] = NotImplemented;
      EventSwapVector[ChangeDeviceNotify] = NotImplemented;
      EventSwapVector[DevicePresenceNotify] = NotImplemented;
@@ -150,7 +155,7 @@ index 2ffdafb..86160c4 100644
      RestoreExtensionEvents();
  }
  
-@@ -909,6 +943,8 @@ SEventIDispatch(xEvent * from, xEvent * to)
+@@ -909,6 +951,8 @@
  	DO_SWAP(SChangeDeviceNotifyEvent, changeDeviceNotify);
      else if (type == DevicePresenceNotify)
  	DO_SWAP(SDevicePresenceNotifyEvent, devicePresenceNotify);
@@ -159,12 +164,19 @@ index 2ffdafb..86160c4 100644
      else {
  	FatalError("XInputExtension: Impossible event!\n");
      }
-diff --git a/Xi/xiproperty.c b/Xi/xiproperty.c
-new file mode 100644
-index 0000000..85a3caa
---- /dev/null
-+++ b/Xi/xiproperty.c
-@@ -0,0 +1,822 @@
+@@ -936,6 +980,7 @@
+ 	IReqCode = extEntry->base;
+ 	AllExtensionVersions[IReqCode - 128] = thisversion;
+ 	MakeDeviceTypeAtoms();
++	XIInitKnownProperties();
+ 	RT_INPUTCLIENT = CreateNewResourceType((DeleteType) InputClientGone);
+ 	RegisterResourceName(RT_INPUTCLIENT, "INPUTCLIENT");
+ 	FixExtensionEvents(extEntry);
+Index: xorg-server/Xi/xiproperty.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/Xi/xiproperty.c	2008-09-27 00:36:39.000000000 +0300
+@@ -0,0 +1,772 @@
 +/*
 + * Copyright © 2006 Keith Packard
 + * Copyright © 2008 Peter Hutterer
@@ -205,8 +217,55 @@ index 0000000..85a3caa
 +#include "swaprep.h"
 +
 +#include "xiproperty.h"
++#include "xserver-properties.h"
++
++/**
++ * Properties used or alloced from inside the server.
++ */
++static struct dev_properties
++{
++    Atom type;
++    char *name;
++} dev_properties[] = {
++    {0, XI_PROP_ENABLED}
++};
 +
 +static long XIPropHandlerID = 1;
++
++/**
++ * Return the type assigned to the specified atom or 0 if the atom isn't known
++ * to the DIX.
++ */
++_X_EXPORT Atom
++XIGetKnownProperty(char *name)
++{
++    int i;
++    for (i = 0; i < (sizeof(dev_properties)/sizeof(struct dev_properties)); i++)
++    {
++        if (strcmp(name, dev_properties[i].name) == 0)
++            return dev_properties[i].type;
++    }
++
++    return 0;
++}
++
++/**
++ * Init those properties that are allocated by the server and most likely used
++ * by the DIX or the DDX.
++ */
++void
++XIInitKnownProperties(void)
++{
++    int i;
++    for (i = 0; i < (sizeof(dev_properties)/sizeof(struct dev_properties)); i++)
++    {
++        dev_properties[i].type =
++            MakeAtom(dev_properties[i].name,
++                     strlen(dev_properties[i].name),
++                     TRUE);
++    }
++}
++
 +
 +/* Registers a new property handler on the given device and returns a unique
 + * identifier for this handler. This identifier is required to unregister the
@@ -215,11 +274,13 @@ index 0000000..85a3caa
 + */
 +long
 +XIRegisterPropertyHandler(DeviceIntPtr         dev,
-+                          Bool (*SetProperty) (DeviceIntPtr dev,
++                          int (*SetProperty) (DeviceIntPtr dev,
 +                                               Atom property,
 +                                               XIPropertyValuePtr prop),
-+                          Bool (*GetProperty) (DeviceIntPtr dev,
-+                                               Atom property))
++                          int (*GetProperty) (DeviceIntPtr dev,
++                                               Atom property),
++                          int (*DeleteProperty) (DeviceIntPtr dev,
++                                                 Atom property))
 +{
 +    XIPropertyHandlerPtr new_handler;
 +
@@ -230,6 +291,7 @@ index 0000000..85a3caa
 +    new_handler->id = XIPropHandlerID++;
 +    new_handler->SetProperty = SetProperty;
 +    new_handler->GetProperty = GetProperty;
++    new_handler->DeleteProperty = DeleteProperty;
 +    new_handler->next = dev->properties.handlers;
 +    dev->properties.handlers = new_handler;
 +
@@ -259,15 +321,6 @@ index 0000000..85a3caa
 +    xfree(curr);
 +}
 +
-+static void
-+XIInitDevicePropertyValue (XIPropertyValuePtr property_value)
-+{
-+    property_value->type   = None;
-+    property_value->format = 0;
-+    property_value->size   = 0;
-+    property_value->data   = NULL;
-+}
-+
 +static XIPropertyPtr
 +XICreateDeviceProperty (Atom property)
 +{
@@ -279,27 +332,31 @@ index 0000000..85a3caa
 +
 +    prop->next         = NULL;
 +    prop->propertyName = property;
-+    prop->is_pending   = FALSE;
-+    prop->range        = FALSE;
-+    prop->fromClient   = FALSE;
-+    prop->immutable    = FALSE;
-+    prop->num_valid    = 0;
-+    prop->valid_values = NULL;
++    prop->value.type   = None;
++    prop->value.format = 0;
++    prop->value.size   = 0;
++    prop->value.data   = NULL;
++    prop->deletable    = TRUE;
 +
-+    XIInitDevicePropertyValue (&prop->current);
-+    XIInitDevicePropertyValue (&prop->pending);
 +    return prop;
++}
++
++static XIPropertyPtr
++XIFetchDeviceProperty(DeviceIntPtr dev, Atom property)
++{
++    XIPropertyPtr   prop;
++
++    for (prop = dev->properties.properties; prop; prop = prop->next)
++        if (prop->propertyName == property)
++            return prop;
++    return NULL;
 +}
 +
 +static void
 +XIDestroyDeviceProperty (XIPropertyPtr prop)
 +{
-+    if (prop->valid_values)
-+        xfree (prop->valid_values);
-+    if (prop->current.data)
-+        xfree(prop->current.data);
-+    if (prop->pending.data)
-+        xfree(prop->pending.data);
++    if (prop->value.data)
++        xfree(prop->value.data);
 +    xfree(prop);
 +}
 +
@@ -345,13 +402,28 @@ index 0000000..85a3caa
 +{
 +    XIPropertyPtr               prop, *prev;
 +    devicePropertyNotify        event;
++    int                         rc = Success;
 +
 +    for (prev = &device->properties.properties; (prop = *prev); prev = &(prop->next))
 +        if (prop->propertyName == property)
 +            break;
 +
-+    if (!prop->fromClient && fromClient)
-+        return BadAtom;
++    if (fromClient && !prop->deletable)
++        return BadAccess;
++
++    /* Ask handlers if we may delete the property */
++    if (device->properties.handlers)
++    {
++        XIPropertyHandlerPtr handler = device->properties.handlers;
++        while(handler)
++        {
++            if (handler->DeleteProperty)
++                rc = handler->DeleteProperty(device, prop->propertyName);
++            if (rc != Success)
++                return (rc);
++            handler = handler->next;
++        }
++    }
 +
 +    if (prop)
 +    {
@@ -372,8 +444,7 @@ index 0000000..85a3caa
 +int
 +XIChangeDeviceProperty (DeviceIntPtr dev, Atom property, Atom type,
 +                        int format, int mode, unsigned long len,
-+                        pointer value, Bool sendevent, Bool pending,
-+                        Bool fromClient)
++                        pointer value, Bool sendevent)
 +{
 +    XIPropertyPtr               prop;
 +    devicePropertyNotify        event;
@@ -383,24 +454,21 @@ index 0000000..85a3caa
 +    XIPropertyValuePtr          prop_value;
 +    XIPropertyValueRec          new_value;
 +    Bool                        add = FALSE;
++    int                         rc;
 +
 +    size_in_bytes = format >> 3;
 +
 +    /* first see if property already exists */
-+    prop = XIQueryDeviceProperty (dev, property);
++    prop = XIFetchDeviceProperty (dev, property);
 +    if (!prop)   /* just add to list */
 +    {
 +        prop = XICreateDeviceProperty (property);
 +        if (!prop)
 +            return(BadAlloc);
-+        prop->fromClient = fromClient;
 +        add = TRUE;
 +        mode = PropModeReplace;
 +    }
-+    if (pending && prop->is_pending)
-+        prop_value = &prop->pending;
-+    else
-+        prop_value = &prop->current;
++    prop_value = &prop->value;
 +
 +    /* To append or prepend to a property the request format and type
 +     must match those of the already defined property.  The
@@ -455,21 +523,21 @@ index 0000000..85a3caa
 +            memcpy ((char *) old_data, (char *) prop_value->data,
 +                    prop_value->size * size_in_bytes);
 +
-+        /* We must set pendingProperties TRUE before we commit to the driver,
-+           we're in a single thread after all
-+         */
-+        if (pending && prop->is_pending)
-+            dev->properties.pendingProperties = TRUE;
-+        if (pending && dev->properties.handlers)
++        if (dev->properties.handlers)
 +        {
 +            XIPropertyHandlerPtr handler = dev->properties.handlers;
 +            while(handler)
 +            {
-+                if (!handler->SetProperty(dev, prop->propertyName, &new_value))
++                if (handler->SetProperty)
 +                {
-+                    if (new_value.data)
-+                        xfree (new_value.data);
-+                    return (BadValue);
++                    rc = handler->SetProperty(dev, prop->propertyName,
++                                              &new_value);
++                    if (rc != Success)
++                    {
++                        if (new_value.data)
++                            xfree (new_value.data);
++                        return (rc);
++                    }
 +                }
 +                handler = handler->next;
 +            }
@@ -477,9 +545,7 @@ index 0000000..85a3caa
 +        if (prop_value->data)
 +            xfree (prop_value->data);
 +        *prop_value = new_value;
-+    }
-+
-+    else if (len == 0)
++    } else if (len == 0)
 +    {
 +        /* do nothing */
 +    }
@@ -489,7 +555,6 @@ index 0000000..85a3caa
 +        prop->next = dev->properties.properties;
 +        dev->properties.properties = prop;
 +    }
-+
 +
 +    if (sendevent)
 +    {
@@ -504,95 +569,48 @@ index 0000000..85a3caa
 +    return(Success);
 +}
 +
-+XIPropertyPtr
-+XIQueryDeviceProperty (DeviceIntPtr dev, Atom property)
++int
++XIGetDeviceProperty (DeviceIntPtr dev, Atom property, XIPropertyValuePtr *value)
 +{
-+    XIPropertyPtr   prop;
-+
-+    for (prop = dev->properties.properties; prop; prop = prop->next)
-+        if (prop->propertyName == property)
-+            return prop;
-+    return NULL;
-+}
-+
-+XIPropertyValuePtr
-+XIGetDeviceProperty (DeviceIntPtr dev, Atom property, Bool pending)
-+{
-+    XIPropertyPtr   prop = XIQueryDeviceProperty (dev, property);
++    XIPropertyPtr   prop = XIFetchDeviceProperty (dev, property);
++    int rc;
 +
 +    if (!prop)
-+        return NULL;
-+    if (pending && prop->is_pending)
-+        return &prop->pending;
-+    else {
-+        /* If we can, try to update the property value first */
-+        if (dev->properties.handlers)
++    {
++        *value = NULL;
++        return BadAtom;
++    }
++
++    /* If we can, try to update the property value first */
++    if (dev->properties.handlers)
++    {
++        XIPropertyHandlerPtr handler = dev->properties.handlers;
++        while(handler)
 +        {
-+            XIPropertyHandlerPtr handler = dev->properties.handlers;
-+            while(handler)
++            if (handler->GetProperty)
 +            {
-+                handler->GetProperty(dev, prop->propertyName);
-+                handler = handler->next;
++                rc = handler->GetProperty(dev, prop->propertyName);
++                if (rc != Success)
++                {
++                    *value = NULL;
++                    return rc;
++                }
 +            }
 +        }
-+        return &prop->current;
 +    }
++    *value = &prop->value;
++    return Success;
 +}
 +
 +int
-+XIConfigureDeviceProperty (DeviceIntPtr dev, Atom property,
-+                           Bool pending, Bool range, Bool immutable,
-+                           int num_values, INT32 *values)
++XISetDevicePropertyDeletable(DeviceIntPtr dev, Atom property, Bool deletable)
 +{
-+    XIPropertyPtr   prop = XIQueryDeviceProperty (dev, property);
-+    Bool            add = FALSE;
-+    INT32           *new_values;
++    XIPropertyPtr prop = XIFetchDeviceProperty(dev, property);
 +
 +    if (!prop)
-+    {
-+        prop = XICreateDeviceProperty (property);
-+        if (!prop)
-+            return(BadAlloc);
-+        add = TRUE;
-+    } else if (prop->immutable && !immutable)
-+        return(BadAccess);
++        return BadAtom;
 +
-+    /*
-+     * ranges must have even number of values
-+     */
-+    if (range && (num_values & 1))
-+        return BadMatch;
-+
-+    new_values = xalloc (num_values * sizeof (INT32));
-+    if (!new_values && num_values)
-+        return BadAlloc;
-+    if (num_values)
-+        memcpy (new_values, values, num_values * sizeof (INT32));
-+
-+    /*
-+     * Property moving from pending to non-pending
-+     * loses any pending values
-+     */
-+    if (prop->is_pending && !pending)
-+    {
-+        if (prop->pending.data)
-+            xfree (prop->pending.data);
-+        XIInitDevicePropertyValue (&prop->pending);
-+    }
-+
-+    prop->is_pending = pending;
-+    prop->range = range;
-+    prop->immutable = immutable;
-+    prop->num_valid = num_values;
-+    if (prop->valid_values)
-+        xfree (prop->valid_values);
-+    prop->valid_values = new_values;
-+
-+    if (add) {
-+        prop->next = dev->properties.properties;
-+        dev->properties.properties = prop;
-+    }
-+
++    prop->deletable = deletable;
 +    return Success;
 +}
 +
@@ -645,71 +663,6 @@ index 0000000..85a3caa
 +}
 +
 +int
-+ProcXQueryDeviceProperty (ClientPtr client)
-+{
-+    REQUEST(xQueryDevicePropertyReq);
-+    xQueryDevicePropertyReply   rep;
-+    DeviceIntPtr                dev;
-+    XIPropertyPtr               prop;
-+    int                         rc;
-+
-+    REQUEST_SIZE_MATCH(xQueryDevicePropertyReq);
-+
-+    rc = dixLookupDevice (&dev, stuff->deviceid, client, DixReadAccess);
-+
-+    if (rc != Success)
-+        return rc;
-+
-+    prop = XIQueryDeviceProperty (dev, stuff->property);
-+    if (!prop)
-+        return BadName;
-+
-+    rep.repType = X_Reply;
-+    rep.length = prop->num_valid;
-+    rep.sequenceNumber = client->sequence;
-+    rep.pending = prop->is_pending;
-+    rep.range = prop->range;
-+    rep.immutable = prop->immutable;
-+    rep.fromClient = prop->fromClient;
-+    if (client->swapped)
-+    {
-+        int n;
-+        swaps (&rep.sequenceNumber, n);
-+        swapl (&rep.length, n);
-+    }
-+    WriteReplyToClient (client, sizeof (xQueryDevicePropertyReply), &rep);
-+    if (prop->num_valid)
-+    {
-+        client->pSwapReplyFunc = (ReplySwapPtr)Swap32Write;
-+        WriteSwappedDataToClient(client, prop->num_valid * sizeof(INT32),
-+                                 prop->valid_values);
-+    }
-+    return(client->noClientException);
-+}
-+
-+int
-+ProcXConfigureDeviceProperty (ClientPtr client)
-+{
-+    REQUEST(xConfigureDevicePropertyReq);
-+    DeviceIntPtr        dev;
-+    int                 num_valid;
-+    int                 rc;
-+
-+    REQUEST_AT_LEAST_SIZE(xConfigureDevicePropertyReq);
-+
-+    rc = dixLookupDevice (&dev, stuff->deviceid, client, DixReadAccess);
-+
-+    if (rc != Success)
-+        return rc;
-+
-+    num_valid = stuff->length - (sizeof (xConfigureDevicePropertyReq) >> 2);
-+    return XIConfigureDeviceProperty (dev, stuff->property,
-+                                      stuff->pending, stuff->range,
-+                                      FALSE, num_valid,
-+                                      (INT32 *) (stuff + 1));
-+}
-+
-+int
 +ProcXChangeDeviceProperty (ClientPtr client)
 +{
 +    REQUEST(xChangeDevicePropertyReq);
@@ -759,9 +712,10 @@ index 0000000..85a3caa
 +
 +    rc = XIChangeDeviceProperty(dev, stuff->property,
 +                                 stuff->type, (int)format,
-+                                 (int)mode, len, (pointer)&stuff[1], TRUE,
-+                                 TRUE, TRUE);
++                                 (int)mode, len, (pointer)&stuff[1], TRUE);
 +
++    if (rc != Success)
++        client->errorValue = stuff->property;
 +    return rc;
 +}
 +
@@ -783,7 +737,6 @@ index 0000000..85a3caa
 +        client->errorValue = stuff->property;
 +        return (BadAtom);
 +    }
-+
 +
 +    rc = XIDeleteDeviceProperty(dev, stuff->property, TRUE);
 +    return rc;
@@ -844,12 +797,12 @@ index 0000000..85a3caa
 +        return(client->noClientException);
 +    }
 +
-+    if (prop->immutable && stuff->delete)
-+        return BadAccess;
-+
-+    prop_value = XIGetDeviceProperty(dev, stuff->property, stuff->pending);
-+    if (!prop_value)
-+        return BadAtom;
++    rc = XIGetDeviceProperty(dev, stuff->property, &prop_value);
++    if (rc != Success)
++    {
++        client->errorValue = stuff->property;
++        return rc;
++    }
 +
 +    /* If the request type and actual type don't match. Return the
 +    property information, but not the data. */
@@ -938,26 +891,6 @@ index 0000000..85a3caa
 +}
 +
 +int
-+SProcXQueryDeviceProperty (ClientPtr client)
-+{
-+    REQUEST(xQueryDevicePropertyReq);
-+
-+    REQUEST_SIZE_MATCH(xQueryDevicePropertyReq);
-+    (void) stuff;
-+    return BadImplementation;
-+}
-+
-+int
-+SProcXConfigureDeviceProperty (ClientPtr client)
-+{
-+    REQUEST(xConfigureDevicePropertyReq);
-+
-+    REQUEST_SIZE_MATCH(xConfigureDevicePropertyReq);
-+    (void) stuff;
-+    return BadImplementation;
-+}
-+
-+int
 +SProcXChangeDeviceProperty (ClientPtr client)
 +{
 +    REQUEST(xChangeDevicePropertyReq);
@@ -987,12 +920,40 @@ index 0000000..85a3caa
 +    return BadImplementation;
 +}
 +
-diff --git a/Xi/xiproperty.h b/Xi/xiproperty.h
-new file mode 100644
-index 0000000..e31cdad
---- /dev/null
-+++ b/Xi/xiproperty.h
-@@ -0,0 +1,43 @@
++/* Reply swapping */
++
++void
++SRepXListDeviceProperties(ClientPtr client, int size,
++                          xListDevicePropertiesReply *rep)
++{
++    char n;
++    swaps(&rep->sequenceNumber, n);
++    swapl(&rep->length, n);
++    swaps(&rep->nAtoms, n);
++    /* properties will be swapped later, see ProcXListDeviceProperties */
++    WriteToClient(client, size, (char*)rep);
++}
++
++void
++SRepXGetDeviceProperty(ClientPtr client, int size,
++                       xGetDevicePropertyReply *rep)
++{
++    char n;
++
++    swaps(&rep->sequenceNumber, n);
++    swapl(&rep->length, n);
++    swapl(&rep->propertyType, n);
++    swapl(&rep->bytesAfter, n);
++    swapl(&rep->nItems, n);
++    /* data will be swapped, see ProcXGetDeviceProperty */
++    WriteToClient(client, size, (char*)rep);
++}
++
+Index: xorg-server/Xi/xiproperty.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/Xi/xiproperty.h	2008-09-27 00:32:51.000000000 +0300
+@@ -0,0 +1,49 @@
 +/*
 + * Copyright © 2008 Peter Hutterer
 + *
@@ -1022,45 +983,124 @@ index 0000000..e31cdad
 +#define XIPROPERTY_C
 +
 +int ProcXListDeviceProperties     (ClientPtr client);
-+int ProcXQueryDeviceProperty      (ClientPtr client);
-+int ProcXConfigureDeviceProperty  (ClientPtr client);
 +int ProcXChangeDeviceProperty     (ClientPtr client);
 +int ProcXDeleteDeviceProperty     (ClientPtr client);
 +int ProcXGetDeviceProperty        (ClientPtr client);
 +
++/* request swapping */
 +int SProcXListDeviceProperties    (ClientPtr client);
-+int SProcXQueryDeviceProperty     (ClientPtr client);
-+int SProcXConfigureDeviceProperty (ClientPtr client);
 +int SProcXChangeDeviceProperty    (ClientPtr client);
 +int SProcXDeleteDeviceProperty    (ClientPtr client);
 +int SProcXGetDeviceProperty       (ClientPtr client);
 +
++/* reply swapping */
++
++void SRepXListDeviceProperties(ClientPtr client, int size,
++                               xListDevicePropertiesReply *rep);
++void SRepXGetDeviceProperty(ClientPtr client, int size,
++                            xGetDevicePropertyReply *rep);
++
++void XIInitKnownProperties(void);
++
 +#endif /* XIPROPERTY_C */
-diff --git a/dix/devices.c b/dix/devices.c
-index 5a726af..3c8e4ad 100644
---- a/dix/devices.c
-+++ b/dix/devices.c
-@@ -80,6 +80,7 @@ SOFTWARE.
+Index: xorg-server/dix/devices.c
+===================================================================
+--- xorg-server.orig/dix/devices.c	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/dix/devices.c	2008-09-27 00:32:51.000000000 +0300
+@@ -57,6 +57,7 @@
+ #define NEED_EVENTS
+ #define NEED_REPLIES
+ #include <X11/Xproto.h>
++#include <X11/Xatom.h>
+ #include "windowstr.h"
+ #include "inputstr.h"
+ #include "scrnintstr.h"
+@@ -80,6 +81,8 @@
  #include <X11/extensions/XIproto.h>
  #include "exglobals.h"
  #include "exevents.h"
 +#include "xiproperty.h"
++#include "xserver-properties.h"
  
  /** @file
   * This file handles input device-related stuff.
-@@ -155,6 +156,11 @@ AddInputDevice(DeviceProc deviceProc, Bool autoStart)
+@@ -87,6 +90,29 @@
+ 
+ DevPrivateKey CoreDevicePrivateKey = &CoreDevicePrivateKey;
+ 
++
++/**
++ * DIX property handler.
++ */
++static int
++DeviceSetProperty(DeviceIntPtr dev, Atom property, XIPropertyValuePtr prop)
++{
++    if (property == XIGetKnownProperty(XI_PROP_ENABLED))
++    {
++        if (prop->format != 8 || prop->type != XA_INTEGER || prop->size != 1)
++            return BadValue;
++
++        if ((*((CARD8*)prop->data)) && !dev->enabled)
++            EnableDevice(dev);
++        else if (!(*((CARD8*)prop->data)) && dev->enabled)
++            DisableDevice(dev);
++    }
++
++    return Success;
++}
++
++
++
+ /**
+  * Create a new input device and init it to sane values. The device is added
+  * to the server's off_devices list.
+@@ -155,6 +181,10 @@
      dev->inited = FALSE;
      dev->enabled = FALSE;
  
 +    /* device properties */
 +    dev->properties.properties = NULL;
-+    dev->properties.pendingProperties = FALSE;
 +    dev->properties.handlers = NULL;
 +
      /*  security creation/labeling check
       */
      if (XaceHook(XACE_DEVICE_ACCESS, serverClient, dev, DixCreateAccess)) {
-@@ -515,6 +521,8 @@ CloseDevice(DeviceIntPtr dev)
+@@ -169,6 +199,12 @@
+     *prev = dev;
+     dev->next = NULL;
+ 
++    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_ENABLED),
++                           XA_INTEGER, 8, PropModeReplace, 1, &dev->enabled,
++                           FALSE);
++    XISetDevicePropertyDeletable(dev, XIGetKnownProperty(XI_PROP_ENABLED), FALSE);
++    XIRegisterPropertyHandler(dev, DeviceSetProperty, NULL, NULL);
++
+     return dev;
+ }
+ 
+@@ -206,6 +242,10 @@
+     *prev = dev;
+     dev->next = NULL;
+ 
++    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_ENABLED),
++                           XA_INTEGER, 8, PropModeReplace, 1, &dev->enabled,
++                           TRUE);
++
+     ev.type = DevicePresenceNotify;
+     ev.time = currentTime.milliseconds;
+     ev.devchange = DeviceEnabled;
+@@ -243,6 +283,10 @@
+     dev->next = inputInfo.off_devices;
+     inputInfo.off_devices = dev;
+ 
++    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_ENABLED),
++                           XA_INTEGER, 8, PropModeReplace, 1, &dev->enabled,
++                           TRUE);
++
+     ev.type = DevicePresenceNotify;
+     ev.time = currentTime.milliseconds;
+     ev.devchange = DeviceDisabled;
+@@ -515,6 +559,8 @@
      BellFeedbackPtr b, bnext;
      LedFeedbackPtr l, lnext;
  
@@ -1069,11 +1109,11 @@ index 5a726af..3c8e4ad 100644
      if (dev->inited)
  	(void)(*dev->deviceProc)(dev, DEVICE_CLOSE);
  
-diff --git a/include/exevents.h b/include/exevents.h
-index 0892f4d..6d6f1e8 100644
---- a/include/exevents.h
-+++ b/include/exevents.h
-@@ -173,10 +173,69 @@ extern int DeviceEventSuppressForWindow(
+Index: xorg-server/include/exevents.h
+===================================================================
+--- xorg-server.orig/include/exevents.h	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/include/exevents.h	2008-09-27 00:32:51.000000000 +0300
+@@ -173,10 +173,64 @@
  	Mask                   /* mask */,
  	int                    /* maskndx */);
  
@@ -1103,39 +1143,30 @@ index 0892f4d..6d6f1e8 100644
 +        int                     /* mode*/,
 +        unsigned long           /* len*/,
 +        pointer                 /* value*/,
-+        Bool                    /* sendevent*/,
-+        Bool                    /* pending*/,
-+        Bool                    /* fromClient */
++        Bool                    /* sendevent*/
 +        );
 +
-+extern XIPropertyPtr XIQueryDeviceProperty(
-+        DeviceIntPtr            /* dev */,
-+        Atom                    /* property */
-+);
-+
-+extern XIPropertyValuePtr XIGetDeviceProperty(
++extern int XIGetDeviceProperty(
 +        DeviceIntPtr            /* dev */,
 +        Atom                    /* property */,
-+        Bool                    /* pending */
++        XIPropertyValuePtr*     /* value */
 +);
 +
-+extern int XIConfigureDeviceProperty(
++extern int XISetDevicePropertyDeletable(
 +        DeviceIntPtr            /* dev */,
 +        Atom                    /* property */,
-+        Bool                    /* pending */,
-+        Bool                    /* range */,
-+        Bool                    /* immutable */,
-+        int                     /* num_values */,
-+        INT32*                  /* values */
++        Bool                    /* deletable */
 +);
 +
 +extern long XIRegisterPropertyHandler(
 +        DeviceIntPtr         dev,
-+        Bool (*SetProperty) (DeviceIntPtr dev,
++        int (*SetProperty) (DeviceIntPtr dev,
 +                             Atom property,
 +                             XIPropertyValuePtr prop),
-+        Bool (*GetProperty) (DeviceIntPtr dev,
-+                             Atom property)
++        int (*GetProperty) (DeviceIntPtr dev,
++                             Atom property),
++        int (*DeleteProperty) (DeviceIntPtr dev,
++                               Atom property)
 +);
 +
 +extern void XIUnRegisterPropertyHandler(
@@ -1143,12 +1174,16 @@ index 0892f4d..6d6f1e8 100644
 +        long                  id
 +);
 +
++extern Atom XIGetKnownProperty(
++        char*                 name
++);
++
  #endif /* EXEVENTS_H */
-diff --git a/include/inputstr.h b/include/inputstr.h
-index b1f9856..e520d5e 100644
---- a/include/inputstr.h
-+++ b/include/inputstr.h
-@@ -266,6 +266,47 @@ typedef struct _LedFeedbackClassRec {
+Index: xorg-server/include/inputstr.h
+===================================================================
+--- xorg-server.orig/include/inputstr.h	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/include/inputstr.h	2008-09-27 00:32:51.000000000 +0300
+@@ -266,6 +266,41 @@
  #endif
  } LedFeedbackClassRec;
  
@@ -1165,18 +1200,10 @@ index b1f9856..e520d5e 100644
 +typedef struct _XIProperty
 +{
 +    struct _XIProperty   *next;
-+    Atom                  propertyName;
-+    Bool                  is_pending;
-+    Bool                  range;
-+    Bool                  immutable;
-+    Bool                  fromClient;       /* created by client or driver/server */
-+    int                   num_valid;
-+    INT32                 *valid_values;
-+    XIPropertyValueRec    current,
-+                          pending;
++    Atom                 propertyName;
++    BOOL                 deletable;    /* clients can delete this prop? */
++    XIPropertyValueRec   value;
 +} XIPropertyRec;
-+
-+
 +
 +typedef XIPropertyRec      *XIPropertyPtr;
 +typedef XIPropertyValueRec *XIPropertyValuePtr;
@@ -1186,17 +1213,19 @@ index b1f9856..e520d5e 100644
 +{
 +    struct _XIPropertyHandler* next;
 +    long id;
-+    Bool (*SetProperty) (DeviceIntPtr dev,
++    int (*SetProperty) (DeviceIntPtr dev,
 +                         Atom property,
 +                         XIPropertyValuePtr prop);
-+    Bool (*GetProperty) (DeviceIntPtr dev,
++    int (*GetProperty) (DeviceIntPtr dev,
 +                         Atom property);
++    int (*DeleteProperty) (DeviceIntPtr dev,
++                           Atom property);
 +} XIPropertyHandler, *XIPropertyHandlerPtr;
 +
  /* states for devices */
  
  #define NOT_GRABBED		0
-@@ -332,6 +373,13 @@ typedef struct _DeviceIntRec {
+@@ -332,6 +367,12 @@
      PrivateRec		*devPrivates;
      int			nPrivates;
      DeviceUnwrapProc    unwrapProc;
@@ -1204,12 +1233,57 @@ index b1f9856..e520d5e 100644
 +    /* Input device property handling. */
 +    struct {
 +        XIPropertyPtr   properties;
-+        Bool            pendingProperties;
 +        XIPropertyHandlerPtr handlers; /* NULL-terminated */
 +    } properties;
  } DeviceIntRec;
  
  typedef struct {
--- 
-1.5.5.1
-
+Index: xorg-server/include/xserver-properties.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/include/xserver-properties.h	2008-09-27 00:32:51.000000000 +0300
+@@ -0,0 +1,32 @@
++/*
++ * Copyright 2008 Red Hat, Inc.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software")
++ * to deal in the software without restriction, including without limitation
++ * on the rights to use, copy, modify, merge, publish, distribute, sub
++ * license, and/or sell copies of the Software, and to permit persons to whom
++ * them Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the next
++ * paragraph) shall be included in all copies or substantial portions of the
++ * Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTIBILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
++ * THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
++ * IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF OR IN
++ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++ */
++
++
++/* Properties managed by the server. */
++
++#ifndef _XSERVER_PROPERTIES_H_
++#define _XSERVER_PROPERTIES_H_
++
++/* BOOL. 0 - device disabled, 1 - device enabled */
++#define XI_PROP_ENABLED      "Device Enabled"
++
++#endif
+Index: xorg-server/include/Makefile.am
+===================================================================
+--- xorg-server.orig/include/Makefile.am	2008-09-27 00:32:44.000000000 +0300
++++ xorg-server/include/Makefile.am	2008-09-27 00:32:51.000000000 +0300
+@@ -53,6 +53,7 @@
+ 	xkbfile.h	\
+ 	xkbsrv.h	\
+ 	xkbstr.h	\
++	xserver-properties.h \
+ 	xorg-server.h
+ endif
+ 
