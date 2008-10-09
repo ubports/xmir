@@ -4,8 +4,11 @@ xorg-server (2:1.5.1-1ubuntu3) UNRELEASED; urgency=low
     match the current version in master (final API for XI 1.5).
     (LP: #274728)
   * Bump the build-dep on x11proto-input-dev and libxi-dev.
+  * Bump the serverminver because of newer properties API.
+  * Add Breaks against current synaptics and evdev, since they use the old
+    API and need to be updated with the server.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 29 Sep 2008 09:30:04 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 09 Oct 2008 14:18:23 +0300
 
 xorg-server (2:1.5.1-1ubuntu2) intrepid; urgency=low
 
