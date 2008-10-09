@@ -1,7 +1,7 @@
 Index: xorg-server/Xi/Makefile.am
 ===================================================================
---- xorg-server.orig/Xi/Makefile.am	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/Xi/Makefile.am	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/Xi/Makefile.am	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/Xi/Makefile.am	2008-10-09 12:45:11.000000000 +0300
 @@ -75,6 +75,8 @@
  	ungrdevb.c \
  	ungrdevb.h \
@@ -14,8 +14,8 @@ Index: xorg-server/Xi/Makefile.am
  EXTRA_DIST = stubs.c
 Index: xorg-server/Xi/exglobals.h
 ===================================================================
---- xorg-server.orig/Xi/exglobals.h	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/Xi/exglobals.h	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/Xi/exglobals.h	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/Xi/exglobals.h	2008-10-09 12:45:11.000000000 +0300
 @@ -50,6 +50,7 @@
  extern Mask DeviceButtonGrabMask;
  extern Mask DeviceButtonMotionMask;
@@ -34,8 +34,8 @@ Index: xorg-server/Xi/exglobals.h
  
 Index: xorg-server/Xi/extinit.c
 ===================================================================
---- xorg-server.orig/Xi/extinit.c	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/Xi/extinit.c	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/Xi/extinit.c	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/Xi/extinit.c	2008-10-09 12:45:11.000000000 +0300
 @@ -109,6 +109,8 @@
  #include "ungrdev.h"
  #include "ungrdevb.h"
@@ -175,8 +175,8 @@ Index: xorg-server/Xi/extinit.c
 Index: xorg-server/Xi/xiproperty.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/Xi/xiproperty.c	2008-09-27 00:36:39.000000000 +0300
-@@ -0,0 +1,772 @@
++++ xorg-server/Xi/xiproperty.c	2008-10-09 13:07:10.000000000 +0300
+@@ -0,0 +1,773 @@
 +/*
 + * Copyright © 2006 Keith Packard
 + * Copyright © 2008 Peter Hutterer
@@ -596,6 +596,7 @@ Index: xorg-server/Xi/xiproperty.c
 +                    return rc;
 +                }
 +            }
++	    handler = handler->next;
 +        }
 +    }
 +    *value = &prop->value;
@@ -952,7 +953,7 @@ Index: xorg-server/Xi/xiproperty.c
 Index: xorg-server/Xi/xiproperty.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/Xi/xiproperty.h	2008-09-27 00:32:51.000000000 +0300
++++ xorg-server/Xi/xiproperty.h	2008-10-09 12:45:11.000000000 +0300
 @@ -0,0 +1,49 @@
 +/*
 + * Copyright © 2008 Peter Hutterer
@@ -1005,8 +1006,8 @@ Index: xorg-server/Xi/xiproperty.h
 +#endif /* XIPROPERTY_C */
 Index: xorg-server/dix/devices.c
 ===================================================================
---- xorg-server.orig/dix/devices.c	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/dix/devices.c	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/dix/devices.c	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/dix/devices.c	2008-10-09 12:45:11.000000000 +0300
 @@ -57,6 +57,7 @@
  #define NEED_EVENTS
  #define NEED_REPLIES
@@ -1111,8 +1112,8 @@ Index: xorg-server/dix/devices.c
  
 Index: xorg-server/include/exevents.h
 ===================================================================
---- xorg-server.orig/include/exevents.h	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/include/exevents.h	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/include/exevents.h	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/include/exevents.h	2008-10-09 12:45:11.000000000 +0300
 @@ -173,10 +173,64 @@
  	Mask                   /* mask */,
  	int                    /* maskndx */);
@@ -1181,8 +1182,8 @@ Index: xorg-server/include/exevents.h
  #endif /* EXEVENTS_H */
 Index: xorg-server/include/inputstr.h
 ===================================================================
---- xorg-server.orig/include/inputstr.h	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/include/inputstr.h	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/include/inputstr.h	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/include/inputstr.h	2008-10-09 12:45:11.000000000 +0300
 @@ -266,6 +266,41 @@
  #endif
  } LedFeedbackClassRec;
@@ -1241,7 +1242,7 @@ Index: xorg-server/include/inputstr.h
 Index: xorg-server/include/xserver-properties.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/include/xserver-properties.h	2008-09-27 00:32:51.000000000 +0300
++++ xorg-server/include/xserver-properties.h	2008-10-09 12:45:11.000000000 +0300
 @@ -0,0 +1,32 @@
 +/*
 + * Copyright 2008 Red Hat, Inc.
@@ -1277,8 +1278,8 @@ Index: xorg-server/include/xserver-properties.h
 +#endif
 Index: xorg-server/include/Makefile.am
 ===================================================================
---- xorg-server.orig/include/Makefile.am	2008-09-27 00:32:44.000000000 +0300
-+++ xorg-server/include/Makefile.am	2008-09-27 00:32:51.000000000 +0300
+--- xorg-server.orig/include/Makefile.am	2008-10-09 12:45:05.000000000 +0300
++++ xorg-server/include/Makefile.am	2008-10-09 12:45:11.000000000 +0300
 @@ -53,6 +53,7 @@
  	xkbfile.h	\
  	xkbsrv.h	\
