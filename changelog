@@ -1,5 +1,28 @@
 xorg-server (2:1.5.1-1ubuntu3) UNRELEASED; urgency=low
 
+  * Pull upstream changes from server-1.5-branch including b595b65e:
+    - Fix GKVE with key_code > 255 (LP: #274203) 
+    - DGA: Fix ProcXF86DGASetViewPort for missing support in driver.
+      Fixes a segfault when trying to activate a DGA mode without
+      checking whether DGA modesetting is at all possible.
+    - Check nextEnabledOutput()'s return in bestModeForAspect()
+      In case no enabled outputs, we will reference wrong index of
+      output array.
+    - int10: Fix a nasty memory leak.
+    - int10: Don't warn when scanning for devices we don't have.
+      Some BIOSes (hi XGI!) will attempt to enumerate the PCI bus by
+      asking for the config space of every possible device number.
+      This despite perfectly functional BIOS methods to enumerate the
+      bus exactly.
+    - int10: Remove useless check.
+      If you have more than one PCI device with the same d/b/d/f, you're
+      already in trouble.
+    - http://bugs.freedesktop.org/show_bug.cgi?id=14373
+      xkb: squash canonical types into explicit ones on core reconstruction.
+      xkb: fix core keyboard map generation.
+    - xkb: fix use of uninitialized variable.
+    - Remove usage of mfbChangeWindowAttributes missed in e4d11e58c...
+    - Only build dri2 when DRI2 is enabled.
   * Merge patches 138 and 139 into 137, and update the properties API to
     match the current version in master (final API for XI 1.5).
     (LP: #274728)
@@ -8,7 +31,7 @@ xorg-server (2:1.5.1-1ubuntu3) UNRELEASED; urgency=low
   * Add Breaks against current synaptics and evdev, since they use the old
     API and need to be updated with the server.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 09 Oct 2008 14:18:23 +0300
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 10 Oct 2008 11:00:21 +0300
 
 xorg-server (2:1.5.1-1ubuntu2) intrepid; urgency=low
 
