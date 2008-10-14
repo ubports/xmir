@@ -1,6 +1,7 @@
 xorg-server (2:1.5.2-1ubuntu1) intrepid; urgency=low
 
   * Merge from debian-experimental.
+  * Update patch 142_psb_auto to try vesa if psb fails; thanks Oliver Grawert.
 
  -- Loic Minier <lool@dooz.org>  Tue, 14 Oct 2008 23:03:06 +0200
 
