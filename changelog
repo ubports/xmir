@@ -1,3 +1,25 @@
+xorg-server (2:1.5.2-1ubuntu1) intrepid; urgency=low
+
+  * Merge from debian-experimental.
+
+ -- Loic Minier <lool@dooz.org>  Tue, 14 Oct 2008 23:03:06 +0200
+
+xorg-server (2:1.5.2-1) experimental; urgency=low
+
+  * New upstream bugfix release.
+  * debian/rules: define PCI_TXT_IDS_DIR to unbreak the pci id matching using
+    plain text files provided by drivers.
+  * Don't pass --with-serverconfig-path to configure, we only used to override
+    it for Xprint.
+  * Re-introduce the xserver-common package, containing
+    /usr/lib/xorg/protocol.txt and the Xserver(1) manpage for now.
+  * debian/rules: Use filter instead of findstring for noopt in
+    DEB_BUILD_OPTIONS.
+  * Remove obsolete conffile /etc/X11/xserver/SecurityPolicy on upgrades.
+  * Merge changes from 2:1.4.2-7.
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 11 Oct 2008 20:20:28 +0200
+
 xorg-server (2:1.5.1-1ubuntu3) intrepid; urgency=low
 
   * Pull upstream changes from server-1.5-branch including b595b65e:
@@ -46,13 +68,6 @@ xorg-server (2:1.5.1-1ubuntu1) intrepid; urgency=low
   * Merge with Debian experimental. (LP: #269388)
 
  -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 24 Sep 2008 19:33:34 +0300
-
-xorg-server (2:1.5.1-2) UNRELEASED; urgency=low
-
-  * debian/rules: define PCI_TXT_IDS_DIR to unbreak the pci id matching using
-    plain text files provided by drivers.
-
- -- Julien Cristau <jcristau@debian.org>  Thu, 25 Sep 2008 18:50:19 +0200
 
 xorg-server (2:1.5.1-1) experimental; urgency=low
 
@@ -418,6 +433,21 @@ xorg-server (2:1.4.99.901-1) experimental; urgency=low
     closes: #439764.
 
  -- Julien Cristau <jcristau@debian.org>  Fri, 14 Mar 2008 13:46:48 +0100
+
+xorg-server (2:1.4.2-7) unstable; urgency=low
+
+  * Update debian/copyright to the SGI Free Software License B, version 2.0.
+    It now mirrors the free X11 license used by X.Org.
+    http://www.sgi.com/company_info/newsroom/press_releases/2008/september/opengl.html
+  * Not closing bug#211765 for now, because GL/glx/glxext.c and
+    hw/dmx/glxProxy/glxext.c are covered by the GLX Public License, which is
+    still not free.  SGI has since released their code under FreeB, but that
+    doesn't necessarily apply to contributions from other people.  Hopefully
+    this can be cleared up soon, though.
+  * xvfb-run: append to $ERRORFILE instead of truncating it, so the error
+    output from Xvfb is not deleted when we run 'xauth remove'.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 30 Sep 2008 00:39:58 +0200
 
 xorg-server (2:1.4.2-6) unstable; urgency=low
 

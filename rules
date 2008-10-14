@@ -10,7 +10,7 @@
 include debian/xsfbs/xsfbs.mk
 
 CFLAGS = -Wall -g
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+ifneq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
 	CFLAGS += -O0
 else
 	CFLAGS += -O2
@@ -47,7 +47,6 @@ VENDOR = $(shell lsb_release -i -s)
 confflags += --disable-static \
 	     --enable-xorg \
 	     --with-default-font-path="/usr/share/fonts/X11/misc,/usr/share/fonts/X11/cyrillic,/usr/share/fonts/X11/100dpi/:unscaled,/usr/share/fonts/X11/75dpi/:unscaled,/usr/share/fonts/X11/Type1,/usr/share/fonts/X11/100dpi,/usr/share/fonts/X11/75dpi,/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType" \
-	     --with-serverconfig-path=/etc/X11/xserver \
 	     --enable-xtrap \
 	     --enable-glx-tls \
 	     --enable-dmx \
@@ -178,7 +177,13 @@ binary-arch: build install
 
 
 # Build architecture-independent files here
-binary-indep:
+binary-indep: build install
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-initial
+	dh_install -i --sourcedir=debian/tmp
+	dh_installdocs -i
+	dh_installchangelogs -i
+
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-deb
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
