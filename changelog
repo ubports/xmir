@@ -1,3 +1,9 @@
+xorg-server (2:1.5.2-1ubuntu2) UNRELEASED; urgency=low
+
+  * Update patch 142_psb_auto to also try psb and vesa for 0x8109.
+
+ -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 15:27:23 +0200
+
 xorg-server (2:1.5.2-1ubuntu1) intrepid; urgency=low
 
   * Merge from debian-experimental.
