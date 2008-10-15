@@ -1,10 +1,10 @@
-xorg-server (2:1.5.2-1ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.5.2-1ubuntu4) intrepid; urgency=low
 
   * Update patch 142_psb_auto to only try vesa, not even psb, as this requires
     the psb driver to be loadable, and it's not available anymore (and broken
     anyway).
 
- -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 18:13:37 +0200
+ -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 18:14:28 +0200
 
 xorg-server (2:1.5.2-1ubuntu3) intrepid; urgency=low
 
