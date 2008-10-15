@@ -1,6 +1,9 @@
 xorg-server (2:1.5.2-1ubuntu2) UNRELEASED; urgency=low
 
   * Update patch 142_psb_auto to also try psb and vesa for 0x8109.
+  * Apply and drop patch 123_no_composite_for_xvfb_run which was changing
+    files below debian/ (xvfb-run, to disable the Composite extension by
+    default).
 
  -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 15:27:23 +0200
 
