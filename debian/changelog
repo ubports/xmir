@@ -1,9 +1,9 @@
-xorg-server (2:1.5.2-1ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.5.2-1ubuntu3) intrepid; urgency=low
 
   * Shut up rmdir error when trying to remove dirs; this might confuse
     debconf.
 
- -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 17:56:39 +0200
+ -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 17:57:13 +0200
 
 xorg-server (2:1.5.2-1ubuntu2) intrepid; urgency=low
 
