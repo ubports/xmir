@@ -16,7 +16,7 @@ SERVERNUM=99
 AUTHFILE=
 ERRORFILE=/dev/null
 STARTWAIT=3
-XVFBARGS="-screen 0 640x480x8"
+XVFBARGS="-screen 0 640x480x8 -extension Composite"
 LISTENTCP="-nolisten tcp"
 XAUTHPROTO=.
 
