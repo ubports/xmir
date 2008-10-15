@@ -1,3 +1,10 @@
+xorg-server (2:1.5.2-1ubuntu3) UNRELEASED; urgency=low
+
+  * Shut up rmdir error when trying to remove dirs; this might confuse
+    debconf.
+
+ -- Loic Minier <lool@dooz.org>  Wed, 15 Oct 2008 17:56:39 +0200
+
 xorg-server (2:1.5.2-1ubuntu2) intrepid; urgency=low
 
   * Update patch 142_psb_auto to also try psb and vesa for 0x8109.
