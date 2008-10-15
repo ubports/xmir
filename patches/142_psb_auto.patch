@@ -7,7 +7,7 @@ Bryce Harrington  23-Aug-2007
 
 --- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c
 +++ xorg-server/hw/xfree86/common/xf86AutoConfig.c
-@@ -166,11 +166,18 @@
+@@ -166,11 +166,17 @@
  	case 0x102c:		    driverList[0] = "chips"; break;
  	case 0x1013:		    driverList[0] = "cirrus"; break;
  	case 0x8086:
@@ -21,8 +21,7 @@ Bryce Harrington  23-Aug-2007
 +		case 0x00d1: case 0x7800:
 +		    driverList[0] = "i740"; break;
 +		case 0x8108: case 0x8109:
-+		    driverList[0] = "psb";
-+		    driverList[1] = "vesa";
++		    driverList[0] = "vesa"; /* should be psb but broken */
 +		    break;
 +		default:
 +		    driverList[0] = "intel";
