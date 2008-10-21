@@ -1,8 +1,8 @@
-
+Binary files patched/.git/index and working/.git/index differ
 diff -Nurp patched/hw/xfree86/common/xf86AutoConfig.c working/hw/xfree86/common/xf86AutoConfig.c
---- patched/hw/xfree86/common/xf86AutoConfig.c	2008-10-17 19:48:15.000000000 -0700
-+++ working/hw/xfree86/common/xf86AutoConfig.c	2008-10-17 19:43:19.000000000 -0700
-@@ -422,6 +422,20 @@ matchDriverFromFiles (char** matches, ui
+--- patched/hw/xfree86/common/xf86AutoConfig.c	2008-10-21 09:49:35.000000000 -0700
++++ working/hw/xfree86/common/xf86AutoConfig.c	2008-10-21 09:59:08.000000000 -0700
+@@ -422,6 +422,22 @@ matchDriverFromFiles (char** matches, ui
          }
          direntry = readdir(idsdir);
      }
@@ -10,14 +10,16 @@ diff -Nurp patched/hw/xfree86/common/xf86AutoConfig.c working/hw/xfree86/common/
 +    if (matches[0] == NULL) {
 +        xf86Msg(X_INFO, "No matches found for this device in %s\n",  PCI_TXT_IDS_PATH);
 +
-+        matches[0] = (char*)xalloc(sizeof(char) * 5);
-+        if (!matches[0]) {
-+            xf86Msg(X_ERROR, "Could not allocate space for the module name. Exiting.\n");
-+            goto end;
-+        }
-+
++#if defined(__i386__) || defined(__amd64__) || defined(__hurd__)
 +        xf86Msg(X_DEFAULT, "Registering 'vesa' as fallback\n");
-+        strncpy(matches[0], "vesa", 5);
++        matches[0] = xnfstrdup("vesa");
++#elif defined(__sparc__) && !defined(sun)
++        xf86Msg(X_DEFAULT, "Registering 'sunffb' as fallback\n");
++        matches[0] = xnfstrdup("sunffb");
++#else
++        xf86Msg(X_DEFAULT, "Registering 'fbdev' as fallback\n");
++        matches[0] = xnfstrdup("fbdev");
++#endif
 +    }
 +
   end:
