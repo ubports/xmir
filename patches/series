@@ -15,3 +15,4 @@
 140_quell_acpi_errmsgs.patch
 141_improved_driver_selection.patch
 142_psb_auto.patch
+150_no_visibility_notify_on_unredirect.patch
