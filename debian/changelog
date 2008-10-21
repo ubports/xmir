@@ -1,3 +1,11 @@
+xorg-server (2:1.5.2-2ubuntu1) intrepid; urgency=low
+
+  * debian/patches/150_no_visibility_notify_on_unredirect.patch
+    - do not sent VisibilityNotify events when MapUnmapEvents
+      are disabled (LP: #278112)
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Sat, 18 Oct 2008 00:05:30 +0200
+
 xorg-server (2:1.5.2-1ubuntu4) intrepid; urgency=low
 
   * Update patch 142_psb_auto to only try vesa, not even psb, as this requires
