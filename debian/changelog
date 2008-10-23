@@ -1,13 +1,12 @@
-xorg-server (2:1.5.2-2ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.5.2-2ubuntu2) intrepid; urgency=low
 
-   [ Bryce Harrington ]
    * 143_default_to_vesa.patch:  If no matching driver is found in the
      .ids files, set "vesa" as a fallback default, otherwise a driver
      may be selected regardless of whether it actually provides support
      for the chipset by videoPtrToDriverList() based on its vendor id.
      (LP: #261977)
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 21 Oct 2008 11:01:16 +0300
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 23 Oct 2008 06:21:18 -0700
 
 xorg-server (2:1.5.2-2ubuntu1) intrepid; urgency=low
 
