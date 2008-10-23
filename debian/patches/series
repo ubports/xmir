@@ -12,6 +12,7 @@
 135_rethrow_signals.patch
 136_fedora_force_switchcorekeyboard_for_evdev.patch
 137_add_device_property_support.patch
+138_look_at_all_bytes_of_dev_enabled.diff
 140_quell_acpi_errmsgs.patch
 141_improved_driver_selection.patch
 142_psb_auto.patch

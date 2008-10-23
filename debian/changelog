@@ -1,3 +1,13 @@
+xorg-server (2:1.5.2-2ubuntu3) intrepid; urgency=low
+
+  * 138_look_at_all_bytes_of_dev_enabled.diff:  dev->enabled has type
+    Bool, which is typedef'd to int, but is used in comparisons with
+    CARD8 data, which gives incorrect logic on big endian systems,
+    causing failure to initialize keyboard and mouse.
+    (LP: #281610)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 23 Oct 2008 07:31:47 -0700
+
 xorg-server (2:1.5.2-2ubuntu2) intrepid; urgency=low
 
    * 143_default_to_vesa.patch:  If no matching driver is found in the
