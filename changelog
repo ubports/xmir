@@ -1,3 +1,19 @@
+xorg-server (2:1.5.3-1) experimental; urgency=low
+
+  [ Loic Minier ]
+  * Shut up rmdir error when trying to remove dirs; this might confuse
+    debconf.
+
+  [ Julien Cristau ]
+  * New upstream release.
+  * Fix infinite loop on server reset when swrast_dri.so is missing.  Only
+    push swrast on the glx provider stack on first generation, so we don't
+    turn the stack into a circular list (closes: #500287).
+  * Enable the record extension (closes: #504303).
+  * Merge changes from 2:1.4.2-8.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 11 Nov 2008 23:17:14 +0100
+
 xorg-server (2:1.5.2-2ubuntu3) intrepid; urgency=low
 
   * 138_look_at_all_bytes_of_dev_enabled.diff:  dev->enabled has type
@@ -489,6 +505,17 @@ xorg-server (2:1.4.99.901-1) experimental; urgency=low
     closes: #439764.
 
  -- Julien Cristau <jcristau@debian.org>  Fri, 14 Mar 2008 13:46:48 +0100
+
+xorg-server (2:1.4.2-8) unstable; urgency=low
+
+  * Add patch from Petr Salinger to fix PCI domain support on kfreebsd
+    (closes: #499501).
+  * xfree86: xf86SetDepthBpp needs to respect the driver's depth24flags.
+    Instead of forcing a 32bpp framebuffer, we pick a value that the driver
+    actually supports (closes: #504819, #486925); cherry-picked from upstream
+    git.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 11 Nov 2008 20:46:52 +0100
 
 xorg-server (2:1.4.2-7) unstable; urgency=low
 
