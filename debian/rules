@@ -51,7 +51,6 @@ confflags += --disable-static \
 	     --enable-record \
 	     --enable-glx-tls \
 	     --enable-dmx \
-	     --enable-record \
 	     --enable-vfb \
 	     --enable-kdrive \
 	     --enable-xephyr \

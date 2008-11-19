@@ -1,3 +1,71 @@
+xorg-server (2:1.5.3-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from debian-experimental, remaining changes:
+   + debian/control:
+    - x11proto-input-dev, libxi-dev build-deps bumped because of
+      input properties.
+    - Conflict with xserver-xorg-video-psb << 0.15.0-0ubuntu1~804um5
+      as these versions didn't have an ABI provide.
+    - Breaks old synaptics, evdev which didn't have properties.
+   + debian/patches:
+    - 100_xserver_exa_force_greedy.patch
+      Provide a mechanism for drivers to force greedy mode on.
+    - 101_fedora_xserver-1.3.0-document-fontpath-correctly.patch
+      Fixes document fontpaths shown in the man page.
+    - 102_ubuntu_sharevts_load_cpu.patch
+      Close console fd only when using --sharevts.
+    - 103_inputproto_1.4.3_is_fine.patch:
+      Don't require inputproto 1.4.4 in configure.ac.
+    - 107_fedora_dont_backfill_bg_none.patch
+      Disable backfilling of windows created with bg=none, which
+      would otherwise force a framebuffer readback.
+    - 110_fedora_no_move_damage.patch
+      Disable damage notifications on move for manually redirected windows.
+    - 121_only_switch_vt_when_active.diff
+      Add a check to prevent the X server from changing the VT when
+      killing GDM from the console.
+    - 135_rethrow_signals.patch
+      Currently Xorg "eats" its crash signals, issuing an error message
+      that it caught the signal and then aborts.  This patch raises the
+      signal it caught, so that subsequent crash handlers (i.e. apport)
+      can also catch and act on it.
+    - 136_fedora_force_switchcorekeyboard_for_evdev.patch
+      Allow clients to set the layout.
+    - 137_add_device_property_support.patch
+      Add support for input-device properties (XI 1.5).
+    - 138_look_at_all_bytes_of_dev_enabled.diff:  dev->enabled has type
+      Bool, which is typedef'd to int, but is used in comparisons with
+      CARD8 data, which gives incorrect logic on big endian systems,
+      causing failure to initialize keyboard and mouse.
+    - 140_quell_acpid_errmsgs.patch: Don't fill the server log with errors
+      from not being able to connect to acpid.
+    - 141_improved_driver_selection.patch
+      Allow returning multiple drivers to try for a given PCI id.
+      Also includes support for fallback drivers, but only when
+      not using an xorg.conf.
+    - 142_psb_auto.patch
+      Autoload vesa for the psb hardware, psb being broken currently.
+    - 143_default_to_vesa.patch:  If no matching driver is found in the
+      .ids files, set "vesa" as a fallback default, otherwise a driver
+      may be selected regardless of whether it actually provides support
+      for the chipset by videoPtrToDriverList() based on its vendor id.
+    - 150_no_visibility_notify_on_unredirect.patch
+      Do not sent VisibilityNotify events when MapUnmapEvents
+      are disabled
+   + debian/local/xvfb-run: disable the Composite-extension for xvfb.
+   + debian/serverminver: Bump the serverminver because of the newer
+     properties API.
+   + debian/rules:
+     Add --enable-xcsecurity --enable-appgroup. The SECURITY module was
+     disabled by default as part of the SELinux merge. However, we need
+     the security module for xauth on Kubuntu, else ubiquity fails.
+     (LP 247537)
+  * Changes done:
+    - debian/control: xfvb doesn't need to Depend on xauth, xfonts-base
+      anymore, Recommends are pulled in by default now.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 18 Nov 2008 13:44:58 +0200
+
 xorg-server (2:1.5.3-1) experimental; urgency=low
 
   [ Loic Minier ]
