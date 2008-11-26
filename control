@@ -1,7 +1,7 @@
 Source: xorg-server
 Section: x11
 Priority: optional
-Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Maintainer: Ubuntu X-SWAT <ubuntu-x@lists.ubuntu.com>
 XSBC-Original-Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
 Uploaders: David Nusinow <dnusinow@debian.org>, Steve Langasek <vorlon@debian.org>, Julien Cristau <jcristau@debian.org>, Drew Parsons <dparsons@debian.org>
 # all the Build-Depends up to x11proto-xf86-dri-dev are for the normal Xorg

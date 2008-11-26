@@ -1,4 +1,4 @@
-xorg-server (2:1.5.3-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.5.3-1ubuntu1) jaunty; urgency=low
 
   * Merge from debian-experimental, remaining changes:
    + debian/control:
@@ -64,7 +64,7 @@ xorg-server (2:1.5.3-1ubuntu1) UNRELEASED; urgency=low
     - debian/control: xfvb doesn't need to Depend on xauth, xfonts-base
       anymore, Recommends are pulled in by default now.
 
- -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 18 Nov 2008 13:44:58 +0200
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 26 Nov 2008 13:42:11 +0200
 
 xorg-server (2:1.5.3-1) experimental; urgency=low
 
