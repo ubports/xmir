@@ -35,13 +35,12 @@
 #include <stdlib.h>
 
 #include "exa_priv.h"
-#include <X11/fonts/fontstruct.h>
-#include "dixfontstr.h"
 #include "exa.h"
-#include "cw.h"
 
-DevPrivateKey exaScreenPrivateKey = &exaScreenPrivateKey;
-DevPrivateKey exaPixmapPrivateKey = &exaPixmapPrivateKey;
+static int exaScreenPrivateKeyIndex;
+DevPrivateKey exaScreenPrivateKey = &exaScreenPrivateKeyIndex;
+static int exaPixmapPrivateKeyIndex;
+DevPrivateKey exaPixmapPrivateKey = &exaPixmapPrivateKeyIndex;
 
 #ifdef MITSHM
 static ShmFuncs exaShmFuncs = { NULL, NULL };
@@ -165,7 +164,7 @@ exaPixmapDirty (PixmapPtr pPix, int x1, int y1, int x2, int y2)
     RegionPtr pDamageReg;
     RegionRec region;
 
-    if (!pExaPixmap)
+    if (!pExaPixmap || !pExaPixmap->pDamage)
 	return;
 	
     box.x1 = max(x1, 0);
@@ -325,6 +324,10 @@ exaCreatePixmap(ScreenPtr pScreen, int w, int h, int depth,
                                        paddedWidth, NULL);
         pExaPixmap->score = EXA_PIXMAP_SCORE_PINNED;
         pExaPixmap->fb_ptr = NULL;
+        pExaPixmap->pDamage = NULL;
+        pExaPixmap->sys_ptr = pPixmap->devPrivate.ptr;
+        pPixmap->devPrivate.ptr = NULL;
+
     } else {
         pExaPixmap->driverPriv = NULL;
         /* Scratch pixmaps may have w/h equal to zero, and may not be
@@ -349,21 +352,24 @@ exaCreatePixmap(ScreenPtr pScreen, int w, int h, int depth,
 	     fbDestroyPixmap(pPixmap);
 	     return NULL;
         }
+
+	/* Set up damage tracking */
+	pExaPixmap->pDamage = DamageCreate (NULL, NULL,
+					    DamageReportNone, TRUE,
+					    pScreen, pPixmap);
+
+	if (pExaPixmap->pDamage == NULL) {
+	    fbDestroyPixmap (pPixmap);
+	    return NULL;
+	}
+
+	DamageRegister (&pPixmap->drawable, pExaPixmap->pDamage);
+	/* This ensures that pending damage reflects the current operation. */
+	/* This is used by exa to optimize migration. */
+	DamageSetReportAfterOp (pExaPixmap->pDamage, TRUE);
     }
  
     pExaPixmap->area = NULL;
-
-    /* Set up damage tracking */
-    pExaPixmap->pDamage = DamageCreate (NULL, NULL, DamageReportNone, TRUE,
-					pScreen, pPixmap);
-
-    if (pExaPixmap->pDamage == NULL) {
-	fbDestroyPixmap (pPixmap);
-	return NULL;
-    }
-
-    DamageRegister (&pPixmap->drawable, pExaPixmap->pDamage);
-    DamageSetReportAfterOp (pExaPixmap->pDamage, TRUE);
 
     /* None of the pixmap bits are valid initially */
     REGION_NULL(pScreen, &pExaPixmap->validSys);
@@ -660,34 +666,25 @@ exaCreateGC (GCPtr pGC)
     return TRUE;
 }
 
-void
-exaPrepareAccessWindow(WindowPtr pWin)
-{
-    if (pWin->backgroundState == BackgroundPixmap) 
-        exaPrepareAccess(&pWin->background.pixmap->drawable, EXA_PREPARE_SRC);
-
-    if (pWin->borderIsPixel == FALSE)
-        exaPrepareAccess(&pWin->border.pixmap->drawable, EXA_PREPARE_SRC);
-}
-
-void
-exaFinishAccessWindow(WindowPtr pWin)
-{
-    if (pWin->backgroundState == BackgroundPixmap) 
-        exaFinishAccess(&pWin->background.pixmap->drawable, EXA_PREPARE_SRC);
-
-    if (pWin->borderIsPixel == FALSE)
-        exaFinishAccess(&pWin->border.pixmap->drawable, EXA_PREPARE_SRC);
-}
-
 static Bool
 exaChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 {
     Bool ret;
 
-    exaPrepareAccessWindow(pWin);
+    if ((mask & CWBackPixmap) && pWin->backgroundState == BackgroundPixmap) 
+        exaPrepareAccess(&pWin->background.pixmap->drawable, EXA_PREPARE_SRC);
+
+    if ((mask & CWBorderPixmap) && pWin->borderIsPixel == FALSE)
+        exaPrepareAccess(&pWin->border.pixmap->drawable, EXA_PREPARE_MASK);
+
     ret = fbChangeWindowAttributes(pWin, mask);
-    exaFinishAccessWindow(pWin);
+
+    if ((mask & CWBorderPixmap) && pWin->borderIsPixel == FALSE)
+        exaFinishAccess(&pWin->border.pixmap->drawable, EXA_PREPARE_MASK);
+
+    if ((mask & CWBackPixmap) && pWin->backgroundState == BackgroundPixmap) 
+        exaFinishAccess(&pWin->background.pixmap->drawable, EXA_PREPARE_SRC);
+
     return ret;
 }
 
@@ -741,6 +738,9 @@ exaCloseScreen(int i, ScreenPtr pScreen)
     PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
 #endif
 
+    if (ps->Glyphs == exaGlyphs)
+	exaGlyphsFini(pScreen);
+
     pScreen->CreateGC = pExaScr->SavedCreateGC;
     pScreen->CloseScreen = pExaScr->SavedCloseScreen;
     pScreen->GetImage = pExaScr->SavedGetImage;
@@ -754,7 +754,9 @@ exaCloseScreen(int i, ScreenPtr pScreen)
 #ifdef RENDER
     if (ps) {
 	ps->Composite = pExaScr->SavedComposite;
+	ps->Glyphs = pExaScr->SavedGlyphs;
 	ps->Trapezoids = pExaScr->SavedTrapezoids;
+	ps->Triangles = pExaScr->SavedTriangles;
 	ps->AddTraps = pExaScr->SavedAddTraps;
     }
 #endif
@@ -917,6 +919,11 @@ exaDriverInit (ScreenPtr		pScreen,
         pExaScr->SavedComposite = ps->Composite;
 	ps->Composite = exaComposite;
 
+	if (pScreenInfo->PrepareComposite) {
+	    pExaScr->SavedGlyphs = ps->Glyphs;
+	    ps->Glyphs = exaGlyphs;
+	}
+	
 	pExaScr->SavedTriangles = ps->Triangles;
 	ps->Triangles = exaTriangles;
 
@@ -977,6 +984,9 @@ exaDriverInit (ScreenPtr		pScreen,
 	    }
 	}
     }
+
+    if (ps->Glyphs == exaGlyphs)
+	exaGlyphsInit(pScreen);
 
     LogMessage(X_INFO, "EXA(%d): Driver registered support for the following"
 	       " operations:\n", pScreen->myNum);

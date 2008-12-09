@@ -744,21 +744,36 @@ typedef struct _ExaDriver {
 
 /** @} */
 
+/* in exa.c */
 ExaDriverPtr
 exaDriverAlloc(void);
 
 Bool
-exaDriverInit(ScreenPtr                pScreen,
+exaDriverInit(ScreenPtr      pScreen,
               ExaDriverPtr   pScreenInfo);
 
 void
-exaDriverFini(ScreenPtr                pScreen);
+exaDriverFini(ScreenPtr      pScreen);
 
 void
 exaMarkSync(ScreenPtr pScreen);
 void
 exaWaitSync(ScreenPtr pScreen);
 
+unsigned long
+exaGetPixmapOffset(PixmapPtr pPix);
+
+unsigned long
+exaGetPixmapPitch(PixmapPtr pPix);
+
+unsigned long
+exaGetPixmapSize(PixmapPtr pPix);
+
+void *
+exaGetPixmapDriverPrivate(PixmapPtr p);
+
+
+/* in exa_offscreen.c */
 ExaOffscreenArea *
 exaOffscreenAlloc(ScreenPtr pScreen, int size, int align,
                   Bool locked,
@@ -770,15 +785,6 @@ exaOffscreenFree(ScreenPtr pScreen, ExaOffscreenArea *area);
 
 void
 ExaOffscreenMarkUsed (PixmapPtr pPixmap);
-
-unsigned long
-exaGetPixmapOffset(PixmapPtr pPix);
-
-unsigned long
-exaGetPixmapPitch(PixmapPtr pPix);
-
-unsigned long
-exaGetPixmapSize(PixmapPtr pPix);
 
 void
 exaEnableDisableFBAccess (int index, Bool enable);
@@ -793,11 +799,11 @@ exaMoveInPixmap (PixmapPtr pPixmap);
 void
 exaMoveOutPixmap (PixmapPtr pPixmap);
 
-void *
-exaGetPixmapDriverPrivate(PixmapPtr p);
 
+/* in exa_unaccel.c */
 CARD32
 exaGetPixmapFirstPixel (PixmapPtr pPixmap);
+
 
 /**
  * Returns TRUE if the given planemask covers all the significant bits in the

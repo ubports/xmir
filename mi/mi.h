@@ -126,6 +126,7 @@ extern void miPutImage(
 /* micursor.c */
 
 extern void miRecolorCursor(
+    DeviceIntPtr /* pDev */,
     ScreenPtr /*pScr*/,
     CursorPtr /*pCurs*/,
     Bool /*displayed*/
@@ -152,12 +153,17 @@ extern Bool mieqInit(
     void
 );
 
+extern void mieqResizeEvents(
+    int /* min_size */
+);
+
 extern void mieqEnqueue(
     DeviceIntPtr /*pDev*/,
     xEventPtr /*e*/
 );
 
 extern void mieqSwitchScreen(
+    DeviceIntPtr /* pDev */,
     ScreenPtr /*pScreen*/,
     Bool /*fromDIX*/
 );
@@ -363,10 +369,6 @@ extern Bool miRectAlloc(
     int /*n*/
 );
 
-extern int miFindMaxBand(
-    RegionPtr /*prgn*/
-);
-
 #ifdef DEBUG
 extern Bool miValidRegion(
     RegionPtr /*prgn*/
@@ -415,14 +417,6 @@ extern Bool miScreenInit(
 
 extern DevPrivateKey miAllocateGCPrivateIndex(
     void
-);
-
-extern PixmapPtr miGetScreenPixmap(
-    ScreenPtr pScreen
-);
-
-extern void miSetScreenPixmap(
-    PixmapPtr pPix
 );
 
 /* mivaltree.c */
@@ -477,16 +471,6 @@ extern void miClearToBackground(
     int /*w*/,
     int /*h*/,
     Bool /*generateExposures*/
-);
-
-extern Bool miChangeSaveUnder(
-    WindowPtr /*pWin*/,
-    WindowPtr /*first*/
-);
-
-extern void miPostChangeSaveUnder(
-    WindowPtr /*pWin*/,
-    WindowPtr /*pFirst*/
 );
 
 extern void miMarkWindow(

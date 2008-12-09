@@ -266,11 +266,6 @@ ddxUseMsg()
 #endif
 }
 
-/* ddxInitGlobals - called by |InitGlobals| from os/util.c */
-void ddxInitGlobals(void)
-{
-}
-
 int
 ddxProcessArgument(int argc, char *argv[], int i)
 {
@@ -1027,8 +1022,3 @@ InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
     }
 
 } /* end InitOutput */
-
-/* this is just to get the server to link on AIX */
-#ifdef AIXV3
-int SelectWaitTime = 10000; /* usec */
-#endif

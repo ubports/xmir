@@ -38,9 +38,6 @@ in this Software without prior written authorization from The Open Group.
 #include "xacestr.h"
 #include "securitysrv.h"
 #include <X11/extensions/securstr.h>
-#ifdef XAPPGROUP
-#include "appgroup.h"
-#endif
 #include "modinit.h"
 
 /* Extension stuff */
@@ -53,7 +50,8 @@ static RESTYPE RTEventClient;
 static CallbackListPtr SecurityValidateGroupCallback = NULL;
 
 /* Private state record */
-static DevPrivateKey stateKey = &stateKey;
+static int stateKeyIndex;
+static DevPrivateKey stateKey = &stateKeyIndex;
 
 /* This is what we store as client security state */
 typedef struct {
@@ -376,7 +374,7 @@ ProcSecurityQueryVersion(
     rep.minorVersion  	= SECURITY_MINOR_VERSION;
     if(client->swapped)
     {
-	register char n;
+	char n;
     	swaps(&rep.sequenceNumber, n);
 	swaps(&rep.majorVersion, n);
 	swaps(&rep.minorVersion, n);
@@ -588,7 +586,7 @@ ProcSecurityGenerateAuthorization(
 
     if (client->swapped)
     {
-	register char n;
+	char n;
     	swapl(&rep.length, n);
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.authId, n);
@@ -661,7 +659,7 @@ SProcSecurityQueryVersion(
     ClientPtr client)
 {
     REQUEST(xSecurityQueryVersionReq);
-    register char 	n;
+    char	n;
 
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xSecurityQueryVersionReq);
@@ -676,7 +674,7 @@ SProcSecurityGenerateAuthorization(
     ClientPtr client)
 {
     REQUEST(xSecurityGenerateAuthorizationReq);
-    register char 	n;
+    char	n;
     CARD32 *values;
     unsigned long nvalues;
     int values_offset;
@@ -703,7 +701,7 @@ SProcSecurityRevokeAuthorization(
     ClientPtr client)
 {
     REQUEST(xSecurityRevokeAuthorizationReq);
-    register char 	n;
+    char	n;
 
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xSecurityRevokeAuthorizationReq);
@@ -836,11 +834,6 @@ SecurityResource(CallbackListPtr *pcbl, pointer unused, pointer calldata)
 
     if (SecurityDoCheck(subj, obj, requested, allowed) == Success)
 	return;
-
-#ifdef XAPPGROUP
-    if (rec->id == XagDefaultColormap(rec->client))
-	return;
-#endif
 
     SecurityAudit("Security: denied client %d access %x to resource 0x%x "
 		  "of client %d on request %s\n", rec->client->index,
@@ -1049,7 +1042,7 @@ SecurityClientState(CallbackListPtr *pcbl, pointer unused, pointer calldata)
 	break;
 
     default:
-	break; 
+	break;
     }
 }
 

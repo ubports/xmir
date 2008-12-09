@@ -62,10 +62,8 @@
 #include "extension.h"
 #include "Pci.h"
 
-#ifdef XINPUT
 #include "xf86Xinput.h"
 extern DeviceAssocRec mouse_assoc;
-#endif
 
 #ifdef XKB
 #undef XKB_IN_SERVER
@@ -118,7 +116,6 @@ static ModuleDefault ModuleDefaults[] = {
     {.name = "extmod",   .toLoad = TRUE,    .load_opt=NULL},
     {.name = "dbe",      .toLoad = TRUE,    .load_opt=NULL},
     {.name = "glx",      .toLoad = TRUE,    .load_opt=NULL},
-    {.name = "freetype", .toLoad = TRUE,    .load_opt=NULL},
 #ifdef XRECORD
     {.name = "record",   .toLoad = TRUE,    .load_opt=NULL},
 #endif
@@ -309,7 +306,7 @@ xf86ModulelistFromConfig(pointer **optlist)
                 }
             }
             if (found == FALSE) {
-	            XF86ConfModulePtr ptr = xf86configptr->conf_modules;
+		XF86LoadPtr ptr = (XF86LoadPtr)xf86configptr->conf_modules;
 	            ptr = xf86addNewLoadDirective(ptr, ModuleDefaults[i].name, XF86_LOAD_MODULE, ModuleDefaults[i].load_opt);
                 xf86Msg(X_INFO, "\"%s\" will be loaded by default.\n", ModuleDefaults[i].name);
             }
@@ -318,7 +315,7 @@ xf86ModulelistFromConfig(pointer **optlist)
 	xf86configptr->conf_modules = xnfcalloc(1, sizeof(XF86ConfModuleRec));
 	for (i=0 ; ModuleDefaults[i].name != NULL ; i++) {
 	    if (ModuleDefaults[i].toLoad == TRUE) {
-		XF86ConfModulePtr ptr = xf86configptr->conf_modules;
+		XF86LoadPtr ptr = (XF86LoadPtr)xf86configptr->conf_modules;
 		ptr = xf86addNewLoadDirective(ptr, ModuleDefaults[i].name, XF86_LOAD_MODULE, ModuleDefaults[i].load_opt);
 	    }
 	}
@@ -603,8 +600,9 @@ configFiles(XF86ConfFilesPtr fileconf)
       pathFrom = X_CONFIG;
       if (*f) {
         if (xf86Info.useDefaultFontPath) {
+          char *g;
           xf86Msg(X_DEFAULT, "Including the default font path %s.\n", defaultFontPath);
-          char *g = xnfalloc(strlen(defaultFontPath) + strlen(f) + 3);
+	  g = xnfalloc(strlen(defaultFontPath) + strlen(f) + 3);
           strcpy(g, f);
           strcat(g, ",");
           defaultFontPath = strcat(g, defaultFontPath);
@@ -740,23 +738,14 @@ typedef enum {
     FLAG_ALLOWMOUSEOPENFAIL,
     FLAG_VTSYSREQ,
     FLAG_XKBDISABLE,
-    FLAG_PCIPROBE1,
-    FLAG_PCIPROBE2,
-    FLAG_PCIFORCECONFIG1,
-    FLAG_PCIFORCECONFIG2,
-    FLAG_PCIFORCENONE,
-    FLAG_PCIOSCONFIG,
     FLAG_SAVER_BLANKTIME,
     FLAG_DPMS_STANDBYTIME,
     FLAG_DPMS_SUSPENDTIME,
     FLAG_DPMS_OFFTIME,
     FLAG_PIXMAP,
     FLAG_PC98,
-    FLAG_ESTIMATE_SIZES_AGGRESSIVELY,
     FLAG_NOPM,
     FLAG_XINERAMA,
-    FLAG_ALLOW_DEACTIVATE_GRABS,
-    FLAG_ALLOW_CLOSEDOWN_GRABS,
     FLAG_LOG,
     FLAG_RENDER_COLORMAP_MODE,
     FLAG_HANDLE_SPECIAL_KEYS,
@@ -777,7 +766,7 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_DONTVTSWITCH,		"DontVTSwitch",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_DONTZAP,		"DontZap",			OPTV_BOOLEAN,
-	{0}, FALSE },
+	{0}, TRUE },
   { FLAG_DONTZOOM,		"DontZoom",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_DISABLEVIDMODE,	"DisableVidModeExtension",	OPTV_BOOLEAN,
@@ -794,18 +783,6 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_XKBDISABLE,		"XkbDisable",			OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_PCIPROBE1,		"PciProbe1"		,	OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_PCIPROBE2,		"PciProbe2",			OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_PCIFORCECONFIG1,	"PciForceConfig1",		OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_PCIFORCECONFIG2,	"PciForceConfig2",		OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_PCIFORCENONE,		"PciForceNone",			OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_PCIOSCONFIG,	        "PciOsConfig",   		OPTV_BOOLEAN,
-	{0}, FALSE },
   { FLAG_SAVER_BLANKTIME,	"BlankTime"		,	OPTV_INTEGER,
 	{0}, FALSE },
   { FLAG_DPMS_STANDBYTIME,	"StandbyTime",			OPTV_INTEGER,
@@ -818,15 +795,9 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_PC98,			"PC98",				OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_ESTIMATE_SIZES_AGGRESSIVELY,"EstimateSizesAggressively",OPTV_INTEGER,
-	{0}, FALSE },
   { FLAG_NOPM,			"NoPM",				OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_XINERAMA,		"Xinerama",			OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_ALLOW_DEACTIVATE_GRABS,"AllowDeactivateGrabs",		OPTV_BOOLEAN,
-	{0}, FALSE },
-  { FLAG_ALLOW_CLOSEDOWN_GRABS, "AllowClosedownGrabs",		OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_LOG,			"Log",				OPTV_STRING,
 	{0}, FALSE },
@@ -904,13 +875,10 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 
     xf86GetOptValBool(FlagOptions, FLAG_NOTRAPSIGNALS, &xf86Info.notrapSignals);
     xf86GetOptValBool(FlagOptions, FLAG_DONTVTSWITCH, &xf86Info.dontVTSwitch);
-    xf86GetOptValBool(FlagOptions, FLAG_DONTZAP, &xf86Info.dontZap);
+    if (!xf86GetOptValBool(FlagOptions, FLAG_DONTZAP, &xf86Info.dontZap))
+        xf86Info.dontZap = !party_like_its_1989;
     xf86GetOptValBool(FlagOptions, FLAG_DONTZOOM, &xf86Info.dontZoom);
 
-    xf86GetOptValBool(FlagOptions, FLAG_ALLOW_DEACTIVATE_GRABS,
-		      &(xf86Info.grabInfo.allowDeactivate));
-    xf86GetOptValBool(FlagOptions, FLAG_ALLOW_CLOSEDOWN_GRABS,
-		      &(xf86Info.grabInfo.allowClosedown));
     xf86GetOptValBool(FlagOptions, FLAG_IGNORE_ABI, &xf86Info.ignoreABI);
     if (xf86Info.ignoreABI) {
 	    xf86Msg(X_CONFIG, "Ignoring ABI Version\n");
@@ -922,7 +890,6 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
         from = X_CONFIG;
     }
     else {
-        xf86Info.autoAddDevices = TRUE;
         from = X_DEFAULT;
     }
     xf86Msg(from, "%sutomatically adding devices\n",
@@ -934,7 +901,6 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
         from = X_CONFIG;
     }
     else {
-        xf86Info.autoEnableDevices = TRUE;
         from = X_DEFAULT;
     }
     xf86Msg(from, "%sutomatically enabling devices\n",
@@ -950,13 +916,6 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.vidModeEnabled = !value;
     if (xf86GetOptValBool(FlagOptions, FLAG_ALLOWNONLOCAL, &value))
 	xf86Info.vidModeAllowNonLocal = value;
-#endif
-
-#ifdef XF86MISC
-    if (xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV, &value))
-	xf86Info.miscModInDevEnabled = !value;
-    if (xf86GetOptValBool(FlagOptions, FLAG_MODINDEVALLOWNONLOCAL, &value))
-	xf86Info.miscModInDevAllowNonLocal = value;
 #endif
 
     if (xf86GetOptValBool(FlagOptions, FLAG_ALLOWMOUSEOPENFAIL, &value))
@@ -981,19 +940,6 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	    xf86Msg(X_WARNING, "Xserver doesn't support XKB\n");
 #endif
     }
-
-    if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE1))
-	xf86Info.pciFlags = PCIProbe1;
-    if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE2))
-	xf86Info.pciFlags = PCIProbe2;
-    if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG1))
-	xf86Info.pciFlags = PCIForceConfig1;
-    if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG2))
-	xf86Info.pciFlags = PCIForceConfig2;
-    if (xf86IsOptionSet(FlagOptions, FLAG_PCIOSCONFIG))
-	xf86Info.pciFlags = PCIOsConfig;
-    if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCENONE))
-	xf86Info.pciFlags = PCIForceNone;
 
     xf86Info.pmFlag = TRUE;
     if (xf86GetOptValBool(FlagOptions, FLAG_NOPM, &value)) 
@@ -1053,12 +999,6 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.randRFrom = X_CONFIG;
     }
 #endif
-    i = -1;
-    xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
-    if (i >= 0)
-	xf86Info.estimateSizesAggressively = i;
-    else
-	xf86Info.estimateSizesAggressively = 0;
 
     xf86Info.aiglx = TRUE;
     xf86Info.aiglxFrom = X_DEFAULT;
@@ -1078,7 +1018,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	} else if (!xf86NameCmp(s, "all")) {
 	    xf86Info.glxVisuals = XF86_GlxVisualsAll;
 	} else {
-	    xf86Msg(X_WARNING,"Unknown HandleSpecialKeys option\n");
+	    xf86Msg(X_WARNING,"Unknown GlxVisuals option\n");
 	}
     }
 
@@ -1237,8 +1177,8 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
      * remove the core attribute from the later ones.
      */
     for (devs = servlayoutp->inputs; devs && *devs; devs++) {
-        indp = *devs;
 	pointer opt1 = NULL, opt2 = NULL;
+        indp = *devs;
 	if (indp->commonOptions &&
 	    xf86CheckBoolOption(indp->commonOptions, "CorePointer", FALSE)) {
 	    opt1 = indp->commonOptions;
@@ -1552,9 +1492,14 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     if (xf86Info.allowEmptyInput && !(foundPointer && foundKeyboard)) {
+#ifdef CONFIG_HAL
 	xf86Msg(X_INFO, "The server relies on HAL to provide the list of "
 	                "input devices.\n\tIf no devices become available, "
 	                "reconfigure HAL or disable AllowEmptyInput.\n");
+#else
+	xf86Msg(X_INFO, "HAL is disabled and no input devices were configured.\n"
+			"\tTry disabling AllowEmptyInput.\n");
+#endif
     }
 
     return TRUE;
@@ -1631,10 +1576,14 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
     }
+
 #ifdef DEBUG
     ErrorF("Found %d screens in the layout section %s",
            count, conf_layout->lay_identifier);
 #endif
+    if (!count) /* alloc enough storage even if no screen is specified */
+        count = 1;
+
     slp = xnfcalloc(1, (count + 1) * sizeof(screenLayoutRec));
     slp[count].screen = NULL;
     /*
@@ -1687,6 +1636,20 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
 	}
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
+    }
+
+    /* No screen was specified in the layout. take the first one from the
+     * config file, or - if it is NULL - configScreen autogenerates one for
+     * us */
+    if (!count)
+    {
+        slp[0].screen = xnfcalloc(1, sizeof(confScreenRec));
+	if (!configScreen(slp[0].screen, xf86configptr->conf_screen_lst,
+                          0, X_CONFIG)) {
+	    xfree(slp[0].screen);
+	    xfree(slp);
+	    return FALSE;
+	}
     }
 
     /* XXX Need to tie down the upper left screen. */
@@ -1879,7 +1842,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
     indp = xnfalloc(sizeof(IDevPtr));
     *indp = NULL;
     servlayoutp->inputs = indp;
-    
+
     return TRUE;
 }
 
@@ -2064,6 +2027,7 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     XF86ConfModesLinkPtr modeslnk = conf_monitor->mon_modes_sect_lst;
     Gamma zeros = {0.0, 0.0, 0.0};
     float badgamma = 0.0;
+    double maxPixClock;
     
     xf86Msg(X_CONFIG, "|   |-->Monitor \"%s\"\n",
 	    conf_monitor->mon_identifier);
@@ -2198,8 +2162,11 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     xf86ProcessOptions(-1, monitorp->options, MonitorOptions);
     xf86GetOptValBool(MonitorOptions, MON_REDUCEDBLANKING,
                       &monitorp->reducedblanking);
-    xf86GetOptValFreq(MonitorOptions, MON_MAX_PIX_CLOCK, OPTUNITS_KHZ,
-		      &monitorp->maxPixClock);
+    if (xf86GetOptValFreq(MonitorOptions, MON_MAX_PIX_CLOCK, OPTUNITS_KHZ,
+			  &maxPixClock) == TRUE) {
+	monitorp->maxPixClock = (int) maxPixClock;
+    }
+	
     return TRUE;
 }
 
@@ -2545,7 +2512,7 @@ xf86HandleConfigFile(Bool autoconfig)
 	    xf86MsgVerb(from, 0, "Using config file: \"%s\"\n", filename);
 	    xf86ConfigFile = xnfstrdup(filename);
 	} else {
-	    xf86Msg(X_ERROR, "Unable to locate/open config file");
+	    xf86Msg(X_WARNING, "Unable to locate/open config file");
 	    if (xf86ConfigFile)
 		xf86ErrorFVerb(0, ": \"%s\"", xf86ConfigFile);
 	    xf86ErrorFVerb(0, "\n");
@@ -2651,13 +2618,6 @@ xf86HandleConfigFile(Bool autoconfig)
 	xf86Info.vidModeEnabled = FALSE;
     if (xf86VidModeAllowNonLocal)
 	xf86Info.vidModeAllowNonLocal = TRUE;
-#endif
-
-#ifdef XF86MISC
-    if (xf86MiscModInDevDisabled)
-	xf86Info.miscModInDevEnabled = FALSE;
-    if (xf86MiscModInDevAllowNonLocal)
-	xf86Info.miscModInDevAllowNonLocal = TRUE;
 #endif
 
     if (xf86AllowMouseOpenFail)

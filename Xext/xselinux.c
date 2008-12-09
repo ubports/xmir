@@ -62,9 +62,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /* private state keys */
-static DevPrivateKey subjectKey = &subjectKey;
-static DevPrivateKey objectKey = &objectKey;
-static DevPrivateKey dataKey = &dataKey;
+static int subjectKeyIndex;
+static DevPrivateKey subjectKey = &subjectKeyIndex;
+static int objectKeyIndex;
+static DevPrivateKey objectKey = &objectKeyIndex;
+static int dataKeyIndex;
+static DevPrivateKey dataKey = &dataKeyIndex;
 
 /* subject state (clients and devices only) */
 typedef struct {
@@ -469,9 +472,9 @@ SELinuxLabelClient(ClientPtr client)
     sidput(obj->sid);
 
     /* Try to get a context from the socket */
-    if (fd < 0 || getpeercon(fd, &ctx) < 0) {
+    if (fd < 0 || getpeercon_raw(fd, &ctx) < 0) {
 	/* Otherwise, fall back to a default context */
-	if (selabel_lookup(label_hnd, &ctx, NULL, SELABEL_X_CLIENT) < 0)
+	if (selabel_lookup(label_hnd, &ctx, "remote", SELABEL_X_CLIENT) < 0)
 	    FatalError("SELinux: failed to look up remote-client context\n");
     }
 
@@ -534,7 +537,7 @@ SELinuxLabelInitial(void)
     sidput(subj->sid);
 
     /* Use the context of the X server process for the serverClient */
-    if (getcon(&ctx) < 0)
+    if (getcon_raw(&ctx) < 0)
 	FatalError("SELinux: couldn't get context of X server process\n");
 
     /* Get a SID from the context */
@@ -654,7 +657,19 @@ SELinuxLog(int type, const char *fmt, ...)
 {
     va_list ap;
     char buf[MAX_AUDIT_MESSAGE_LENGTH];
-    int rc, aut = AUDIT_USER_AVC;
+    int rc, aut;
+
+    switch (type) {
+    case SELINUX_INFO:
+	aut = AUDIT_USER_MAC_POLICY_LOAD;
+	break;
+    case SELINUX_AVC:
+	aut = AUDIT_USER_AVC;
+	break;
+    default:
+	aut = AUDIT_USER_SELINUX_ERR;
+	break;
+    }
 
     va_start(ap, fmt);
     vsnprintf(buf, MAX_AUDIT_MESSAGE_LENGTH, fmt, ap);

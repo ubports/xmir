@@ -56,9 +56,11 @@ static int SProcRRDispatch (ClientPtr pClient);
 int	RREventBase;
 int	RRErrorBase;
 RESTYPE RRClientType, RREventType; /* resource types for event masks */
-DevPrivateKey RRClientPrivateKey = &RRClientPrivateKey;
+static int RRClientPrivateKeyIndex;
+DevPrivateKey RRClientPrivateKey = &RRClientPrivateKeyIndex;
 
-DevPrivateKey rrPrivKey = &rrPrivKey;
+static int rrPrivKeyIndex;
+DevPrivateKey rrPrivKey = &rrPrivKeyIndex;
 
 static void
 RRClientCallback (CallbackListPtr	*list,
@@ -86,11 +88,6 @@ RRClientCallback (CallbackListPtr	*list,
     }
 }
 
-static void
-RRResetProc (ExtensionEntry *extEntry)
-{
-}
-    
 static Bool
 RRCloseScreen (int i, ScreenPtr pScreen)
 {
@@ -339,7 +336,7 @@ RRExtensionInit (void)
 	return;
     extEntry = AddExtension (RANDR_NAME, RRNumberEvents, RRNumberErrors,
 			     ProcRRDispatch, SProcRRDispatch,
-			     RRResetProc, StandardMinorOpcode);
+			     NULL, StandardMinorOpcode);
     if (!extEntry)
 	return;
     RRErrorBase = extEntry->errorBase;

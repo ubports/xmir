@@ -34,7 +34,6 @@
 #include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "exa.h"
-#include "cw.h"
 
 static void
 exaFillSpans(DrawablePtr pDrawable, GCPtr pGC, int n,
@@ -144,7 +143,6 @@ exaDoPutImage (DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
     ExaScreenPriv (pDrawable->pScreen);
     PixmapPtr pPix = exaGetDrawablePixmap (pDrawable);
     ExaPixmapPriv(pPix);
-    ExaMigrationRec pixmaps[1];
     RegionPtr pClip;
     BoxPtr pbox;
     int nbox;
@@ -166,11 +164,16 @@ exaDoPutImage (DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
     if (pExaScr->swappedOut)
 	return FALSE;
 
-    pixmaps[0].as_dst = TRUE;
-    pixmaps[0].as_src = FALSE;
-    pixmaps[0].pPix = pPix;
-    pixmaps[0].pReg = DamagePendingRegion(pExaPixmap->pDamage);
-    exaDoMigration (pixmaps, 1, TRUE);
+    if (pExaPixmap->pDamage) {
+	ExaMigrationRec pixmaps[1];
+
+ 	pixmaps[0].as_dst = TRUE;
+	pixmaps[0].as_src = FALSE;
+	pixmaps[0].pPix = pPix;
+	pixmaps[0].pReg = DamagePendingRegion(pExaPixmap->pDamage);
+
+	exaDoMigration (pixmaps, 1, TRUE);
+    }
 
     pPix = exaGetOffscreenPixmap (pDrawable, &xoff, &yoff);
 
@@ -398,6 +401,10 @@ exaCopyNtoN (DrawablePtr    pSrcDrawable,
     RegionPtr srcregion = NULL, dstregion = NULL;
     xRectangle *rects;
 
+    /* avoid doing copy operations if no boxes */
+    if (nbox == 0)
+	return;
+
     pSrcPixmap = exaGetDrawablePixmap (pSrcDrawable);
     pDstPixmap = exaGetDrawablePixmap (pDstDrawable);
 
@@ -441,15 +448,35 @@ exaCopyNtoN (DrawablePtr    pSrcDrawable,
     pDstExaPixmap = ExaGetPixmapPriv (pDstPixmap);
 
     /* Check whether the accelerator can use this pixmap.
-     * FIXME: If it cannot, use temporary pixmaps so that the drawing
-     * happens within limits.
+     * If the pitch of the pixmaps is out of range, there's nothing
+     * we can do but fall back to software rendering.
      */
-    if (pSrcExaPixmap->accel_blocked || pDstExaPixmap->accel_blocked)
-    {
+    if (pSrcExaPixmap->accel_blocked & EXA_RANGE_PITCH ||
+        pDstExaPixmap->accel_blocked & EXA_RANGE_PITCH)
 	goto fallback;
-    } else {
-	exaDoMigration (pixmaps, 2, TRUE);
+
+    /* If the width or the height of either of the pixmaps
+     * is out of range, check whether the boxes are actually out of the
+     * addressable range as well. If they aren't, we can still do
+     * the copying in hardware.
+     */
+    if (pSrcExaPixmap->accel_blocked || pDstExaPixmap->accel_blocked) {
+        int i;
+
+        for (i = 0; i < nbox; i++) {
+            /* src */
+            if ((pbox[i].x2 + dx + src_off_x) >= pExaScr->info->maxX ||
+                (pbox[i].y2 + dy + src_off_y) >= pExaScr->info->maxY)
+                goto fallback;
+
+            /* dst */
+            if ((pbox[i].x2 + dst_off_x) >= pExaScr->info->maxX ||
+                (pbox[i].y2 + dst_off_y) >= pExaScr->info->maxY)
+                goto fallback;
+        }
     }
+
+    exaDoMigration (pixmaps, 2, TRUE);
 
     /* Mixed directions must be handled specially if the card is lame */
     if ((pExaScr->info->flags & EXA_TWO_BITBLT_DIRECTIONS) &&
@@ -860,16 +887,23 @@ exaImageGlyphBlt (DrawablePtr	pDrawable,
     FbBits	    depthMask;
     PixmapPtr	    pPixmap = exaGetDrawablePixmap(pDrawable);
     ExaPixmapPriv(pPixmap);
-    RegionPtr	    pending_damage = DamagePendingRegion(pExaPixmap->pDamage);
-    BoxRec	    extents = *REGION_EXTENTS(pScreen, pending_damage);
+    RegionPtr	    pending_damage = NULL;
+    BoxRec	    extents;
     int		    xoff, yoff;
 
-    if (extents.x1 >= extents.x2 || extents.y1 >= extents.y2)
-	return;
+    if (pExaPixmap->pDamage)
+	pending_damage = DamagePendingRegion(pExaPixmap->pDamage);
 
-    depthMask = FbFullMask(pDrawable->depth);
+    if (pending_damage) {
+	extents = *REGION_EXTENTS(pScreen, pending_damage);
 
-    if ((pGC->planemask & depthMask) != depthMask)
+	if (extents.x1 >= extents.x2 || extents.y1 >= extents.y2)
+	    return;
+
+	depthMask = FbFullMask(pDrawable->depth);
+    }
+
+    if (!pending_damage || (pGC->planemask & depthMask) != depthMask)
     {
 	ExaCheckImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppciInit, pglyphBase);
 	return;
@@ -1103,6 +1137,7 @@ exaFillRegionTiled (DrawablePtr	pDrawable,
     int nbox = REGION_NUM_RECTS (pRegion);
     BoxPtr pBox = REGION_RECTS (pRegion);
     Bool ret = FALSE;
+    int i;
 
     tileWidth = pTile->drawable.width;
     tileHeight = pTile->drawable.height;
@@ -1125,14 +1160,11 @@ exaFillRegionTiled (DrawablePtr	pDrawable,
     pixmaps[1].pPix = pTile;
     pixmaps[1].pReg = NULL;
 
-    exaGetDrawableDeltas(pDrawable, pPixmap, &xoff, &yoff);
-    REGION_TRANSLATE(pScreen, pRegion, xoff, yoff);
-
     pExaPixmap = ExaGetPixmapPriv (pPixmap);
 
     if (pExaPixmap->accel_blocked || pTileExaPixmap->accel_blocked)
     {
-	goto out;
+	return FALSE;
     } else {
 	exaDoMigration (pixmaps, 2, TRUE);
     }
@@ -1140,23 +1172,32 @@ exaFillRegionTiled (DrawablePtr	pDrawable,
     pPixmap = exaGetOffscreenPixmap (pDrawable, &xoff, &yoff);
 
     if (!pPixmap || !exaPixmapIsOffscreen(pTile))
-	goto out;
+	return FALSE;
 
     if ((*pExaScr->info->PrepareCopy) (pTile, pPixmap, 1, 1, alu, planemask))
     {
-	while (nbox--)
+	if (xoff || yoff)
+	    REGION_TRANSLATE(pScreen, pRegion, xoff, yoff);
+
+	for (i = 0; i < nbox; i++)
 	{
-	    int height = pBox->y2 - pBox->y1;
-	    int dstY = pBox->y1;
+	    int height = pBox[i].y2 - pBox[i].y1;
+	    int dstY = pBox[i].y1;
 	    int tileY;
+
+	    if (alu == GXcopy)
+		height = min(height, tileHeight);
 
 	    modulus(dstY - yoff - pDrawable->y - pPatOrg->y, tileHeight, tileY);
 
 	    while (height > 0) {
-		int width = pBox->x2 - pBox->x1;
-		int dstX = pBox->x1;
+		int width = pBox[i].x2 - pBox[i].x1;
+		int dstX = pBox[i].x1;
 		int tileX;
 		int h = tileHeight - tileY;
+
+		if (alu == GXcopy)
+		    width = min(width, tileWidth);
 
 		if (h > height)
 		    h = height;
@@ -1179,16 +1220,73 @@ exaFillRegionTiled (DrawablePtr	pDrawable,
 		dstY += h;
 		tileY = 0;
 	    }
-	    pBox++;
 	}
 	(*pExaScr->info->DoneCopy) (pPixmap);
+
+	/* With GXcopy, we only need to do the basic algorithm up to the tile
+	 * size; then, we can just keep doubling the destination in each
+	 * direction until it fills the box. This way, the number of copy
+	 * operations is O(log(rx)) + O(log(ry)) instead of O(rx * ry), where
+	 * rx/ry is the ratio between box and tile width/height. This can make
+	 * a big difference if each driver copy incurs a significant constant
+	 * overhead.
+	 */
+	if (alu != GXcopy)
+	    ret = TRUE;
+	else {
+	    Bool more_copy = FALSE;
+
+	    for (i = 0; i < nbox; i++) {
+		int dstX = pBox[i].x1 + tileWidth;
+		int dstY = pBox[i].y1 + tileHeight;
+
+		if ((dstX < pBox[i].x2) || (dstY < pBox[i].y2)) {
+		    more_copy = TRUE;
+		    break;
+		}
+	    }
+
+	    if (more_copy == FALSE)
+		ret = TRUE;
+
+	    if (more_copy && (*pExaScr->info->PrepareCopy) (pPixmap, pPixmap,
+							    1, 1, alu, planemask)) {
+		for (i = 0; i < nbox; i++)
+		{
+		    int dstX = pBox[i].x1 + tileWidth;
+		    int dstY = pBox[i].y1 + tileHeight;
+		    int width = min(pBox[i].x2 - dstX, tileWidth);
+		    int height = min(pBox[i].y2 - pBox[i].y1, tileHeight);
+
+		    while (dstX < pBox[i].x2) {
+			(*pExaScr->info->Copy) (pPixmap, pBox[i].x1, pBox[i].y1,
+						dstX, pBox[i].y1, width, height);
+			dstX += width;
+			width = min(pBox[i].x2 - dstX, width * 2);
+		    }
+
+		    width = pBox[i].x2 - pBox[i].x1;
+		    height = min(pBox[i].y2 - dstY, tileHeight);
+
+		    while (dstY < pBox[i].y2) {
+			(*pExaScr->info->Copy) (pPixmap, pBox[i].x1, pBox[i].y1,
+						pBox[i].x1, dstY, width, height);
+			dstY += height;
+			height = min(pBox[i].y2 - dstY, height * 2);
+		    }
+		}
+
+		(*pExaScr->info->DoneCopy) (pPixmap);
+
+		ret = TRUE;
+	    }
+	}
+
 	exaMarkSync(pDrawable->pScreen);
 
-	ret = TRUE;
+	if (xoff || yoff)
+	    REGION_TRANSLATE(pScreen, pRegion, -xoff, -yoff);
     }
-
-out:
-    REGION_TRANSLATE(pScreen, pRegion, -xoff, -yoff);
 
     return ret;
 }

@@ -97,12 +97,15 @@ ExaCheckPutImage (DrawablePtr pDrawable, GCPtr pGC, int depth,
 		 int x, int y, int w, int h, int leftPad, int format,
 		 char *bits)
 {
+    ExaPixmapPriv(exaGetDrawablePixmap(pDrawable));
+
     EXA_FALLBACK(("to %p (%c)\n", pDrawable, exaDrawableLocation(pDrawable)));
     if (exaGCReadsDestination(pDrawable, pGC->planemask, pGC->fillStyle,
 			      pGC->alu))
 	exaPrepareAccess (pDrawable, EXA_PREPARE_DEST);
     else
-	ExaDoPrepareAccess (pDrawable, EXA_PREPARE_DEST);
+	exaPrepareAccessReg (pDrawable, EXA_PREPARE_DEST, pExaPixmap->pDamage ?
+			     DamagePendingRegion(pExaPixmap->pDamage) : NULL);
     fbPutImage (pDrawable, pGC, depth, x, y, w, h, leftPad, format, bits);
     exaFinishAccess (pDrawable, EXA_PREPARE_DEST);
 }
@@ -373,23 +376,22 @@ ExaCheckAddTraps (PicturePtr	pPicture,
 CARD32
 exaGetPixmapFirstPixel (PixmapPtr pPixmap)
 {
-    ExaScreenPriv(pPixmap->drawable.pScreen);
     CARD32 pixel;
     void *fb;
     Bool need_finish = FALSE;
     BoxRec box;
     RegionRec migration;
     ExaPixmapPriv (pPixmap);
-    Bool sys_valid = !miPointInRegion(&pExaPixmap->validSys, 0, 0,  &box);
-    Bool damaged = miPointInRegion(DamageRegion(pExaPixmap->pDamage), 0, 0,
-				   &box);
+    Bool sys_valid = pExaPixmap->pDamage &&
+	!miPointInRegion(&pExaPixmap->validSys, 0, 0,  &box);
+    Bool damaged = pExaPixmap->pDamage &&
+ 	miPointInRegion(DamageRegion(pExaPixmap->pDamage), 0, 0, &box);
     Bool offscreen = exaPixmapIsOffscreen(pPixmap);
 
     fb = pExaPixmap->sys_ptr;
 
     /* Try to avoid framebuffer readbacks */
-    if (pExaScr->info->CreatePixmap ||
-	(!offscreen && !sys_valid && !damaged) ||
+    if ((!offscreen && !sys_valid && !damaged) ||
 	(offscreen && (!sys_valid || damaged)))
     {
 	box.x1 = 0;

@@ -5,23 +5,6 @@ if COMPOSITE
 COMPOSITE_DIR=composite
 endif
 
-if XTRAP
-XTRAP_DIR=XTrap
-endif
-
-if CFB
-CFB_DIR=cfb
-CFB32_DIR=cfb32
-endif
-
-if AFB
-AFB_DIR=afb
-endif
-
-if MFB
-MFB_DIR=mfb
-endif
-
 if GLX
 GLX_DIR=glx
 endif
@@ -48,14 +31,9 @@ SUBDIRS = \
 	Xi \
 	xkb \
 	$(DBE_DIR) \
-	$(MFB_DIR) \
-	$(AFB_DIR) \
-	$(CFB_DIR) \
-	$(CFB32_DIR) \
 	$(RECORD_DIR) \
 	xfixes \
 	damageext \
-	$(XTRAP_DIR) \
 	$(COMPOSITE_DIR) \
 	$(GLX_DIR) \
 	exa \
@@ -94,14 +72,9 @@ DIST_SUBDIRS = \
 	Xi \
 	xkb \
 	dbe \
-	mfb \
-	afb \
-	cfb \
-	cfb32 \
 	record \
 	xfixes \
 	damageext \
-	XTrap \
 	composite \
 	glx \
 	exa \

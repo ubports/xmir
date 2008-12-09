@@ -19,7 +19,9 @@
 	<key>CFBundlePackageType</key>
 		<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-		<string>2.2.0</string>
+		<string>2.3.2</string>
+	<key>CFBundleVersion</key>
+		<string>2.3.2</string>
 	<key>CFBundleSignature</key>
 		<string>x11a</string>
 	<key>CSResourcesFileMapped</key>
@@ -33,7 +35,5 @@ Copyright © 2003-2008, X.org Foundation, Inc.
 		<string>main</string>
 	<key>NSPrincipalClass</key>
 		<string>X11Application</string>
-	<key>LSBackgroundOnly</key>
-		<true/>
 </dict>
 </plist>

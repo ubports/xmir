@@ -71,9 +71,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <AvailabilityMacros.h>
 
-static DevPrivateKey DRIScreenPrivKey = &DRIScreenPrivKey;
-static DevPrivateKey DRIWindowPrivKey = &DRIWindowPrivKey;
-static DevPrivateKey DRIPixmapPrivKey = &DRIPixmapPrivKey;
+static int DRIScreenPrivKeyIndex;
+static DevPrivateKey DRIScreenPrivKey = &DRIScreenPrivKeyIndex;
+static int DRIWindowPrivKeyIndex;
+static DevPrivateKey DRIWindowPrivKey = &DRIWindowPrivKeyIndex;
+static int DRIPixmapPrivKeyIndex;
+static DevPrivateKey DRIPixmapPrivKey = &DRIPixmapPrivKeyIndex;
 
 static RESTYPE DRIDrawablePrivResType;
 
@@ -373,7 +376,7 @@ DRICreateSurface(ScreenPtr pScreen, Drawable id,
             pDRIDrawablePriv->notifiers = NULL;
 
             /* find the physical window */
-            wid = (xp_window_id) RootlessFrameForWindow(pWin, TRUE);
+            wid = x_cvt_vptr_to_uint(RootlessFrameForWindow(pWin, TRUE));
             if (wid == 0) {
                 xfree(pDRIDrawablePriv);
                 return FALSE;
@@ -469,7 +472,7 @@ DRICreateSurface(ScreenPtr pScreen, Drawable id,
         if (surface_hash == NULL)
             surface_hash = x_hash_table_new(NULL, NULL, NULL, NULL);
         x_hash_table_insert(surface_hash,
-                            (void *) pDRIDrawablePriv->sid, pDRIDrawablePriv);
+                            x_cvt_uint_to_vptr(pDRIDrawablePriv->sid), pDRIDrawablePriv);
 
         /* track this in case this window is destroyed */
         AddResource(id, DRIDrawablePrivResType, (pointer)pDrawable);
@@ -551,7 +554,7 @@ DRIDrawablePrivDelete(pointer pResource, XID id)
 
     if (pDRIDrawablePriv->sid != 0) {
         xp_destroy_surface(pDRIDrawablePriv->sid);
-        x_hash_table_remove(surface_hash, (void *) pDRIDrawablePriv->sid);
+        x_hash_table_remove(surface_hash, x_cvt_uint_to_vptr(pDRIDrawablePriv->sid));
     }
 
     if (pDRIDrawablePriv->notifiers != NULL)
@@ -713,7 +716,7 @@ DRISurfaceNotify(xp_surface_id id, int kind)
     if (surface_hash != NULL)
     {
         pDRIDrawablePriv = x_hash_table_lookup(surface_hash,
-                                               (void *) id, NULL);
+                                               x_cvt_uint_to_vptr(id), NULL);
     }
 
     if (pDRIDrawablePriv == NULL)
@@ -722,7 +725,7 @@ DRISurfaceNotify(xp_surface_id id, int kind)
     if (kind == AppleDRISurfaceNotifyDestroyed)
     {
         pDRIDrawablePriv->sid = 0;
-        x_hash_table_remove(surface_hash, (void *) id);
+        x_hash_table_remove(surface_hash, x_cvt_uint_to_vptr(id));
     }
 
     x_hook_run(pDRIDrawablePriv->notifiers, &arg);

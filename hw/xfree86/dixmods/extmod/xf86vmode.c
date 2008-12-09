@@ -48,11 +48,13 @@ from Kaleb S. KEITHLEY
 #include "swaprep.h"
 #include "xf86.h"
 #include "vidmodeproc.h"
+#include "globals.h"
 
 #define DEFAULT_XF86VIDMODE_VERBOSITY	3
 
 static int VidModeErrorBase;
-static DevPrivateKey VidModeClientPrivateKey = &VidModeClientPrivateKey;
+static int VidModeClientPrivateKeyIndex;
+static DevPrivateKey VidModeClientPrivateKey = &VidModeClientPrivateKeyIndex;
 
 /* This holds the client's version information */
 typedef struct {
@@ -64,10 +66,6 @@ typedef struct {
     dixLookupPrivate(&(c)->devPrivates, VidModeClientPrivateKey))
 #define VM_SETPRIV(c,p) \
     dixSetPrivate(&(c)->devPrivates, VidModeClientPrivateKey, p)
-
-static void XF86VidModeResetProc(
-    ExtensionEntry* /* extEntry */
-);
 
 static DISPATCH_PROC(ProcXF86VidModeDispatch);
 static DISPATCH_PROC(ProcXF86VidModeGetAllModeLines);
@@ -126,8 +124,6 @@ static void SXF86VidModeNotifyEvent();
     xXF86VidModeNotifyEvent * /* to */
 );
 
-extern WindowPtr *WindowTable;
-
 static RESTYPE EventType;	/* resource type for event masks */
 
 typedef struct _XF86VidModeEvent *XF86VidModeEventPtr;
@@ -146,8 +142,9 @@ typedef struct _XF86VidModeScreenPrivate {
     XF86VidModeEventPtr	events;
     Bool		hasWindow;
 } XF86VidModeScreenPrivateRec, *XF86VidModeScreenPrivatePtr;
-   
-static DevPrivateKey ScreenPrivateKey = &ScreenPrivateKey;
+
+static int ScreenPrivateKeyIndex;
+static DevPrivateKey ScreenPrivateKey = &ScreenPrivateKeyIndex;
 
 #define GetScreenPrivate(s) ((ScreenSaverScreenPrivatePtr) \
     dixLookupPrivate(&(s)->devPrivates, ScreenPrivateKey))
@@ -199,7 +196,7 @@ XFree86VidModeExtensionInit(void)
 				XF86VidModeNumberErrors,
 				ProcXF86VidModeDispatch,
 				SProcXF86VidModeDispatch,
-				XF86VidModeResetProc,
+				NULL,
 				StandardMinorOpcode))) {
 #if 0
 	XF86VidModeReqCode = (unsigned char)extEntry->base;
@@ -210,13 +207,6 @@ XFree86VidModeExtensionInit(void)
 	EventSwapVector[XF86VidModeEventBase] = (EventSwapPtr)SXF86VidModeNotifyEvent;
 #endif
     }
-}
-
-/*ARGSUSED*/
-static void
-XF86VidModeResetProc (extEntry)
-    ExtensionEntry* extEntry;
-{
 }
 
 static int

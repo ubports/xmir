@@ -215,7 +215,14 @@ typedef struct _xf86CrtcFuncs {
 		      Rotation rotation, int x, int y);
 } xf86CrtcFuncsRec, *xf86CrtcFuncsPtr;
 
+#define XF86_CRTC_VERSION 1
+
 struct _xf86Crtc {
+    /**
+     * ABI versioning
+     */
+    int version;
+
     /**
      * Associated ScrnInfo
      */
@@ -298,8 +305,18 @@ struct _xf86Crtc {
      * Current transformation matrix
      */
     PictTransform   crtc_to_framebuffer;
-    PictTransform   framebuffer_to_crtc;
+    struct pict_f_transform f_crtc_to_framebuffer;
+    struct pict_f_transform f_framebuffer_to_crtc;
+    PictFilterPtr   filter;
+    xFixed	    *params;
+    int		    nparams;
+    int		    filter_width;
+    int		    filter_height;
     Bool	    transform_in_use;
+    RRTransformRec  transform;
+    Bool	    transformPresent;
+    RRTransformRec  desiredTransform;
+    Bool	    desiredTransformPresent;
     /**
      * Bounding box in screen space
      */
@@ -410,6 +427,21 @@ typedef struct _xf86OutputFuncs {
 		    Atom property,
 		    RRPropertyValuePtr value);
 #endif
+#ifdef RANDR_13_INTERFACE
+    /**
+     * Callback to get an updated property value
+     */
+    Bool
+    (*get_property)(xf86OutputPtr output,
+		    Atom property);
+#endif
+#ifdef RANDR_GET_CRTC_INTERFACE
+    /**
+     * Callback to get current CRTC for a given output
+     */
+    xf86CrtcPtr
+    (*get_crtc)(xf86OutputPtr output);
+#endif
     /**
      * Clean up driver-specific bits of the output
      */
@@ -417,7 +449,15 @@ typedef struct _xf86OutputFuncs {
     (*destroy) (xf86OutputPtr	    output);
 } xf86OutputFuncsRec, *xf86OutputFuncsPtr;
 
+
+#define XF86_OUTPUT_VERSION 1
+
 struct _xf86Output {
+    /**
+     * ABI versioning
+     */
+    int version;
+
     /**
      * Associated ScrnInfo
      */
@@ -539,6 +579,8 @@ typedef struct _xf86CrtcConfigFuncs {
 	      int		height);
 } xf86CrtcConfigFuncsRec, *xf86CrtcConfigFuncsPtr;
 
+typedef void (*xf86_crtc_notify_proc_ptr) (ScreenPtr pScreen);
+
 typedef struct _xf86CrtcConfig {
     int			num_output;
     xf86OutputPtr	*output;
@@ -591,6 +633,9 @@ typedef struct _xf86CrtcConfig {
     /* wrap screen BlockHandler for rotation */
     ScreenBlockHandlerProcPtr	BlockHandler;
 
+    /* callback when crtc configuration changes */
+    xf86_crtc_notify_proc_ptr  xf86_crtc_notify;
+
 } xf86CrtcConfigRec, *xf86CrtcConfigPtr;
 
 extern int xf86CrtcConfigPrivateIndex;
@@ -624,6 +669,11 @@ xf86CrtcDestroy (xf86CrtcPtr		crtc);
 /**
  * Sets the given video mode on the given crtc
  */
+
+Bool
+xf86CrtcSetModeTransform (xf86CrtcPtr crtc, DisplayModePtr mode, Rotation rotation,
+			  RRTransformPtr transform, int x, int y);
+
 Bool
 xf86CrtcSetMode (xf86CrtcPtr crtc, DisplayModePtr mode, Rotation rotation,
 		 int x, int y);
@@ -632,7 +682,13 @@ xf86CrtcSetMode (xf86CrtcPtr crtc, DisplayModePtr mode, Rotation rotation,
  * Assign crtc rotation during mode set
  */
 Bool
-xf86CrtcRotate (xf86CrtcPtr crtc, DisplayModePtr mode, Rotation rotation);
+xf86CrtcRotate (xf86CrtcPtr crtc);
+
+/*
+ * free shadow memory allocated for all crtcs
+ */
+void
+xf86RotateFreeShadow(ScrnInfoPtr pScrn);
 
 /*
  * Clean up rotation during CloseScreen
@@ -669,7 +725,11 @@ xf86ProbeOutputModes (ScrnInfoPtr pScrn, int maxX, int maxY);
 void
 xf86SetScrnInfoModes (ScrnInfoPtr pScrn);
 
+#ifdef RANDR_13_INTERFACE
+int
+#else
 Bool
+#endif
 xf86CrtcScreenInit (ScreenPtr pScreen);
 
 Bool
@@ -798,4 +858,13 @@ xf86_crtc_clip_video_helper(ScrnInfoPtr pScrn,
 			    INT32	width,
 			    INT32	height);
     
+xf86_crtc_notify_proc_ptr
+xf86_wrap_crtc_notify (ScreenPtr pScreen, xf86_crtc_notify_proc_ptr new);
+
+void
+xf86_unwrap_crtc_notify(ScreenPtr pScreen, xf86_crtc_notify_proc_ptr old);
+
+void
+xf86_crtc_notify(ScreenPtr pScreen);
+
 #endif /* _XF86CRTC_H_ */

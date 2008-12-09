@@ -38,11 +38,13 @@
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/dri2proto.h>
+#include <X11/extensions/xfixeswire.h>
 #include "dixstruct.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "extnsionst.h"
 #include "xf86drm.h"
+#include "xfixes.h"
 #include "dri2.h"
 
 /* The only xf86 include */
@@ -50,19 +52,6 @@
 
 static ExtensionEntry	*dri2Extension;
 static RESTYPE		 dri2DrawableRes;
-
-static Bool
-validScreen(ClientPtr client, int screen, ScreenPtr *pScreen)
-{
-    if (screen >= screenInfo.numScreens) {
-	client->errorValue = screen;
-	return FALSE;
-    }
-
-    *pScreen = screenInfo.screens[screen];
-
-    return TRUE;
-}
 
 static Bool
 validDrawable(ClientPtr client, XID drawable,
@@ -111,67 +100,55 @@ ProcDRI2Connect(ClientPtr client)
 {
     REQUEST(xDRI2ConnectReq);
     xDRI2ConnectReply rep;
-    ScreenPtr pScreen;
-    int fd;
+    DrawablePtr pDraw;
+    int fd, status;
     const char *driverName;
-    char *busId = NULL;
-    unsigned int sareaHandle;
+    const char *deviceName;
 
     REQUEST_SIZE_MATCH(xDRI2ConnectReq);
-    if (!validScreen(client, stuff->screen, &pScreen))
-	return BadValue;
+    if (!validDrawable(client, stuff->window, &pDraw, &status))
+	return status;
     
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
     rep.driverNameLength = 0;
-    rep.busIdLength = 0;
-    rep.sareaHandle = 0;
+    rep.deviceNameLength = 0;
 
-    if (!DRI2Connect(pScreen, &fd, &driverName, &sareaHandle))
-	goto fail;
-
-    busId = drmGetBusid(fd);
-    if (busId == NULL)
+    if (!DRI2Connect(pDraw->pScreen,
+		     stuff->driverType, &fd, &driverName, &deviceName))
 	goto fail;
 
     rep.driverNameLength = strlen(driverName);
-    rep.busIdLength = strlen(busId);
-    rep.sareaHandle = sareaHandle;
-    rep.length = (rep.driverNameLength + 3) / 4 + (rep.busIdLength + 3) / 4;
+    rep.deviceNameLength = strlen(deviceName);
+    rep.length = (rep.driverNameLength + 3) / 4 +
+	    (rep.deviceNameLength + 3) / 4;
 
  fail:
     WriteToClient(client, sizeof(xDRI2ConnectReply), &rep);
     WriteToClient(client, rep.driverNameLength, driverName);
-    WriteToClient(client, rep.busIdLength, busId);
-    drmFreeBusid(busId);
+    WriteToClient(client, rep.deviceNameLength, deviceName);
 
     return client->noClientException;
 }
 
 static int
-ProcDRI2AuthConnection(ClientPtr client)
+ProcDRI2Authenticate(ClientPtr client)
 {
-    REQUEST(xDRI2AuthConnectionReq);
-    xDRI2AuthConnectionReply rep;
-    ScreenPtr pScreen;
+    REQUEST(xDRI2AuthenticateReq);
+    xDRI2AuthenticateReply rep;
+    DrawablePtr pDraw;
+    int status;
 
-    REQUEST_SIZE_MATCH(xDRI2AuthConnectionReq);
-    if (!validScreen(client, stuff->screen, &pScreen))
-	return BadValue;
+    REQUEST_SIZE_MATCH(xDRI2AuthenticateReq);
+    if (!validDrawable(client, stuff->window, &pDraw, &status))
+	return status;
 
     rep.type = X_Reply;
-    rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.authenticated = 1;
-
-    if (!DRI2AuthConnection(pScreen, stuff->magic)) {
-        ErrorF("DRI2: Failed to authenticate %lu\n",
-	       (unsigned long) stuff->magic);
-	rep.authenticated = 0;
-    }
-
-    WriteToClient(client, sizeof(xDRI2AuthConnectionReply), &rep);
+    rep.length = 0;
+    rep.authenticated = DRI2Authenticate(pDraw->pScreen, stuff->magic);
+    WriteToClient(client, sizeof(xDRI2AuthenticateReply), &rep);
 
     return client->noClientException;
 }
@@ -180,9 +157,7 @@ static int
 ProcDRI2CreateDrawable(ClientPtr client)
 {
     REQUEST(xDRI2CreateDrawableReq);
-    xDRI2CreateDrawableReply rep;
     DrawablePtr pDrawable;
-    unsigned int handle, head;
     int status;
 
     REQUEST_SIZE_MATCH(xDRI2CreateDrawableReq);
@@ -190,21 +165,14 @@ ProcDRI2CreateDrawable(ClientPtr client)
     if (!validDrawable(client, stuff->drawable, &pDrawable, &status))
 	return status;
 
-    if (!DRI2CreateDrawable(pDrawable, &handle, &head))
-	return BadMatch;
+    status = DRI2CreateDrawable(pDrawable);
+    if (status != Success)
+	return status;
 
     if (!AddResource(stuff->drawable, dri2DrawableRes, pDrawable)) {
 	DRI2DestroyDrawable(pDrawable);
 	return BadAlloc;
     }
-
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.handle = handle;
-    rep.head = head;
-
-    WriteToClient(client, sizeof(xDRI2CreateDrawableReply), &rep);
 
     return client->noClientException;
 }
@@ -226,26 +194,76 @@ ProcDRI2DestroyDrawable(ClientPtr client)
 }
 
 static int
-ProcDRI2ReemitDrawableInfo(ClientPtr client)
+ProcDRI2GetBuffers(ClientPtr client)
 {
-    REQUEST(xDRI2ReemitDrawableInfoReq);
-    xDRI2ReemitDrawableInfoReply rep;
+    REQUEST(xDRI2GetBuffersReq);
+    xDRI2GetBuffersReply rep;
     DrawablePtr pDrawable;
-    unsigned int head;
-    int status;
+    DRI2BufferPtr buffers;
+    int i, status, width, height, count;
+    unsigned int *attachments;
+    xDRI2Buffer buffer;
 
-    REQUEST_SIZE_MATCH(xDRI2ReemitDrawableInfoReq);
+    REQUEST_FIXED_SIZE(xDRI2GetBuffersReq, stuff->count * 4);
     if (!validDrawable(client, stuff->drawable, &pDrawable, &status))
 	return status;
 
-    DRI2ReemitDrawableInfo(pDrawable, &head);
+    attachments = (unsigned int *) &stuff[1];
+    buffers = DRI2GetBuffers(pDrawable, &width, &height,
+			     attachments, stuff->count, &count);
+
+    rep.type = X_Reply;
+    rep.length = count * sizeof(xDRI2Buffer) / 4;
+    rep.sequenceNumber = client->sequence;
+    rep.width = width;
+    rep.height = height;
+    rep.count = count;
+    WriteToClient(client, sizeof(xDRI2GetBuffersReply), &rep);
+
+    for (i = 0; i < count; i++) {
+	buffer.attachment = buffers[i].attachment;
+	buffer.name = buffers[i].name;
+	buffer.pitch = buffers[i].pitch;
+	buffer.cpp = buffers[i].cpp;
+	buffer.flags = buffers[i].flags;
+	WriteToClient(client, sizeof(xDRI2Buffer), &buffer);
+    }
+
+    return client->noClientException;
+}
+
+static int
+ProcDRI2CopyRegion(ClientPtr client)
+{
+    REQUEST(xDRI2CopyRegionReq);
+    xDRI2CopyRegionReply rep;
+    DrawablePtr pDrawable;
+    int status;
+    RegionPtr pRegion;
+
+    REQUEST_SIZE_MATCH(xDRI2CopyRegionReq);
+
+    if (!validDrawable(client, stuff->drawable, &pDrawable, &status))
+	return status;
+
+    VERIFY_REGION(pRegion, stuff->region, client, DixReadAccess);
+
+    status = DRI2CopyRegion(pDrawable, pRegion, stuff->dest, stuff->src);
+    if (status != Success)
+	return status;
+
+    /* CopyRegion needs to be a round trip to make sure the X server
+     * queues the swap buffer rendering commands before the DRI client
+     * continues rendering.  The reply has a bitmask to signal the
+     * presense of optional return values as well, but we're not using
+     * that yet.
+     */
 
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.head = head;
 
-    WriteToClient(client, sizeof(xDRI2ReemitDrawableInfoReply), &rep);
+    WriteToClient(client, sizeof(xDRI2CopyRegionReply), &rep);
 
     return client->noClientException;
 }
@@ -266,14 +284,16 @@ ProcDRI2Dispatch (ClientPtr client)
     switch (stuff->data) {
     case X_DRI2Connect:
 	return ProcDRI2Connect(client);
-    case X_DRI2AuthConnection:
-	return ProcDRI2AuthConnection(client);
+    case X_DRI2Authenticate:
+	return ProcDRI2Authenticate(client);
     case X_DRI2CreateDrawable:
 	return ProcDRI2CreateDrawable(client);
     case X_DRI2DestroyDrawable:
 	return ProcDRI2DestroyDrawable(client);
-    case X_DRI2ReemitDrawableInfo:
-	return ProcDRI2ReemitDrawableInfo(client);
+    case X_DRI2GetBuffers:
+	return ProcDRI2GetBuffers(client);
+    case X_DRI2CopyRegion:
+	return ProcDRI2CopyRegion(client);
     default:
 	return BadRequest;
     }
@@ -296,8 +316,7 @@ SProcDRI2Connect(ClientPtr client)
     swaps(&rep.sequenceNumber, n);
     rep.length = 0;
     rep.driverNameLength = 0;
-    rep.busIdLength = 0;
-    rep.sareaHandle = 0;
+    rep.deviceNameLength = 0;
 
     return client->noClientException;
 }
@@ -322,11 +341,6 @@ SProcDRI2Dispatch (ClientPtr client)
     }
 }
 
-static void
-DRI2ResetProc (ExtensionEntry *extEntry)
-{
-}
-
 static int DRI2DrawableGone(pointer p, XID id)
 {
     DrawablePtr pDrawable = p;
@@ -344,7 +358,7 @@ DRI2ExtensionInit(void)
 				 DRI2NumberErrors,
 				 ProcDRI2Dispatch,
 				 SProcDRI2Dispatch,
-				 DRI2ResetProc,
+				 NULL,
 				 StandardMinorOpcode);
 
     dri2DrawableRes = CreateNewResourceType(DRI2DrawableGone);

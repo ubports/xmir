@@ -33,10 +33,7 @@
 #include <string.h>
 
 #include "exa_priv.h"
-#include <X11/fonts/fontstruct.h>
-#include "dixfontstr.h"
 #include "exa.h"
-#include "cw.h"
 
 #if DEBUG_MIGRATE
 #define DBG_MIGRATE(a) ErrorF a
@@ -212,9 +209,9 @@ exaCopyDirty(ExaMigrationPtr migrate, RegionPtr pValidDst, RegionPtr pValidSrc,
 				    pBox->x1, pBox->y1,
 				    pBox->x2 - pBox->x1,
 				    pBox->y2 - pBox->y1,
-				    pExaPixmap->sys_ptr
+				    (char *) (pExaPixmap->sys_ptr
 				    + pBox->y1 * pExaPixmap->sys_pitch
-				    + pBox->x1 * pPixmap->drawable.bitsPerPixel / 8,
+				    + pBox->x1 * pPixmap->drawable.bitsPerPixel / 8),
 				    pExaPixmap->sys_pitch))
 	{
 	    if (!access_prepared) {
