@@ -17,9 +17,9 @@ Index: xorg-server/composite/compwindow.c
  	REGION_TRANSLATE (prgnSrc, prgnSrc,
  			  pWin->drawable.x - ptOldOrg.x,
  			  pWin->drawable.y - ptOldOrg.y);
--	DamageDamageRegion (&pWin->drawable, prgnSrc);
+-	DamageRegionAppend(&pWin->drawable, prgnSrc);
 +	if (pWin->redirectDraw && cw->update == CompositeRedirectAutomatic)
-+	  DamageDamageRegion (&pWin->drawable, prgnSrc);
++	  DamageRegionAppend(&pWin->drawable, prgnSrc);
      }
      cs->CopyWindow = pScreen->CopyWindow;
      pScreen->CopyWindow = compCopyWindow;
@@ -27,9 +27,9 @@ Index: xorg-server/composite/compwindow.c
      /*
       * Report that as damaged so it will be redrawn
       */
--    DamageDamageRegion (&pWin->drawable, &damage);
+-    DamageRegionAppend(&pWin->drawable, &damage);
 +    if (cw->update == CompositeRedirectAutomatic)
-+      DamageDamageRegion (&pWin->drawable, &damage);
++      DamageRegionAppend(&pWin->drawable, &damage);
      REGION_UNINIT (pScreen, &damage);
      /*
       * Save the new border clip region

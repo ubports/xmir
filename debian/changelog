@@ -1,3 +1,17 @@
+xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from debian experimental git branch.
+  * Dropped patches:
+    - 103_inputproto_1.4.3_is_fine.patch: obsolete
+    - 137_add_device_property_support.patch: upstream
+    - 138_look_at_all_bytes_of_dev_enabled.diff: upstream
+    - 141_improved_driver_selection.patch: upstream
+    - 150_no_visibility_notify_on_unredirect.patch: upstream
+  * 110_fedora_no_move_damage.patch modified to use new function names.
+  * Renumbered 142_psb_auto.patch to 103.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 11 Dec 2008 19:15:09 +0200
+
 xorg-server (2:1.5.99.2-1) UNRELEASED; urgency=low
 
   * New upstream beta version.
