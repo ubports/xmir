@@ -12,3 +12,6 @@
 136_fedora_force_switchcorekeyboard_for_evdev.patch
 140_quell_acpi_errmsgs.patch
 143_default_to_vesa.patch
+150_dont-update-vcp-valuators.patch
+151_allow-null-as-rulesfile.patch
+152_let-the-ddx-decide-on-the-xkbrulesdefaults.patch

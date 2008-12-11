@@ -9,6 +9,17 @@ xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
     - 150_no_visibility_notify_on_unredirect.patch: upstream
   * 110_fedora_no_move_damage.patch modified to use new function names.
   * Renumbered 142_psb_auto.patch to 103.
+  * Add a couple of patches from the proposed queue:
+    - 150_dont-update-vcp-valuators.patch
+      The VCP doesn't need to update the valuators anyway since it cannot
+      send XI events. Just skip that bit.
+    - 151_allow-null-as-rulesfile.patch
+      If no rules file is given, simply re-use the previous one. If no
+      RF is given the first time this function is called, use the
+      built-in default.
+    - 152_let-the-ddx-decide-on-the-xkbrulesdefaults.patch
+      Rather than assuming rules in the CoreKeyboardProc, init the default
+      rules in InitCoreDevices, then re-use them later.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 11 Dec 2008 19:15:09 +0200
 
