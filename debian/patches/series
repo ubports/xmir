@@ -9,7 +9,7 @@
 110_fedora_no_move_damage.patch
 121_only_switch_vt_when_active.diff
 135_rethrow_signals.patch
-136_fedora_force_switchcorekeyboard_for_evdev.patch
+#136_fedora_force_switchcorekeyboard_for_evdev.patch
 140_quell_acpi_errmsgs.patch
 143_default_to_vesa.patch
 150_dont-update-vcp-valuators.patch
