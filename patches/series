@@ -15,3 +15,4 @@
 150_dont-update-vcp-valuators.patch
 151_allow-null-as-rulesfile.patch
 152_let-the-ddx-decide-on-the-xkbrulesdefaults.patch
+153_make_dmx_compile.patch
