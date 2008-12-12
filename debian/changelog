@@ -20,8 +20,8 @@ xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
     - 152_let-the-ddx-decide-on-the-xkbrulesdefaults.patch
       Rather than assuming rules in the CoreKeyboardProc, init the default
       rules in InitCoreDevices, then re-use them later.
-    - 153_make_dmx_compile.patch
-      Change xcalloc -> calloc, so that dmx compiles. Not tested if it
+  * Add 153_make_dmx_compile.patch
+    - Change xcalloc -> calloc, so that dmx compiles. Not tested if it
       also works.
   * Drop patch 136, since SwitchCoreKeyboard is gone, and patches 151/152
     basically reimplement the functionality.
