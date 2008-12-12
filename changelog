@@ -23,8 +23,8 @@ xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
     - 153_make_dmx_compile.patch
       Change xcalloc -> calloc, so that dmx compiles. Not tested if it
       also works.
-  * Disable patch 136 for now, since it makes the build fail. Discuss
-    with upstream to see if it's needed anymore.
+  * Drop patch 136, since SwitchCoreKeyboard is gone, and patches 151/152
+    basically reimplement the functionality.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 11 Dec 2008 19:15:09 +0200
 
