@@ -1,7 +1,12 @@
-diff -Nurp xorg-server-1.4.99.906-patched/hw/xfree86/common/xf86Events.c xorg-server-1.4.99.906-working/hw/xfree86/common/xf86Events.c
---- xorg-server-1.4.99.906-patched/hw/xfree86/common/xf86Events.c	2008-09-01 13:17:47.000000000 -0700
-+++ xorg-server-1.4.99.906-working/hw/xfree86/common/xf86Events.c	2008-09-01 13:19:35.000000000 -0700
-@@ -741,6 +741,8 @@ static __inline__ void xorg_backtrace(vo
+# Return from the signal handler, in order to have the newly raised
+# signal actually get processed. This now rethrows the originally
+# caught signal instead of just aborting, so that apport now actually
+# works. (LP: #226668)
+Index: xorg-server-1.5.3/hw/xfree86/common/xf86Events.c
+===================================================================
+--- xorg-server-1.5.3.orig/hw/xfree86/common/xf86Events.c	2008-12-10 22:55:34.000000000 -0800
++++ xorg-server-1.5.3/hw/xfree86/common/xf86Events.c	2008-12-10 22:55:41.000000000 -0800
+@@ -568,6 +568,8 @@
  void
  xf86SigHandler(int signo)
  {
@@ -10,7 +15,7 @@ diff -Nurp xorg-server-1.4.99.906-patched/hw/xfree86/common/xf86Events.c xorg-se
    if ((signo == SIGILL) && xf86SigIllHandler) {
      (*xf86SigIllHandler)();
      /* Re-arm handler just in case we unexpectedly return here */
-@@ -763,6 +765,30 @@ xf86SigHandler(int signo)
+@@ -590,6 +592,41 @@
  
    xorg_backtrace();
  
@@ -31,7 +36,18 @@ diff -Nurp xorg-server-1.4.99.906-patched/hw/xfree86/common/xf86Events.c xorg-se
 +#endif
 +      if (!beenhere) {
 +          beenhere = TRUE;
-+          AbortServer();
++          OsCleanup(TRUE);
++          CloseDownDevices();
++          SigAbortDDX(signo);
++          fflush(stderr);
++          if (CoreDump) {
++              if (signo != 0)
++                  raise(signo);
++              else
++                  abort();
++          }
++          /*exit (1);*/
++
 +      } else {
 +          abort();
 +      }
@@ -41,3 +57,17 @@ diff -Nurp xorg-server-1.4.99.906-patched/hw/xfree86/common/xf86Events.c xorg-se
    FatalError("Caught signal %d.  Server aborting\n", signo);
  }
  
+Index: xorg-server-1.5.3/include/os.h
+===================================================================
+--- xorg-server-1.5.3.orig/include/os.h	2008-12-10 22:55:34.000000000 -0800
++++ xorg-server-1.5.3/include/os.h	2008-12-10 22:55:41.000000000 -0800
+@@ -458,7 +458,9 @@
+ extern CallbackListPtr FlushCallback;
+ 
+ extern void AbortDDX(void);
++extern void SigAbortDDX(int signo);
+ extern void ddxGiveUp(void);
++extern void ddxSigGiveUp(int signo);
+ extern int TimeSinceLastInputEvent(void);
+ 
+ /* Logging. */

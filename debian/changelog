@@ -26,6 +26,9 @@ xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
   * Drop patch 136, since SwitchCoreKeyboard is gone, and patches 151/152
     basically reimplement the functionality.
 
+  [ Bryce Harrington ]
+  * Patch 135 updated so that apport actually works now.
+
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 11 Dec 2008 19:15:09 +0200
 
 xorg-server (2:1.5.99.3-1) UNRELEASED; urgency=low
