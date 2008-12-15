@@ -30,7 +30,8 @@ xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
     used.
 
   [ Bryce Harrington ]
-  * Patch 135 updated so that apport actually works now.
+  * Patch 135 updated so that apport actually works now, but leave it
+    disabled until the code is updated for 1.6.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 11 Dec 2008 19:15:09 +0200
 
