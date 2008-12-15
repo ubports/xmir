@@ -1,0 +1,58 @@
+From be205e9d6d1baeb91a010d29b2d70050d3638cbc Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Mon, 15 Dec 2008 10:46:07 +1000
+Subject: [PATCH] mi: force CopyKeyClass for key events. (#19048)
+
+While we don't want to copy all other device classes into the VCK, we need to
+copy the key class to transfer the layout from the SDs into the VCK.
+This resembles the functionality of SwitchCoreKeyboard in server 1.5.
+
+X.Org Bug 19048 <http://bugs.freedesktop.org/show_bug.cgi?id=19048>
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ Xi/exevents.c |    2 +-
+ mi/mieq.c     |    8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/Xi/exevents.c b/Xi/exevents.c
+index 1b60099..d6b4576 100644
+--- a/Xi/exevents.c
++++ b/Xi/exevents.c
+@@ -186,7 +186,7 @@ XIGetDevice(xEvent* xE)
+  * This code is basically the old SwitchCoreKeyboard.
+  */
+ 
+-static void
++void
+ CopyKeyClass(DeviceIntPtr device, DeviceIntPtr master)
+ {
+     static DeviceIntPtr lastMapNotifyDevice = NULL;
+diff --git a/mi/mieq.c b/mi/mieq.c
+index 87cdfba..9b15752 100644
+--- a/mi/mieq.c
++++ b/mi/mieq.c
+@@ -293,6 +293,8 @@ CopyGetMasterEvent(DeviceIntPtr mdev, xEvent* original,
+         ChangeDeviceID(mdev, *master);
+     }
+ }
++extern void
++CopyKeyClass(DeviceIntPtr device, DeviceIntPtr master);
+ 
+ /* Call this from ProcessInputEvents(). */
+ void
+@@ -352,6 +354,12 @@ mieqProcessInputEvents(void)
+             NewCurrentScreen (dev, DequeueScreen(dev), x, y);
+         }
+         else {
++            /* Force a copy of the key class into the VCK so that the layout
++               is transferred. */
++            if (event->u.u.type == DeviceKeyPress ||
++                event->u.u.type == DeviceKeyRelease)
++                CopyKeyClass(dev, master);
++
+             if (master)
+                 CopyGetMasterEvent(master, event,
+                                    &master_event, nevents);
+-- 
+1.6.0.4

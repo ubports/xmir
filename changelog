@@ -25,6 +25,9 @@ xorg-server (2:1.5.99.3-0ubuntu1) UNRELEASED; urgency=low
       also works.
   * Drop patch 136, since SwitchCoreKeyboard is gone, and patches 151/152
     basically reimplement the functionality.
+  * Add 154_force-copykeyclass-for-key-events.patch, to fix fdo
+    bug 19048. Without this the server default layout would always be
+    used.
 
   [ Bryce Harrington ]
   * Patch 135 updated so that apport actually works now.
