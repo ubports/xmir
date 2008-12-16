@@ -1,3 +1,9 @@
+xorg-server (2:1.5.99.3-0ubuntu2) jaunty; urgency=low
+
+  * Merge server-1.6-branch (LP: #308225).
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 16 Dec 2008 10:00:58 +0200
+
 xorg-server (2:1.5.99.3-0ubuntu1) jaunty; urgency=low
 
   * Merge from debian experimental git branch.
