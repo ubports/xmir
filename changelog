@@ -1,3 +1,9 @@
+xorg-server (2:1.5.99.3-0ubuntu3) UNRELEASED; urgency=low
+
+  * debian/rules: Disable builtin fonts (LP: #308649)
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 16 Dec 2008 20:28:57 +0200
+
 xorg-server (2:1.5.99.3-0ubuntu2) jaunty; urgency=low
 
   * Merge server-1.6-branch (LP: #308225).
