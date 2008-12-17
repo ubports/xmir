@@ -1,3 +1,9 @@
+xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
+
+  * debian/rules: Enable dbus-support.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 17 Dec 2008 15:02:53 +0200
+
 xorg-server (2:1.5.99.3-0ubuntu3) jaunty; urgency=low
 
   [Timo Aaltonen]
