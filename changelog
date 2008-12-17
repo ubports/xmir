@@ -1,8 +1,13 @@
 xorg-server (2:1.5.99.3-0ubuntu3) UNRELEASED; urgency=low
 
+  [Timo Aaltonen]
   * debian/rules: Disable builtin fonts (LP: #308649)
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 16 Dec 2008 20:28:57 +0200
+  [Bryce Harrington]
+  * 135_rethrow_signals.patch:  Update for 1.6 and re-enable.
+    [Closes LP: #226668]
+  
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 16 Dec 2008 18:57:43 -0800
 
 xorg-server (2:1.5.99.3-0ubuntu2) jaunty; urgency=low
 
