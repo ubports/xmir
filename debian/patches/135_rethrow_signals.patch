@@ -2,11 +2,10 @@
 # signal actually get processed. This now rethrows the originally
 # caught signal instead of just aborting, so that apport now actually
 # works. (LP: #226668)
-Index: xorg-server-1.5.3/hw/xfree86/common/xf86Events.c
-===================================================================
---- xorg-server-1.5.3.orig/hw/xfree86/common/xf86Events.c	2008-12-10 22:55:34.000000000 -0800
-+++ xorg-server-1.5.3/hw/xfree86/common/xf86Events.c	2008-12-10 22:55:41.000000000 -0800
-@@ -568,6 +568,8 @@
+diff -Nurp patched/hw/xfree86/common/xf86Events.c working/hw/xfree86/common/xf86Events.c
+--- patched/hw/xfree86/common/xf86Events.c	2008-12-16 18:28:54.000000000 -0800
++++ working/hw/xfree86/common/xf86Events.c	2008-12-16 18:36:41.000000000 -0800
+@@ -362,6 +362,8 @@ xf86InterceptSigIll(void (*sigillhandler
  void
  xf86SigHandler(int signo)
  {
@@ -15,7 +14,7 @@ Index: xorg-server-1.5.3/hw/xfree86/common/xf86Events.c
    if ((signo == SIGILL) && xf86SigIllHandler) {
      (*xf86SigIllHandler)();
      /* Re-arm handler just in case we unexpectedly return here */
-@@ -590,6 +592,41 @@
+@@ -384,6 +386,41 @@ xf86SigHandler(int signo)
  
    xorg_backtrace();
  
@@ -57,11 +56,107 @@ Index: xorg-server-1.5.3/hw/xfree86/common/xf86Events.c
    FatalError("Caught signal %d.  Server aborting\n", signo);
  }
  
-Index: xorg-server-1.5.3/include/os.h
-===================================================================
---- xorg-server-1.5.3.orig/include/os.h	2008-12-10 22:55:34.000000000 -0800
-+++ xorg-server-1.5.3/include/os.h	2008-12-10 22:55:41.000000000 -0800
-@@ -458,7 +458,9 @@
+diff -Nurp patched/hw/xfree86/common/xf86Init.c working/hw/xfree86/common/xf86Init.c
+--- patched/hw/xfree86/common/xf86Init.c	2008-12-16 18:16:50.000000000 -0800
++++ working/hw/xfree86/common/xf86Init.c	2008-12-16 18:34:38.000000000 -0800
+@@ -1375,14 +1375,17 @@ OsVendorInit()
+ }
+ 
+ /*
+- * ddxGiveUp --
++ * ddxSigGiveUp --
+  *      Device dependent cleanup. Called by by dix before normal server death.
+  *      For SYSV386 we must switch the terminal back to normal mode. No error-
+  *      checking here, since there should be restored as much as possible.
++ *
++ *      If a non-zero signo is passed, re-raise that signal rather than
++ *      calling abort().
+  */
+ 
+ void
+-ddxGiveUp()
++ddxSigGiveUp(int signo)
+ {
+     int i;
+ 
+@@ -1410,24 +1413,47 @@ ddxGiveUp()
+ 
+     xf86CloseConsole();
+ 
++    ErrorF (" ddxSigGiveUp: Closing log\n");
+     xf86CloseLog();
+ 
+     /* If an unexpected signal was caught, dump a core for debugging */
+-    if (xf86Info.caughtSignal)
+-	abort();
++    if (xf86Info.caughtSignal) {
++        if (signo != 0) {
++            ErrorF (" ddxSigGiveUp: re-raising %d\n", signo);
++            raise(signo);
++        } else {
++            ErrorF (" ddxSigGiveUp: aborting\n");
++            abort();
++        }
++    }
+ }
+ 
++/*
++ * ddxGiveUp --
++ *      Device dependent cleanup. Called by by dix before normal server death.
++ *      For SYSV386 we must switch the terminal back to normal mode. No error-
++ *      checking here, since there should be restored as much as possible.
++ */
++
++void
++ddxGiveUp()
++{
++    ddxSigGiveUp(0);
++}
+ 
+ 
+ /*
+- * AbortDDX --
++ * SigAbortDDX --
+  *      DDX - specific abort routine.  Called by AbortServer(). The attempt is
+  *      made to restore all original setting of the displays. Also all devices
+  *      are closed.
++ *
++ *      If a non-zero signo is passed, re-raise that signal rather than calling
++ *      abort()
+  */
+ 
+ void
+-AbortDDX()
++SigAbortDDX(int signo)
+ {
+   int i;
+ 
+@@ -1459,7 +1485,20 @@ AbortDDX()
+    * This is needed for an abnormal server exit, since the normal exit stuff
+    * MUST also be performed (i.e. the vt must be left in a defined state)
+    */
+-  ddxGiveUp();
++  ddxSigGiveUp(signo);
++}
++
++/*
++ * AbortDDX --
++ *      DDX - specific abort routine.  The attempt is made to restore
++ *      all original setting of the displays. Also all devices are
++ *      closed.
++ */
++
++void
++AbortDDX()
++{
++    SigAbortDDX(0);
+ }
+ 
+ void
+diff -Nurp patched/include/os.h working/include/os.h
+--- patched/include/os.h	2008-12-16 18:28:54.000000000 -0800
++++ working/include/os.h	2008-12-16 18:17:00.000000000 -0800
+@@ -437,7 +437,9 @@ typedef struct {
  extern CallbackListPtr FlushCallback;
  
  extern void AbortDDX(void);
@@ -70,4 +165,4 @@ Index: xorg-server-1.5.3/include/os.h
 +extern void ddxSigGiveUp(int signo);
  extern int TimeSinceLastInputEvent(void);
  
- /* Logging. */
+ /* strcasecmp.c */
