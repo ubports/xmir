@@ -54,7 +54,7 @@
 // pbproxy/pbproxy.h
 extern BOOL xpbproxy_init (void);
 
-#define DEFAULTS_FILE "/usr/X11/lib/X11/xserver/Xquartz.plist"
+#define DEFAULTS_FILE X11LIBDIR"/X11/xserver/Xquartz.plist"
 
 #ifndef XSERVER_VERSION
 #define XSERVER_VERSION "?"
@@ -1008,6 +1008,9 @@ extern int darwin_modifier_flags; // darwinEvents.c
                 pDev = darwinTabletCurrent;
             }
 
+/* Older libXplugin (Tiger/"Stock" Leopard) aren't thread safe, so we can't call xp_find_window from the Appkit thread */
+#ifdef XPLUGIN_VERSION
+#if XPLUGIN_VERSION > 0
             if(!quartzServerVisible) {
                 xp_window_id wid;
 
@@ -1023,6 +1026,8 @@ extern int darwin_modifier_flags; // darwinEvents.c
                     wid == 0)
                     return;        
             }
+#endif
+#endif
             
             DarwinSendPointerEvents(pDev, ev_type, ev_button, pointer_x, pointer_y,
                                     pressure, tilt_x, tilt_y);

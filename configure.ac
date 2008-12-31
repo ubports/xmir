@@ -63,6 +63,7 @@ AC_PROG_LEX
 AC_PROG_YACC
 AC_SYS_LARGEFILE
 XORG_PROG_RAWCPP
+AC_PATH_PROG(SED,sed)
 
 dnl Check for dtrace program (needed to build Xserver dtrace probes)
 dnl Also checks for <sys/sdt.h>, since some Linux distros have an 
@@ -485,10 +486,14 @@ AC_ARG_WITH(apple-applications-dir,AS_HELP_STRING([--with-apple-applications-dir
 				[ APPLE_APPLICATIONS_DIR="${withval}" ],
 				[ APPLE_APPLICATIONS_DIR="/Applications/Utilities" ])
 AC_SUBST([APPLE_APPLICATIONS_DIR])
-AC_ARG_WITH(launchagents-dir,AS_HELP_STRING([--with-launchagents-dir=PATH], [Path to launchd's LaunchAgents directory (default: /Library/LaunchAgents)]),
-				[ launchagentsdir="${withval}" ],
-				[ launchagentsdir="/Library/LaunchAgents" ])
-AC_SUBST([launchagentsdir])
+AC_ARG_WITH(apple-application-name,AS_HELP_STRING([--with-apple-application-name=NAME], [Name for the .app (default: X11)]),
+				[ APPLE_APPLICATION_NAME="${withval}" ],
+				[ APPLE_APPLICATION_NAME="X11" ])
+AC_SUBST([APPLE_APPLICATION_NAME])
+AC_ARG_WITH(apple-application-id,AS_HELP_STRING([--with-apple-application-id=VALUE], [CFBundleIdentification for the .app (default: org.x.X11)]),
+				[ APPLE_APPLICATION_ID="${withval}" ],
+				[ APPLE_APPLICATION_ID="org.x.X11" ])
+AC_SUBST([APPLE_APPLICATION_ID])
 AC_ARG_ENABLE(builddocs,      AS_HELP_STRING([--enable-builddocs], [Build docs (default: disabled)]),
                                 [BUILDDOCS=$enableval],
                                 [BUILDDOCS=no])
@@ -1553,8 +1558,7 @@ if test "x$XQUARTZ" = xyes; then
 
 	CFLAGS="${CFLAGS} -DROOTLESS_WORKAROUND -DNO_ALLOCA"
 
-	PKG_CHECK_MODULES(APPLEWMPROTO, [applewmproto >= 1.1.1])
-	PKG_CHECK_MODULES(APPLEWM, [applewm >= 1.0.0])
+	PKG_CHECK_MODULES(XPBPROXY, [applewmproto >= 1.1.1] [applewm >= 1.0.0] xfixes fixesproto)
 
 	if test "x$STANDALONE_XPBPROXY" = xyes ; then
 		AC_DEFINE(STANDALONE_XPBPROXY,1,[Build a standalone xpbproxy])
