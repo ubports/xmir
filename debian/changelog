@@ -2,6 +2,9 @@ xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
 
   * debian/rules: Enable dbus-support.
   * Merge current server-1.6-branch.
+  * Disable patch 107 for now, to see what kind of a performance hit 
+    it'll be. The problem it causes is random garbage on windows
+    while apps are being loaded.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 17 Dec 2008 15:02:53 +0200
 
