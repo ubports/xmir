@@ -11,8 +11,6 @@
 135_rethrow_signals.patch
 140_quell_acpi_errmsgs.patch
 143_default_to_vesa.patch
-150_dont-update-vcp-valuators.patch
-151_allow-null-as-rulesfile.patch
 152_let-the-ddx-decide-on-the-xkbrulesdefaults.patch
 153_make_dmx_compile.patch
 154_force-copykeyclass-for-key-events.patch
