@@ -1,5 +1,6 @@
 xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
 
+  [Timo Aaltonen]
   * debian/rules: Enable dbus-support.
   * Merge current server-1.6-branch.
   * Disable patch 107 for now, to see what kind of a performance hit 
@@ -7,7 +8,12 @@ xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
     while apps are being loaded.
   * Remove patches 150, 151, applied upstream.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 17 Dec 2008 15:02:53 +0200
+  [Bryce Harrington]
+  * 155_no_checkmotion_for_disabled_devices.patch: Cherrypick upstream
+    patch to fix crash when a device is not enabled (such as after a
+    suspend/resume).  LP: #313567
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 08 Jan 2009 18:30:42 -0800
 
 xorg-server (2:1.5.99.3-0ubuntu3) jaunty; urgency=low
 
