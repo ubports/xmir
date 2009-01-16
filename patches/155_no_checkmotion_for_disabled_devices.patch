@@ -1,27 +1,30 @@
-commit e1a3a1a0d85c9971aea65c2228b5fd4dbf3bf57a
-Author: Peter Hutterer <peter.hutterer@who-t.net>
-Date:   Tue Dec 23 10:00:34 2008 +1000
-
-    xfree86: don't call CheckMotion if a device hasn't been enabled. #19176
-    
-    X.Org Bug <http://bugs.freedesktop.org/show_bug.cgi?id=19176>
-
-diff --git a/hw/xfree86/common/xf86Xinput.c b/hw/xfree86/common/xf86Xinput.c
-index fe62772..e39c087 100644
---- a/hw/xfree86/common/xf86Xinput.c
-+++ b/hw/xfree86/common/xf86Xinput.c
-@@ -549,10 +549,11 @@ xf86NewInputDevice(IDevPtr idev, DeviceIntPtr *pdev, BOOL enable)
-     ActivateDevice(dev);
-     /* Enable it if it's properly initialised and we're currently in the VT */
-     if (enable && dev->inited && dev->startup && xf86Screens[0]->vtSema)
-+    {
-         EnableDevice(dev);
+diff -Nurp patched/mi/mieq.c working/mi/mieq.c
+--- patched/mi/mieq.c	2009-01-15 23:18:21.000000000 -0800
++++ working/mi/mieq.c	2009-01-15 23:23:01.000000000 -0800
+@@ -354,17 +354,15 @@ mieqProcessInputEvents(void)
+             NewCurrentScreen (dev, DequeueScreen(dev), x, y);
+         }
+         else {
+-            /* Force a copy of the key class into the VCK so that the layout
+-               is transferred. */
+-            if (event->u.u.type == DeviceKeyPress ||
+-                event->u.u.type == DeviceKeyRelease)
+-                CopyKeyClass(dev, master);
 -
--    /* send enter/leave event, update sprite window */
--    CheckMotion(NULL, dev);
-+        /* send enter/leave event, update sprite window */
-+        CheckMotion(NULL, dev);
-+    }
+-            if (master)
+-                CopyGetMasterEvent(master, event,
+-                                   &master_event, nevents);
+-            else
+-                master_event = NULL;
++            if (master) {
++                /* Force a copy of the key class into the VCK so that the layout
++                   is transferred. */
++                if (event->u.u.type == DeviceKeyPress ||
++                    event->u.u.type == DeviceKeyRelease)
++                    CopyKeyClass(dev, master);
++
++                CopyGetMasterEvent(master, event, masterEvents, nevents);
++            }
  
-     *pdev = dev;
-     return Success;
+             /* If someone's registered a custom event handler, let them
+              * steal it. */

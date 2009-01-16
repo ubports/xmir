@@ -15,3 +15,4 @@
 153_make_dmx_compile.patch
 154_force-copykeyclass-for-key-events.patch
 155_no_checkmotion_for_disabled_devices.patch
+156_exevents_copykeyclass_nullptrcheck.patch
