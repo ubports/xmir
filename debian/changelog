@@ -6,14 +6,20 @@ xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
   * Disable patch 107 for now, to see what kind of a performance hit 
     it'll be. The problem it causes is random garbage on windows
     while apps are being loaded.
+    (LP: #254468)
   * Remove patches 150, 151, applied upstream.
 
   [Bryce Harrington]
   * 155_no_checkmotion_for_disabled_devices.patch: Cherrypick upstream
-    patch to fix crash when a device is not enabled (such as after a
-    suspend/resume).  LP: #313567
+    changes to fix crash when a device is not enabled (such as after a
+    suspend/resume).
+    (LP: #313567)
+  * 156_exevents_copykeyclass_nullptrcheck.patch: Add several NULL pointer
+    checks in CopyKeyClass to prevent SEGFAULT seen when pressing button
+    on an ATI USB remote control.
+    (LP: #311254)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 08 Jan 2009 18:30:42 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 15 Jan 2009 23:26:13 -0800
 
 xorg-server (2:1.5.99.3-0ubuntu3) jaunty; urgency=low
 

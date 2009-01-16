@@ -1,0 +1,20 @@
+diff -Nurp patched/Xi/exevents.c working/Xi/exevents.c
+--- patched/Xi/exevents.c	2009-01-15 23:02:52.000000000 -0800
++++ working/Xi/exevents.c	2009-01-15 23:09:42.000000000 -0800
+@@ -194,12 +194,15 @@ CopyKeyClass(DeviceIntPtr device, Device
+     BOOL sendNotify = FALSE;
+     int i;
+ 
+-    if (device == master)
++    if (device == master || device == NULL || master == NULL)
+         return;
+ 
+     dk = device->key;
+     mk = master->key;
+ 
++    if (dk == NULL || mk == NULL)
++        return;
++
+     if (device != dixLookupPrivate(&master->devPrivates,
+                                    CoreDevicePrivateKey)) {
+         memcpy(mk->modifierMap, dk->modifierMap, MAP_LENGTH);
