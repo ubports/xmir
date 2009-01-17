@@ -26,7 +26,7 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 AC_PREREQ(2.57)
-AC_INIT([xorg-server], 1.5.99.3, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
+AC_INIT([xorg-server], 1.5.99.901, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([dist-bzip2 foreign])
 AM_MAINTAINER_MODE
@@ -631,6 +631,8 @@ AM_CONDITIONAL(INSTALL_LIBXF86CONFIG, [test "x$INSTALL_LIBXF86CONFIG" = xyes])
 dnl XQuartz DDX Detection... Yes, it's ugly to have it here... but we need to handle this early on
 case $host_os in
 	darwin*)
+		DRI2=no
+
 		if test x$XQUARTZ = xauto; then
 			AC_CACHE_CHECK([whether to build Xquartz],xorg_cv_Carbon_framework,[
 		 		save_LDFLAGS=$LDFLAGS
@@ -1182,19 +1184,6 @@ AC_DEFINE([SVR4],1,[Define to 1 on systems derived from System V Release 4])
 AC_MSG_RESULT([yes])], AC_MSG_RESULT([no]))
 
 XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC"
-AC_DEFINE_UNQUOTED(_X_BYTE_ORDER,[$ENDIAN],[Endian order])
-AH_VERBATIM([X_BYTE_ORDER],[
-/* Deal with multiple architecture compiles on Mac OS X */
-#ifndef __APPLE_CC__
-#define X_BYTE_ORDER _X_BYTE_ORDER
-#else
-#ifdef __BIG_ENDIAN__
-#define X_BYTE_ORDER X_BIG_ENDIAN
-#else
-#define X_BYTE_ORDER X_LITTLE_ENDIAN
-#endif
-#endif
-])
 
 dnl ---------------------------------------------------------------------------
 dnl DDX section.
@@ -1558,7 +1547,7 @@ if test "x$XQUARTZ" = xyes; then
 
 	CFLAGS="${CFLAGS} -DROOTLESS_WORKAROUND -DNO_ALLOCA"
 
-	PKG_CHECK_MODULES(XPBPROXY, [applewmproto >= 1.1.1] [applewm >= 1.0.0] xfixes fixesproto)
+	PKG_CHECK_MODULES(XPBPROXY, [applewmproto >= 1.1.1] [applewm >= 1.0.0] xfixes fixesproto x11)
 
 	if test "x$STANDALONE_XPBPROXY" = xyes ; then
 		AC_DEFINE(STANDALONE_XPBPROXY,1,[Build a standalone xpbproxy])

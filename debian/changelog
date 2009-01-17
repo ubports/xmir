@@ -1,4 +1,4 @@
-xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.5.99.901-0ubuntu1) UNRELEASED; urgency=low
 
   [Timo Aaltonen]
   * debian/rules: Enable dbus-support.
@@ -20,6 +20,48 @@ xorg-server (2:1.5.99.3-0ubuntu4) UNRELEASED; urgency=low
     (LP: #311254)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 15 Jan 2009 23:26:13 -0800
+
+xorg-server (2:1.5.99.901-1) UNRELEASED; urgency=low
+
+  * New upstream release candidate.
+    + adds autodetection of sbus devices (closes: #483942).
+      Thanks, Bernhard R. Link!
+    + RandR version 1.3 adds panning (closes: #509699).
+    + fixes a crash with XAA and fb24_32ReformatTile (closes: #443480).
+    + correctly sets RAW mode on the console when xorg.conf is absent
+      (closes: #505746).
+
+  * New upstream beta version.
+  * debian/control:
+    - Add x11proto-dri2-dev to build-depends.
+    - Bump the x11proto-randr-dev build-dep version to 1.2.99.2. 
+    - Bump the libpixman-1-dev build-dep version to 0.13.2.
+    - Bump the xtrans-dev build-dep version to 1.2.2.
+    - Bump the x11proto-xext-dev build-dep version to 7.0.3.
+    - Bump the x11proto-input-dev build-dep version to 1.5.
+    - Bump the libgl1-mesa-dev and mesa-common-dev build-dep to
+      7.2+git20081209.a0d5c3cf.
+    - Bump the x11proto-core build-dep to 7.0.13.
+    - Add a build-dep on libxinerama-dev.
+    - Conflict xserver-xorg-video-4, xserver-xorg-input-2.1.
+  * debian/rules:
+    - Enable dri2 again.
+  * debian/patches:
+    02_Disable-DRI-in-Xephyr.patch
+    03_glx-init-infinite-loop.diff
+    - Dropped, implemented upstream.
+    13_debian_add_xkbpath_env_variable.diff
+    - Disabled for now, needs to be reimplemented or dropped.
+  * debian/{input,video}abiver: Bump the input (4) and videoabiver (5).
+  * debian/serverminver: Bump to 2:1.5.99.3.
+
+  [ Julien Cristau ]
+  * Ditch the GLX Public License and the CID Font Code Public License from
+    debian/copyright.  The CID code has been removed a while ago, and all code
+    under the GLXPL has been relicensed to the SGI Free Software License B 2.0.
+    This finally closes: #211765.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 08 Dec 2008 08:39:38 +0200
 
 xorg-server (2:1.5.99.3-0ubuntu3) jaunty; urgency=low
 
@@ -75,32 +117,6 @@ xorg-server (2:1.5.99.3-0ubuntu1) jaunty; urgency=low
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 15 Dec 2008 11:34:53 +0200
 
-xorg-server (2:1.5.99.3-1) UNRELEASED; urgency=low
-
-  * New upstream beta version.
-  * debian/control:
-    - Add x11proto-dri2-dev to build-depends.
-    - Bump the x11proto-randr-dev build-dep version to 1.2.99.2. 
-    - Bump the libpixman-1-dev build-dep version to 0.13.2.
-    - Bump the xtrans-dev build-dep version to 1.2.2.
-    - Bump the x11proto-xext-dev build-dep version to 7.0.3.
-    - Bump the x11proto-input-dev build-dep version to 1.5.
-    - Bump the libgl1-mesa-dev and mesa-common-dev build-dep to
-      7.2+git20081209.a0d5c3cf.
-    - Add a build-dep on libxinerama-dev.
-    - Conflict xserver-xorg-video-4, xserver-xorg-input-2.1.
-  * debian/rules:
-    - Enable dri2 again.
-  * debian/patches:
-    02_Disable-DRI-in-Xephyr.patch
-    03_glx-init-infinite-loop.diff
-    - Dropped, implemented upstream.
-    13_debian_add_xkbpath_env_variable.diff
-    - Disabled for now, needs to be reimplemented or dropped.
-  * debian/{input,video}abiver: Bump the input (4) and videoabiver (5).
-  * debian/serverminver: Bump to 2:1.5.99.3.
-
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 08 Dec 2008 08:39:38 +0200
 
 xorg-server (2:1.5.3-1ubuntu1) jaunty; urgency=low
 
