@@ -7,13 +7,9 @@ xorg-server (2:1.5.99.901-0ubuntu1) UNRELEASED; urgency=low
     it'll be. The problem it causes is random garbage on windows
     while apps are being loaded.
     (LP: #254468)
-  * Remove patches 150, 151, applied upstream.
+  * Remove patches 150, 151, 152, 154, applied upstream.
 
   [Bryce Harrington]
-  * 155_no_checkmotion_for_disabled_devices.patch: Cherrypick upstream
-    changes to fix crash when a device is not enabled (such as after a
-    suspend/resume).
-    (LP: #313567)
   * 156_exevents_copykeyclass_nullptrcheck.patch: Add several NULL pointer
     checks in CopyKeyClass to prevent SEGFAULT seen when pressing button
     on an ATI USB remote control.
