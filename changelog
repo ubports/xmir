@@ -1,5 +1,6 @@
-xorg-server (2:1.5.99.901-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.5.99.901-0ubuntu1) jaunty; urgency=low
 
+  [ Bryce Harrington ]
   [Timo Aaltonen]
   * debian/rules: Enable dbus-support.
   * Merge current server-1.6-branch.
@@ -15,7 +16,7 @@ xorg-server (2:1.5.99.901-0ubuntu1) UNRELEASED; urgency=low
     on an ATI USB remote control.
     (LP: #311254)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 15 Jan 2009 23:26:13 -0800
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Sat, 17 Jan 2009 16:17:58 +0200
 
 xorg-server (2:1.5.99.901-1) UNRELEASED; urgency=low
 
@@ -27,7 +28,7 @@ xorg-server (2:1.5.99.901-1) UNRELEASED; urgency=low
     + correctly sets RAW mode on the console when xorg.conf is absent
       (closes: #505746).
 
-  * New upstream beta version.
+  [ Timo Aaltonen ]
   * debian/control:
     - Add x11proto-dri2-dev to build-depends.
     - Bump the x11proto-randr-dev build-dep version to 1.2.99.2. 
