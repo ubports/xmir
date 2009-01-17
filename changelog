@@ -1,7 +1,6 @@
 xorg-server (2:1.5.99.901-0ubuntu1) jaunty; urgency=low
 
-  [ Bryce Harrington ]
-  [Timo Aaltonen]
+  [ Timo Aaltonen ]
   * debian/rules: Enable dbus-support.
   * Merge current server-1.6-branch.
   * Disable patch 107 for now, to see what kind of a performance hit 
@@ -10,7 +9,7 @@ xorg-server (2:1.5.99.901-0ubuntu1) jaunty; urgency=low
     (LP: #254468)
   * Remove patches 150, 151, 152, 154, applied upstream.
 
-  [Bryce Harrington]
+  [ Bryce Harrington ]
   * 156_exevents_copykeyclass_nullptrcheck.patch: Add several NULL pointer
     checks in CopyKeyClass to prevent SEGFAULT seen when pressing button
     on an ATI USB remote control.
