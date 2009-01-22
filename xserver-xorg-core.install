@@ -13,4 +13,3 @@ usr/bin/cvt
 usr/bin/gtf
 usr/share/man/man1/cvt.1
 usr/share/man/man1/gtf.1
-config/xorg-server.conf etc/dbus-1/system.d
