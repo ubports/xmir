@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 4.0.0), lsb-release, pkg-config, bison, flex,
  x11proto-bigreqs-dev, x11proto-composite-dev (>= 1:0.4), 
  x11proto-core-dev (>= 7.0.13),
  x11proto-damage-dev (>= 1.1), x11proto-evie-dev, x11proto-fixes-dev (>= 4.0),
- x11proto-kb-dev (>= 1.0.3), x11proto-xinerama-dev, x11proto-randr-dev (>= 1.2.99.2),
+ x11proto-kb-dev (>= 1.0.3), x11proto-xinerama-dev, x11proto-randr-dev (>= 1.2.99.3),
  x11proto-record-dev, x11proto-render-dev (>= 2:0.9.3), x11proto-resource-dev,
  x11proto-scrnsaver-dev, x11proto-trap-dev, x11proto-video-dev,
  x11proto-xcmisc-dev, x11proto-xext-dev (>= 7.0.3),
@@ -79,7 +79,17 @@ Description: Xorg X server - core server
 
 Package: xserver-xorg-dev
 Architecture: any
-Depends: ${misc:Depends}, libpixman-1-dev, x11proto-core-dev, x11proto-input-dev (>= 1.4), x11proto-xext-dev, x11proto-video-dev, x11proto-randr-dev (>= 1.2), x11proto-render-dev (>= 2:0.9.3), x11proto-fonts-dev, libpciaccess-dev
+Depends: ${misc:Depends},
+ libpixman-1-dev (>= 0.13.2-1),
+ x11proto-core-dev (>= 7.0.14),
+ x11proto-input-dev (>= 1.5.0),
+ x11proto-xext-dev (>= 7.0.4),
+ x11proto-video-dev,
+ x11proto-randr-dev (>= 1.2.99.3),
+ x11proto-render-dev (>= 2:0.9.3),
+ x11proto-dri2-dev,
+ x11proto-fonts-dev,
+ libpciaccess-dev
 Description: Xorg X server - development files
  This package provides development files for the X.Org ('Xorg') X server.
  This is not quite the same as the DDK (Driver Development Kit) from the
