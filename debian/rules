@@ -171,6 +171,9 @@ binary-arch: build install
 	           $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg/serverminver
 	$(INSTALL) -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
 	$(INSTALL) -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
+	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/etc/dbus-1/system.d
+	$(INSTALL) -m644 $(CURDIR)/config/xorg-server.conf \
+	           $(CURDIR)/debian/xserver-xorg-core/etc/dbus-1/system.d/xorg-server.conf
 	dh_installdebconf -s
 	dh_installman -s
 	dh_link -s
