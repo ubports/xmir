@@ -1,9 +1,9 @@
-xorg-server (2:1.5.99.901-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.5.99.901-1ubuntu1) jaunty; urgency=low
 
   * Merge with Debian experimental.
   * debian/rules: Include xorg-server.conf for dbus support.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 22 Jan 2009 15:37:40 +0200
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 23 Jan 2009 13:53:33 +0200
 
 xorg-server (2:1.5.99.901-1) experimental; urgency=low
 
