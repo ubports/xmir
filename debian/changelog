@@ -1,3 +1,9 @@
+xorg-server (2:1.5.99.902-0ubuntu1) jaunty; urgency=low
+
+  * New upstream release candidate.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Sat, 31 Jan 2009 11:03:52 +0200
+
 xorg-server (2:1.5.99.901-1ubuntu1) jaunty; urgency=low
 
   * Merge with Debian experimental.
