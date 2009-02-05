@@ -1,0 +1,13 @@
+Index: xorg-server-1.4.99.906/include/misc.h
+===================================================================
+--- xorg-server-1.4.99.906.orig/include/misc.h	2008-08-21 10:02:24.000000000 -0700
++++ xorg-server-1.4.99.906/include/misc.h	2008-08-21 10:02:33.000000000 -0700
+@@ -86,7 +86,7 @@
+ #ifndef MAXSCREENS
+ #define MAXSCREENS	16
+ #endif
+-#define MAXCLIENTS	256
++#define MAXCLIENTS	512
+ #define MAXFORMATS	8
+ 
+ typedef unsigned long PIXEL;
