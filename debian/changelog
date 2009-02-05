@@ -1,9 +1,15 @@
 xorg-server (2:1.5.99.902-0ubuntu2) jaunty; urgency=low
 
+  [Bryce Harrington]
   * Add 157_check_null_modes.patch: Catch null pointer dereference in
     video mode selection, which can cause xserver crash when using SDL
     applications with qemu/kvm.
     (LP: #300310)
+
+  [Steven Harms]
+  * 151_xinerama_focus.patch: Resolves xinerama focus issues
+    with multiple screens
+    (LP: #41301)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Wed, 04 Feb 2009 21:10:34 -0800
 
