@@ -1,3 +1,11 @@
+xorg-server (2:1.5.99.902-0ubuntu3) jaunty; urgency=low
+
+  * Add 160_log_timestamping.patch: Show timestamps in Xorg.*.log
+    files.
+    (LP: #285787)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 06 Feb 2009 06:28:48 -0800
+
 xorg-server (2:1.5.99.902-0ubuntu2) jaunty; urgency=low
 
   [Bryce Harrington]
