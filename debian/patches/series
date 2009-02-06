@@ -16,3 +16,4 @@
 157_check_null_modes.patch
 158_raise_maxclients.patch
 159_xinerama_focus.patch
+160_log_timestamping.patch
