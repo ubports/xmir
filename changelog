@@ -1,6 +1,14 @@
+xorg-server (2:1.5.99.902-0ubuntu5) jaunty; urgency=low
+
+  * Revert 158_raise_maxclients.patch.  Breaks -nvidia.  Binary drivers FTL.
+    (LP: #326344)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 09 Feb 2009 13:51:04 -0800
+
 xorg-server (2:1.5.99.902-0ubuntu4) jaunty; urgency=low
 
   * 160_log_timestamping.patch: Only add timestamp on tagged messages
+    (LP: #285787)
 
  -- Tormod Volden <debian.tormod@gmail.com>  Fri, 06 Feb 2009 23:33:11 +0100
 
