@@ -1,3 +1,9 @@
+xorg-server (2:1.5.99.902-0ubuntu4) jaunty; urgency=low
+
+  * 160_log_timestamping.patch: Only add timestamp on tagged messages
+
+ -- Tormod Volden <debian.tormod@gmail.com>  Fri, 06 Feb 2009 23:33:11 +0100
+
 xorg-server (2:1.5.99.902-0ubuntu3) jaunty; urgency=low
 
   * Add 160_log_timestamping.patch: Show timestamps in Xorg.*.log
