@@ -1,11 +1,11 @@
-diff --git a/os/log.c b/os/log.c
-index 0860847..2c46f1a 100644
---- a/os/log.c
-+++ b/os/log.c
-@@ -255,6 +255,33 @@ LogVWrite(int verb, const char *f, va_list args)
-     static char tmpBuffer[1024];
-     int len = 0;
- 
+Index: xorg-server-1.5.99.902/os/log.c
+===================================================================
+--- xorg-server-1.5.99.902.orig/os/log.c	2009-01-31 06:12:17.000000000 +0100
++++ xorg-server-1.5.99.902/os/log.c	2009-02-06 23:32:18.000000000 +0100
+@@ -313,6 +313,28 @@
+ {
+     const char *s  = X_UNKNOWN_STRING;
+     char *tmpBuf = NULL;
 +    struct timeval time;
 +    time_t tv_sec;
 +    suseconds_t tv_usec;
@@ -28,11 +28,23 @@ index 0860847..2c46f1a 100644
 +        diff_sec--;
 +        diff_usec += 1000000;
 +    }
-+    sprintf(tmpBuffer, "[%d sec: %06d usec]", diff_sec , diff_usec);
-+    len = strlen(tmpBuffer);
-+    if (logFile)
-+          fwrite(tmpBuffer, len, 1, logFile);
-+
-     /*
-      * Since a va_list can only be processed once, write the string to a
-      * buffer, and then write the buffer out to the appropriate output
+ 
+     /* Ignore verbosity for X_ERROR */
+     if (logVerbosity >= verb || logFileVerbosity >= verb || type == X_ERROR) {
+@@ -357,13 +379,14 @@
+ 	/*
+ 	 * Prefix the format string with the message type.  We do it this way
+ 	 * so that LogVWrite() is only called once per message.
++	 * Prefix the whole with timestamp.
+ 	 */
+ 	if (s) {
+-	    tmpBuf = malloc(strlen(format) + strlen(s) + 1 + 1);
++	    tmpBuf = malloc(strlen(format) + strlen(s) + 1 + 1 + 15);
+ 	    /* Silently return if malloc fails here. */
+ 	    if (!tmpBuf)
+ 		return;
+-	    sprintf(tmpBuf, "%s ", s);
++	    sprintf(tmpBuf, "[%5d.%06d] %s ", diff_sec, diff_usec, s);
+ 	    strcat(tmpBuf, format);
+ 	    LogVWrite(verb, tmpBuf, args);
+ 	    free(tmpBuf);
