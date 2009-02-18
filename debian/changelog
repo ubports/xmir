@@ -1,3 +1,24 @@
+xorg-server (2:1.5.99.902-0ubuntu7) jaunty; urgency=low
+
+  * Add 161_force_paired_kbd_device.patch: Fixes issue where a multimedia
+    keyboard (or keyboard-like device) sends its multimedia key events
+    through the mouse device file.  In this case, pair the device with the
+    master before processing the events.  Patch cherrypicked from upstream.
+    (LP: #318261)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 17 Feb 2009 17:20:51 -0800
+
+xorg-server (2:1.5.99.902-0ubuntu6) jaunty; urgency=low
+
+  * Add 999_default_modedebug_on.patch.  Defaults ModeDebug to on.
+    Upstream requests that users include this option when forwarding bugs
+    upstream, thus it should be carried at least during development and
+    reverted by -beta.  Performance won't be impacted, and boot time will
+    be slowed only a negligible amount, as it merely adds a few additional
+    prints.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 10 Feb 2009 14:06:38 -0800
+
 xorg-server (2:1.5.99.902-0ubuntu5) jaunty; urgency=low
 
   * Revert 158_raise_maxclients.patch.  Breaks -nvidia.  Binary drivers FTL.
