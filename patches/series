@@ -19,3 +19,4 @@
 160_log_timestamping.patch
 999_default_modedebug_on.patch
 161_force_paired_kbd_device.patch
+162_null_crtc_in_rotation.patch
