@@ -1,11 +1,13 @@
 xorg-server (2:1.5.99.902-0ubuntu8) UNRELEASED; urgency=low
 
+  * New upstream release
+    - Fixes 319210
   * Add 162_null_crtc_in_rotation.patch: Fixes crash when two displays on
     separate cards are attached.  X doesn't work with multiple cards yet,
     but crashing is not an appropriate way to handle such a situation.
     (LP: #139990)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 25 Feb 2009 20:01:54 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 25 Feb 2009 20:04:55 -0800
 
 xorg-server (2:1.5.99.902-0ubuntu7) jaunty; urgency=low
 
