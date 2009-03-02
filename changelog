@@ -1,8 +1,14 @@
 xorg-server (2:1.6.0-0ubuntu1) UNRELEASED; urgency=low
 
+  [ Bryce Harrington ]
   * New upstream release (LP: #319210)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 25 Feb 2009 20:04:55 -0800
+  [ Timo Aaltonen ]
+  * 159_xinerama_focus.patch, 
+    161_force_paired_kbd_device.patch:
+    - Dropped, applied upstream
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 03 Mar 2009 00:06:38 +0200
 
 xorg-server (2:1.6.0-1) UNRELEASED; urgency=low
 
