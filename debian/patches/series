@@ -16,8 +16,5 @@
 156_exevents_copykeyclass_nullptrcheck.patch
 157_check_null_modes.patch
 #158_raise_maxclients.patch
-159_xinerama_focus.patch
 160_log_timestamping.patch
 999_default_modedebug_on.patch
-161_force_paired_kbd_device.patch
-162_null_crtc_in_rotation.patch
