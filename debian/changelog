@@ -1,13 +1,31 @@
-xorg-server (2:1.5.99.902-0ubuntu8) UNRELEASED; urgency=low
+xorg-server (2:1.6.0-0ubuntu1) UNRELEASED; urgency=low
 
-  * New upstream release
-    - Fixes 319210
-  * Add 162_null_crtc_in_rotation.patch: Fixes crash when two displays on
-    separate cards are attached.  X doesn't work with multiple cards yet,
-    but crashing is not an appropriate way to handle such a situation.
-    (LP: #139990)
+  * New upstream release (LP: #319210)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Wed, 25 Feb 2009 20:04:55 -0800
+
+xorg-server (2:1.6.0-1) UNRELEASED; urgency=low
+
+  [ David Nusinow ]
+  * Add 0001-xorg.conf-5-refer-to-mousedrv-4-.-Debian-394058.patch to
+    refer to correct (semi-obsolete) mouse driver manpage.
+    closes: #394058
+
+  [ Julien Cristau ]
+  * New upstream release.
+  * 0001-mi-force-the-paired-kbd-device-before-CopyKeyClass.patch: remove,
+    included upstream.
+
+ -- David Nusinow <dnusinow@debian.org>  Sun, 15 Feb 2009 18:49:51 -0500
+
+xorg-server (2:1.5.99.902-1) experimental; urgency=low
+
+  * New upstream release candidate.
+  * xserver-xorg-core.install: there are no more font modules.
+  * 0001-mi-force-the-paired-kbd-device-before-CopyKeyClass.patch: new patch,
+    fixes a crash with some multimedia keyboards (closes: #513384).
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 31 Jan 2009 19:32:31 +0100
 
 xorg-server (2:1.5.99.902-0ubuntu7) jaunty; urgency=low
 
@@ -76,6 +94,16 @@ xorg-server (2:1.5.99.902-0ubuntu1) jaunty; urgency=low
   * New upstream release candidate.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Sat, 31 Jan 2009 11:03:52 +0200
+
+xorg-server (2:1.5.99.901-2) experimental; urgency=low
+
+  [ Julien Cristau ]
+  * Bump libdrm-dev build-dep to help out sbuild.
+
+  [ Timo Aaltonen ]
+  * debian/rules: Disable builtin fonts (LP: #308649, closes: #512706)
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 23 Jan 2009 21:16:14 +0100
 
 xorg-server (2:1.5.99.901-1ubuntu1) jaunty; urgency=low
 
