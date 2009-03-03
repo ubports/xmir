@@ -17,4 +17,5 @@
 157_check_null_modes.patch
 #158_raise_maxclients.patch
 160_log_timestamping.patch
+162_null_crtc_in_rotation.patch
 999_default_modedebug_on.patch
