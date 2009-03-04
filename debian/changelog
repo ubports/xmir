@@ -6,20 +6,19 @@ xorg-server (2:1.6.0-0ubuntu1) UNRELEASED; urgency=low
       (LP: #319210)
     - Fixes EDID for monitors that incorrectly report aspect ratio instead
       of resolution (LP: #311485)
+    - Fixes issue where X stops responding to mouse clicks after some time
+      if using Xinerama. (LP: #296167)
   * Add 162_null_crtc_in_rotation.patch: Fixes crash when two displays on
     separate cards are attached.  X doesn't work with multiple cards yet,
     but crashing is not an appropriate way to handle such a situation.
     (LP: #139990)
-  * Add 163_no_updatespriteforscreen_if_xinerama.patch: Fixes issue where
-    X stops responding to mouse clicks after some time if using Xinerama.
-    (LP: #296167)
 
   [ Timo Aaltonen ]
   * 159_xinerama_focus.patch, 
     161_force_paired_kbd_device.patch:
     - Dropped, applied upstream
 
- -- Bryce Harrington <bryce@ubuntu.com>  Tue, 03 Mar 2009 17:39:25 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 03 Mar 2009 17:44:03 -0800
 
 xorg-server (2:1.6.0-1) UNRELEASED; urgency=low
 
