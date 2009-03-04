@@ -1,0 +1,37 @@
+From 7dfc941eee8261355ea2f8a82a77bece45fbde66 Mon Sep 17 00:00:00 2001
+From: Fedora X Ninjas <x@fedoraproject.org>
+Date: Fri, 30 Jan 2009 10:19:01 +1000
+Subject: [PATCH] mi: don't call UpdateSpriteForScreen if we have Xinerama enabled. #18668
+
+In Xinerama all windows hang off the first root window. Crossing the screens
+must not reset the spriteTrace, otherwise picking fails and events are sent to
+the root window.
+
+X.Org Bug 18668 <http://bugs.freedesktop.org/show_bug.cgi?id=18668>
+---
+ mi/mipointer.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/mi/mipointer.c b/mi/mipointer.c
+index b55e68b..195243d 100644
+--- a/mi/mipointer.c
++++ b/mi/mipointer.c
+@@ -260,7 +260,14 @@ miPointerWarpCursor (pScreen, x, y)
+ 	miPointer.pScreen = pScreen;
+     }
+ 
+-    if (changedScreen)
++    /* Don't call USFS if we use Xinerama, otherwise the root window is
++     * updated to the second screen, and we never receive any events.
++     * (FDO bug #18668) */
++    if (changedScreen
++#ifdef PANORAMIX
++            && noPanoramiXExtension
++#endif
++       )
+         UpdateSpriteForScreen (pScreen) ;
+ }
+ 
+-- 
+1.6.0.6
+
