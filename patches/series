@@ -22,3 +22,4 @@
 163_thinko_in_xf86targetpreferred.patch
 164_trap-aspect-ratios.patch
 165_man_xorg_conf_no_device_ident.patch
+166_nullptr_xinerama_keyrepeat.patch
