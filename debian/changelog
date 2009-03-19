@@ -4,8 +4,12 @@ xorg-server (2:1.6.0-0ubuntu3) UNRELEASED; urgency=low
     - Device identifier no longer necessary in Screen section of
       xorg.conf.  Update man page accordingly.
       (LP: #261577)
+  * Add 166_nullptr_xinerama_keyrepeat.patch:
+    - Avoids null pointer dereference when holding down keys on
+      non-primary screen when using TwinView / Xinerama on -nvidia.
+      (LP: #324465)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 21:13:09 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 23:30:58 -0700
 
 xorg-server (2:1.6.0-0ubuntu2) jaunty; urgency=low
 
