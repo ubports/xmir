@@ -8,8 +8,12 @@ xorg-server (2:1.6.0-0ubuntu3) UNRELEASED; urgency=low
     - Avoids null pointer dereference when holding down keys on
       non-primary screen when using TwinView / Xinerama on -nvidia.
       (LP: #324465)
+  * Add 167_nullptr_xisbread.patch:
+    - Avoids null pointer dereference in XisbRead to prevent a (difficult
+      to reproduce) crash during or after a resume from RAM.
+      (LP: #324368)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 23:30:58 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 23:49:41 -0700
 
 xorg-server (2:1.6.0-0ubuntu2) jaunty; urgency=low
 
