@@ -1,3 +1,12 @@
+xorg-server (2:1.6.0-0ubuntu3) UNRELEASED; urgency=low
+
+  * Add 165_man_xorg_conf_no_device_ident.patch:
+    - Device identifier no longer necessary in Screen section of
+      xorg.conf.  Update man page accordingly.
+      (LP: #261577)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 21:13:09 -0700
+
 xorg-server (2:1.6.0-0ubuntu2) jaunty; urgency=low
 
   * Add 163_thinko_in_xf86targetpreferred.patch:
