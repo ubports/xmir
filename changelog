@@ -1,4 +1,4 @@
-xorg-server (2:1.6.0-0ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.6.0-0ubuntu3) jaunty; urgency=low
 
   * Add 165_man_xorg_conf_no_device_ident.patch:
     - Device identifier no longer necessary in Screen section of
@@ -13,7 +13,7 @@ xorg-server (2:1.6.0-0ubuntu3) UNRELEASED; urgency=low
       to reproduce) crash during or after a resume from RAM.
       (LP: #324368)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 23:49:41 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 19 Mar 2009 00:17:40 -0700
 
 xorg-server (2:1.6.0-0ubuntu2) jaunty; urgency=low
 
