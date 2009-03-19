@@ -1,12 +1,19 @@
 xorg-server (2:1.6.0-0ubuntu2) UNRELEASED; urgency=low
 
-  * Add thinko_in_xf86targetpreferred.patch: For monitors that do not
-    define a "preferred" mode, if the monitor is not connected to the
-    first output, X wouldn't pick up the mode correctly, resulting in a
-    "No modes" error in Xorg.0.log and dropping user to failsafe-X mode.
-    (LP: #335214)
+  * Add 163_thinko_in_xf86targetpreferred.patch:
+    - For monitors that do not define a "preferred" mode, if the monitor
+      is not connected to the first output, X wouldn't pick up the mode
+      correctly, resulting in a "No modes" error in Xorg.0.log and dropping
+      user to failsafe-X mode.
+      (LP: #335214)
+  * Add 164_trap-aspect-ratios.patch: 
+    - Some monitors fib in the EDID they provide, giving their physical
+      dimensions in the global block, and their aspect ratio(!) in
+      the detailed timings.  This totally messes up DPI calculations
+      resulting in huge fonts.
+      (LP: #320930)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 20:27:09 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 18 Mar 2009 20:31:44 -0700
 
 xorg-server (2:1.6.0-0ubuntu1) jaunty; urgency=low
 

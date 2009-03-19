@@ -20,3 +20,4 @@
 162_null_crtc_in_rotation.patch
 999_default_modedebug_on.patch
 163_thinko_in_xf86targetpreferred.patch
+164_trap-aspect-ratios.patch
