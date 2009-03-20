@@ -24,3 +24,4 @@
 165_man_xorg_conf_no_device_ident.patch
 166_nullptr_xinerama_keyrepeat.patch
 167_nullptr_xisbread.patch
+168_glibc_trace_to_stderr.patch

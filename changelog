@@ -1,3 +1,11 @@
+xorg-server (2:1.6.0-0ubuntu4) jaunty; urgency=low
+
+  * Add 168_glibc_trace_to_stderr.patch:
+    - Catch glibc internal abort traces on stderr instead of to the
+      controlling terminal (LP: #345748).
+
+ -- Kees Cook <kees@ubuntu.com>  Thu, 19 Mar 2009 22:39:33 -0700
+
 xorg-server (2:1.6.0-0ubuntu3) jaunty; urgency=low
 
   * Add 165_man_xorg_conf_no_device_ident.patch:
