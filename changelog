@@ -1,3 +1,27 @@
+xorg-server (2:1.6.0-0ubuntu5) jaunty; urgency=low
+
+  [Tormod Volden]
+  * Disable 160_log_timestamping.patch before the beta, this was only used
+    for testing, and the patch also has a serious stack corruption bug.
+    (LP: #328035)
+
+  [Bryce Harrington]
+  * Disable 999_default_modedebug_on.patch before the beta, this was used
+    only for testing.
+  * Add 169_mipointer_nullptr_checks.patch:
+    - MIPOINTER() can return NULL in some circumstances, so always check
+      its return value before dereferencing.
+    - Fixes crash with keyrepeat on non-primary screen on -nvidia when
+      using Xinerama (and probably other serious mipointer-related crashes)
+      (LP: #324465)
+  * Add 170_primary_pci_video_device.patch:
+    - Patch from redhat
+    - Fixes failure when multiple video cards are present.  Xserver currently
+      exits with an error "(EE) No device detected" in such cases.
+      (LP: #267241)
+  
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 24 Mar 2009 09:57:17 -0700
+
 xorg-server (2:1.6.0-0ubuntu4) jaunty; urgency=low
 
   * Add 168_glibc_trace_to_stderr.patch:
