@@ -27,3 +27,4 @@
 169_mipointer_nullptr_checks.patch
 #999_default_modedebug_on.patch
 170_primary_pci_video_device.patch
+171_xkb_geometry_copying.patch
