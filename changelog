@@ -4,9 +4,9 @@ xorg-server (2:1.6.0-0ubuntu6) UNRELEASED; urgency=low
     - Fixes crash when plugging/unplugging USB devices due to incorrect
       copying of XKB geometry base_color and label_color.  Patch
       cherrypicked from upstream.
-      (LP: #333222)
+      (LP: #333222, #321946)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Fri, 27 Mar 2009 19:36:24 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 27 Mar 2009 19:41:43 -0700
 
 xorg-server (2:1.6.0-0ubuntu5) jaunty; urgency=low
 
