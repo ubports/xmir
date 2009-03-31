@@ -1,3 +1,13 @@
+xorg-server (2:1.6.0-0ubuntu7) jaunty; urgency=low
+
+  * Add 172_cwgetbackingpicture_nullptr_check.patch:
+    - cwGetBackingPicture can segfault when minimizing/maximizing firefox with
+      a flash video playing.  This appears to be a race condition in which the
+      backing picture's data is not always fully defined.
+      (LP: #319402)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 30 Mar 2009 22:20:17 -0700
+
 xorg-server (2:1.6.0-0ubuntu6) jaunty; urgency=low
 
   * Add 171_xkb_geometry_copying.patch:
