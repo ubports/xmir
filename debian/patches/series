@@ -29,3 +29,4 @@
 170_primary_pci_video_device.patch
 171_xkb_geometry_copying.patch
 172_cwgetbackingpicture_nullptr_check.patch
+173_edid_quirk_philips_lcd.patch

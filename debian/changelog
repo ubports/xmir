@@ -1,3 +1,12 @@
+xorg-server (2:1.6.0-0ubuntu8) jaunty; urgency=low
+
+  * Add 173_edid_quirk_philips_lcd.patch :
+    Quirk for wrongly reported screen dimensions.
+    Fixes "huge fonts" issues.
+    (LP: #353074)
+
+ -- Tormod Volden <debian.tormod@gmail.com>  Wed, 01 Apr 2009 19:47:13 +0200
+
 xorg-server (2:1.6.0-0ubuntu7) jaunty; urgency=low
 
   * Add 172_cwgetbackingpicture_nullptr_check.patch:
