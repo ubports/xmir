@@ -4,7 +4,8 @@
 
 # This script starts an instance of Xvfb, the "fake" X server, runs a command
 # with that server available, and kills the X server when done.  The return
-# value of the command becomes the return value of this script.
+# value of the command becomes the return value of this script, except in cases
+# where this script encounters an error.
 #
 # If anyone is using this to build a Debian package, make sure the package
 # Build-Depends on xvfb, xbase-clients, and xfonts-base.
