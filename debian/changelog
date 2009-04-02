@@ -1,3 +1,11 @@
+xorg-server (2:1.6.0-0ubuntu9) jaunty; urgency=low
+
+  [Andrew Pollock]
+  * debian/local/xvfb-run: Fixes race condition with concurrent invocations
+    (LP: #348052)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 01 Apr 2009 20:24:04 -0700
+
 xorg-server (2:1.6.0-0ubuntu8) jaunty; urgency=low
 
   * Add 173_edid_quirk_philips_lcd.patch :
