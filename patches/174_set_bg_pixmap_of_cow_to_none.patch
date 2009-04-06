@@ -1,0 +1,34 @@
+From aa41f34e7a5f5de2d2002dd3c58c9f7044aca9bc Mon Sep 17 00:00:00 2001
+From: Havoc Pennington <hp@pobox.com>
+Date: Fri, 27 Mar 2009 12:30:37 -0400
+Subject: [PATCH] set bg pixmap of composite overlay window to None
+
+Otherwise it's impossible to get the COW without a white
+flash on the screen, because it's on top, mapped immediately,
+and unaffected by composite redirection. This makes
+initial login ugly when it doesn't need to be.
+---
+ composite/compoverlay.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/composite/compoverlay.c b/composite/compoverlay.c
+index 94e5b03..68b4f12 100644
+--- a/composite/compoverlay.c
++++ b/composite/compoverlay.c
+@@ -125,13 +125,13 @@ compCreateOverlayWindow (ScreenPtr pScreen)
+     CompScreenPtr   cs = GetCompScreen(pScreen);
+     WindowPtr	    pRoot = WindowTable[pScreen->myNum];
+     WindowPtr	    pWin;
+-    XID		    overrideRedirect = TRUE;
++    XID		    attrs[] = { None, TRUE }; /* backPixmap, overrideRedirect */
+     int		    result;
+ 
+     pWin = cs->pOverlayWin = 
+ 	CreateWindow (cs->overlayWid, pRoot,
+ 		      0, 0, pScreen->width, pScreen->height, 0, 
+-		      InputOutput, CWOverrideRedirect, &overrideRedirect,
++		      InputOutput, CWBackPixmap | CWOverrideRedirect, &attrs[0],
+ 		      pRoot->drawable.depth, 
+ 		      serverClient, pScreen->rootVisual, &result);
+     if (pWin == NULL)
+

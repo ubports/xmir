@@ -1,3 +1,12 @@
+xorg-server (2:1.6.0-0ubuntu10) jaunty; urgency=low
+
+  * debian/patches/174_set_bg_pixmap_of_cow_to_none.patch:
+    - Set bg pixmap of composite overlay window to None.
+      Thanks to Havoc Pennington for the patch.
+      (LP: #356254).
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Mon, 06 Apr 2009 15:06:14 +0200
+
 xorg-server (2:1.6.0-0ubuntu9) jaunty; urgency=low
 
   * local/xvfb-run: Fixes race condition with concurrent invocations
