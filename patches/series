@@ -31,3 +31,4 @@
 173_edid_quirk_philips_lcd.patch
 174_set_bg_pixmap_of_cow_to_none.patch
 #999_default_modedebug_on.patch
+175_set_pointer_screen_in_xtestfakeinput.patch

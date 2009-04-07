@@ -1,3 +1,15 @@
+xorg-server (2:1.6.0-0ubuntu11) jaunty; urgency=low
+
+  * Add 175_set_pointer_screen_in_xtestfakeinput.patch: Fixes issue when
+    using Vino, mouse cursor can get stuck in the upper left corner of the
+    screen.  The POINTER_SCREEN flag must be set explicitly for XTest core events to avoid
+    out-of-range events when the lastSlave was an SD with an explicit axis range.
+    Device events sent through XTest don't need this flag, they are expected to be
+    in the valuator range of the device anyway.
+    (LP: #337926)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 06 Apr 2009 17:22:35 -0700
+
 xorg-server (2:1.6.0-0ubuntu10) jaunty; urgency=low
 
   * debian/patches/174_set_bg_pixmap_of_cow_to_none.patch:
