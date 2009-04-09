@@ -1,3 +1,27 @@
+xorg-server (2:1.6.0-0ubuntu14) jaunty; urgency=low
+
+  * Add 177_animated_cursor_change_master.patch: Fixes crash when using
+    animated cursors.
+    (LP: #358009)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 08 Apr 2009 18:52:56 -0700
+
+xorg-server (2:1.6.0-0ubuntu13) jaunty; urgency=low
+
+  * Add 176_quell_warning_exacopydirty.patch: Quells innocuous but scary
+    sounding "exaCopyDirty: Pending damage region empty!" warning, as it
+    can lead to false-positives with bug reporters.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 08 Apr 2009 14:49:36 -0700
+
+xorg-server (2:1.6.0-0ubuntu12) jaunty; urgency=low
+
+  * local/xvfb-run: Revert change from 2:1.6.0-0ubuntu9; prevents running
+    multiple times.
+    (LP: #357338.  Reopen 348052 rejecting patch)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 07 Apr 2009 15:21:32 -0700
+
 xorg-server (2:1.6.0-0ubuntu11) jaunty; urgency=low
 
   * Add 175_set_pointer_screen_in_xtestfakeinput.patch: Fixes issue when
