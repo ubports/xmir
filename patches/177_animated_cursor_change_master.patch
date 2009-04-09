@@ -1,0 +1,89 @@
+From 86c5c065a9348a1e5c1f3712fd13a0bdc10f7998 Mon Sep 17 00:00:00 2001
+From: Thomas Jaeger <ThJaeger@gmail.com>
+Date: Tue, 6 Jan 2009 00:17:45 -0500
+Subject: [PATCH] Don't create animated cursors for slave devices
+
+Fixes bug #19034
+
+See also https://lists.ubuntu.com/archives/ubuntu-x/2009-April/000495.html
+
+The issue is associated to slave device cursors, basically an artifact
+of how the xserver-1.6 code is derived from master. There is no API to
+access device cursors in 1.6, but it turns out that under certain
+circumstances (I'm not exactly sure how this happens but it seems to be
+some kind of race condition between XI and core grabs), it is possible
+that a device cursor will be set anyway. If it's a regular cursor (that
+is what the bug report was originally about), this is not a problem
+anymore since this will just modify the core cursor, but if it's an
+animated cursor, we're in trouble: The device cursor will keep
+replacing the core cursor (so the user will notice an animated cursor
+that shouldn't be there), and when the client destroys the animated
+cursor, the device animated cursor will stay active leading to a server
+crash the next time the cursor is updated. There is a patch attached to
+the fdo bug report that fixes the issue by basically doing the same
+thing for an animated cursor that we do for a regular cursor: Apply the
+change to the associated master device. This is safe for 1.6 since this
+code path should never be hit in the first place, but unfortunately,
+this is not the direction that Peter wants to go for master where each
+device has its own sprite (I'm not sure how things are supposed to work
+with animated cursors there).
+
+The crash happens randomly when an application that grabs an Xi device
+(such as easystroke) is running when clicking on firefox menus, but it's
+fairly easy to reproduce reliably by setting up a timeout gesture in
+easystroke to rotate the cube in compiz via Control+Shift+Button1 and
+invoke the gesture when firefox is loading a page and showing a 'sandbox'.
+---
+ render/animcur.c |   18 +++++++++++-------
+ 1 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/render/animcur.c b/render/animcur.c
+index d80094d..e117915 100644
+--- a/render/animcur.c
++++ b/render/animcur.c
+@@ -230,11 +230,15 @@ AnimCurDisplayCursor (DeviceIntPtr pDev,
+ {
+     AnimCurScreenPtr    as = GetAnimCurScreen(pScreen);
+     Bool		ret;
++    DeviceIntPtr        pMasterDev = pDev->isMaster ? pDev : pDev->u.master;
++
++    if (!pMasterDev)
++	    return FALSE;
+ 
+     Unwrap (as, pScreen, DisplayCursor);
+     if (IsAnimCur(pCursor))
+     {
+-	if (pCursor != animCurState[pDev->id].pCursor)
++	if (pCursor != animCurState[pMasterDev->id].pCursor)
+ 	{
+ 	    AnimCurPtr		ac = GetAnimCur(pCursor);
+ 
+@@ -242,10 +246,10 @@ AnimCurDisplayCursor (DeviceIntPtr pDev,
+                 (pDev, pScreen, ac->elts[0].pCursor);
+ 	    if (ret)
+ 	    {
+-		animCurState[pDev->id].elt = 0;
+-		animCurState[pDev->id].time = GetTimeInMillis () + ac->elts[0].delay;
+-		animCurState[pDev->id].pCursor = pCursor;
+-		animCurState[pDev->id].pScreen = pScreen;
++		animCurState[pMasterDev->id].elt = 0;
++		animCurState[pMasterDev->id].time = GetTimeInMillis () + ac->elts[0].delay;
++		animCurState[pMasterDev->id].pCursor = pCursor;
++		animCurState[pMasterDev->id].pScreen = pScreen;
+ 	    }
+ 	}
+ 	else
+@@ -253,8 +257,8 @@ AnimCurDisplayCursor (DeviceIntPtr pDev,
+     }
+     else
+     {
+-        animCurState[pDev->id].pCursor = 0;
+-	animCurState[pDev->id].pScreen = 0;
++        animCurState[pMasterDev->id].pCursor = 0;
++	animCurState[pMasterDev->id].pScreen = 0;
+ 	ret = (*pScreen->DisplayCursor) (pDev, pScreen, pCursor);
+     }
+     Wrap (as, pScreen, DisplayCursor, AnimCurDisplayCursor);
+-- 
+1.6.0.4
+
