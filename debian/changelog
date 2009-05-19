@@ -1,3 +1,73 @@
+xorg-server (2:1.6.1.901-2ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian unstable.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 19 May 2009 14:07:44 +0300
+
+xorg-server (2:1.6.1.901-2) unstable; urgency=low
+
+  * Merge from upstream server-1.6-branch (commit a9f85dce).
+  * Fix FTBFS on kfreebsd (closes: #525475).  Thanks, Petr Salinger!
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 14 May 2009 17:37:40 +0200
+
+xorg-server (2:1.6.1.901-1) experimental; urgency=low
+
+  * New upstream development release
+    + fixes crash in CheckMotion with xinerama (closes: #524853)
+    + Refresh 20_hurd-i386.diff
+
+  [ Brice Goglin ]
+  * Add 20_hurd-i386.diff to fix FTBFS on hurd-i386,
+    thanks Samuel Thibault! (closes: #523970)
+
+  [ David Nusinow ]
+  * Have the reportbug script append lshal and drm info.
+    The drm info comes from grepping dmesg output.
+
+  [ Julien Cristau ]
+  * Properly initialize libgcrypt in the libgcrypt patch (closes: #524822).
+    Thanks, Sven Joachim!
+
+ -- David Nusinow <dnusinow@debian.org>  Mon, 11 May 2009 21:50:37 -0400
+
+xorg-server (2:1.6.1-1) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * Disable dri2 on hurd-i386.  Thanks, Samuel Thibault!
+
+  [ Brice Goglin ]
+  * New upstream release.
+
+ -- Brice Goglin <bgoglin@debian.org>  Wed, 15 Apr 2009 13:30:51 +0200
+
+xorg-server (2:1.6.0-1) unstable; urgency=low
+
+  [ David Nusinow ]
+  * Add 0001-xorg.conf-5-refer-to-mousedrv-4-.-Debian-394058.patch to
+    refer to correct (semi-obsolete) mouse driver manpage.
+    closes: #394058
+
+  [ Julien Cristau ]
+  * New upstream release.
+  * 0001-mi-force-the-paired-kbd-device-before-CopyKeyClass.patch: remove,
+    included upstream.
+  * Turn on ModeDebug by default.
+  * Use libgcrypt for SHA1 instead of OpenSSL's libcrypto.
+  * Build the xselinux extension on Linux architectures.
+  * Remove build-dependencies on x11proto-evie-dev, x11proto-trap-dev,
+    x11proto-xf86misc-dev; the corresponding extensions are removed.
+  * Remove build-dependencies on x11proto-print-dev, libfreetype6-dev and
+    xfonts-utils since we don't build Xprt anymore.
+  * Fix lintian warnings about xserver-xorg-core.NEWS formatting.
+  * Move -dbg package to new section debug, add ${misc:Depends} where missing.
+  * Remove unused 06_use_proc_instead_of_sysfs_for_pci_domains.diff, obsoleted
+    by pci-rework.
+  * Merge changelog entries 2:1.4.2-9 to 2:1.4.2-11.
+  * Upload to unstable.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 09 Apr 2009 00:36:40 +0100
+
 xorg-server (2:1.6.0-0ubuntu15) karmic; urgency=low
 
   * Re-enable 999_default_modedebug_on.patch to provide debug info in
@@ -178,20 +248,6 @@ xorg-server (2:1.6.0-0ubuntu1) jaunty; urgency=low
     - Dropped, applied upstream
 
  -- Bryce Harrington <bryce@ubuntu.com>  Fri, 06 Mar 2009 14:44:31 -0800
-
-xorg-server (2:1.6.0-1) UNRELEASED; urgency=low
-
-  [ David Nusinow ]
-  * Add 0001-xorg.conf-5-refer-to-mousedrv-4-.-Debian-394058.patch to
-    refer to correct (semi-obsolete) mouse driver manpage.
-    closes: #394058
-
-  [ Julien Cristau ]
-  * New upstream release.
-  * 0001-mi-force-the-paired-kbd-device-before-CopyKeyClass.patch: remove,
-    included upstream.
-
- -- David Nusinow <dnusinow@debian.org>  Sun, 15 Feb 2009 18:49:51 -0500
 
 xorg-server (2:1.5.99.902-1) experimental; urgency=low
 
@@ -987,6 +1043,28 @@ xorg-server (2:1.4.99.901-1) experimental; urgency=low
     closes: #439764.
 
  -- Julien Cristau <jcristau@debian.org>  Fri, 14 Mar 2008 13:46:48 +0100
+
+xorg-server (2:1.4.2-11) unstable; urgency=low
+
+  * Bump x11proto-input-dev build-dep to >= 1.5.0 to fix keyboard layout
+    breakage with new libxi built against the same. Closes: #515976
+
+ -- David Nusinow <dnusinow@debian.org>  Thu, 19 Feb 2009 21:52:24 -0500
+
+xorg-server (2:1.4.2-10) unstable; urgency=medium
+
+  * Cherry-pick from upstream: GLcore: make googleearth not crash the server
+    on sw-rendering (closes: #495483).
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 09 Jan 2009 02:26:06 +0100
+
+xorg-server (2:1.4.2-9) unstable; urgency=low
+
+  * Cherry-pick patches from upstream to make xf86ScaleAxis() work correctly.
+  * Steal patch from Fedora: more sanity checks to stop vmmouse from
+    segfaulting the server (closes: #503459).
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 13 Nov 2008 23:32:47 +0100
 
 xorg-server (2:1.4.2-8) unstable; urgency=low
 

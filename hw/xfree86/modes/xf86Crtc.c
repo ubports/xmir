@@ -2061,9 +2061,9 @@ xf86TargetPreferred(ScrnInfoPtr scrn, xf86CrtcConfigPtr config,
 		     (float)config->output[p]->mm_height;
 
 	if (aspect)
-	    preferred_match[0] = bestModeForAspect(config, enabled, aspect);
+	    preferred_match[p] = bestModeForAspect(config, enabled, aspect);
 
-	if (preferred_match[0])
+	if (preferred_match[p])
 	    ret = TRUE;
 
     } while (0);
@@ -2444,17 +2444,22 @@ _X_EXPORT Bool
 xf86SetDesiredModes (ScrnInfoPtr scrn)
 {
     xf86CrtcConfigPtr   config = XF86_CRTC_CONFIG_PTR(scrn);
+    xf86CrtcPtr         crtc = config->crtc[0];
     int			c;
 
-    xf86PrepareOutputs(scrn);
-    xf86PrepareCrtcs(scrn);
+    /* A driver with this hook will take care of this */
+    if (!crtc->funcs->set_mode_major) {
+	xf86PrepareOutputs(scrn);
+	xf86PrepareCrtcs(scrn);
+    }
 
     for (c = 0; c < config->num_crtc; c++)
     {
-	xf86CrtcPtr	crtc = config->crtc[c];
 	xf86OutputPtr	output = NULL;
 	int		o;
 	RRTransformPtr	transform;
+
+	crtc = config->crtc[c];
 
 	/* Skip disabled CRTCs */
 	if (!crtc->enabled)
