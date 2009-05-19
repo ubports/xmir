@@ -1,3 +1,10 @@
+xorg-server (2:1.6.0-0ubuntu15) karmic; urgency=low
+
+  * Re-enable 999_default_modedebug_on.patch to provide debug info in
+    Xorg.0.log for development series.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Sun, 10 May 2009 22:35:02 -0700
+
 xorg-server (2:1.6.0-0ubuntu14) jaunty; urgency=low
 
   * Add 177_animated_cursor_change_master.patch: Fixes crash when using
