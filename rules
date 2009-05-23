@@ -34,7 +34,7 @@ endif
 
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	build_xfbdev = --enable-xfbdev
-	selinux = --enable-xselinux
+	selinux = --disable-xselinux
 else
 	build_xfbdev = --disable-xfbdev
 	selinux = --disable-xselinux
