@@ -1,6 +1,17 @@
 xorg-server (2:1.6.1.901-2ubuntu1) UNRELEASED; urgency=low
 
   * Merge from Debian unstable.
+  * Dropped patches:
+    - obsolete:
+      100_xserver_exa_force_greedy.patch
+      107_fedora_dont_backfill_bg_none.patch
+    - upstream:
+      163_thinko_in_xf86targetpreferred.patch
+      171_xkb_geometry_copying.patch
+      173_edid_quirk_philips_lcd.patch
+      175_set_pointer_screen_in_xtestfakeinput.patch
+      176_quell_warning_exacopydirty.patch
+    - included by Debian: 999_default_modedebug_on.patch
   * Disable 143_default_to_vesa.patch for now, breaks autoconfiguration
     when the pci-ids directory exists but has no match. (LP: #379504)
   * Disable SELinux support for now, because libaudit-dev needs to be
