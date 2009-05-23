@@ -1,4 +1,4 @@
-xorg-server (2:1.6.1.901-2ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.6.1.901-2ubuntu1) karmic; urgency=low
 
   * Merge from Debian unstable.
   * Dropped patches:
@@ -17,7 +17,7 @@ xorg-server (2:1.6.1.901-2ubuntu1) UNRELEASED; urgency=low
   * Disable SELinux support for now, because libaudit-dev needs to be
     moved to main first.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 19 May 2009 14:07:44 +0300
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Sun, 24 May 2009 00:32:37 +0300
 
 xorg-server (2:1.6.1.901-2) unstable; urgency=low
 
