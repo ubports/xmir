@@ -3,6 +3,8 @@ xorg-server (2:1.6.1.901-2ubuntu1) UNRELEASED; urgency=low
   * Merge from Debian unstable.
   * Disable 143_default_to_vesa.patch for now, breaks autoconfiguration
     when the pci-ids directory exists but has no match. (LP: #379504)
+  * Disable SELinux support for now, because libaudit-dev needs to be
+    moved to main first.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 19 May 2009 14:07:44 +0300
 
