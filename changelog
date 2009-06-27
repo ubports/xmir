@@ -1,3 +1,12 @@
+xorg-server (2:1.6.1.901-2ubuntu2) karmic; urgency=low
+
+  * Add xserver-1.5.0-bad-fbdev-thats-mine.patch - If no xorg.conf is
+    specified, framebuffer device can erroneously grab the PCI.  Make 
+    it fail instead in this case.
+    (LP: #383407)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 24 Jun 2009 15:24:44 -0700
+
 xorg-server (2:1.6.1.901-2ubuntu1) karmic; urgency=low
 
   * Merge from Debian unstable.
