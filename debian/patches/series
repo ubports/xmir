@@ -29,3 +29,4 @@ Add-libgcrypt-as-an-option-for-sha1.diff
 172_cwgetbackingpicture_nullptr_check.patch
 174_set_bg_pixmap_of_cow_to_none.patch
 177_animated_cursor_change_master.patch
+xserver-1.5.0-bad-fbdev-thats-mine.patch
