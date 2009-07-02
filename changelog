@@ -1,6 +1,6 @@
 xorg-server (2:1.6.1.901-2ubuntu3) UNRELEASED; urgency=low
 
-  * Add 178_nvidia_autodetect.patch - Automatically detect and use -nvidia
+  * Add 104_nvidia_autodetect.patch - Automatically detect and use -nvidia
     or -nouveau instead of -nv if installed.  Thanks Sarvatt!
 
  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 02 Jul 2009 14:05:40 -0700
