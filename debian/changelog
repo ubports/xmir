@@ -1,3 +1,10 @@
+xorg-server (2:1.6.1.901-2ubuntu3) karmic; urgency=low
+
+  * Add 178_nvidia_autodetect.patch - Automatically detect and use -nvidia
+    or -nouveau instead of -nv if installed.  Thanks Sarvatt!
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 02 Jul 2009 13:28:42 -0700
+
 xorg-server (2:1.6.1.901-2ubuntu2) karmic; urgency=low
 
   * Add xserver-1.5.0-bad-fbdev-thats-mine.patch - If no xorg.conf is
