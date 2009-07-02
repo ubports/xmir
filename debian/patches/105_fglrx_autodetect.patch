@@ -1,0 +1,23 @@
+Binary files patched/.git/index and working/.git/index differ
+diff -Nurp patched/hw/xfree86/common/xf86AutoConfig.c working/hw/xfree86/common/xf86AutoConfig.c
+--- patched/hw/xfree86/common/xf86AutoConfig.c	2009-07-02 15:11:52.000000000 -0700
++++ working/hw/xfree86/common/xf86AutoConfig.c	2009-07-02 15:18:18.000000000 -0700
+@@ -165,7 +165,17 @@ videoPtrToDriverList(struct pci_device *
+ 	case 0x1142:		    driverList[0] = "apm"; break;
+ 	case 0xedd8:		    driverList[0] = "ark"; break;
+ 	case 0x1a03:		    driverList[0] = "ast"; break;
+-	case 0x1002:		    driverList[0] = "ati"; break;
++	case 0x1002:
++	    if (dev->device_id < 0x9400)
++            {
++		    driverList[0] = "ati";
++            }
++            else
++            {
++		    driverList[0] = "fglrx"; /* Supports R600 and newer only */
++		    driverList[1] = "ati";
++            }
++            break;
+ 	case 0x102c:		    driverList[0] = "chips"; break;
+ 	case 0x1013:		    driverList[0] = "cirrus"; break;
+ 	case 0x8086:
