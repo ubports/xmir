@@ -2,8 +2,10 @@ xorg-server (2:1.6.1.901-2ubuntu3) UNRELEASED; urgency=low
 
   * Add 104_nvidia_autodetect.patch - Automatically detect and use -nvidia
     or -nouveau instead of -nv if installed.  Thanks Sarvatt!
+  * Add 105_fglrx_autodetect.patch - Automatically detect and use -fglrx
+    on R600 and newer hardware if it is installed.
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 02 Jul 2009 14:05:40 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 02 Jul 2009 15:27:10 -0700
 
 xorg-server (2:1.6.1.901-2ubuntu2) karmic; urgency=low
 

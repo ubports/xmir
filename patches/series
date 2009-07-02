@@ -9,6 +9,7 @@ Add-libgcrypt-as-an-option-for-sha1.diff
 102_ubuntu_sharevts_load_cpu.patch
 103_psb_auto.patch
 104_nvidia_autodetect.patch
+105_fglrx_autodetect.patch
 110_fedora_no_move_damage.patch
 121_only_switch_vt_when_active.diff
 135_rethrow_signals.patch
