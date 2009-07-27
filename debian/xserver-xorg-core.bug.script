@@ -118,13 +118,20 @@ else
 fi
 
 if [ -x /usr/bin/lshal ]; then
-    printf "HAL Information (lshal):\n"
-    lshal
+    printf "\nHAL Information (lshal):\n"
+    for udi in `(hal-find-by-capability --capability input.keys;
+                 hal-find-by-capability --capability input.mouse;
+                 hal-find-by-capability --capability input.touchpad;
+                 hal-find-by-capability --capability input.tablet
+                )|sort -u`;
+    do
+        lshal -u "$udi"
+    done
 fi
 
 if [ -x /bin/dmesg ]; then
     printf "DRM Information from dmesg:\n"
-    dmesg | grep 'drm'
+    dmesg | egrep -i 'drm|agp'
 fi
 
 printf "\n"

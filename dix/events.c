@@ -778,7 +778,7 @@ void
 SetMaskForEvent(int deviceid, Mask mask, int event)
 {
     int coretype;
-    if (deviceid < 0 || deviceid > MAXDEVICES)
+    if (deviceid < 0 || deviceid >= MAXDEVICES)
         FatalError("SetMaskForEvent: bogus device id");
     if ((event < LASTEvent) || (event >= 128))
 	FatalError("SetMaskForEvent: bogus event number");
@@ -1161,7 +1161,7 @@ EnqueueEvent(xEvent *xE, DeviceIntPtr device, int count)
 #ifdef XKB
     /* Fix for key repeating bug. */
     if (device->key != NULL && device->key->xkbInfo != NULL &&
-	xE->u.u.type == KeyRelease)
+	(xE->u.u.type == KeyRelease || xE->u.u.type == DeviceKeyRelease))
 	AccessXCancelRepeatKey(device->key->xkbInfo, xE->u.u.detail);
 #endif
 
@@ -4220,10 +4220,10 @@ CoreFocusEvent(DeviceIntPtr dev, int type, int mode, int detail, WindowPtr pWin)
     {
         xKeymapEvent ke;
         ClientPtr client = clients[CLIENT_ID(pWin->drawable.id)];
-        if (XaceHook(XACE_DEVICE_ACCESS, client, dev, FALSE))
-            memmove((char *)&ke.map[0], (char *)&dev->key->down[1], 31);
-        else
+        if (XaceHook(XACE_DEVICE_ACCESS, client, dev, DixReadAccess))
             bzero((char *)&ke.map[0], 31);
+        else
+            memmove((char *)&ke.map[0], (char *)&dev->key->down[1], 31);
 
         ke.type = KeymapNotify;
         (void)DeliverEventsToWindow(dev, pWin, (xEvent *)&ke, 1,
@@ -4445,7 +4445,7 @@ ProcGrabPointer(ClientPtr client)
 	cursor = NullCursor;
     else
     {
-	rc = dixLookupResource((pointer *)&cursor, stuff->cursor, RT_CURSOR,
+	rc = dixLookupResourceByType((pointer *)&cursor, stuff->cursor, RT_CURSOR,
 			       client, DixUseAccess);
 	if (rc != Success)
 	{
@@ -4545,8 +4545,8 @@ ProcChangeActivePointerGrab(ClientPtr client)
 	newCursor = NullCursor;
     else
     {
-	int rc = dixLookupResource((pointer *)&newCursor, stuff->cursor,
-				   RT_CURSOR, client, DixUseAccess);
+	int rc = dixLookupResourceByType((pointer *)&newCursor, stuff->cursor,
+					 RT_CURSOR, client, DixUseAccess);
 	if (rc != Success)
 	{
 	    client->errorValue = stuff->cursor;
@@ -5146,7 +5146,7 @@ ProcGrabButton(ClientPtr client)
 	cursor = NullCursor;
     else
     {
-	rc = dixLookupResource((pointer *)&cursor, stuff->cursor, RT_CURSOR,
+	rc = dixLookupResourceByType((pointer *)&cursor, stuff->cursor, RT_CURSOR,
 			       client, DixUseAccess);
 	if (rc != Success)
 	if (!cursor)
@@ -5396,7 +5396,7 @@ ProcRecolorCursor(ClientPtr client)
     REQUEST(xRecolorCursorReq);
 
     REQUEST_SIZE_MATCH(xRecolorCursorReq);
-    rc = dixLookupResource((pointer *)&pCursor, stuff->cursor, RT_CURSOR,
+    rc = dixLookupResourceByType((pointer *)&pCursor, stuff->cursor, RT_CURSOR,
 			   client, DixWriteAccess);
     if (rc != Success)
     {

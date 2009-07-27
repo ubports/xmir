@@ -664,8 +664,9 @@ ProcRRGetScreenInfo (ClientPtr client)
 	rep.sizeID = pData->size;
 	rep.rate = pData->refresh;
 
-	extraLen = (rep.nSizes * sizeof (xScreenSizes) +
-		    rep.nrateEnts * sizeof (CARD16));
+	extraLen = rep.nSizes * sizeof (xScreenSizes);
+	if (has_rate)
+		extraLen += rep.nrateEnts * sizeof (CARD16);
 
 	if (extraLen)
 	{
@@ -945,8 +946,10 @@ ProcRRSetScreenConfig (ClientPtr client)
 
     if (!RRCrtcSet (crtc, mode, 0, 0, stuff->rotation, 1, &output))
 	rep.status = RRSetConfigFailed;
-    else
+    else {
+	pScrPriv->lastSetTime = time;
 	rep.status = RRSetConfigSuccess;
+    }
 
     /*
      * XXX Configure other crtcs to mirror as much as possible

@@ -5,6 +5,8 @@ kfreebsd-ftbfs.diff
 0001-xorg.conf-5-refer-to-mousedrv-4-.-Debian-394058.patch
 Turn-on-ModeDebug-by-default.patch
 Add-libgcrypt-as-an-option-for-sha1.diff
+fedora-bad-fbdev-thats-mine.patch
+fedora-pci-primary.diff
 101_fedora_xserver-1.3.0-document-fontpath-correctly.patch
 102_ubuntu_sharevts_load_cpu.patch
 103_psb_auto.patch
@@ -31,4 +33,3 @@ Add-libgcrypt-as-an-option-for-sha1.diff
 172_cwgetbackingpicture_nullptr_check.patch
 174_set_bg_pixmap_of_cow_to_none.patch
 177_animated_cursor_change_master.patch
-xserver-1.5.0-bad-fbdev-thats-mine.patch
