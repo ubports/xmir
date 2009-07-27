@@ -1,4 +1,4 @@
-xorg-server (2:1.6.1.901-2ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.6.2.901-1ubuntu1) UNRELEASED; urgency=low
 
   * Add 104_nvidia_autodetect.patch - Automatically detect and use -nvidia
     or -nouveau instead of -nv if installed.  Thanks Sarvatt!
@@ -6,6 +6,79 @@ xorg-server (2:1.6.1.901-2ubuntu3) UNRELEASED; urgency=low
     on R600 and newer hardware or -radeonhd if either is installed.
 
  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 02 Jul 2009 15:59:58 -0700
+
+xorg-server (2:1.6.2.901-1) unstable; urgency=low
+
+  * New upstream release candidate.
+  * Bump mesa Build-Depends to >= 7.5 to fix DRI2 madness again,
+    closes: #538637.
+
+ -- Brice Goglin <bgoglin@debian.org>  Mon, 27 Jul 2009 00:17:42 +0200
+
+xorg-server (2:1.6.2-1) unstable; urgency=low
+
+  [ Brice Goglin ]
+  * New upstream release.
+    + Fixes dri2 madness introduced in previous upload
+      (closes: #534522, #536019, #534766, #534771, #534890).
+    + Fixes xkb bogus length in write keyboard desc, closes: #529625.
+    + Fixes SWCursor being multiply rendered, closes: #526260.
+    + Drop Change-default-for-ExaOptimizeMigration-to-false.diff,
+      applied upstream.
+    + Pull upstream server-1.6-branch up to commit 606f6dba.
+  * Bump serverminver to 2:1.6.2 for the dri2 upstream changes in the
+    previous upload.
+
+  [ Julien Cristau ]
+  * Bump xserver-xorg-dev's dependency on dri2proto to >= 2.1 for the same
+    reason.
+  * Don't set PCI_TXT_IDS_DIR, we don't use that anymore.
+  * xserver-xorg-core.bug.script: add a newline between X log and lshal
+    output.
+
+ -- Brice Goglin <bgoglin@debian.org>  Mon, 13 Jul 2009 23:35:13 +0200
+
+xorg-server (2:1.6.1.901-3) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * xvfb-run: don't pass the magic cookie to xauth on the command line
+    (CVE-2009-1573; closes: #526678).  Thanks, Loïc Minier!
+  * xvfb-run: use mktemp to create the temporary directory.
+  * Change default for ExaOptimizeMigration to false.  This option still
+    causes visual corruption in some cases.  Thanks, Michel Dänzer!
+  * Only include hal info for keyboards, mice, touchpads and tablets in the
+    bug script.
+  * In the bug script, grep dmesg for agp in addition to drm.
+  * Add patch stolen from Fedora to disable the fbdev driver when it's loaded
+    together with a PCI or SBUS driver, instead of calling FatalError (closes:
+    #508476).
+  * Add patch stolen from Fedora to try and detect the primary PCI device by
+    mapping the legacy VGA bios and comparing the vendor and device ids.
+    Previously if there was more than one VGA device and the config didn't
+    specify BusIDs, the server would just fail to start, so this hack should
+    improve things.
+  * Update configure options:
+    + use --enable-xvfb instead of --enable-vfb
+    + drop --disable-builtin-fonts, --enable-xtrap, --disable-kdrive-vesa,
+      --disable-lbx, --disable-xprint, --disable-xorgconfig, --disable-xorgcfg
+      which don't exist anymore
+    + use --disable-config-hal and --disable-dri on hurd-i386
+    + reorder options to match configure.ac, and use explicit
+      --enable/--disable instead of using the defaults / autodetection
+  * Don't recommend xfonts-base.  libXfont provides builtin versions of the
+    fixed and cursor fonts, which are the only required ones.  Keep xfonts-*
+    packages in Suggests for xserver-xorg-core.
+  * Bump Standards-Version to 3.8.2 now that we have README.source.
+  * Drop Build-Conflicts on xlibs-static-dev; it's only in oldstable at this
+    point.
+  * Pull from upstream server-1.6-branch as of June 23rd (commit dbac41b).
+  * Bump build-dep on dri2proto to 2.1 for new protocol.
+  * Bump build-dep on libselinux1-dev to 2.0.80 for avc_netlink_acquire_fd.
+
+  [ David Nusinow ]
+  * Add README.source
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 23 Jun 2009 19:52:10 +0200
 
 xorg-server (2:1.6.1.901-2ubuntu2) karmic; urgency=low
 
