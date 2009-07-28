@@ -1,10 +1,10 @@
-xorg-server (2:1.6.2.901-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.6.2.901-1ubuntu1) karmic; urgency=low
 
   [ Timo Aaltonen ]
   * Merge from Debian unstable. (LP: #403316)
   * Drop 170_primary_pci_video_device.patch, included in Debian
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 27 Jul 2009 16:39:01 +0300
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 28 Jul 2009 15:34:16 +0300
 
 xorg-server (2:1.6.2.901-1) unstable; urgency=low
 
