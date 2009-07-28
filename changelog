@@ -1,13 +1,8 @@
 xorg-server (2:1.6.2.901-1ubuntu1) UNRELEASED; urgency=low
 
-  [ Bryce Harrington ]
-  * Add 104_nvidia_autodetect.patch - Automatically detect and use -nvidia
-    or -nouveau instead of -nv if installed.  Thanks Sarvatt!
-  * Add 105_fglrx_autodetect.patch - Automatically detect and use -fglrx
-    on R600 and newer hardware or -radeonhd if either is installed.
-
   [ Timo Aaltonen ]
-  * Merge from Debian unstable.
+  * Merge from Debian unstable. (LP: #403316)
+  * Drop 170_primary_pci_video_device.patch, included in Debian
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 27 Jul 2009 16:39:01 +0300
 
