@@ -32,3 +32,4 @@ fedora-pci-primary.diff
 172_cwgetbackingpicture_nullptr_check.patch
 174_set_bg_pixmap_of_cow_to_none.patch
 177_animated_cursor_change_master.patch
+178_glx_flush_cache.patch

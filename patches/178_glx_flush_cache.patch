@@ -1,0 +1,26 @@
+commit 2075d4bf9e53b8baef0b919da6c44771220cd4a5
+Author: Michel Dänzer <daenzer@vmware.com>
+Date:   Thu May 14 11:46:41 2009 +0200
+
+    glx: If a destroyed window is bound to the current context, make it not current.
+    
+    Avoids subsequent crashes due to stale pointers to the DrawableRec, see
+    https://bugs.freedesktop.org/show_bug.cgi?id=21132#c15 and previous comments.
+    
+    Signed-off-by: Michel Dänzer <daenzer@vmware.com>
+
+diff --git a/glx/glxext.c b/glx/glxext.c
+index 93391e9..6bc7bef 100644
+--- a/glx/glxext.c
++++ b/glx/glxext.c
+@@ -126,6 +126,10 @@ static Bool DrawableGone(__GLXdrawable *glxPriv, XID xid)
+     __GLXcontext *c;
+ 
+     for (c = glxAllContexts; c; c = c->next) {
++	if (c->isCurrent && (c->drawPriv == glxPriv || c->readPriv == glxPriv)) {
++	    (*c->loseCurrent)(c);
++	    __glXFlushContextCache();
++	}
+ 	if (c->drawPriv == glxPriv)
+ 	    c->drawPriv = NULL;
+ 	if (c->readPriv == glxPriv)
