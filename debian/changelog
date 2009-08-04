@@ -1,3 +1,16 @@
+xorg-server (2:1.6.2.901-1ubuntu3) karmic; urgency=low
+
+  * Add 182_fedora_quirk_pea.patch:  Quirk for Peacock Ergovision 19
+    to use first detailed mode.
+  * Add 181_fedora_log_proc_cmdline.patch: Log the /proc/cmdline into
+    Xorg.0.log
+  * Add 180_fedora_no_synaptics_mouse_synthesis.patch: Don't synthesise a
+    mouse section if synaptics devices are found.
+    (LP: #406291, #405281, #396908)
+  * Actually enable patches 178 and 179
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 04 Aug 2009 02:37:12 -0700
+
 xorg-server (2:1.6.2.901-1ubuntu2) karmic; urgency=low
 
   * Add 178_glx_flush_cache.patch and 179_glx_cleanup_drawables.patch:

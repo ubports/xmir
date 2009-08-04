@@ -1,0 +1,28 @@
+From 8c4bcb5a2b9e99e16ade5b09f7b1f476be1dad55 Mon Sep 17 00:00:00 2001
+From: Ben Skeggs <bskeggs@redhat.com>
+Date: Wed, 27 May 2009 15:24:34 +1000
+Subject: [PATCH] quirk: use first detailed timing as preferred for PEA prod 9003 (rh#492359)
+
+---
+ hw/xfree86/modes/xf86EdidModes.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/hw/xfree86/modes/xf86EdidModes.c b/hw/xfree86/modes/xf86EdidModes.c
+index 54f2c65..54b410e 100644
+--- a/hw/xfree86/modes/xf86EdidModes.c
++++ b/hw/xfree86/modes/xf86EdidModes.c
+@@ -205,6 +205,11 @@ static Bool quirk_first_detailed_preferred (int scrnIndex, xf86MonPtr DDC)
+ 	DDC->vendor.prod_id == 2423)
+ 	return TRUE;
+ 
++    /* Peacock Ergovision 19.  See rh#492359 */
++    if (memcmp (DDC->vendor.name, "PEA", 4) == 0 &&
++	DDC->vendor.prod_id == 9003)
++	return TRUE;
++
+     return FALSE;
+ }
+ 
+-- 
+1.6.2.2
+

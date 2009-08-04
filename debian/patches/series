@@ -34,3 +34,6 @@ fedora-pci-primary.diff
 177_animated_cursor_change_master.patch
 178_glx_flush_cache.patch
 179_glx_cleanup_drawables.patch
+180_fedora_no_synaptics_mouse_synthesis.patch
+181_fedora_log_proc_cmdline.patch
+182_fedora_quirk_pea.patch
