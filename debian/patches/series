@@ -33,3 +33,4 @@ fedora-pci-primary.diff
 174_set_bg_pixmap_of_cow_to_none.patch
 177_animated_cursor_change_master.patch
 178_glx_flush_cache.patch
+179_glx_cleanup_drawables.patch
