@@ -1,0 +1,27 @@
+From 8663524ce398b56af596ab1e7e96b62ca45b79e9 Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Mon, 13 Apr 2009 17:49:00 +1000
+Subject: [PATCH] xfree86: don't synthesise a mouse section if synaptics devices are found.
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ hw/xfree86/common/xf86Config.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/hw/xfree86/common/xf86Config.c b/hw/xfree86/common/xf86Config.c
+index 9e56ca9..92b6aba 100644
+--- a/hw/xfree86/common/xf86Config.c
++++ b/hw/xfree86/common/xf86Config.c
+@@ -1329,7 +1329,8 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
+      */
+     for (devs = servlayoutp->inputs; devs && *devs; devs++) {
+ 	if (!strcmp((*devs)->driver, "void") || !strcmp((*devs)->driver, "mouse") ||
+-            !strcmp((*devs)->driver, "vmmouse") || !strcmp((*devs)->driver, "evdev")) {
++            !strcmp((*devs)->driver, "vmmouse") || !strcmp((*devs)->driver, "evdev") ||
++            !strcmp((*devs)->driver, "synaptics")) {
+ 	    found = 1; break;
+ 	}
+     }
+-- 
+1.6.3.rc1.2.g3c17d.dirty
+
