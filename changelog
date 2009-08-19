@@ -1,3 +1,13 @@
+xorg-server (2:1.6.3-1ubuntu3) karmic; urgency=low
+
+  * Add 183_dont_reset_event_time.patch:  Upstream cherrypick.
+    Fix another random display blanking issue.  When we turn off DPMS with
+    DPMSModeOff and do dixSaveScreens, don't reset the event time else
+    session clients using IDLETIME will be reset.
+    See http://blogs.gnome.org/hughsie/2009/08/17/
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 19 Aug 2009 10:21:45 -0700
+
 xorg-server (2:1.6.3-1ubuntu2) karmic; urgency=low
 
   * Add 182_negative_sync_transitions.patch:  Upstream cherrypick.
