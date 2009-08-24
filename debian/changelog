@@ -1,3 +1,11 @@
+xorg-server (2:1.6.3-1ubuntu4) karmic; urgency=low
+
+  * Add 184_virtual_devices_autodetect.patch: Automatic driver detection
+    for vbox and kvm for non-cirrus devices.
+    (LP: #338219, #348497)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 24 Aug 2009 14:58:22 -0700
+
 xorg-server (2:1.6.3-1ubuntu3) karmic; urgency=low
 
   * Add 183_dont_reset_event_time.patch:  Upstream cherrypick.
