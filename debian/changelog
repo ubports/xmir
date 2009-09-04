@@ -1,3 +1,14 @@
+xorg-server (2:1.6.3-1ubuntu5) karmic; urgency=low
+
+  * Add 185_dix_badwindow.patch: dixLookupWindow may return BadMatch if
+    the window in question isn't actually a window. In this case,
+    GetProperty needs to return BadWindow - not BadMatch.  Fixes unexpected
+    crash in some GNOME applications not expecting to get BadMatch returned
+    from this function call.
+    (LP: #321041)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Sep 2009 18:27:04 -0700
+
 xorg-server (2:1.6.3-1ubuntu4) karmic; urgency=low
 
   * Add 184_virtual_devices_autodetect.patch: Automatic driver detection
