@@ -1,0 +1,28 @@
+From f04fe06ae244b851b38be824b1a80f2f8a030591 Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Thu, 03 Sep 2009 04:17:14 +0000
+Subject: dix: don't return BadMatch from GetProperty (#23562)
+
+dixLookupWindow may return BadMatch if the window in question isn't actually
+a window. In this case, GetProperty needs to return BadWindow - not
+BadMatch.
+
+X.Org Bug 23562 <http://bugs.freedesktop.org/show_bug.cgi?id=23562>
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+diff --git a/dix/property.c b/dix/property.c
+index 10b8482..9ec5dc6 100644
+--- a/dix/property.c
++++ b/dix/property.c
+@@ -474,7 +474,7 @@ ProcGetProperty(ClientPtr client)
+     }
+     rc = dixLookupWindow(&pWin, stuff->window, client, win_mode);
+     if (rc != Success)
+-	return rc;
++	return (rc == BadMatch) ? BadWindow : rc;
+ 
+     if (!ValidAtom(stuff->property))
+     {
+--
+cgit v0.8.2
