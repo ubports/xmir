@@ -1,3 +1,11 @@
+xorg-server (2:1.6.3-1ubuntu6) karmic; urgency=low
+
+  * Add 186_autoconfig_geode.patch:  Add autoconfiguration support for
+    older geode cards.  Cherrypick from upstream.
+    (LP: #423866)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 08 Sep 2009 15:43:28 -0700
+
 xorg-server (2:1.6.3-1ubuntu5) karmic; urgency=low
 
   * Add 185_dix_badwindow.patch: dixLookupWindow may return BadMatch if
