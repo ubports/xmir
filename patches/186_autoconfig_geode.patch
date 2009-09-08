@@ -1,0 +1,29 @@
+--- a/hw/xfree86/common/xf86AutoConfig.c	2009-07-07 20:48:58.000000000 +0300
++++ b/hw/xfree86/common/xf86AutoConfig.c	2009-09-04 00:32:08.000000000 +0300
+@@ -158,10 +158,25 @@ videoPtrToDriverList(struct pci_device *
+     {
++	/* AMD Geode LX */
+ 	case 0x1022:
+ 	    if (dev->device_id == 0x2081) {
+ 		driverList[0] = "geode";
+-		driverList[1] = "amd";
+ 	    }
+ 	    break;
++	/* older Geode products acquired by AMD but still carrying an NSC vendor_id */
++	case 0x100B:
++	    if (dev->device_id == 0x0030) {
++		/* NSC Geode GX2 specifically or... */
++		driverList[0] = "geode";
++		driverList[1] = "nsc";
++	    } else 
++		/* ... any kind of NSC Geode SC variant */
++		driverList[0] = "nsc";
++	    break;
++	/* Cyrix Geode GX1 */
++	case 0x1078:
++	    if (dev->device_id == 0x0104)
++		driverList[0] = "cyrix";
++	    break;
+ 	case 0x1142:		    driverList[0] = "apm"; break;
+ 	case 0xedd8:		    driverList[0] = "ark"; break;
+ 	case 0x1a03:		    driverList[0] = "ast"; break;
