@@ -1,3 +1,11 @@
+xorg-server (2:1.6.3-1ubuntu7) UNRELEASED; urgency=low
+
+  * Add 187_lastdeviceeventtime-no-reset.patch: Avoids resetting IDLETIME on
+    DPMS events.  Cherrypick from upstream.
+    (LP: #397839)
+
+ -- Loïc Minier <loic.minier@ubuntu.com>  Mon, 28 Sep 2009 10:05:00 +0200
+
 xorg-server (2:1.6.3-1ubuntu6) karmic; urgency=low
 
   * Add 186_autoconfig_geode.patch:  Add autoconfiguration support for
