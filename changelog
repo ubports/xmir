@@ -1,8 +1,8 @@
-xorg-server (2:1.6.4-2) UNRELEASED; urgency=low
+xorg-server (2:1.6.4-2) unstable; urgency=low
 
   * Add fix-dga-removal.patch, closes: #548724.
 
- -- Brice Goglin <bgoglin@debian.org>  Wed, 30 Sep 2009 22:38:57 +0200
+ -- Brice Goglin <bgoglin@debian.org>  Wed, 30 Sep 2009 22:40:29 +0200
 
 xorg-server (2:1.6.4-1) unstable; urgency=low
 
