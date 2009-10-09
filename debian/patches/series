@@ -39,5 +39,4 @@ fedora-vboxvideo.diff
 184_virtual_devices_autodetect.patch
 185_dix_badwindow.patch
 186_autoconfig_geode.patch
-187_lastdeviceeventtime-no-reset.patch
 188_revert_dga_removal.patch
