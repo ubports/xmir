@@ -1,3 +1,41 @@
+xorg-server (2:1.6.4-2) unstable; urgency=low
+
+  * Add fix-dga-removal.patch, closes: #548724.
+
+ -- Brice Goglin <bgoglin@debian.org>  Wed, 30 Sep 2009 22:40:29 +0200
+
+xorg-server (2:1.6.4-1) unstable; urgency=low
+
+  * New upstream release.
+  * Update 20_hurd-i386.diff, thanks Samuel Thibault, closes: #548606.
+  * Drop render-return-the-supported-version.patch, applied upstream.
+
+ -- Brice Goglin <bgoglin@debian.org>  Mon, 28 Sep 2009 07:23:07 +0200
+
+xorg-server (2:1.6.3.901-1) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * Add patch stolen from Fedora to add the vboxvideo driver to the
+    autodetection routine (closes: #540884).
+  * Add built-ins to the default font path so that non-Xorg servers can use
+    them (closes: #542707).  Thanks, Josselin Mouette!
+  * Add avr32 to the libselinux-dev/libaudit-dev build-deps (closes: #543540).
+    Thanks, Bradley Smith!
+  * Add patch to return the actually supported version in RenderQueryVersion
+    rather than whatever renderproto version the server built against.
+  * New upstream release.
+    + idle counter computation fixes (closes: #542064)
+  * Cherry-pick three more patches nominated on
+    http://www.x.org/wiki/Server16Branch:
+    - Don't reset the lastDeviceEventTime when doing DPMS actions
+    - dri2: Don't crash if pPriv is NULL
+    - EXA: Only take special code path for 1x1 fill for pixmaps
+
+  [ David Nusinow ]
+  * Update xsfbs to 5693792171d885769e58dcccc053c08b11acd12a
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 14 Sep 2009 15:33:46 +0200
+
 xorg-server (2:1.6.3-1ubuntu7) karmic; urgency=low
 
   * Add 187_lastdeviceeventtime-no-reset.patch: Avoids resetting IDLETIME on

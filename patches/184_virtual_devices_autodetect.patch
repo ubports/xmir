@@ -10,11 +10,3 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86AutoConfig.c xor
  	case 0x8086:
  	    switch (dev->device_id)
  	    {
-@@ -212,6 +213,7 @@ videoPtrToDriverList(struct pci_device *
- 	case 0x1023:		    driverList[0] = "trident"; break;
- 	case 0x100c:		    driverList[0] = "tseng";	break;
- 	case 0x1106:		    driverList[0] = "openchrome"; break;
-+        case 0x80ee:                driverList[0] = "vboxvideo"; break;
- 	case 0x15ad:		    driverList[0] = "vmware";	break;
- 	case 0x18ca:
- 	    if (dev->device_id == 0x47)
