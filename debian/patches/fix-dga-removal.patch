@@ -1,0 +1,155 @@
+From 894680ec0335d7bc2c744c53f6a28b40ab850b6c Mon Sep 17 00:00:00 2001
+From: Keith Packard <keithp@keithp.com>
+Date: Mon, 28 Sep 2009 12:39:47 -0700
+Subject: [PATCH] Re-fix DGA removal.
+
+Removing DGA ended up breaking any drivers calling into the old
+xf86DiDGAInit function as it tried to see if DGA was already enabled
+and ended up crashing if the VT wasn't completely initialized. Oops.
+
+Also, if the driver initializes DGA itself, have the DiDGA
+initialization overwrite that information as the DiDGA code will call
+ReInit on mode detect.
+
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+ hw/xfree86/common/xf86DGA.c  |   29 ++++++++++++++++-------------
+ hw/xfree86/modes/xf86Crtc.c  |    4 ++--
+ hw/xfree86/modes/xf86Crtc.h  |    8 ++++++++
+ hw/xfree86/modes/xf86DiDGA.c |   15 ++++++++++++---
+ 4 files changed, 38 insertions(+), 18 deletions(-)
+
+diff --git a/hw/xfree86/common/xf86DGA.c b/hw/xfree86/common/xf86DGA.c
+index 42b7c58..804fd37 100644
+--- a/hw/xfree86/common/xf86DGA.c
++++ b/hw/xfree86/common/xf86DGA.c
+@@ -120,8 +120,22 @@ DGAInit(
+ 
+     DGAScreenKey = &DGAScreenKeyIndex;
+ 
+-    if(!(pScreenPriv = (DGAScreenPtr)xalloc(sizeof(DGAScreenRec))))
+-	return FALSE;
++    pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
++
++    if (!pScreenPriv)
++    {
++	if(!(pScreenPriv = (DGAScreenPtr)xalloc(sizeof(DGAScreenRec))))
++	    return FALSE;
++	dixSetPrivate(&pScreen->devPrivates, DGAScreenKey, pScreenPriv);
++	pScreenPriv->CloseScreen = pScreen->CloseScreen;
++	pScreen->CloseScreen = DGACloseScreen;
++	pScreenPriv->DestroyColormap = pScreen->DestroyColormap;
++	pScreen->DestroyColormap = DGADestroyColormap;
++	pScreenPriv->InstallColormap = pScreen->InstallColormap;
++	pScreen->InstallColormap = DGAInstallColormap;
++	pScreenPriv->UninstallColormap = pScreen->UninstallColormap;
++	pScreen->UninstallColormap = DGAUninstallColormap;
++    }
+ 
+     pScreenPriv->pScrn = pScrn;
+     pScreenPriv->numModes = num;
+@@ -146,17 +160,6 @@ DGAInit(
+ 	    modes[i].flags &= ~DGA_PIXMAP_AVAILABLE;
+ #endif
+ 
+-    dixSetPrivate(&pScreen->devPrivates, DGAScreenKey, pScreenPriv);
+-    pScreenPriv->CloseScreen = pScreen->CloseScreen;
+-    pScreen->CloseScreen = DGACloseScreen;
+-    pScreenPriv->DestroyColormap = pScreen->DestroyColormap;
+-    pScreen->DestroyColormap = DGADestroyColormap;
+-    pScreenPriv->InstallColormap = pScreen->InstallColormap;
+-    pScreen->InstallColormap = DGAInstallColormap;
+-    pScreenPriv->UninstallColormap = pScreen->UninstallColormap;
+-    pScreen->UninstallColormap = DGAUninstallColormap;
+-
+-
+     return TRUE;
+ }
+ 
+diff --git a/hw/xfree86/modes/xf86Crtc.c b/hw/xfree86/modes/xf86Crtc.c
+index c1e31e0..506fbb9 100644
+--- a/hw/xfree86/modes/xf86Crtc.c
++++ b/hw/xfree86/modes/xf86Crtc.c
+@@ -806,7 +806,7 @@ xf86CrtcScreenInit (ScreenPtr screen)
+     screen->CloseScreen = xf86CrtcCloseScreen;
+     
+ #ifdef XFreeXDGA
+-    xf86DiDGAInit(screen, 0);
++    _xf86_di_dga_init_internal(screen);
+ #endif
+ #ifdef RANDR_13_INTERFACE
+     return RANDR_INTERFACE_VERSION;
+@@ -1928,7 +1928,7 @@ xf86SetScrnInfoModes (ScrnInfoPtr scrn)
+     scrn->currentMode = scrn->modes;
+ #ifdef XFreeXDGA
+     if (scrn->pScreen)
+-	    xf86DiDGAReInit(scrn->pScreen);
++	    _xf86_di_dga_reinit_internal(scrn->pScreen);
+ #endif
+ }
+ 
+diff --git a/hw/xfree86/modes/xf86Crtc.h b/hw/xfree86/modes/xf86Crtc.h
+index 69afaa5..9baa956 100644
+--- a/hw/xfree86/modes/xf86Crtc.h
++++ b/hw/xfree86/modes/xf86Crtc.h
+@@ -833,6 +833,10 @@ xf86OutputGetEDID (xf86OutputPtr output, I2CBusPtr pDDCBus);
+ extern _X_EXPORT Bool
+ xf86DiDGAInit (ScreenPtr pScreen, unsigned long dga_address);
+ 
++/* this is the real function, used only internally */
++_X_INTERNAL Bool
++_xf86_di_dga_init_internal (ScreenPtr pScreen);
++
+ /**
+  * Re-initialize dga for this screen (as when the set of modes changes)
+  */
+@@ -841,6 +845,10 @@ extern _X_EXPORT Bool
+ xf86DiDGAReInit (ScreenPtr pScreen);
+ #endif
+ 
++/* This is the real function, used only internally */
++_X_INTERNAL Bool
++_xf86_di_dga_reinit_internal (ScreenPtr pScreen);
++
+ /*
+  * Set the subpixel order reported for the screen using
+  * the information from the outputs
+diff --git a/hw/xfree86/modes/xf86DiDGA.c b/hw/xfree86/modes/xf86DiDGA.c
+index 0f7b834..60fbdbf 100644
+--- a/hw/xfree86/modes/xf86DiDGA.c
++++ b/hw/xfree86/modes/xf86DiDGA.c
+@@ -175,6 +175,12 @@ static DGAFunctionRec xf86_dga_funcs = {
+ Bool
+ xf86DiDGAReInit (ScreenPtr pScreen)
+ {
++    return TRUE;
++}
++
++Bool
++_xf86_di_dga_reinit_internal (ScreenPtr pScreen)
++{
+     ScrnInfoPtr		scrn = xf86Screens[pScreen->myNum];
+     xf86CrtcConfigPtr   xf86_config = XF86_CRTC_CONFIG_PTR(scrn);
+     
+@@ -190,12 +196,15 @@ xf86DiDGAReInit (ScreenPtr pScreen)
+ Bool
+ xf86DiDGAInit (ScreenPtr pScreen, unsigned long dga_address)
+ {
++    return TRUE;
++}
++
++Bool
++_xf86_di_dga_init_internal (ScreenPtr pScreen)
++{
+     ScrnInfoPtr		scrn = xf86Screens[pScreen->myNum];
+     xf86CrtcConfigPtr   xf86_config = XF86_CRTC_CONFIG_PTR(scrn);
+ 
+-    if (DGAAvailable(pScreen->myNum))
+-	return TRUE;
+-
+     xf86_config->dga_flags = 0;
+     xf86_config->dga_address = 0;
+     xf86_config->dga_width = 0;
+-- 
+1.6.4.3
+
