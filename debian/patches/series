@@ -8,7 +8,7 @@ Add-libgcrypt-as-an-option-for-sha1.diff
 fedora-bad-fbdev-thats-mine.patch
 fedora-pci-primary.diff
 fedora-vboxvideo.diff
-#fix-dga-removal.patch
+fix-dga-removal.patch
 101_fedora_xserver-1.3.0-document-fontpath-correctly.patch
 102_ubuntu_sharevts_load_cpu.patch
 103_psb_auto.patch
@@ -39,4 +39,3 @@ fedora-vboxvideo.diff
 184_virtual_devices_autodetect.patch
 185_dix_badwindow.patch
 186_autoconfig_geode.patch
-188_revert_dga_removal.patch
