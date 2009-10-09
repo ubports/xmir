@@ -1,6 +1,7 @@
 xorg-server (2:1.6.4-2ubuntu1) karmic; urgency=low
 
-  * Merge from Debian unstable.  Remaining Ubuntu changes:
+  * Merge from Debian unstable.  (LP: #447010)
+    Remaining Ubuntu changes:
     - debian/control:
       + set Conflicts: xkb-data (<< 0.9), since xkb-path is
         different from previous releases
@@ -57,10 +58,30 @@ xorg-server (2:1.6.4-2ubuntu1) karmic; urgency=low
         Don't return BadMatch from GetProperty if window isn't actually a window
       + 186_autoconfig_geode.patch
         Perform autodetection correctly for various geode devices
-   * Update 184_virtual_devices_autodetect.patch to only include inserting
-     cirrus, since vbox is covered by the new fedora patch.
+  * Update 184_virtual_devices_autodetect.patch to only include inserting
+    cirrus, since vbox is covered by the new fedora patch.
+  * Drop patches already included upstream:
+    - 187_lastdeviceeventtime-no-reset.patch
+    - 178_glx_flush_cache.patch
+    - 179_glx_cleanup_drawables.patch
+    - 183_dont_reset_event_time.patch
+    - 182_negative_sync_transitions.patch
+  * Ubuntu bugs fixed as of this release:
+    - Generate key up event only when key is released.  (Fixed previously)
+      (LP: #403339)
+    - Fix XDPMS change event idle handling
+      (LP: #114336, #152999)
+    - Don't shutdown the libhal ctx if it failed to initialize.  Fixes
+      crash if HAL or dbus is not running or is interrupted.
+      (LP: #114336)
+    - Fix crash if SendCoreEvents is off.  Don't send events through
+      master in this case.
+      (LP: #368135)
+    - Fix SWCursor check in xf86CursorSetCursor to prevent cursor image
+      showing up on every screen with Xinerama.
+      (LP: #357901)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Fri, 09 Oct 2009 11:55:55 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 09 Oct 2009 12:01:52 -0700
 
 xorg-server (2:1.6.4-2) unstable; urgency=low
 
