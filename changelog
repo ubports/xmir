@@ -59,11 +59,8 @@ xorg-server (2:1.6.4-2ubuntu1) karmic; urgency=low
         Perform autodetection correctly for various geode devices
    * Update 184_virtual_devices_autodetect.patch to only include inserting
      cirrus, since vbox is covered by the new fedora patch.
-   * Add 188_revert_dga_removal.patch out of concern of possible
-     regressions.  Along with this, disable fix-dga-removal.patch which
-     fixed a regression in the dga removal code.
 
- -- Bryce Harrington <bryce@ubuntu.com>  Fri, 09 Oct 2009 02:28:12 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 09 Oct 2009 11:55:55 -0700
 
 xorg-server (2:1.6.4-2) unstable; urgency=low
 
