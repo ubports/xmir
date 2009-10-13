@@ -1,0 +1,15 @@
+diff -Nurp xorg-server-ubuntu-git/hw/xfree86/modes/xf86EdidModes.c xorg-server-ubuntu-git-working/hw/xfree86/modes/xf86EdidModes.c
+--- xorg-server-ubuntu-git/hw/xfree86/modes/xf86EdidModes.c	2009-10-03 11:52:23.000000000 -0700
++++ xorg-server-ubuntu-git-working/hw/xfree86/modes/xf86EdidModes.c	2009-10-13 02:23:21.000000000 -0700
+@@ -160,6 +160,11 @@ static Bool quirk_detailed_v_in_cm (int 
+ 	DDC->vendor.prod_id == 47360)
+ 	return TRUE;
+ 
++    /* LP #380009: HP Compaq NC8430 LP154W01-TLA8 */
++    if (memcmp (DDC->vendor.name, "LPL", 4) == 0 &&
++        DDC->vendor.prod_id == 5750)
++        return TRUE;
++
+     return FALSE;
+ }
+ 

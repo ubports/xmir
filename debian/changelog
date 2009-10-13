@@ -1,3 +1,11 @@
+xorg-server (2:1.6.4-2ubuntu2) karmic; urgency=low
+
+  * Add 187_edid_quirk_hp_nc8430.patch: Quirk for another LPL monitor, to
+    fix huge font sizes due to invalid EDID from the hardware.
+    (LP: #380009)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 13 Oct 2009 02:25:46 -0700
+
 xorg-server (2:1.6.4-2ubuntu1) karmic; urgency=low
 
   * Merge from Debian unstable.  (LP: #447010)
