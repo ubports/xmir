@@ -1,3 +1,11 @@
+xorg-server (2:1.6.4-2ubuntu3) karmic; urgency=low
+
+  * local/xvfb-run: Fix race condition in xvfb-run that can cause
+    concurrent invocations to fail.
+    (LP: #348052)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 14 Oct 2009 15:21:51 -0700
+
 xorg-server (2:1.6.4-2ubuntu2) karmic; urgency=low
 
   * Add 187_edid_quirk_hp_nc8430.patch: Quirk for another LPL monitor, to

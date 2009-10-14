@@ -110,7 +110,7 @@ eval set -- "$ARGS"
 
 while :; do
     case "$1" in
-        -a|--auto-servernum) SERVERNUM=$(find_free_servernum) ;;
+        -a|--auto-servernum) SERVERNUM=$(find_free_servernum); AUTONUM="yes" ;;
         -e|--error-file) ERRORFILE="$2"; shift ;;
         -f|--auth-file) AUTHFILE="$2"; shift ;;
         -h|--help) SHOWHELP="yes" ;;
@@ -153,13 +153,36 @@ if [ -z "$AUTHFILE" ]; then
 fi
 
 # Start Xvfb.
-MCOOKIE=$(mcookie)
-XAUTHORITY=$AUTHFILE xauth source - << EOF >>"$ERRORFILE" 2>&1
+tries=1000
+while test $tries -gt 0; do
+    tries=$((tries-1))
+    MCOOKIE=$(mcookie)
+    XAUTHORITY=$AUTHFILE xauth source - << EOF >>"$ERRORFILE" 2>&1
 add :$SERVERNUM $XAUTHPROTO $MCOOKIE
 EOF
-XAUTHORITY=$AUTHFILE Xvfb ":$SERVERNUM" $XVFBARGS $LISTENTCP >>"$ERRORFILE" \
-  2>&1 &
-XVFBPID=$!
+    XAUTHORITY=$AUTHFILE Xvfb ":$SERVERNUM" $XVFBARGS $LISTENTCP >>"$ERRORFILE" 2>&1 &
+    XVFBPID=$!
+
+    # Test PID of Xvfb and contents of the X server lock file
+    # (use numerical comparison to avoid whitespace issues).
+    # If the display was in use the Xvfb process will die on its own.
+    LOCKPID=`cat /tmp/.X${SERVERNUM}-lock)` 2>/dev/null
+    if [ -z $LOCKPID ]; then
+        break
+    fi
+    if [ "$XVFBPID" -eq $LOCKPID ]; then
+        break
+    fi
+    # The display is in use so try another one (if '-a' was specified).
+    if [ "$AUTONUM" ]; then
+        SERVERNUM=$(find_free_servernum)
+        continue
+    fi
+    error "display :$SERVERNUM already in use"
+    exit 1
+
+done
+
 sleep "$STARTWAIT"
 if ! kill -0 $XVFBPID 2>/dev/null; then
   echo "Xvfb failed to start" >&2
