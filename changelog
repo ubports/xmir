@@ -1,3 +1,20 @@
+xorg-server (2:1.6.4-2ubuntu5) karmic; urgency=low
+
+  * 189_xserver_1.5.0_bg_none_root.patch: Moblin patch to allow X to
+    create a root window with no background by passing the -nr
+    argument.  This will make X no longer clear the framebuffer when it
+    starts, thus eliminating a flicker between bootsplash and gdm.  -nr
+    is ignored if this feature is not supported by the driver.  This patch
+    is not upstream yet.
+    TESTERS:  Watch for screen corruption issues during X or app start.
+  * 190_cache-xkbcomp_output_for_fast_start_up.patch: Causes the X
+    Keyboard Compiler (xkbcomp) to create a cache file of the keyboard
+    settings.  This will make the 2nd and later boots slightly faster.
+    TESTERS:  Watch for issues relating to keyboard customizations not
+    taking effect properly following boot.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 23 Nov 2009 13:59:44 -0800
+
 xorg-server (2:1.6.4-2ubuntu4) karmic; urgency=low
 
   * Add 188_default_primary_to_first_busid.patch: X can abort if multiple
