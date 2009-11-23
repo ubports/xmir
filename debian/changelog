@@ -1,4 +1,4 @@
-xorg-server (2:1.6.4-2ubuntu5) karmic; urgency=low
+xorg-server (2:1.6.4-2ubuntu6) lucid; urgency=low
 
   * 189_xserver_1.5.0_bg_none_root.patch: Moblin patch to allow X to
     create a root window with no background by passing the -nr
@@ -14,6 +14,13 @@ xorg-server (2:1.6.4-2ubuntu5) karmic; urgency=low
     taking effect properly following boot.
 
  -- Bryce Harrington <bryce@ubuntu.com>  Mon, 23 Nov 2009 13:59:44 -0800
+
+xorg-server (2:1.6.4-2ubuntu5) lucid; urgency=low
+
+  * Rework xvfb-run patch to wait for server to come up before checking
+    status (LP: #481591, Debian bug 521075).
+
+ -- Kees Cook <kees@ubuntu.com>  Fri, 13 Nov 2009 16:15:36 -0800
 
 xorg-server (2:1.6.4-2ubuntu4) karmic; urgency=low
 
