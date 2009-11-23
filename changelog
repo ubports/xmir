@@ -1,3 +1,12 @@
+xorg-server (2:1.6.4-2ubuntu4) karmic; urgency=low
+
+  * Add 188_default_primary_to_first_busid.patch: X can abort if multiple
+    video devices are present, and none are marked as primary.  This makes
+    X just pick the first one it sees and carry on.
+    (LP: #459512)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 26 Oct 2009 10:05:44 -0700
+
 xorg-server (2:1.6.4-2ubuntu3) karmic; urgency=low
 
   * local/xvfb-run: Fix race condition in xvfb-run that can cause
