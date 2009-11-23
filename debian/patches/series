@@ -40,3 +40,4 @@ fix-dga-removal.patch
 185_dix_badwindow.patch
 186_autoconfig_geode.patch
 187_edid_quirk_hp_nc8430.patch
+188_default_primary_to_first_busid.patch
