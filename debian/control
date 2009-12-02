@@ -105,12 +105,10 @@ Conflicts:
  xserver-xorg-input-2.1,
  xserver-xorg-input-4,
  xserver-xorg-input-wacom (<< 0.7.8),
- xserver-xorg-video-psb (<< 0.15.0-0ubuntu1~804um5),
 Replaces:
  xserver-xorg (<< 6.8.2-38),
  xserver-xfree86 (<< 1:7.0.0),
  xserver-common (<< 7)
-Breaks: xserver-xorg-input-synaptics (<= 0.15.2-0ubuntu3), xserver-xorg-input-evdev (<= 1:2.0.99+git20080912-0ubuntu2)
 Provides: xserver
 Description: Xorg X server - core server
  The Xorg X server is an X server for several architectures and operating
