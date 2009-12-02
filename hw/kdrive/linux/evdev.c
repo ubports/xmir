@@ -23,7 +23,6 @@
 #ifdef HAVE_CONFIG_H
 #include <kdrive-config.h>
 #endif
-#define NEED_EVENTS
 #include <errno.h>
 #include <linux/input.h>
 #include <X11/X.h>
@@ -210,7 +209,7 @@ EvdevPtrInit (KdPointerInfo *pi)
         for (i = 0; i < NUM_DEFAULT_EVDEV; i++) {
             fd = open (kdefaultEvdev[i], 2);
             if (fd >= 0) {
-                pi->path = KdSaveString (kdefaultEvdev[i]);
+                pi->path = strdup (kdefaultEvdev[i]);
                 break;
             }
         }
@@ -225,7 +224,7 @@ EvdevPtrInit (KdPointerInfo *pi)
 
     close(fd);
 
-    pi->name = KdSaveString("Evdev mouse");
+    pi->name = strdup("Evdev mouse");
 
     return Success;
 }
@@ -234,6 +233,8 @@ static Status
 EvdevPtrEnable (KdPointerInfo *pi)
 {        
     int fd;
+    unsigned long   ev[NBITS(EV_MAX)];
+    Kevdev            *ke;
 
     if (!pi || !pi->path)
         return BadImplementation;
@@ -242,9 +243,9 @@ EvdevPtrEnable (KdPointerInfo *pi)
     if (fd < 0)
         return BadMatch;
 
-    unsigned long   ev[NBITS(EV_MAX)];
-    Kevdev            *ke;
-        
+    if (ioctl (fd, EVIOCGRAB, 1) < 0)
+        perror ("Grabbing evdev mouse device failed");
+
     if (ioctl (fd, EVIOCGBIT(0 /*EV*/, sizeof (ev)), ev) < 0)
     {
         perror ("EVIOCGBIT 0");
@@ -336,6 +337,10 @@ EvdevPtrDisable (KdPointerInfo *pi)
         return;
 
     KdUnregisterFd (pi, ke->fd, TRUE);
+
+    if (ioctl (ke->fd, EVIOCGRAB, 0) < 0)
+        perror ("Ungrabbing evdev mouse device failed");
+
     xfree (ke);
     pi->driverPrivate = 0;
 }
@@ -353,18 +358,11 @@ EvdevPtrFini (KdPointerInfo *pi)
 static void
 readMapping (KdKeyboardInfo *ki)
 {
-    int             minScanCode, maxScanCode;
-
     if (!ki)
         return;
 
-    minScanCode = 0;
-    maxScanCode = 193;
-
-    ki->keySyms.mapWidth = 2;
-
-    ki->minScanCode = minScanCode;
-    ki->maxScanCode = maxScanCode;		
+    ki->minScanCode = 0;
+    ki->maxScanCode = 193;
 }
 
 static void
@@ -412,7 +410,7 @@ EvdevKbdInit (KdKeyboardInfo *ki)
 
     close (fd);
 
-    ki->name = KdSaveString("Evdev keyboard");
+    ki->name = strdup("Evdev keyboard");
 
     readMapping(ki);
 
@@ -432,6 +430,9 @@ EvdevKbdEnable (KdKeyboardInfo *ki)
     fd = open(ki->path, O_RDWR);
     if (fd < 0)
         return BadMatch;
+
+    if (ioctl (fd, EVIOCGRAB, 1) < 0)
+        perror ("Grabbing evdev keyboard device failed");
 
     if (ioctl (fd, EVIOCGBIT(0 /*EV*/, sizeof (ev)), ev) < 0) {
         perror ("EVIOCGBIT 0");
@@ -504,6 +505,10 @@ EvdevKbdDisable (KdKeyboardInfo *ki)
         return;
 
     KdUnregisterFd (ki, ke->fd, TRUE);
+
+    if (ioctl (ke->fd, EVIOCGRAB, 0) < 0)
+        perror ("Ungrabbing evdev keyboard device failed");
+
     xfree (ke);
     ki->driverPrivate = 0;
 }

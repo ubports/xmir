@@ -1,14 +1,13 @@
+## Patches with a number < 100 are applied in debian.
+## Ubuntu patches start with 100.
 001_fedora_extramodes.patch
+02_Add-libgcrypt-as-an-option-for-sha1.diff
 #13_debian_add_xkbpath_env_variable.diff
-20_hurd-i386.diff
-kfreebsd-ftbfs.diff
-0001-xorg.conf-5-refer-to-mousedrv-4-.-Debian-394058.patch
-Turn-on-ModeDebug-by-default.patch
-Add-libgcrypt-as-an-option-for-sha1.diff
-fedora-bad-fbdev-thats-mine.patch
-fedora-pci-primary.diff
-fedora-vboxvideo.diff
-fix-dga-removal.patch
+11-Move-config_init-after-CreateWellKnownSockets-and-In.diff
+12-Add-libudev-input-hotplug-backend.diff
+13-configure-config-udev-defaults-to-off-for-now.diff
+14-config-add-example-udev-rules.diff
+15-config-udev-look-for-xkb-rules-model-layout-variant-.diff
 101_fedora_xserver-1.3.0-document-fontpath-correctly.patch
 102_ubuntu_sharevts_load_cpu.patch
 103_psb_auto.patch

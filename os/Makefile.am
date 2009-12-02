@@ -41,7 +41,7 @@ endif
 EXTRA_DIST = $(SECURERPC_SRCS) $(INTERNALMALLOC_SRCS) \
      $(XDMCP_SRCS) $(STRLCAT_SRCS)
 
-if XSERVER_DTRACE
+if SPECIAL_DTRACE_OBJECTS
 # Generate dtrace object code for probes in libos & libdix
 dtrace.o: $(top_srcdir)/dix/Xserver.d $(am_libos_la_OBJECTS)
 	$(DTRACE) -G -C -o $@ -s $(top_srcdir)/dix/Xserver.d .libs/*.o ../dix/.libs/*.o

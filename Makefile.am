@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS=dist-bzip2 foreign nostdinc
-DISTCHECK_CONFIGURE_FLAGS=--disable-xorgcfg
+ACLOCAL_AMFLAGS = -I m4
 
 if COMPOSITE
 COMPOSITE_DIR=composite
@@ -38,25 +38,31 @@ SUBDIRS = \
 	$(GLX_DIR) \
 	exa \
 	config \
-	hw
+	hw \
+	test
 
+if XORG
 aclocaldir = $(datadir)/aclocal
 aclocal_DATA = xorg-server.m4
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xorg-server.pc
+endif
 
 EXTRA_DIST = xorg-server.pc.in xorg-server.m4 ChangeLog autogen.sh
 
-MAINTAINERCLEANFILES=ChangeLog
+DISTCHECK_CONFIGURE_FLAGS=\
+	--with-xkb-path=$(XKB_BASE_DIRECTORY) \
+	--with-xkb-bin-directory=$(XKB_BIN_DIRECTORY) \
+	--with-xkb-output='$${datadir}/X11/xkb/compiled'
 
-DISTCLEANFILES = doltlibtool doltcompile
+DISTCLEANFILES = doltcompile doltlibtool
+MAINTAINERCLEANFILES=ChangeLog
 
 .PHONY: ChangeLog
 
 ChangeLog:
-	(GIT_DIR=$(top_srcdir)/.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || \
-	(touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
+	$(CHANGELOG_CMD)
 
 dist-hook: ChangeLog
 
@@ -81,7 +87,8 @@ DIST_SUBDIRS = \
 	glx \
 	exa \
 	config \
-	hw
+	hw \
+	test
 
 # gross hack
 relink: all

@@ -177,6 +177,7 @@ static char GLXServerExtensions[] =
                         "GLX_SGIX_swap_barrier "
 #endif
 			"GLX_SGIX_fbconfig "
+			"GLX_SGIX_pbuffer "
 			"GLX_MESA_copy_sub_buffer "
 			;
 
@@ -211,6 +212,7 @@ glxCloseScreen (int index, ScreenPtr pScreen)
     __GLXscreen *pGlxScreen = glxGetScreen(pScreen);
 
     pScreen->CloseScreen = pGlxScreen->CloseScreen;
+    pScreen->DestroyWindow = pGlxScreen->DestroyWindow;
 
     pGlxScreen->destroy(pGlxScreen);
 
@@ -223,8 +225,8 @@ glxGetScreen(ScreenPtr pScreen)
     return dixLookupPrivate(&pScreen->devPrivates, glxScreenPrivateKey);
 }
 
-void GlxSetVisualConfigs(int nconfigs, 
-                         __GLXvisualConfig *configs, void **privates)
+_X_EXPORT void GlxSetVisualConfigs(int nconfigs,
+                         void *configs, void **privates)
 {
     /* We keep this stub around for the DDX drivers that still
      * call it. */
@@ -248,10 +250,7 @@ GLint glxConvertToXVisualType(int visualType)
 static VisualPtr
 AddScreenVisuals(ScreenPtr pScreen, int count, int d)
 {
-    XID		*installedCmaps, *vids, vid;
-    int		 numInstalledCmaps, numVisuals, i, j;
-    VisualPtr	 visuals;
-    ColormapPtr	 installedCmap;
+    int		 i;
     DepthPtr	 depth;
 
     depth = NULL;
@@ -264,54 +263,8 @@ AddScreenVisuals(ScreenPtr pScreen, int count, int d)
     if (depth == NULL)
 	return NULL;
 
-    /* Find the installed colormaps */
-    installedCmaps = xalloc (pScreen->maxInstalledCmaps * sizeof (XID));
-    if (!installedCmaps)
-	return NULL;
-
-    numInstalledCmaps = pScreen->ListInstalledColormaps(pScreen, installedCmaps);
-
-    /* realloc the visual array to fit the new one in place */
-    numVisuals = pScreen->numVisuals;
-    visuals = xrealloc(pScreen->visuals, (numVisuals + count) * sizeof(VisualRec));
-    if (!visuals) {
-	xfree(installedCmaps);
-	return NULL;
-    }
-
-    vids = xrealloc(depth->vids, (depth->numVids + count) * sizeof(XID));
-    if (vids == NULL) {
-	xfree(installedCmaps);
-	xfree(visuals);
-	return NULL;
-    }
-
-    /*
-     * Fix up any existing installed colormaps -- we'll assume that
-     * the only ones created so far have been installed.  If this
-     * isn't true, we'll have to walk the resource database looking
-     * for all colormaps.
-     */
-    for (i = 0; i < numInstalledCmaps; i++) {
-	installedCmap = LookupIDByType (installedCmaps[i], RT_COLORMAP);
-	if (!installedCmap)
-	    continue;
-	j = installedCmap->pVisual - pScreen->visuals;
-	installedCmap->pVisual = &visuals[j];
-    }
-
-    xfree(installedCmaps);
-
-    for (i = 0; i < count; i++) {
-	vid = FakeClientID(0);
-	visuals[pScreen->numVisuals + i].vid = vid;
-	vids[depth->numVids + i] = vid;
-    }
-
-    pScreen->visuals = visuals;
-    pScreen->numVisuals += count;
-    depth->vids = vids;
-    depth->numVids += count;
+    if (ResizeVisualArray(pScreen, count, depth) == FALSE)
+        return NULL;
 
     /* Return a pointer to the first of the added visuals. */ 
     return pScreen->visuals + pScreen->numVisuals - count;
@@ -391,6 +344,31 @@ pickFBConfig(__GLXscreen *pGlxScreen, VisualPtr visual)
     return best;
 }
 
+static Bool
+glxDestroyWindow(WindowPtr pWin)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    __GLXscreen *pGlxScreen = glxGetScreen(pScreen);
+    Bool retval = TRUE;
+
+    FreeResource(pWin->drawable.id, FALSE);
+
+    /* call lower wrapped functions */
+    if (pGlxScreen->DestroyWindow) {
+	/* unwrap */
+	pScreen->DestroyWindow = pGlxScreen->DestroyWindow;
+
+	/* call lower layers */
+	retval = (*pScreen->DestroyWindow)(pWin);
+
+	/* rewrap */
+	pGlxScreen->DestroyWindow = pScreen->DestroyWindow;
+	pScreen->DestroyWindow = glxDestroyWindow;
+    }
+
+    return retval;
+}
+
 void __glXScreenInit(__GLXscreen *pGlxScreen, ScreenPtr pScreen)
 {
     __GLXconfig *m;
@@ -405,6 +383,8 @@ void __glXScreenInit(__GLXscreen *pGlxScreen, ScreenPtr pScreen)
 
     pGlxScreen->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = glxCloseScreen;
+    pGlxScreen->DestroyWindow = pScreen->DestroyWindow;
+    pScreen->DestroyWindow = glxDestroyWindow;
 
     i = 0;
     for (m = pGlxScreen->fbconfigs; m != NULL; m = m->next) {

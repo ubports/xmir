@@ -172,8 +172,14 @@ static DGAFunctionRec xf86_dga_funcs = {
    NULL
 };
 
-_X_EXPORT Bool
+Bool
 xf86DiDGAReInit (ScreenPtr pScreen)
+{
+    return TRUE;
+}
+
+Bool
+_xf86_di_dga_reinit_internal (ScreenPtr pScreen)
 {
     ScrnInfoPtr		scrn = xf86Screens[pScreen->myNum];
     xf86CrtcConfigPtr   xf86_config = XF86_CRTC_CONFIG_PTR(scrn);
@@ -187,14 +193,17 @@ xf86DiDGAReInit (ScreenPtr pScreen)
     return DGAReInitModes (pScreen, xf86_config->dga_modes, xf86_config->dga_nmode);
 }
 
-_X_EXPORT Bool
+Bool
 xf86DiDGAInit (ScreenPtr pScreen, unsigned long dga_address)
+{
+    return TRUE;
+}
+
+Bool
+_xf86_di_dga_init_internal (ScreenPtr pScreen)
 {
     ScrnInfoPtr		scrn = xf86Screens[pScreen->myNum];
     xf86CrtcConfigPtr   xf86_config = XF86_CRTC_CONFIG_PTR(scrn);
-
-    if (DGAAvailable(pScreen->myNum))
-	return TRUE;
 
     xf86_config->dga_flags = 0;
     xf86_config->dga_address = 0;

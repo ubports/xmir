@@ -86,6 +86,8 @@ FreeCursorBits(CursorBitsPtr bits)
 #ifdef ARGB_CURSOR
     xfree(bits->argb);
 #endif
+    dixFreePrivates(bits->devPrivates);
+    bits->devPrivates = NULL;
     if (bits->refcnt == 0)
     {
 	GlyphSharePtr *prev, this;
@@ -100,7 +102,6 @@ FreeCursorBits(CursorBitsPtr bits)
 	    CloseFont(this->font, (Font)0);
 	    xfree(this);
 	}
-	dixFreePrivates(bits->devPrivates);
 	xfree(bits);
     }
 }
@@ -110,7 +111,7 @@ FreeCursorBits(CursorBitsPtr bits)
  *
  *  \param value must conform to DeleteType
  */
-_X_EXPORT int
+int
 FreeCursor(pointer value, XID cid)
 {
     int		nscr;
@@ -345,7 +346,7 @@ AllocGlyphCursor(Font source, unsigned sourceChar, Font mask, unsigned maskChar,
 	    unsigned char *mskptr;
 
 	    n = BitmapBytePad(cm.width)*(long)cm.height;
-	    mskptr = mskbits = (unsigned char *)xalloc(n);
+	    mskptr = mskbits = xalloc(n);
 	    if (!mskptr)
 		return BadAlloc;
 	    while (--n >= 0)
@@ -405,7 +406,7 @@ AllocGlyphCursor(Font source, unsigned sourceChar, Font mask, unsigned maskChar,
 	else
 	{
 	    bits->refcnt = 1;
-	    pShare = (GlyphSharePtr)xalloc(sizeof(GlyphShare));
+	    pShare = xalloc(sizeof(GlyphShare));
 	    if (!pShare)
 	    {
 		FreeCursorBits(bits);
@@ -515,7 +516,7 @@ AllocGlyphCursor(Font source, unsigned sourceChar, Font mask, unsigned maskChar,
  * add the cursor to the resource table
  *************************************************************/
 
-CursorPtr 
+CursorPtr
 CreateRootCursor(char *unused1, unsigned int unused2)
 {
     CursorPtr 	curs;
@@ -545,8 +546,9 @@ CreateRootCursor(char *unused1, unsigned int unused2)
     if (err != Success)
 	return NullCursor;
 
-    cursorfont = (FontPtr)LookupIDByType(fontID, RT_FONT);
-    if (!cursorfont)
+    err = dixLookupResourceByType((pointer *)&cursorfont, fontID, RT_FONT,
+				  serverClient, DixReadAccess);
+    if (err != Success)
 	return NullCursor;
     if (AllocGlyphCursor(fontID, 0, fontID, 1, 0, 0, 0, ~0, ~0, ~0,
 			 &curs, serverClient, (XID)0) != Success)
