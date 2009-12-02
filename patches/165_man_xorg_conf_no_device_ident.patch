@@ -9,11 +9,11 @@ Signed-off-by: Bryce Harrington <bryce@bryceharrington.org>
  hw/xfree86/doc/man/xorg.conf.man.pre |    4 +---
  1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/hw/xfree86/doc/man/xorg.conf.man.pre b/hw/xfree86/doc/man/xorg.conf.man.pre
-index 7349def..f4853e8 100644
---- a/hw/xfree86/doc/man/xorg.conf.man.pre
-+++ b/hw/xfree86/doc/man/xorg.conf.man.pre
-@@ -1537,9 +1537,7 @@ sections have the following format:
+Index: xorg-server/hw/xfree86/doc/man/xorg.conf.man.pre
+===================================================================
+--- xorg-server.orig/hw/xfree86/doc/man/xorg.conf.man.pre	2009-12-02 23:06:14.000000000 +0200
++++ xorg-server/hw/xfree86/doc/man/xorg.conf.man.pre	2009-12-02 23:06:37.000000000 +0200
+@@ -1521,9 +1521,7 @@
  .PP
  The
  .B Identifier
@@ -24,6 +24,3 @@ index 7349def..f4853e8 100644
  All others are optional.
  .PP
  The
--- 
-1.6.0.4
-

@@ -1,8 +1,8 @@
-diff --git a/hw/xfree86/ddc/interpret_edid.c b/hw/xfree86/ddc/interpret_edid.c
-index c0e3df9..32288f7 100644
---- a/hw/xfree86/ddc/interpret_edid.c
-+++ b/hw/xfree86/ddc/interpret_edid.c
-@@ -51,6 +51,15 @@ static void get_whitepoint_section(Uchar *, struct whitePoints *);
+Index: xorg-server/hw/xfree86/ddc/interpret_edid.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/ddc/interpret_edid.c	2009-12-02 23:06:15.000000000 +0200
++++ xorg-server/hw/xfree86/ddc/interpret_edid.c	2009-12-02 23:06:34.000000000 +0200
+@@ -52,6 +52,15 @@
  static void get_detailed_timing_section(Uchar*, struct 	detailed_timings *);
  static Bool validate_version(int scrnIndex, struct edid_version *);
  
@@ -18,7 +18,7 @@ index c0e3df9..32288f7 100644
  static void
  handle_edid_quirks(xf86MonPtr m)
  {
-@@ -91,10 +100,7 @@ handle_edid_quirks(xf86MonPtr m)
+@@ -92,10 +101,7 @@
       * try to find the largest detailed timing that matches that aspect
       * ratio and use that to fill in the feature section.
       */
@@ -30,7 +30,7 @@ index c0e3df9..32288f7 100644
  	int real_hsize = 0, real_vsize = 0;
  	float target_aspect, timing_aspect;
  	
-@@ -130,6 +136,28 @@ handle_edid_quirks(xf86MonPtr m)
+@@ -131,6 +137,28 @@
  	xf86Msg(X_INFO, "Quirked EDID physical size to %dx%d cm\n",
  		m->features.hsize, m->features.vsize);
      }
