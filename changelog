@@ -52,6 +52,8 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
         Don't return BadMatch from GetProperty if window isn't actually a window
       + 186_autoconfig_geode.patch
         Perform autodetection correctly for various geode devices
+  # debian/control: Drop obsolete Conflicts/Breaks against -psb,
+    -synaptics and -evdev.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 02 Dec 2009 20:40:21 +0200
 
