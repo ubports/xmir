@@ -1,3 +1,77 @@
+xorg-server (2:1.7.2-2) experimental; urgency=low
+
+  [ Julien Cristau ]
+  * debian/rules: upstream build system got fixed, no need to remove
+    configure-generated files.
+  * Steal input_id helper from udev, install it in /lib/xorg.  Thanks, Martin
+    Pitt!
+
+  [ Brice Goglin ]
+  * Cherry pick upstream commit to fix the ABI.
+
+ -- Brice Goglin <bgoglin@debian.org>  Mon, 30 Nov 2009 20:10:27 +0100
+
+xorg-server (2:1.7.2-1) experimental; urgency=low
+
+  * New upstream release
+    + Xorg sets umask to 022 (closes: #555308)
+  * Delete 09_debian_xserver_rtff.diff.  Was disabled since 1.3.99, and is not
+    necessary since the fall back to builtin fonts was added.
+  * Change the server's dependency on xserver-common to >= ${source:Version},
+    to allow installation of different versions of the various servers.
+  * Add build-dep on libglib2.0-dev, xkb-data and x11-xkb-utils for unit
+    tests, and run the tests unless nocheck is in DEB_BUILD_OPTIONS.
+  * Cherry-pick upstream commit to turn ModeDebug on during server startup,
+    replacing our Turn-on-ModeDebug-by-default.patch.
+  * Number our patches to make it easier to keep track of things.  Requested
+    by the Ubuntu folks.
+  * xvfb-run: retry a few times if Xvfb can't be started when using
+    --auto-servernum, to make concurrent invocations work (closes: #521075).
+    Thanks, Kees Cook!
+  * Use libudev instead of libhal for input hotplug on linux.
+  * Add udev rule to get keymap from /etc/default/keyboard.
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 28 Nov 2009 16:48:43 +0100
+
+xorg-server (2:1.7.0-1) experimental; urgency=low
+
+  * Add missing Conflicts on xserver-xorg-video-5 and xserver-xorg-input-4.
+  * Add xkb-data to xserver-common's Depends.  XKB is mandatory in 1.7.
+  * Make all servers depend on xserver-common (= ${source:Version}).
+  * New upstream release
+    + fixes Xvfb crashes (closes: #529927)
+    + fixes DGA init crash (closes: #548716)
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 04 Oct 2009 15:57:01 +0200
+
+xorg-server (2:1.6.99.903-1) experimental; urgency=low
+
+  * New upstream snapshot.
+    + doesn't fill log file with errors when acpid isn't running
+      (closes: #487904, #500583)
+    + adds autoconfig for geode variants (closes: #544988)
+    + fixes idle time computation (closes: #542064)
+    + Xnest uses the host's mouse acceleration and speed (closes: #325181)
+    + Xephyr now has a manpage (closes: #427121)
+    + Xdmx works again (closes: #541254)
+  * Update build deps
+  * Update patch stack:
+    - 20_hurd-i386.diff applied upstream
+    - fedora-bad-fbdev-thats-mine.patch applied upstream
+    - fedora-pci-primary.diff superseded upstream
+    - fedora-vboxvideo.diff applied upstream
+    - kfreebsd-ftbfs.diff applied upstream
+    - Add-libgcrypt-as-an-option-for-sha1.diff refreshed
+    - Turn-on-ModeDebug-by-default.patch refreshed
+  * Cleanup some libtool cruft in debian/rules clean.
+  * Bump serverminver, videoabiver and inputabiver.
+  * Bump debhelper compat level to 5:
+    - handle dh_strip behaviour change
+    - fix xserver-xorg-core.install
+  * Bump Standards-Version to 3.8.3.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 29 Sep 2009 17:51:05 +0200
+
 xorg-server (2:1.6.4-2ubuntu6) lucid; urgency=low
 
   * 189_xserver_1.5.0_bg_none_root.patch: Moblin patch to allow X to
