@@ -1,23 +1,27 @@
-# Return from the signal handler, in order to have the newly raised
-# signal actually get processed. This now rethrows the originally
-# caught signal instead of just aborting, so that apport now actually
-# works. (LP: #226668)
-diff -Nurp patched/hw/xfree86/common/xf86Events.c working/hw/xfree86/common/xf86Events.c
---- patched/hw/xfree86/common/xf86Events.c	2008-12-16 18:28:54.000000000 -0800
-+++ working/hw/xfree86/common/xf86Events.c	2008-12-16 18:36:41.000000000 -0800
-@@ -362,6 +362,8 @@ xf86InterceptSigIll(void (*sigillhandler
- void
- xf86SigHandler(int signo)
+When the X server aborts with a signal, also re-raise that signal.  This
+allows crash handlers like apport a chance to listen for and act on the
+signal appropriately.  Apport uses this to capture a backtrace and post
+a bug report.
+
+Signed-off-by: Bryce Harrington <bryce@canonical.com>
+
+diff --git a/hw/xfree86/common/xf86Events.c b/hw/xfree86/common/xf86Events.c
+index 8cd765a..d2fb1a4 100644
+--- a/hw/xfree86/common/xf86Events.c
++++ b/hw/xfree86/common/xf86Events.c
+@@ -355,6 +355,8 @@ xf86InterceptSigIll(void (*sigillhandler)(void))
+ int
+ xf86SigWrapper(int signo)
  {
 +  static Bool beenhere = FALSE;
 +
    if ((signo == SIGILL) && xf86SigIllHandler) {
      (*xf86SigIllHandler)();
-     /* Re-arm handler just in case we unexpectedly return here */
-@@ -384,6 +386,41 @@ xf86SigHandler(int signo)
- 
-   xorg_backtrace();
- 
+     return 0; /* continue */
+@@ -377,6 +379,41 @@ void
+ xf86PrintBacktrace(void)
+ {
+     xorg_backtrace();
 +  switch (signo) {
 +  case SIGSEGV:
 +  case SIGBUS:
@@ -53,13 +57,14 @@ diff -Nurp patched/hw/xfree86/common/xf86Events.c working/hw/xfree86/common/xf86
 +      return;
 +  }
 +
-   FatalError("Caught signal %d.  Server aborting\n", signo);
  }
  
-diff -Nurp patched/hw/xfree86/common/xf86Init.c working/hw/xfree86/common/xf86Init.c
---- patched/hw/xfree86/common/xf86Init.c	2008-12-16 18:16:50.000000000 -0800
-+++ working/hw/xfree86/common/xf86Init.c	2008-12-16 18:34:38.000000000 -0800
-@@ -1375,14 +1375,17 @@ OsVendorInit()
+ #define KeyPressed(k) (keyc->postdown[k >> 3] & (1 << (k & 7)))
+diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
+index d3de670..dc3eff5 100644
+--- a/hw/xfree86/common/xf86Init.c
++++ b/hw/xfree86/common/xf86Init.c
+@@ -1174,14 +1174,17 @@ OsVendorInit(void)
  }
  
  /*
@@ -74,12 +79,12 @@ diff -Nurp patched/hw/xfree86/common/xf86Init.c working/hw/xfree86/common/xf86In
   */
  
  void
--ddxGiveUp()
+-ddxGiveUp(void)
 +ddxSigGiveUp(int signo)
  {
      int i;
  
-@@ -1410,24 +1413,47 @@ ddxGiveUp()
+@@ -1207,24 +1210,47 @@ ddxGiveUp(void)
  
      xf86CloseConsole();
  
@@ -126,12 +131,12 @@ diff -Nurp patched/hw/xfree86/common/xf86Init.c working/hw/xfree86/common/xf86In
   */
  
  void
--AbortDDX()
+-AbortDDX(void)
 +SigAbortDDX(int signo)
  {
    int i;
  
-@@ -1459,7 +1485,20 @@ AbortDDX()
+@@ -1255,7 +1281,20 @@ AbortDDX(void)
     * This is needed for an abnormal server exit, since the normal exit stuff
     * MUST also be performed (i.e. the vt must be left in a defined state)
     */
@@ -153,16 +158,17 @@ diff -Nurp patched/hw/xfree86/common/xf86Init.c working/hw/xfree86/common/xf86In
  }
  
  void
-diff -Nurp patched/include/os.h working/include/os.h
---- patched/include/os.h	2008-12-16 18:28:54.000000000 -0800
-+++ working/include/os.h	2008-12-16 18:17:00.000000000 -0800
-@@ -437,7 +437,9 @@ typedef struct {
- extern CallbackListPtr FlushCallback;
+diff --git a/include/os.h b/include/os.h
+index 2f6b0c0..d58be5e 100644
+--- a/include/os.h
++++ b/include/os.h
+@@ -434,7 +434,9 @@ typedef struct {
+ /* stuff for FlushCallback */
+ extern _X_EXPORT CallbackListPtr FlushCallback;
  
- extern void AbortDDX(void);
-+extern void SigAbortDDX(int signo);
- extern void ddxGiveUp(void);
-+extern void ddxSigGiveUp(int signo);
- extern int TimeSinceLastInputEvent(void);
++extern _X_EXPORT void SigAbortDDX(int signo);
+ extern _X_EXPORT void AbortDDX(void);
++extern _X_EXPORT void ddxSigGiveUp(int signo);
+ extern _X_EXPORT void ddxGiveUp(void);
+ extern _X_EXPORT int TimeSinceLastInputEvent(void);
  
- /* strcasecmp.c */

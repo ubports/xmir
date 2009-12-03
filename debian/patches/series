@@ -11,7 +11,7 @@
 #104_nvidia_autodetect.patch
 #105_fglrx_autodetect.patch
 121_only_switch_vt_when_active.diff
-#135_rethrow_signals.patch
+135_rethrow_signals.patch
 #143_default_to_vesa.patch
 #156_exevents_copykeyclass_nullptrcheck.patch
 157_check_null_modes.patch
