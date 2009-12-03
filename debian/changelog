@@ -13,8 +13,6 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
         GDM from the console.
       + 135_rethrow_signals.patch:
         When aborting, re-raise signals for apport
-      + 140_quell_acpi_errmsgs.patch:
-        Avoid generating extraneous warnings when acpi is missing
       + 156_exevents_copykeyclass_nullptrcheck.patch,
         157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
         166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
@@ -57,7 +55,6 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 186_autoconfig_geode.patch: Upstream.
   * Patches disabled for now, need a review/refresh or both:
     - 135_rethrow_signals.patch
-    - 140_quell_acpi_errmsgs.patch
     - 156_exevents_copykeyclass_nullptrcheck.patch
       (might not be needed anymore)
     - 168_glibc_trace_to_stderr.patch
