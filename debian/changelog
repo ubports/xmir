@@ -34,7 +34,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
         Quirk for another LPL monitor (LP: #380009)
       + 188_default_primary_to_first_busid.patch:
         Pick the first device and carry on (LP 459512)
-      + 189_xserver_1.5.0_bg_none_root.patch: 
+      + 189_xserver_1.5.0_bg_none_root.patch:
         Create a root window with no background.
       + 190_cache-xkbcomp_output_for_fast_start_up.patch:
         Cache keyboard settings.
@@ -55,12 +55,11 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 185_dix_badwindow.patch: Upstream.
     - 186_autoconfig_geode.patch: Upstream.
   * Patches disabled for now, need a review/refresh or both:
-    - 135_rethrow_signals.patch
+    - 135_rethrow_signals.patch - TODO: Refresh
     - 156_exevents_copykeyclass_nullptrcheck.patch
       (might not be needed anymore)
     - 168_glibc_trace_to_stderr.patch
     - 169_mipointer_nullptr_checks.patch
-    - 188_default_primary_to_first_busid.patch
     - 190_cache-xkbcomp_output_for_fast_start_up.patch
   * 189_xserver_1.5.0_bg_none_root.patch: Fetched a new version.
   * control, local/64-xorg-xkb.rules: Don't depend on keyboard-configuration
