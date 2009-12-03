@@ -57,13 +57,19 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 181_fedora_log_proc_cmdline.patch: Upstream.
     - 185_dix_badwindow.patch: Upstream.
     - 186_autoconfig_geode.patch: Upstream.
-  * Patches disabled for now, need a review/refresh or both:
-    - 190_cache-xkbcomp_output_for_fast_start_up.patch
   * 189_xserver_1.5.0_bg_none_root.patch: Fetched a new version.
+  * 135_rethrow_signals.patch, 168_glibc_trace_to_stderr.patch: Updated.
+    Still relevant for hooking in apport.
+  * 169_mipointer_nullptr_checks.patch: Updated.  MIPOINTER() still
+    can return NULL under some circumstances, and its return values
+    are still being dereferenced without checking for NULL.
+  * 188_default_primary_to_first_busid.patch: Updated.  Still looks to be
+    relevant for certain multi-card systems.
+  * 190_cache-xkbcomp_output_for_fast_start_up.patch: Updated.
   * control, local/64-xorg-xkb.rules: Don't depend on keyboard-configuration
     until we have it.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 02 Dec 2009 20:40:21 +0200
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 14:51:56 -0800
 
 xorg-server (2:1.7.2-2) experimental; urgency=low
 
