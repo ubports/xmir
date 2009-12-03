@@ -1,5 +1,8 @@
 Patch from Moblin to cache xkbcomp output for faster booting
 
+Signed-off-by: Bryce Harrington <bryce@canonical.com>
+---
+
 diff --git a/configure.ac b/configure.ac
 index 8500db4..bc3d694 100644
 --- a/configure.ac
