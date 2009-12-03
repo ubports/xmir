@@ -62,6 +62,8 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
   * 189_xserver_1.5.0_bg_none_root.patch: Fetched a new version.
   * 135_rethrow_signals.patch, 168_glibc_trace_to_stderr.patch: Updated.
     Still relevant for hooking in apport.
+  * 160_log_timestamping.patch: Updated and re-enabled for boot speed
+    testing in Lucid.  This patch should be disabled by beta2.
   * 169_mipointer_nullptr_checks.patch: Updated.  MIPOINTER() still
     can return NULL under some circumstances, and its return values
     are still being dereferenced without checking for NULL.
@@ -71,7 +73,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
   * control, local/64-xorg-xkb.rules: Don't depend on keyboard-configuration
     until we have it.
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 14:53:18 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 14:56:35 -0800
 
 xorg-server (2:1.7.2-2) experimental; urgency=low
 

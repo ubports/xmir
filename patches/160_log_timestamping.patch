@@ -1,11 +1,11 @@
-Index: xorg-server-1.5.99.902/os/log.c
-===================================================================
---- xorg-server-1.5.99.902.orig/os/log.c	2009-01-31 06:12:17.000000000 +0100
-+++ xorg-server-1.5.99.902/os/log.c	2009-02-06 23:32:18.000000000 +0100
-@@ -313,6 +313,28 @@
- {
+Binary files xorg-server-ubuntu-git-patched/.git/index and xorg-server-ubuntu-git-working/.git/index differ
+diff -Nurp xorg-server-ubuntu-git-patched/os/log.c xorg-server-ubuntu-git-working/os/log.c
+--- xorg-server-ubuntu-git-patched/os/log.c	2009-12-01 18:49:34.000000000 -0800
++++ xorg-server-ubuntu-git-working/os/log.c	2009-12-01 20:29:19.000000000 -0800
+@@ -314,6 +314,29 @@ LogVMessageVerb(MessageType type, int ve
      const char *s  = X_UNKNOWN_STRING;
-     char *tmpBuf = NULL;
+     char tmpBuf[1024];
+ 
 +    struct timeval time;
 +    time_t tv_sec;
 +    suseconds_t tv_usec;
@@ -28,23 +28,17 @@ Index: xorg-server-1.5.99.902/os/log.c
 +        diff_sec--;
 +        diff_usec += 1000000;
 +    }
- 
++
      /* Ignore verbosity for X_ERROR */
      if (logVerbosity >= verb || logFileVerbosity >= verb || type == X_ERROR) {
-@@ -357,13 +379,14 @@
- 	/*
- 	 * Prefix the format string with the message type.  We do it this way
- 	 * so that LogVWrite() is only called once per message.
-+	 * Prefix the whole with timestamp.
- 	 */
- 	if (s) {
--	    tmpBuf = malloc(strlen(format) + strlen(s) + 1 + 1);
-+	    tmpBuf = malloc(strlen(format) + strlen(s) + 1 + 1 + 15);
- 	    /* Silently return if malloc fails here. */
- 	    if (!tmpBuf)
- 		return;
--	    sprintf(tmpBuf, "%s ", s);
-+	    sprintf(tmpBuf, "[%5d.%06d] %s ", diff_sec, diff_usec, s);
- 	    strcat(tmpBuf, format);
- 	    LogVWrite(verb, tmpBuf, args);
- 	    free(tmpBuf);
+ 	switch (type) {
+@@ -355,7 +378,8 @@ LogVMessageVerb(MessageType type, int ve
+ 	}
+ 
+         /* if s is not NULL we need a space before format */
+-        snprintf(tmpBuf, sizeof(tmpBuf), "%s%s%s", s ? s : "",
++        snprintf(tmpBuf, sizeof(tmpBuf), "[%5d.%06d] %s%s%s", diff_sec, diff_usec,
++                                                   s ? s : "",
+                                                    s ? " " : "",
+                                                    format);
+         LogVWrite(verb, tmpBuf, args);
