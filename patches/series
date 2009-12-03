@@ -28,4 +28,4 @@
 187_edid_quirk_hp_nc8430.patch
 188_default_primary_to_first_busid.patch
 189_xserver_1.5.0_bg_none_root.patch
-#190_cache-xkbcomp_output_for_fast_start_up.patch
+190_cache-xkbcomp_output_for_fast_start_up.patch
