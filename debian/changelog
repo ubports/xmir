@@ -47,9 +47,10 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 102_ubuntu_sharevts_load_cpu.patch: Upstream.
     - 103_psb_auto.patch: Fallback to vesa done differently upstream.
     - 110_fedora_no_move_damage.patch: Upstream dropped it.
+    - 140_quell_acpi_errmsgs.patch: Superseded.
     - 153_make_dmx_compile.patch: Xdmx is fixed upstream.
     - 174_set_bg_pixmap_of_cow_to_none.patch: Upstream
-    - 180_fedora_no_synaptics_mouse_synthesis.patch: Superceded.
+    - 180_fedora_no_synaptics_mouse_synthesis.patch: Superseded.
     - 181_fedora_log_proc_cmdline.patch: Upstream.
     - 185_dix_badwindow.patch: Upstream.
     - 186_autoconfig_geode.patch: Upstream.
