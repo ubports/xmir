@@ -1,15 +1,15 @@
-Binary files xorg-server-ubuntu-git-patched/.git/index and xorg-server-ubuntu-git-working/.git/index differ
-diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86pciBus.c xorg-server-ubuntu-git-working/hw/xfree86/common/xf86pciBus.c
---- xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86pciBus.c	2009-10-23 16:18:49.000000000 -0700
-+++ xorg-server-ubuntu-git-working/hw/xfree86/common/xf86pciBus.c	2009-10-23 18:49:36.000000000 -0700
-@@ -424,8 +424,8 @@ xf86PciProbe(void)
-                         primaryBus.id.pci = info;
-                     } else {
- 		        xf86Msg(X_NOTICE,
+diff --git a/hw/xfree86/common/xf86pciBus.c b/hw/xfree86/common/xf86pciBus.c
+index ac018e7..c00391c 100644
+--- a/hw/xfree86/common/xf86pciBus.c
++++ b/hw/xfree86/common/xf86pciBus.c
+@@ -141,8 +141,8 @@ xf86PciProbe(void)
+ 		    primaryBus.id.pci = info;
+ 		} else {
+ 		    xf86Msg(X_NOTICE,
 -			    "More than one possible primary device found\n");
--		        primaryBus.type ^= (BusType)(-1);
+-		    primaryBus.type ^= (BusType)(-1);
 +			    "More than one possible primary device found.  Using first one seen.\n");
-+                        break;
-                     }
++                    break;
  		}
  	    }
+ 	}
