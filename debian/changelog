@@ -52,6 +52,8 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 156_exevents_copykeyclass_nullptrcheck.patch: No longer needed.
       Appropriate checks are done on the pointers prior to CopyKeyClass
       being called now.
+    - 158_raise_maxclients.patch: Breaks binary drivers.  We've had this
+      reverted for some time now, may as well just get rid of it entirely.
     - 174_set_bg_pixmap_of_cow_to_none.patch: Upstream
     - 180_fedora_no_synaptics_mouse_synthesis.patch: Superseded.
     - 181_fedora_log_proc_cmdline.patch: Upstream.
@@ -69,7 +71,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
   * control, local/64-xorg-xkb.rules: Don't depend on keyboard-configuration
     until we have it.
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 14:51:56 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 14:53:18 -0800
 
 xorg-server (2:1.7.2-2) experimental; urgency=low
 
