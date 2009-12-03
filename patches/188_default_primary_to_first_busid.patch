@@ -1,3 +1,8 @@
+If there seems to be more than one possible primary device, just
+pick the first device and carry on (LP 459512)
+
+signed-off-by: Bryce Harrington <bryce@canonical.com>
+
 diff --git a/hw/xfree86/common/xf86pciBus.c b/hw/xfree86/common/xf86pciBus.c
 index ac018e7..c00391c 100644
 --- a/hw/xfree86/common/xf86pciBus.c
