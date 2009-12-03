@@ -13,8 +13,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
         GDM from the console.
       + 135_rethrow_signals.patch:
         When aborting, re-raise signals for apport
-      + 156_exevents_copykeyclass_nullptrcheck.patch,
-        157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
+      + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
         166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
         169_mipointer_nullptr_checks.patch,
         172_cwgetbackingpicture_nullptr_check.patch:
@@ -73,7 +72,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
   * control, local/64-xorg-xkb.rules: Don't depend on keyboard-configuration
     until we have it.
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 14:56:35 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 15:03:34 -0800
 
 xorg-server (2:1.7.2-2) experimental; urgency=low
 
