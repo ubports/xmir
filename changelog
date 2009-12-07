@@ -58,8 +58,8 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 185_dix_badwindow.patch: Upstream.
     - 186_autoconfig_geode.patch: Upstream.
   * 189_xserver_1.5.0_bg_none_root.patch: Fetched a new version.
-  * 135_rethrow_signals.patch, 168_glibc_trace_to_stderr.patch: Updated.
-    Still relevant for hooking in apport.
+  * 135_rethrow_signals.patch, 168_glibc_trace_to_stderr.patch:
+    Disabled until fixed to work with the current version.
   * 160_log_timestamping.patch: Updated and re-enabled for boot speed
     testing in Lucid.  This patch should be disabled by beta2.
   * 169_mipointer_nullptr_checks.patch: Updated.  MIPOINTER() still
