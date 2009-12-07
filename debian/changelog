@@ -25,8 +25,6 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
         Correct man page
       + 168_glibc_trace_to_stderr.patch:
         Report abort traces to stderr instead of terminal
-      + 177_animated_cursor_change_master.patch:
-        Don't create animated cursors for slave devices
       + 184_virtual_devices_autodetect.patch:
         Use vesa for qemu device, which is not supported by cirrus
       + 187_edid_quirk_hp_nc8430.patch:
@@ -54,6 +52,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
     - 158_raise_maxclients.patch: Breaks binary drivers.  We've had this
       reverted for some time now, may as well just get rid of it entirely.
     - 174_set_bg_pixmap_of_cow_to_none.patch: Upstream
+    - 177_animated_cursor_change_master.patch: Different fix upstream.
     - 180_fedora_no_synaptics_mouse_synthesis.patch: Superseded.
     - 181_fedora_log_proc_cmdline.patch: Upstream.
     - 185_dix_badwindow.patch: Upstream.
