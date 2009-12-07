@@ -70,6 +70,7 @@ xorg-server (2:1.7.2-2ubuntu1) UNRELEASED; urgency=low
   * 190_cache-xkbcomp_output_for_fast_start_up.patch: Updated.
   * control, local/64-xorg-xkb.rules: Don't depend on keyboard-configuration
     until we have it.
+  * rules, local/64-xorg-xkb.rules: Use input_id from udev.
 
  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Dec 2009 15:03:34 -0800
 

@@ -224,7 +224,7 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/xserver-xorg-core/lib/udev/rules.d
 	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d
 	install -d debian/xserver-xorg-core/lib/xorg
-	install -m 755 debian/local/input_id debian/xserver-xorg-core/lib/xorg
+#	install -m 755 debian/local/input_id debian/xserver-xorg-core/lib/xorg
 endif
 	dh_installdebconf -s
 	dh_installman -s
