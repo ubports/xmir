@@ -1,3 +1,18 @@
+xorg-server (2:1.7.3.901-1) experimental; urgency=low
+
+  [ Julien Cristau ]
+  * Enable GLX 1.4 on DRI2 and swrast (from upstream, via F12).
+  * xserver-xorg-dev: add Depends on x11proto-kb-dev and libxkbfile-dev for
+    xkbsrv.h (closes: #559676).  Thanks, Ron!
+  * Update input_id to the version in udev 149.
+  * Update xserver-xorg-core bug script to run udevadm info instead of lshal.
+
+  [ Brice Goglin ]
+  * New upstream release.
+    + Refresh patches.
+
+ -- Brice Goglin <bgoglin@debian.org>  Sat, 12 Dec 2009 17:46:45 +0100
+
 xorg-server (2:1.7.2-2ubuntu2) lucid; urgency=low
 
   * local/64-xorg-xkb.rules: Use "program" instead of "file" when
