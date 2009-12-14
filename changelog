@@ -1,3 +1,9 @@
+xorg-server (2:1.7.3.901-1ubuntu1) lucid; urgency=low
+
+  * Merge from Debian experimental.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 14 Dec 2009 11:34:33 +0200
+
 xorg-server (2:1.7.3.901-1) experimental; urgency=low
 
   [ Julien Cristau ]
