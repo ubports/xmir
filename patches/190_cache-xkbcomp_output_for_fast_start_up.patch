@@ -90,10 +90,10 @@ index ba8d50b..c086dd1 100644
  #define	PRE_ERROR_MSG "\"The XKEYBOARD keymap compiler (xkbcomp) reports:\""
  #define	ERROR_PREFIX	"\"> \""
  #define	POST_ERROR_MSG1 "\"Errors from xkbcomp are not fatal to the X server\""
-@@ -177,6 +172,47 @@ OutputDirectory(
+@@ -176,6 +171,47 @@ OutputDirectory(
+     }
  }
  
- static Bool
 +#ifndef SHA_DIGEST_LENGTH
 +#define SHA_DIGEST_LENGTH 20
 +#endif
@@ -135,10 +135,10 @@ index ba8d50b..c086dd1 100644
 +
 +/* call xkbcomp and compile XKB keymap, return xkm file name in
 +   nameRtrn */
+ static Bool
  XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
  				XkbComponentNamesPtr	names,
- 				unsigned		want,
-@@ -185,7 +221,11 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
+@@ -185,7 +221,11 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		
  				int			nameRtrnLen)
  {
      FILE *	out;
@@ -151,7 +151,7 @@ index ba8d50b..c086dd1 100644
  
      const char	*emptystring = "";
      const char	*xkbbasedirflag = emptystring;
-@@ -196,14 +236,67 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
+@@ -196,14 +236,67 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		
      /* WIN32 has no popen. The input must be stored in a file which is
         used as input for xkbcomp. xkbcomp does not read from stdin. */
      char tmpname[PATH_MAX];
@@ -160,9 +160,8 @@ index ba8d50b..c086dd1 100644
  #else
 -    const char *xkmfile = "-";
 +    const char *xkbfile = "-";
- #endif
- 
--    snprintf(keymap, sizeof(keymap), "server-%s", display);
++#endif
++
 +    /* Write keymap source (xkbfile) to memory buffer `xkbKeyMapBuf',
 +       of which SHA1 is generated and used as result xkm file name  */
 +    memset(xkbKeyMapBuf, 0, sizeof(xkbKeyMapBuf));
@@ -182,12 +181,13 @@ index ba8d50b..c086dd1 100644
 +       ErrorF("[xkb] XkbDDXCompileKeymapByNames compiling keymap:\n");
 +       fputs(xkbKeyMapBuf, stderr);
 +    }
-+#endif
+ #endif
 +    if (!ret) {
 +        ErrorF("[xkb] Generating XKB Keymap failed, giving up compiling keymap\n");
 +        return False;
 +    }
-+
+ 
+-    snprintf(keymap, sizeof(keymap), "server-%s", display);
 +    DebugF("[xkb] computing SHA1 of keymap\n");
 +    if (Success == Sha1Asc(sha1Asc, xkbKeyMapBuf)) {
 +        snprintf(xkmfile, sizeof(xkmfile), "server-%s", sha1Asc);
@@ -222,7 +222,7 @@ index ba8d50b..c086dd1 100644
  
  #ifdef WIN32
      strcpy(tmpname, Win32TempDir());
-@@ -227,19 +320,30 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
+@@ -227,19 +320,30 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		
  	}
      }
  
@@ -256,7 +256,7 @@ index ba8d50b..c086dd1 100644
  #ifndef WIN32
      out= Popen(buf,"w");
  #else
-@@ -247,31 +351,43 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
+@@ -247,31 +351,43 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		
  #endif
      
      if (out!=NULL) {
@@ -313,7 +313,7 @@ index ba8d50b..c086dd1 100644
  #ifdef WIN32
          /* remove the temporary file */
          unlink(tmpname);
-@@ -286,9 +402,17 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
+@@ -286,9 +402,17 @@ XkbDDXCompileKeymapByNames(	XkbDescPtr		
      }
      if (nameRtrn)
  	nameRtrn[0]= '\0';
