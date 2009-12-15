@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.901-1ubuntu2) UNRELEASED; urgency=low
+
+  [ Alberto Milone ]
+  * debian/patches/190_cache-xkbcomp_output_for_fast_start_up.patch:
+    Make the patch build again with xserver 1.7.
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Tue, 15 Dec 2009 13:46:54 +0100
+
 xorg-server (2:1.7.3.901-1ubuntu1) lucid; urgency=low
 
   * Merge from Debian experimental.
