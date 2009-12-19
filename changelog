@@ -1,8 +1,8 @@
-xorg-server (2:1.7.3.901-1ubuntu3) karmic; urgency=low
+xorg-server (2:1.7.3.901-1ubuntu3) lucid; urgency=low
 
   * Update 100_rethrow_signals.patch to work with xserver 1.7
 
- -- Bryce Harrington <bryce@ubuntu.com>  Tue, 15 Dec 2009 15:00:08 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 18 Dec 2009 18:55:56 -0800
 
 xorg-server (2:1.7.3.901-1ubuntu2) lucid; urgency=low
 
