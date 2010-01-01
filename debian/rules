@@ -221,6 +221,19 @@ binary-arch: build install
 	           $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg/serverminver
 	$(INSTALL) -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
 	$(INSTALL) -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
+
+	# Create an empty ld.so.conf
+	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11
+	echo "# This file is knowingly empty since the libraries are in the standard\n\
+	# search path. Please do not remove this file." \
+	> $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/ld.so.conf
+
+	# Keep the following files separate from other extensions so that we can use alternatives
+	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard
+	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libdri.so \
+	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard/
+	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libglx.so \
+	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard/
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/xserver-xorg-core/lib/udev/rules.d
 	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d
