@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.901-1ubuntu5) lucid; urgency=low
+
+  * Use alternatives to make it easier to switch between X11 and 3rd
+    party modules.
+  * Add link to /usr/lib/XvMCConfig and use it for alternatives.
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Mon, 04 Jan 2010 12:08:17 +0100
+
 xorg-server (2:1.7.3.901-1ubuntu4) lucid; urgency=low
 
   * xvfb: Depend again on xauth. Depend on x11-xkb-utils. LP: #500102.
