@@ -1,3 +1,9 @@
+xorg-server (2:1.7.3.902-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian unstable.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 07 Jan 2010 21:52:12 +0200
+
 xorg-server (2:1.7.3.902-1) unstable; urgency=low
 
   [ Timo Aaltonen ]
