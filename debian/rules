@@ -231,9 +231,9 @@ binary-arch: build install
 	# Keep the following files separate from other extensions so that we can use alternatives
 	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard
 	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libdri.so \
-	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard/
+	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/
 	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libglx.so \
-	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard/
+	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/xserver-xorg-core/lib/udev/rules.d
 	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d

@@ -17,8 +17,8 @@ case "$1" in
   # Use alternatives to make it easier to switch between X11 and 3rd party modules
   update-alternatives \
     --install /etc/ld.so.conf.d/GL.conf gl_conf /usr/lib/standard-x11/ld.so.conf 500 \
-    --slave /usr/lib/xorg/modules/extensions/libdri.so libdri.so /usr/lib/xorg/modules/extensions/standard/libdri.so \
-    --slave /usr/lib/xorg/modules/extensions/libglx.so libglx.so /usr/lib/xorg/modules/extensions/standard/libglx.so \
+    --slave /usr/lib/xorg/modules/extensions/libdri.so libdri.so /usr/lib/standard-x11/libdri.so \
+    --slave /usr/lib/xorg/modules/extensions/libglx.so libglx.so /usr/lib/standard-x11/libglx.so \
     --slave /usr/lib/XvMCConfig xvmcconfig /usr/lib/xvmcconfig-standard/XvMCConfig
 esac
 
