@@ -1,3 +1,18 @@
+xorg-server (2:1.7.3.902-1) unstable; urgency=low
+
+  [ Timo Aaltonen ]
+  * Run udevadm trigger on postinst, and depend on udev [linux-any].
+
+  [ Julien Cristau ]
+  * Add xserver-common dependency on x11-xkb-utils for xkbcomp.
+  * Remove our copy of input_id, add Depends on new enough udev instead.
+  * New upstream release.
+  * Make xserver-common recommend xfonts-base, some clients don't work without
+    those.
+  * Upload to unstable.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 06 Jan 2010 17:44:59 +0000
+
 xorg-server (2:1.7.3.901-1ubuntu5) lucid; urgency=low
 
   * Use alternatives to make it easier to switch between X11 and 3rd

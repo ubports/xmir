@@ -20,6 +20,12 @@ case "$1" in
     --slave /usr/lib/xorg/modules/extensions/libdri.so libdri.so /usr/lib/standard-x11/libdri.so \
     --slave /usr/lib/xorg/modules/extensions/libglx.so libglx.so /usr/lib/standard-x11/libglx.so \
     --slave /usr/lib/XvMCConfig xvmcconfig /usr/lib/xvmcconfig-standard/XvMCConfig
+
+  if dpkg --compare-versions "$2" lt 2:1.7.3.901-2; then
+    if [ `uname -s` = "Linux" ]; then
+      udevadm trigger --subsystem-match=input --action=change
+    fi
+  fi
 esac
 
 #DEBHELPER#
