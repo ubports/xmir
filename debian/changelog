@@ -1,6 +1,10 @@
 xorg-server (2:1.7.3.902-1ubuntu1) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * Merge from Debian unstable.
+
+  [ Michael Vogt ]
+  * Add 101_nv-crash-fix.diff: Do not crash if gamma_set is NULL.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 07 Jan 2010 21:52:12 +0200
 
