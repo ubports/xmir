@@ -6,6 +6,11 @@ xorg-server (2:1.7.3.902-1ubuntu1) UNRELEASED; urgency=low
   [ Michael Vogt ]
   * Add 101_nv-crash-fix.diff: Do not crash if gamma_set is NULL.
 
+  [ Alberto Milone ]
+  * Install libglx.so and libdri.so in /usr/lib/standard-x11 as X
+    seems to prefer the file in /usr/lib/xorg/modules/extensions/standard/
+    over links in /usr/lib/xorg/modules/extensions/.
+
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 07 Jan 2010 21:52:12 +0200
 
 xorg-server (2:1.7.3.902-1) unstable; urgency=low
