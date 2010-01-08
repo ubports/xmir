@@ -217,12 +217,16 @@ binary-arch: build install
 	$(INSTALL) -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
 	$(INSTALL) -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
 
-	# Create an empty ld.so.conf
+	# Create an ld.so.conf which says where to find libGL from Mesa
 	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11
-	echo "# This file is knowingly empty since the libraries are in the standard\n\
-	# search path. Please do not remove this file." \
+	echo "/usr/lib/mesa" \
 	> $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/ld.so.conf
 
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	# Add the path to 32bit libGL from Mesa (on 64 bit)
+	echo "/usr/lib32/mesa" \
+	>> $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/ld.so.conf
+endif
 	# Keep the following files separate from other extensions so that we can use alternatives
 	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard
 	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libdri.so \

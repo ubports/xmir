@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.902-1ubuntu2) lucid; urgency=low
+
+  * debian/rules:
+    - Make sure that /usr/lib/standard-x11/ld.so.conf points to
+      the libraries provided by mesa.
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Fri, 08 Jan 2010 18:55:52 +0100
+
 xorg-server (2:1.7.3.902-1ubuntu1) lucid; urgency=low
 
   [ Timo Aaltonen ]
