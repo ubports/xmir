@@ -1,4 +1,4 @@
-xorg-server (2:1.7.3.902-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.7.3.902-1ubuntu1) lucid; urgency=low
 
   [ Timo Aaltonen ]
   * Merge from Debian unstable.
@@ -12,7 +12,7 @@ xorg-server (2:1.7.3.902-1ubuntu1) UNRELEASED; urgency=low
     seems to prefer the file in /usr/lib/xorg/modules/extensions/standard/
     over links in /usr/lib/xorg/modules/extensions/.
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 07 Jan 2010 17:01:50 -0800
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 08 Jan 2010 14:21:15 +0200
 
 xorg-server (2:1.7.3.902-1) unstable; urgency=low
 
