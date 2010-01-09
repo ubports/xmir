@@ -1,11 +1,11 @@
-xorg-server (2:1.7.3.902-1ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.7.3.902-1ubuntu3) lucid; urgency=low
 
   [ Julien Cristau ]
   * Don't call config_init() until after InitInput() has initialized the event
     queue, so that devices don't get enabled too early (closes: #564256,
-    #564324).
+    #564324). (LP: #504254)
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Sat, 09 Jan 2010 19:31:37 +0200
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Sat, 09 Jan 2010 19:34:30 +0200
 
 xorg-server (2:1.7.3.902-1ubuntu2) lucid; urgency=low
 
