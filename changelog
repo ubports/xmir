@@ -1,3 +1,24 @@
+xorg-server (2:1.7.3.902-1ubuntu4) lucid; urgency=low
+
+  * debian/patches/191-Xorg-add-an-extra-module-path.patch:
+    - Patch from Mandriva to allow the use of an extra-modules-dir so that
+      the modules installed in this dir will override the ones in the
+      default directory.
+  * debian/rules:
+    - Remove alternatives stuff introduced in a previous upload.
+    - Configure with --with-extra-module-dir="/usr/lib/xorg/extra-modules".
+    - Do not install libglx.so and libdri.so in a different place any more.
+    - Do not install ld.so.conf file any more. Mesa will deal with this.
+  * debian/xserver-xorg-core.links:
+    - Do not create link to /usr/lib/xvmcconfig-standard/XvMCConfig.
+    - Remove links file.
+  * debian/xserver-xorg-core.postinst.in:
+    - Do not install an alternative any more. Mesa will deal with this.
+  * debian/xserver-xorg-core.prerm.in:
+    - Remove file.
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Mon, 11 Jan 2010 14:48:35 +0100
+
 xorg-server (2:1.7.3.902-1ubuntu3) lucid; urgency=low
 
   [ Julien Cristau ]
