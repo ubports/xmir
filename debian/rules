@@ -74,6 +74,7 @@ confflags += \
 	     --disable-debug \
 	     $(config_tests) \
 	     --with-int10=x86emu \
+	     --with-extra-module-dir="/usr/lib/xorg/extra-modules" \
 	     --with-os-vendor="$(VENDOR)" \
 	     --with-builderstring="$(SOURCE_NAME) $(SOURCE_VERSION) ($(BUILDER))" \
 	     --with-default-font-path="/usr/share/fonts/X11/misc,/usr/share/fonts/X11/cyrillic,/usr/share/fonts/X11/100dpi/:unscaled,/usr/share/fonts/X11/75dpi/:unscaled,/usr/share/fonts/X11/Type1,/usr/share/fonts/X11/100dpi,/usr/share/fonts/X11/75dpi,/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType,built-ins" \
@@ -217,22 +218,6 @@ binary-arch: build install
 	$(INSTALL) -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
 	$(INSTALL) -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
 
-	# Create an ld.so.conf which says where to find libGL from Mesa
-	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11
-	echo "/usr/lib/mesa" \
-	> $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/ld.so.conf
-
-ifeq ($(DEB_BUILD_ARCH),amd64)
-	# Add the path to 32bit libGL from Mesa (on 64 bit)
-	echo "/usr/lib32/mesa" \
-	>> $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/ld.so.conf
-endif
-	# Keep the following files separate from other extensions so that we can use alternatives
-	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/standard
-	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libdri.so \
-	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/
-	mv $(CURDIR)/debian/xserver-xorg-core/usr/lib/xorg/modules/extensions/libglx.so \
-	            $(CURDIR)/debian/xserver-xorg-core/usr/lib/standard-x11/
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/xserver-xorg-core/lib/udev/rules.d
 	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d

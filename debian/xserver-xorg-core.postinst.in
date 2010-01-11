@@ -14,13 +14,6 @@ case "$1" in
     rmdir /etc/X11/xserver 2>/dev/null || true
   fi
 
-  # Use alternatives to make it easier to switch between X11 and 3rd party modules
-  update-alternatives \
-    --install /etc/ld.so.conf.d/GL.conf gl_conf /usr/lib/standard-x11/ld.so.conf 500 \
-    --slave /usr/lib/xorg/modules/extensions/libdri.so libdri.so /usr/lib/standard-x11/libdri.so \
-    --slave /usr/lib/xorg/modules/extensions/libglx.so libglx.so /usr/lib/standard-x11/libglx.so \
-    --slave /usr/lib/XvMCConfig xvmcconfig /usr/lib/xvmcconfig-standard/XvMCConfig
-
   if dpkg --compare-versions "$2" lt 2:1.7.3.901-2; then
     if [ `uname -s` = "Linux" ]; then
       udevadm trigger --subsystem-match=input --action=change
