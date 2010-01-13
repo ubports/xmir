@@ -12,6 +12,10 @@ upgrade|install)
   if dpkg --compare-versions "$2" lt-nl 2:1.5.2-1; then
     remove_conffile_lookup xserver-xorg-core /etc/X11/xserver/SecurityPolicy
   fi
+
+  if dpkg --compare-versions "$2" lt-nl 2:1.7.3.902-1ubuntu5; then 
+    update-alternatives --remove gl_conf /usr/lib/standard-x11/standard.conf || true
+  fi
 esac
 
 #DEBHELPER#

@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.902-1ubuntu5) lucid; urgency=low
+
+  * debian/xserver-xorg-core.preinst.in:
+    - Make sure that the alternative which was previously provided by
+      xserver-xorg-core is removed.
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Tue, 12 Jan 2010 11:37:49 +0100
+
 xorg-server (2:1.7.3.902-1ubuntu4) lucid; urgency=low
 
   * debian/patches/191-Xorg-add-an-extra-module-path.patch:
