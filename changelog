@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.902-1ubuntu6) lucid; urgency=low
+
+  * debian/xserver-xorg-core.preinst.in:
+    - Correct the name of the alternative that we need to remove.
+      Thanks to Steve Langasek for spotting the error.
+
+ -- Alberto Milone <alberto.milone@canonical.com>  Thu, 14 Jan 2010 12:50:19 +0100
+
 xorg-server (2:1.7.3.902-1ubuntu5) lucid; urgency=low
 
   * debian/xserver-xorg-core.preinst.in:
