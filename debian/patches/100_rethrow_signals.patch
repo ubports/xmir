@@ -104,7 +104,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c xorg-serv
  {
      int i;
  
-@@ -1221,24 +1224,47 @@ ddxGiveUp(void)
+@@ -1221,24 +1224,45 @@ ddxGiveUp(void)
  
      xf86CloseConsole();
  
@@ -116,10 +116,8 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c xorg-serv
 -	abort();
 +    if (xf86Info.caughtSignal) {
 +        if (signo != 0) {
-+            ErrorF (" ddxSigGiveUp: re-raising %d\n", signo);
 +            raise(signo);
 +        } else {
-+            ErrorF (" ddxSigGiveUp: aborting\n");
 +            abort();
 +        }
 +    }
