@@ -1,12 +1,19 @@
+xorg-server (2:1.7.3.902-1ubuntu8) lucid; urgency=low
+
+  * Drop 160_log_timestamping.patch.  The bootup time objectives have been
+    met so this patch is no longer required.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Sat, 16 Jan 2010 02:28:30 -0800
+
 xorg-server (2:1.7.3.902-1ubuntu7) lucid; urgency=low
 
   * Update 100_rethrow_signals.patch: Don't log more error messages after
     the log has been closed, else it causes a SIGSEGV (signal 11) crash
     under several different conditions, including on even ordinary error
     exits.
-    (LP: #506510, #507345, #506977, #504497)
+    (LP: #506510, #507345, #506977, #504497, #507083)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Fri, 15 Jan 2010 13:48:12 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 15 Jan 2010 15:22:34 -0800
 
 xorg-server (2:1.7.3.902-1ubuntu6) lucid; urgency=low
 
