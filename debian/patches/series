@@ -11,7 +11,7 @@
 13-configure-config-udev-defaults-to-off-for-now.diff
 14-config-add-example-udev-rules.diff
 15-config-udev-look-for-xkb-rules-model-layout-variant-.diff
-100_rethrow_signals.patch
+#100_rethrow_signals.patch
 101_nv-crash-fix.diff
 #104_nvidia_autodetect.patch
 #105_fglrx_autodetect.patch

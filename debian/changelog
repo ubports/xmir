@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.902-1ubuntu9) lucid; urgency=low
+
+  * Fully disable 100_rethrow_signals.patch as it seems to still cause
+    crashes.  Goodbye apport.
+    (LP: #506510)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 18 Jan 2010 23:31:08 -0800
+
 xorg-server (2:1.7.3.902-1ubuntu8) lucid; urgency=low
 
   * Drop 160_log_timestamping.patch.  The bootup time objectives have been
