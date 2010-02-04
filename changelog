@@ -1,3 +1,11 @@
+xorg-server (2:1.7.3.902-1ubuntu11) lucid; urgency=low
+
+  * Add 196_xvfb-fbscreeninit-handling.patch and 197_xvfb-randr.patch:
+    Adds xrandr support to xvfb.  Thanks lifeless!
+    (LP: #516123)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 04 Feb 2010 10:56:12 -0800
+
 xorg-server (2:1.7.3.902-1ubuntu10) lucid; urgency=low
 
   * 100_rethrow_signals.patch: Fix SigAbortServer to cleanly exit(1) on a
