@@ -1,7 +1,8 @@
-diff -Nurp xorg-server-ubuntu-git-patched/hw/dmx/dmxinit.c xorg-server-ubuntu-git-working/hw/dmx/dmxinit.c
---- xorg-server-ubuntu-git-patched/hw/dmx/dmxinit.c	2009-12-15 11:52:54.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/dmx/dmxinit.c	2009-12-15 17:25:56.000000000 -0800
-@@ -834,7 +834,7 @@ static void dmxSetDefaultFontPath(char *
+Index: xorg-server-1.7.3.902/hw/dmx/dmxinit.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/dmx/dmxinit.c	2009-12-25 15:28:41.000000000 -0800
++++ xorg-server-1.7.3.902/hw/dmx/dmxinit.c	2010-02-03 17:29:02.000000000 -0800
+@@ -834,7 +834,7 @@
  /** This function is called in Xserver/os/utils.c from \a AbortServer().
   * We must ensure that backend and console state is restored in the
   * event the server shutdown wasn't clean. */
@@ -10,7 +11,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/dmx/dmxinit.c xorg-server-ubuntu-gi
  {
      int i;
  
-@@ -846,6 +846,11 @@ void AbortDDX(void)
+@@ -846,6 +846,11 @@
      }
  }
  
@@ -22,10 +23,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/dmx/dmxinit.c xorg-server-ubuntu-gi
  /** This function is called in Xserver/dix/main.c from \a main() when
   * dispatchException & DE_TERMINATE (which is the only way to exit the
   * main loop without an interruption. */
-diff -Nurp xorg-server-ubuntu-git-patched/hw/kdrive/src/kdrive.c xorg-server-ubuntu-git-working/hw/kdrive/src/kdrive.c
---- xorg-server-ubuntu-git-patched/hw/kdrive/src/kdrive.c	2009-12-15 11:52:54.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/kdrive/src/kdrive.c	2009-12-15 17:30:49.000000000 -0800
-@@ -322,7 +322,7 @@ KdProcessSwitch (void)
+Index: xorg-server-1.7.3.902/hw/kdrive/src/kdrive.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/kdrive/src/kdrive.c	2009-10-27 23:56:21.000000000 -0700
++++ xorg-server-1.7.3.902/hw/kdrive/src/kdrive.c	2010-02-03 17:29:02.000000000 -0800
+@@ -322,7 +322,7 @@
  }
  
  void
@@ -34,7 +36,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/kdrive/src/kdrive.c xorg-server-ubu
  {
      KdDisableScreens ();
      if (kdOsFuncs)
-@@ -339,6 +339,12 @@ AbortDDX(void)
+@@ -339,6 +339,12 @@
  }
  
  void
@@ -47,10 +49,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/kdrive/src/kdrive.c xorg-server-ubu
  ddxGiveUp (void)
  {
      AbortDDX ();
-diff -Nurp xorg-server-ubuntu-git-patched/hw/vfb/InitOutput.c xorg-server-ubuntu-git-working/hw/vfb/InitOutput.c
---- xorg-server-ubuntu-git-patched/hw/vfb/InitOutput.c	2009-12-15 11:52:53.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/vfb/InitOutput.c	2009-12-15 16:25:37.000000000 -0800
-@@ -214,11 +214,17 @@ ddxGiveUp(void)
+Index: xorg-server-1.7.3.902/hw/vfb/InitOutput.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/vfb/InitOutput.c	2009-10-27 23:56:21.000000000 -0700
++++ xorg-server-1.7.3.902/hw/vfb/InitOutput.c	2010-02-03 17:29:02.000000000 -0800
+@@ -214,11 +214,17 @@
  }
  
  void
@@ -69,10 +72,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/vfb/InitOutput.c xorg-server-ubuntu
  #ifdef __APPLE__
  void
  DarwinHandleGUI(int argc, char *argv[])
-diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Events.c xorg-server-ubuntu-git-working/hw/xfree86/common/xf86Events.c
---- xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Events.c	2009-12-15 11:52:54.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/xfree86/common/xf86Events.c	2009-12-15 14:25:32.000000000 -0800
-@@ -355,6 +355,8 @@ xf86InterceptSigIll(void (*sigillhandler
+Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Events.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/xfree86/common/xf86Events.c	2009-11-29 21:42:31.000000000 -0800
++++ xorg-server-1.7.3.902/hw/xfree86/common/xf86Events.c	2010-02-03 17:29:02.000000000 -0800
+@@ -355,6 +355,8 @@
  int
  xf86SigWrapper(int signo)
  {
@@ -81,10 +85,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Events.c xorg-se
    if ((signo == SIGILL) && xf86SigIllHandler) {
      (*xf86SigIllHandler)();
      return 0; /* continue */
-diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c xorg-server-ubuntu-git-working/hw/xfree86/common/xf86Init.c
---- xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c	2009-12-15 11:53:14.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/xfree86/common/xf86Init.c	2009-12-15 11:54:07.000000000 -0800
-@@ -1188,14 +1188,17 @@ OsVendorInit(void)
+Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/xfree86/common/xf86Init.c	2009-12-25 15:28:41.000000000 -0800
++++ xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c	2010-02-03 17:29:02.000000000 -0800
+@@ -1174,14 +1174,17 @@
  }
  
  /*
@@ -104,7 +109,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c xorg-serv
  {
      int i;
  
-@@ -1221,24 +1224,45 @@ ddxGiveUp(void)
+@@ -1207,24 +1210,45 @@
  
      xf86CloseConsole();
  
@@ -154,7 +159,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c xorg-serv
  {
    int i;
  
-@@ -1269,7 +1295,20 @@ AbortDDX(void)
+@@ -1255,7 +1279,20 @@
     * This is needed for an abnormal server exit, since the normal exit stuff
     * MUST also be performed (i.e. the vt must be left in a defined state)
     */
@@ -176,10 +181,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xfree86/common/xf86Init.c xorg-serv
  }
  
  void
-diff -Nurp xorg-server-ubuntu-git-patched/hw/xnest/Init.c xorg-server-ubuntu-git-working/hw/xnest/Init.c
---- xorg-server-ubuntu-git-patched/hw/xnest/Init.c	2009-12-15 11:52:54.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/xnest/Init.c	2009-12-15 17:20:01.000000000 -0800
-@@ -112,12 +112,17 @@ InitInput(int argc, char *argv[])
+Index: xorg-server-1.7.3.902/hw/xnest/Init.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/xnest/Init.c	2009-10-27 23:56:22.000000000 -0700
++++ xorg-server-1.7.3.902/hw/xnest/Init.c	2010-02-03 17:29:02.000000000 -0800
+@@ -112,12 +112,17 @@
  /*
   * DDX - specific abort routine.  Called by AbortServer().
   */
@@ -198,10 +204,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xnest/Init.c xorg-server-ubuntu-git
  /* Called by GiveUp(). */
  void ddxGiveUp(void)
  {
-diff -Nurp xorg-server-ubuntu-git-patched/hw/xquartz/darwin.c xorg-server-ubuntu-git-working/hw/xquartz/darwin.c
---- xorg-server-ubuntu-git-patched/hw/xquartz/darwin.c	2009-12-15 11:52:53.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/xquartz/darwin.c	2009-12-15 17:31:50.000000000 -0800
-@@ -798,12 +798,12 @@ void ddxGiveUp( void )
+Index: xorg-server-1.7.3.902/hw/xquartz/darwin.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/xquartz/darwin.c	2009-10-27 23:56:22.000000000 -0700
++++ xorg-server-1.7.3.902/hw/xquartz/darwin.c	2010-02-03 17:29:02.000000000 -0800
+@@ -798,12 +798,12 @@
  
  
  /*
@@ -216,7 +223,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xquartz/darwin.c xorg-server-ubuntu
  {
      ErrorF( "   AbortDDX\n" );
      /*
-@@ -813,6 +813,11 @@ void AbortDDX( void )
+@@ -813,6 +813,11 @@
      ddxGiveUp();
  }
  
@@ -228,10 +235,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xquartz/darwin.c xorg-server-ubuntu
  #include "mivalidate.h" // for union _Validate used by windowstr.h
  #include "windowstr.h"  // for struct _Window
  #include "scrnintstr.h" // for struct _Screen
-diff -Nurp xorg-server-ubuntu-git-patched/hw/xwin/InitOutput.c xorg-server-ubuntu-git-working/hw/xwin/InitOutput.c
---- xorg-server-ubuntu-git-patched/hw/xwin/InitOutput.c	2009-12-15 11:52:54.000000000 -0800
-+++ xorg-server-ubuntu-git-working/hw/xwin/InitOutput.c	2009-12-15 17:32:36.000000000 -0800
-@@ -283,7 +283,7 @@ ddxGiveUp (void)
+Index: xorg-server-1.7.3.902/hw/xwin/InitOutput.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/hw/xwin/InitOutput.c	2009-12-25 15:28:42.000000000 -0800
++++ xorg-server-1.7.3.902/hw/xwin/InitOutput.c	2010-02-03 17:29:02.000000000 -0800
+@@ -283,7 +283,7 @@
  
  /* See Porting Layer Definition - p. 57 */
  void
@@ -240,7 +248,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xwin/InitOutput.c xorg-server-ubunt
  {
  #if CYGDEBUG
    winDebug ("AbortDDX\n");
-@@ -291,6 +291,12 @@ AbortDDX (void)
+@@ -291,6 +291,12 @@
    ddxGiveUp ();
  }
  
@@ -253,10 +261,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/hw/xwin/InitOutput.c xorg-server-ubunt
  #ifdef __CYGWIN__
  /* hasmntopt is currently not implemented for cygwin */
  static const char *winCheckMntOpt(const struct mntent *mnt, const char *opt)
-diff -Nurp xorg-server-ubuntu-git-patched/include/os.h xorg-server-ubuntu-git-working/include/os.h
---- xorg-server-ubuntu-git-patched/include/os.h	2009-12-15 11:52:53.000000000 -0800
-+++ xorg-server-ubuntu-git-working/include/os.h	2009-12-15 11:54:07.000000000 -0800
-@@ -434,7 +434,9 @@ typedef struct {
+Index: xorg-server-1.7.3.902/include/os.h
+===================================================================
+--- xorg-server-1.7.3.902.orig/include/os.h	2009-12-25 15:28:42.000000000 -0800
++++ xorg-server-1.7.3.902/include/os.h	2010-02-03 17:29:02.000000000 -0800
+@@ -434,7 +434,9 @@
  /* stuff for FlushCallback */
  extern _X_EXPORT CallbackListPtr FlushCallback;
  
@@ -266,10 +275,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/include/os.h xorg-server-ubuntu-git-wo
  extern _X_EXPORT void ddxGiveUp(void);
  extern _X_EXPORT int TimeSinceLastInputEvent(void);
  
-diff -Nurp xorg-server-ubuntu-git-patched/os/log.c xorg-server-ubuntu-git-working/os/log.c
---- xorg-server-ubuntu-git-patched/os/log.c	2009-12-15 11:53:14.000000000 -0800
-+++ xorg-server-ubuntu-git-working/os/log.c	2009-12-15 14:21:41.000000000 -0800
-@@ -413,11 +413,12 @@ LogMessage(MessageType type, const char 
+Index: xorg-server-1.7.3.902/os/log.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/os/log.c	2009-12-25 15:28:42.000000000 -0800
++++ xorg-server-1.7.3.902/os/log.c	2010-02-03 17:29:30.000000000 -0800
+@@ -389,11 +389,12 @@
  }
  
  #ifdef __GNUC__
@@ -283,7 +293,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/os/log.c xorg-server-ubuntu-git-workin
  {
  #ifdef XF86BIGFONT
      XF86BigfontCleanup();
-@@ -425,11 +426,21 @@ AbortServer(void)
+@@ -401,11 +402,21 @@
      CloseWellKnownConnections();
      OsCleanup(TRUE);
      CloseDownDevices();
@@ -298,8 +308,8 @@ diff -Nurp xorg-server-ubuntu-git-patched/os/log.c xorg-server-ubuntu-git-workin
 +            raise(signo);
 +        else
 +            abort();
-+    }
-+    /* exit (1); */
++    } else
++	exit (1);
 +}
 +
 +void
@@ -309,7 +319,7 @@ diff -Nurp xorg-server-ubuntu-git-patched/os/log.c xorg-server-ubuntu-git-workin
  }
  
  #define AUDIT_PREFIX "AUDIT: %s: %ld: "
-@@ -532,6 +543,27 @@ VAuditF(const char *f, va_list args)
+@@ -508,6 +519,27 @@
  }
  
  void
@@ -337,10 +347,11 @@ diff -Nurp xorg-server-ubuntu-git-patched/os/log.c xorg-server-ubuntu-git-workin
  FatalError(const char *f, ...)
  {
      va_list args;
-diff -Nurp xorg-server-ubuntu-git-patched/os/osinit.c xorg-server-ubuntu-git-working/os/osinit.c
---- xorg-server-ubuntu-git-patched/os/osinit.c	2009-12-15 11:52:56.000000000 -0800
-+++ xorg-server-ubuntu-git-working/os/osinit.c	2009-12-15 14:28:37.000000000 -0800
-@@ -148,13 +148,13 @@ OsSigHandler(int signo)
+Index: xorg-server-1.7.3.902/os/osinit.c
+===================================================================
+--- xorg-server-1.7.3.902.orig/os/osinit.c	2009-10-27 23:56:24.000000000 -0700
++++ xorg-server-1.7.3.902/os/osinit.c	2010-02-03 17:29:02.000000000 -0800
+@@ -148,13 +148,13 @@
            case SIGBUS:
            case SIGILL:
            case SIGFPE:
