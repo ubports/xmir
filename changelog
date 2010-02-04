@@ -1,3 +1,14 @@
+xorg-server (2:1.7.3.902-1ubuntu10) lucid; urgency=low
+
+  * 100_rethrow_signals.patch: Fix SigAbortServer to cleanly exit(1) on a
+    non-signal crash, as the original upstream code does. Not exiting leads to
+    continuing back into the code which threw the error, which eventually
+    leads to writing into the already closed log file and other operations
+    which cause segfaults.
+  * Re-enable 100_rethrow_signals.patch.  Hello apport.
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Wed, 03 Feb 2010 17:29:53 -0800
+
 xorg-server (2:1.7.3.902-1ubuntu9) lucid; urgency=low
 
   * Fully disable 100_rethrow_signals.patch as it seems to still cause
