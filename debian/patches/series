@@ -32,3 +32,5 @@
 189_xserver_1.5.0_bg_none_root.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
+196_xvfb-fbscreeninit-handling.patch
+197_xvfb-randr.patch
