@@ -1,6 +1,6 @@
 === modified file 'hw/vfb/InitOutput.c'
---- hw/vfb/InitOutput.c	2009-06-11 20:34:06 +0000
-+++ hw/vfb/InitOutput.c	2010-02-02 16:34:02 +0000
+--- a/hw/vfb/InitOutput.c	2009-06-11 20:34:06 +0000
++++ b/hw/vfb/InitOutput.c	2010-02-02 16:34:02 +0000
 @@ -66,6 +66,7 @@
  #endif /* HAS_SHM */
  #include "dix.h"
