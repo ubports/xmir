@@ -29,6 +29,13 @@ xorg-server (2:1.7.4-1) unstable; urgency=low
 
  -- Julien Cristau <jcristau@debian.org>  Tue, 12 Jan 2010 10:49:22 +0000
 
+xorg-server (2:1.7.3.902-1ubuntu12) lucid; urgency=low
+  
+  * Add 198_nohwaccess.patch: Needed for rootless X.  Adds a -nohwaccess
+    argument to make X not access the hardware ports directly.
+  
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 05 Feb 2010 22:17:20 -0800
+
 xorg-server (2:1.7.3.902-1ubuntu11) lucid; urgency=low
 
   * Add 196_xvfb-fbscreeninit-handling.patch and 197_xvfb-randr.patch:
