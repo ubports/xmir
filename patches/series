@@ -35,3 +35,5 @@
 196_xvfb-fbscreeninit-handling.patch
 197_xvfb-randr.patch
 198_nohwaccess.patch
+199_xfvb-help-typo.patch
+200_randr-null.patch
