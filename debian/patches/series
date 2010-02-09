@@ -34,3 +34,4 @@
 191-Xorg-add-an-extra-module-path.patch
 196_xvfb-fbscreeninit-handling.patch
 197_xvfb-randr.patch
+198_nohwaccess.patch
