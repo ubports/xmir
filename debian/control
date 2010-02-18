@@ -3,7 +3,7 @@ Section: x11
 Priority: optional
 Maintainer: Ubuntu X-SWAT <ubuntu-x@lists.ubuntu.com>
 XSBC-Original-Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
-Uploaders: David Nusinow <dnusinow@debian.org>, Steve Langasek <vorlon@debian.org>, Julien Cristau <jcristau@debian.org>, Drew Parsons <dparsons@debian.org>
+Uploaders: David Nusinow <dnusinow@debian.org>, Steve Langasek <vorlon@debian.org>, Drew Parsons <dparsons@debian.org>, Brice Goglin <bgoglin@debian.org>
 # all the Build-Depends up to x11proto-xf86-dri-dev are for the normal Xorg
 # server, and common dependencies for the DIX.
 # x11proto-xf86dri-dev and libdrm-dev are for DRI support for the Xorg server.
@@ -76,7 +76,7 @@ Build-Depends:
  libglib2.0-dev,
  xkb-data,
  x11-xkb-utils,
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
 
