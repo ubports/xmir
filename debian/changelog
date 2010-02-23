@@ -1,9 +1,17 @@
 xorg-server (2:1.7.5-1ubuntu2) UNRELEASED; urgency=low
 
+  [Timo Aaltonen]
   * Add 107_dont_filter_input_subsys.diff so for instance serial wacom
     devices are initialized by the udev backend (LP: #522318)
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Sun, 21 Feb 2010 12:46:10 +0200
+  [Bryce Harrington]
+  * Add 108_reenable_record_ext.patch: Upstream patch to make the
+    record callback work with the new internal core/Xi events mechanism
+    instead of xEvents. With this fix, the record extension can be
+    re-enabled.
+    (LP: #315456)
+  
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 22 Feb 2010 17:29:28 -0800
 
 xorg-server (2:1.7.5-1ubuntu1) lucid; urgency=low
 
