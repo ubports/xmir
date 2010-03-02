@@ -1,5 +1,6 @@
-xorg-server (2:1.7.5-1ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.7.5-1ubuntu2) lucid; urgency=low
 
+  [ Bryce Harrington ]
   [Timo Aaltonen]
   * Add 107_dont_filter_input_subsys.diff so for instance serial wacom
     devices are initialized by the udev backend (LP: #522318)
@@ -11,7 +12,7 @@ xorg-server (2:1.7.5-1ubuntu2) UNRELEASED; urgency=low
     re-enabled.
     (LP: #315456)
   
- -- Bryce Harrington <bryce@ubuntu.com>  Mon, 22 Feb 2010 17:29:28 -0800
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 02 Mar 2010 17:09:33 +0200
 
 xorg-server (2:1.7.5-1ubuntu1) lucid; urgency=low
 
