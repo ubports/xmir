@@ -1,7 +1,7 @@
-From e7667ff71336523a03c442d248c690e0557d1518 Mon Sep 17 00:00:00 2001
+From 5ac8298469cd4d5e56ef7fc41af4878b88706b28 Mon Sep 17 00:00:00 2001
 From: Chris Dekter <cdekter@gmail.com>
-Date: Wed, 28 Oct 2009 12:51:58 +1000
-Subject: [PATCH] Re-enable RECORD extension.
+Date: Thu, 11 Feb 2010 06:34:09 +0000
+Subject: Re-enable RECORD extension.
 
 RECORD was disabled during the switch to internal events. This patch
 modifies the record callback to work with internal events instead of
@@ -9,20 +9,19 @@ xEvents. The InternalEvents are converted to core/Xi events as needed.
 
 Since record is a loadable extension, the EventTo* calls must be externed.
 
+Signed-off-by: Chris Dekter <cdekter@gmail.com>
+Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+Reviewed-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+(cherry picked from commit 122fc0e7a0712df4ec2bd9ca6773f90bcd2095cf)
+
 Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
 ---
- Xi/exevents.c          |   13 +++--
- dix/events.c           |   15 +++---
- include/dix.h          |    6 +-
- include/eventconvert.h |    6 +-
- record/record.c        |  123 +++++++++++++++++++++++++++---------------------
- 5 files changed, 91 insertions(+), 72 deletions(-)
-
 diff --git a/Xi/exevents.c b/Xi/exevents.c
-index cb2452b..6057c0e 100644
+index ee32ba8..a63b65b 100644
 --- a/Xi/exevents.c
 +++ b/Xi/exevents.c
-@@ -1031,16 +1031,19 @@ ProcessOtherEvent(InternalEvent *ev, DeviceIntPtr device)
+@@ -1051,16 +1051,19 @@ ProcessOtherEvent(InternalEvent *ev, DeviceIntPtr device)
              break;
      }
  
@@ -48,7 +47,7 @@ index cb2452b..6057c0e 100644
  
      switch(event->type)
 diff --git a/dix/events.c b/dix/events.c
-index 85c8f9a..c085a75 100644
+index e24e0c5..4423c16 100644
 --- a/dix/events.c
 +++ b/dix/events.c
 @@ -1131,11 +1131,10 @@ EnqueueEvent(InternalEvent *ev, DeviceIntPtr device)
@@ -86,10 +85,10 @@ index 85c8f9a..c085a75 100644
      {
  #ifdef PANORAMIX
 diff --git a/include/dix.h b/include/dix.h
-index ed3acb6..6505fd0 100644
+index 9fd2ed8..8bd52b6 100644
 --- a/include/dix.h
 +++ b/include/dix.h
-@@ -576,8 +576,8 @@ typedef struct {
+@@ -581,8 +581,8 @@ typedef struct {
  extern _X_EXPORT CallbackListPtr DeviceEventCallback;
  
  typedef struct {
@@ -100,7 +99,7 @@ index ed3acb6..6505fd0 100644
  } DeviceEventInfoRec;
  
  extern int XItoCoreType(int xi_type);
-@@ -585,7 +585,7 @@ extern Bool DevHasCursor(DeviceIntPtr pDev);
+@@ -590,7 +590,7 @@ extern Bool DevHasCursor(DeviceIntPtr pDev);
  extern Bool _X_EXPORT IsPointerDevice( DeviceIntPtr dev);
  extern Bool _X_EXPORT IsKeyboardDevice(DeviceIntPtr dev);
  extern Bool IsPointerEvent(InternalEvent *event);
@@ -127,7 +126,7 @@ index 277a6c4..b1196a0 100644
  _X_INTERNAL int GetXIType(InternalEvent* ev);
  _X_INTERNAL int GetXI2Type(InternalEvent* ev);
 diff --git a/record/record.c b/record/record.c
-index 242544f..1a10c9e 100644
+index b94b4ae..f092e34 100644
 --- a/record/record.c
 +++ b/record/record.c
 @@ -42,6 +42,8 @@ and Jim Haggerty of Metheus.
@@ -291,7 +290,7 @@ index 242544f..1a10c9e 100644
 -#if 0
      ExtensionEntry *extentry;
  
-     RTContext = CreateNewResourceType(RecordDeleteContext, "RecordContext");
+     RTContext = CreateNewResourceType(RecordDeleteContext);
 @@ -2895,6 +2913,5 @@ RecordExtensionInit(void)
      }
      RecordErrorBase = extentry->errorBase;
@@ -299,6 +298,5 @@ index 242544f..1a10c9e 100644
 -#endif
  } /* RecordExtensionInit */
  
--- 
-1.6.6.1
-
+--
+cgit v0.8.3-6-g21f6
