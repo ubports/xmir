@@ -1,3 +1,11 @@
+xorg-server (2:1.7.5-1ubuntu3) lucid; urgency=low
+
+  * Add 109_fix-swcursor-crash.patch: Avoid dereferencing null pointer
+    while reloading cursors during resume.
+    (LP: #371405)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 11 Mar 2010 17:16:12 -0800
+
 xorg-server (2:1.7.5-1ubuntu2) lucid; urgency=low
 
   [ Bryce Harrington ]
