@@ -18,7 +18,7 @@
 106_nouveau_autodetect.patch
 107_dont_filter_input_subsys.diff
 108_reenable_record_ext.patch
-110_fix-swcursor-crash.patch
+109_fix-swcursor-crash.patch
 121_only_switch_vt_when_active.diff
 #143_default_to_vesa.patch
 157_check_null_modes.patch
