@@ -7,7 +7,7 @@ Index: xorg-server-1.6.5/hw/xfree86/modes/xf86Cursors.c
  					  xf86CursorScreenKey);
      /* return if HW cursor is inactive, to avoid displaying two cursors */
 -    if (!cursor_screen_priv->isUp)
-+    if (!cursor_screen || !cursor_screen_priv->isUp)
++    if (!cursor_screen_priv || !cursor_screen_priv->isUp)
  	return;
  
      scrn = xf86Screens[screen->myNum];
