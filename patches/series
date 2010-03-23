@@ -1,17 +1,20 @@
 ## Patches with a number < 100 are applied in debian.
 ## Ubuntu patches start with 100.
 001_fedora_extramodes.patch
-02_Add-libgcrypt-as-an-option-for-sha1.diff
+02_Add-libgcrypt-and-libnettle-as-options-for-sha1.diff
 # 03 and 04 are backports from git master
 03_fedora_glx_versioning.diff
 04_fedora_glx14-swrast.diff
 05_only_call_gamma_set_if_nonnull.diff
+06_dont_trap_access_to_timer_and_keyboard.diff
 #13_debian_add_xkbpath_env_variable.diff
 11-Move-config_init-after-CreateWellKnownSockets-and-In.diff
 12-Add-libudev-input-hotplug-backend.diff
 13-configure-config-udev-defaults-to-off-for-now.diff
 14-config-add-example-udev-rules.diff
 15-config-udev-look-for-xkb-rules-model-layout-variant-.diff
+16-config-dont-filter-input-subsys.diff
+16-xfree86-fix-build-with-xv-disabled.diff
 100_rethrow_signals.patch
 #104_nvidia_autodetect.patch
 #105_fglrx_autodetect.patch
