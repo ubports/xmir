@@ -4,6 +4,7 @@ xorg-server (2:1.7.6-1ubuntu1) UNRELEASED; urgency=low
   * Drop patch 107, included in Debian.
   * Drop patch 108, included upstream.
   * control: Drop the udeb, we don't need it for lucid.
+  * control: Relax/drop some build-deps caused by the udeb.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 23 Mar 2010 23:43:55 +0200
 
