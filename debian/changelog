@@ -1,3 +1,63 @@
+xorg-server (2:1.7.6-1) unstable; urgency=low
+
+  [ Brice Goglin ]
+  * Add 06_dont_trap_access_to_timer_and_keyboard.diff,
+    thanks Samuel Thibault.
+
+  [ Timo Aaltonen ]
+  * New upstream release, closes: #574354.
+
+  [ Julien Cristau ]
+  * Don't build xserver-xorg-core-udeb on sparc.  The linker fails because
+    relocations have to be truncated when building statically against
+    libnettle.
+
+ -- Cyril Brulebois <kibi@debian.org>  Tue, 23 Mar 2010 16:59:08 +0100
+
+xorg-server (2:1.7.5.902-1) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * config/udev: fix adding unnamed devices.
+  * Build two flavours, one for the main package and one for the udeb.
+  * Add patch to fix Xorg build with XV disabled.
+
+  [ Timo Aaltonen ]
+  * Add 16-config-dont-filter-input-subsys.diff so for instance serial
+    wacom devices are initialized by the udev backend (LP: #522318,
+    closes: #568236).
+
+  [ Brice Goglin ]
+  * New upstream release.
+    + Allow for missing or disabled compat_output, closes: #572268, #554450.
+    + Reenable RECORD extension, closes: #570680.
+    + dix: try to ring the bell even if the current device doesn't have one,
+      closes: #564200.
+  * Refresh patches.
+  * Fix typo in xvfb-run.1, thanks Joey Hess, closes: #527490.
+  * Add 06_dont_trap_access_to_timer_and_keyboard.diff,
+    thanks Samuel Thibault.
+
+  [ Cyril Brulebois ]
+  * Add udeb needed for the graphical installer: xserver-xorg-core-udeb.
+  * Version/Bump some B-D to make sure xserver-xorg-core-udeb gets its
+    dependencies on the (recently-added) udebs rather than on the
+    libraries:
+     - libpciaccess-dev
+     - libudev-dev
+     - libxau-dev
+     - libxfont-dev
+  * Replace 02_Add-libgcrypt-as-an-option-for-sha1.diff with
+    02_Add-libgcrypt-and-libnettle-as-options-for-sha1.diff so that it's
+    also possible to link against libnettle. Link (unconditionally)
+    statically against libnettle.a to avoid an extra udeb for a few bytes.
+  * Add nettle-dev to Build-Depends; and pass --with-sha1=libnettle for
+    the udeb build (and --with-sha1=libgcrypt for the main build).
+  * Add myself to Uploaders.
+  * Tweak builderstring to use the name of the person responsible for the
+    upload instead of an host-specific one (Closes: #574017).
+
+ -- Cyril Brulebois <kibi@debian.org>  Mon, 15 Mar 2010 22:19:01 +0100
+
 xorg-server (2:1.7.5-1ubuntu3) lucid; urgency=low
 
   * Add 109_fix-swcursor-crash.patch: Avoid dereferencing null pointer

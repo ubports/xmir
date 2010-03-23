@@ -253,33 +253,7 @@ extern BOOL EventIsKeyRepeat(xEvent *event);
  */
 InputInfo inputInfo;
 
-/**
- * syncEvents is the global structure for queued events.
- *
- * Devices can be frozen through GrabModeSync pointer grabs. If this is the
- * case, events from these devices are added to "pending" instead of being
- * processed normally. When the device is unfrozen, events in "pending" are
- * replayed and processed as if they would come from the device directly.
- */
-static struct {
-    QdEventPtr		pending, /**<  list of queued events */
-                        *pendtail; /**< last event in list */
-    /** The device to replay events for. Only set in AllowEvents(), in which
-     * case it is set to the device specified in the request. */
-    DeviceIntPtr	replayDev;	/* kludgy rock to put flag for */
-
-    /**
-     * The window the events are supposed to be replayed on.
-     * This window may be set to the grab's window (but only when
-     * Replay{Pointer|Keyboard} is given in the XAllowEvents()
-     * request. */
-    WindowPtr		replayWin;	/*   ComputeFreezes            */
-    /**
-     * Flag to indicate whether we're in the process of
-     * replaying events. Only set in ComputeFreezes(). */
-    Bool		playingEvents;
-    TimeStamp		time;
-} syncEvents;
+EventSyncInfoRec syncEvents;
 
 /**
  * The root window the given device is currently on.
@@ -1131,11 +1105,10 @@ EnqueueEvent(InternalEvent *ev, DeviceIntPtr device)
         event->type == ET_KeyRelease)
 	AccessXCancelRepeatKey(device->key->xkbInfo, event->detail.key);
 
-#if 0
-        /* FIXME: I'm broken now. Please fix me. */
     if (DeviceEventCallback)
     {
 	DeviceEventInfoRec eventinfo;
+
 	/*  The RECORD spec says that the root window field of motion events
 	 *  must be valid.  At this point, it hasn't been filled in yet, so
 	 *  we do it here.  The long expression below is necessary to get
@@ -1145,14 +1118,14 @@ EnqueueEvent(InternalEvent *ev, DeviceIntPtr device)
 	 *  the data that GetCurrentRootWindow relies on hasn't been
 	 *  updated yet.
 	 */
-	if (xE->u.u.type == DeviceMotionNotify)
-	    XE_KBPTR.root =
-		WindowTable[pSprite->hotPhys.pScreen->myNum]->drawable.id;
-	eventinfo.events = xE;
-	eventinfo.count = nevents;
+	if (ev->any.type == ET_Motion)
+	    ev->device_event.root = WindowTable[pSprite->hotPhys.pScreen->myNum]->drawable.id;
+
+	eventinfo.event = ev;
+	eventinfo.device = device;
 	CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
     }
-#endif
+
     if (event->type == ET_Motion)
     {
 #ifdef PANORAMIX
@@ -1415,11 +1388,6 @@ CheckGrabForSyncs(DeviceIntPtr thisDev, Bool thisMode, Bool otherMode)
 	    thisDev->deviceGrab.sync.other = NullGrab;
     }
 
-    /*
-        XXX: Direct slave grab won't freeze the paired master device.
-        The correct thing to do would be to freeze all SDs attached to the
-        paired master device.
-     */
     if (IsMaster(thisDev))
     {
         dev = GetPairedDevice(thisDev);
