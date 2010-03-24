@@ -42,3 +42,4 @@
 198_nohwaccess.patch
 199_xfvb-help-typo.patch
 200_randr-null.patch
+110_findglyphbyhash-fix.patch
