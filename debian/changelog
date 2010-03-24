@@ -11,8 +11,9 @@ xorg-server (2:1.7.6-1ubuntu1) UNRELEASED; urgency=low
   * Add 110_findglyphbyhash-fix.patch from upstream to fix a sporadic
     crash in FindGlyphByHash.
     (LP: #401045)
+  * Renumber patch 201_armel-drv-fallbacks.patch to 111
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 23 Mar 2010 23:43:55 +0200
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 24 Mar 2010 11:47:58 -0700
 
 xorg-server (2:1.7.6-1) unstable; urgency=low
 
@@ -73,6 +74,18 @@ xorg-server (2:1.7.5.902-1) unstable; urgency=low
     upload instead of an host-specific one (Closes: #574017).
 
  -- Cyril Brulebois <kibi@debian.org>  Mon, 15 Mar 2010 22:19:01 +0100
+
+xorg-server (2:1.7.5-1ubuntu4) lucid; urgency=low
+
+  * 201_armel-drv-fallbacks.patch: use imx driver if available on
+    armel imx51 systems; the current test checks for mxc_gpu
+    devices listed in /sys/devices/platform and ensures that the
+    imx_drv module can be loaded; if both succeed, imx driver is
+    used instead of fbdev; note: the mxc_gpu device test should be
+    replaced with parsing output of /proc/fb once the mxc driver
+    provides reasonable content there.
+
+ -- Alexander Sack <asac@ubuntu.com>  Wed, 24 Mar 2010 13:03:41 +0100
 
 xorg-server (2:1.7.5-1ubuntu3) lucid; urgency=low
 
