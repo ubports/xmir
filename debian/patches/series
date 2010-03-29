@@ -22,6 +22,7 @@
 109_fix-swcursor-crash.patch
 110_findglyphbyhash-fix.patch
 111_armel-drv-fallbacks.patch
+112_xaa-fbcomposite-fix-negative-size.patch
 121_only_switch_vt_when_active.diff
 #143_default_to_vesa.patch
 157_check_null_modes.patch
