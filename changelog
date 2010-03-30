@@ -1,7 +1,7 @@
 xorg-server (2:1.7.6-1ubuntu4) UNRELEASED; urgency=low
 
   [ Timo Aaltonen ]
-  * Merge from debian-unstable git.
+  * Merge from debian-unstable git. (LP: #546933)
 
   [ Michael Casadevall ]
   * Updated 111_armel-drv-fallbacks.patch to also add support for finding
