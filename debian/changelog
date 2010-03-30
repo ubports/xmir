@@ -5,7 +5,7 @@ xorg-server (2:1.7.6-1ubuntu4) UNRELEASED; urgency=low
 
   [ Michael Casadevall ]
   * Updated 111_armel-drv-fallbacks.patch to also add support for finding
-    dovefb devices in addition to imx51 ones.
+    dovefb devices in addition to imx51 ones. (LP: #550701)
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 30 Mar 2010 18:37:06 +0300
 
