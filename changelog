@@ -1,4 +1,4 @@
-xorg-server (2:1.7.6-2ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.7.6-2ubuntu1) lucid; urgency=low
 
   [ Timo Aaltonen ]
   * Merge from Debian unstable. (LP: #546933)
@@ -7,7 +7,7 @@ xorg-server (2:1.7.6-2ubuntu1) UNRELEASED; urgency=low
   * Updated 111_armel-drv-fallbacks.patch to also add support for finding
     dovefb devices in addition to imx51 ones. (LP: #550701)
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 30 Mar 2010 18:37:06 +0300
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 30 Mar 2010 22:01:12 +0300
 
 xorg-server (2:1.7.6-2) unstable; urgency=low
 
