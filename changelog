@@ -1,3 +1,12 @@
+xorg-server (2:1.7.6-2ubuntu2) UNRELEASED; urgency=low
+
+  * Add 113_quell_nouveau_aiglx.patch: Don't emit error message about
+    AIGLX on nouveau.  3D is not supported yet on -nouveau so this error
+    message serves only to confuse bug reporters.
+    (LP: #529590)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 31 Mar 2010 16:37:45 -0700
+
 xorg-server (2:1.7.6-2ubuntu1) lucid; urgency=low
 
   [ Timo Aaltonen ]
