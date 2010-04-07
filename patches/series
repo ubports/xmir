@@ -26,6 +26,7 @@
 111_armel-drv-fallbacks.patch
 112_xaa-fbcomposite-fix-negative-size.patch
 113_quell_nouveau_aiglx.patch
+114_dri2_make_sure_x_drawable_exists.patch
 121_only_switch_vt_when_active.diff
 #143_default_to_vesa.patch
 157_check_null_modes.patch

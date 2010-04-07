@@ -1,15 +1,22 @@
-xorg-server (2:1.7.6-2ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.7.6-2ubuntu2) lucid; urgency=low
 
+  [Bryce Harrington]
   * Add 113_quell_nouveau_aiglx.patch: Don't emit error message about
     AIGLX on nouveau.  3D is not supported yet on -nouveau so this error
     message serves only to confuse bug reporters.
     (LP: #529590)
 
+  [Robert Sarvatt]
+  * Add 114_dri2_make_sure_x_drawable_exists.patch: Makes sure
+    a corresponding X drawable exists before trying to use it, fixing 
+    xserver segfaults under DRI2 when closing down GLX apps.
+    (LP: #550218)
+
  -- Bryce Harrington <bryce@ubuntu.com>  Wed, 31 Mar 2010 16:37:45 -0700
 
 xorg-server (2:1.7.6-2ubuntu1) lucid; urgency=low
 
-  [ Timo Aaltonen ]
+  [ Timo Aaltonen ]
   * Merge from Debian unstable. (LP: #546933)
 
   [ Michael Casadevall ]
