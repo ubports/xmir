@@ -1,3 +1,9 @@
+xorg-server (2:1.7.6-2ubuntu3) lucid; urgency=low
+
+  * add support for omapfb to 111_armel-drv-fallbacks.patch
+
+ -- Alexander Sack <asac@ubuntu.com>  Mon, 12 Apr 2010 14:43:42 +0200
+
 xorg-server (2:1.7.6-2ubuntu2) lucid; urgency=low
 
   [Bryce Harrington]
