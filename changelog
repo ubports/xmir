@@ -1,3 +1,9 @@
+xorg-server (2:1.7.6-2ubuntu5) lucid; urgency=low
+
+  * Update patches in previous upload to fix FTBS issue.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 15 Apr 2010 11:03:01 -0700
+
 xorg-server (2:1.7.6-2ubuntu4) lucid; urgency=low
 
   * Add several cherrypicks of fixes from upstream git tree which fix various
