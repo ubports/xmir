@@ -32,6 +32,7 @@
 117_fix_crash_with_createglyphset.patch
 118_xkb_fix_garbage_init.patch
 121_only_switch_vt_when_active.diff
+122_xext_fix_card32_overflow_in_xauth.patch
 #143_default_to_vesa.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
