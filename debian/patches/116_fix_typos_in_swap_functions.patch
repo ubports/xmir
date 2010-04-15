@@ -1,122 +1,54 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
-<head>
-<title>xorg/xserver - X server</title>
-<meta name='generator' content='cgit v0.8.3.1'/>
-<meta name='robots' content='index, nofollow'/>
-<link rel='stylesheet' type='text/css' href='http://cgit.freedesktop.org/cgit.css'/>
-<link rel='alternate' title='Atom feed' href='http://cgit.freedesktop.org/xorg/xserver/atom/?h=master' type='application/atom+xml'/>
-</head>
-<body>
-<div id='cgit'><table id='header'>
-<tr>
-<td class='logo' rowspan='2'><a href='/'><img src='http://cgit.freedesktop.org/logo.png' alt='cgit logo'/></a></td>
-<td class='main'><a href='/'>index</a> : <a title='xorg/xserver' href='/xorg/xserver/'>xorg/xserver</a></td><td class='form'><form method='get' action=''>
-<input type='hidden' name='id' value='0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'/><select name='h' onchange='this.form.submit();'>
-<option value='COMPOSITEWRAP'>COMPOSITEWRAP</option>
-<option value='CYGWIN'>CYGWIN</option>
-<option value='DAMAGE-XFIXES'>DAMAGE-XFIXES</option>
-<option value='Domain-branch'>Domain-branch</option>
-<option value='IPv6-REVIEW'>IPv6-REVIEW</option>
-<option value='STSF-CURRENT'>STSF-CURRENT</option>
-<option value='XACE-SELINUX'>XACE-SELINUX</option>
-<option value='XACE-modular'>XACE-modular</option>
-<option value='XEVIE'>XEVIE</option>
-<option value='XINERAMA_2'>XINERAMA_2</option>
-<option value='XORG-6_8-branch'>XORG-6_8-branch</option>
-<option value='XORG-CURRENT'>XORG-CURRENT</option>
-<option value='XORG-RELEASE-1'>XORG-RELEASE-1</option>
-<option value='XORG-RELEASE-1-STSF'>XORG-RELEASE-1-STSF</option>
-<option value='XORG-RELEASE-1-TM'>XORG-RELEASE-1-TM</option>
-<option value='XORG-STABLE'>XORG-STABLE</option>
-<option value='XPRINT'>XPRINT</option>
-<option value='autoconfig-for-7.2'>autoconfig-for-7.2</option>
-<option value='bcook-backend'>bcook-backend</option>
-<option value='compat_output'>compat_output</option>
-<option value='dmx-2'>dmx-2</option>
-<option value='dri-0-1-branch'>dri-0-1-branch</option>
-<option value='dri2-swapbuffers'>dri2-swapbuffers</option>
-<option value='exa-damagetrack'>exa-damagetrack</option>
-<option value='glucose-2'>glucose-2</option>
-<option value='gsr-current'>gsr-current</option>
-<option value='input-hotplug'>input-hotplug</option>
-<option value='lg3d'>lg3d</option>
-<option value='lg3d-7.2'>lg3d-7.2</option>
-<option value='lg3d-dev'>lg3d-dev</option>
-<option value='lg3d-dev-0-6-1'>lg3d-dev-0-6-1</option>
-<option value='lg3d-dev-0-6-1-1'>lg3d-dev-0-6-1-1</option>
-<option value='lg3d-dev-0-6-1-current'>lg3d-dev-0-6-1-current</option>
-<option value='lg3d-dev-0-6-1-latest'>lg3d-dev-0-6-1-latest</option>
-<option value='lg3d-dev-0-6-2'>lg3d-dev-0-6-2</option>
-<option value='lg3d-dev-0-6-latest'>lg3d-dev-0-6-latest</option>
-<option value='lg3d-dev-0-7-0'>lg3d-dev-0-7-0</option>
-<option value='lg3d-dev-0-7-1'>lg3d-dev-0-7-1</option>
-<option value='lg3d-event'>lg3d-event</option>
-<option value='lg3d-master'>lg3d-master</option>
-<option value='master' selected='selected'>master</option>
-<option value='mpx'>mpx</option>
-<option value='no-pci-rework'>no-pci-rework</option>
-<option value='orib-soc-2006'>orib-soc-2006</option>
-<option value='panning-for-server-1.6'>panning-for-server-1.6</option>
-<option value='pci-rework'>pci-rework</option>
-<option value='randr-1.2'>randr-1.2</option>
-<option value='randr-1.2-for-server-1.2'>randr-1.2-for-server-1.2</option>
-<option value='randr-dpms'>randr-dpms</option>
-<option value='sco_port_update'>sco_port_update</option>
-<option value='server-1.2-branch'>server-1.2-branch</option>
-<option value='server-1.3-branch'>server-1.3-branch</option>
-<option value='server-1.4-branch'>server-1.4-branch</option>
-<option value='server-1.5-branch'>server-1.5-branch</option>
-<option value='server-1.6-branch'>server-1.6-branch</option>
-<option value='server-1.6-enterleave'>server-1.6-enterleave</option>
-<option value='server-1.7-branch'>server-1.7-branch</option>
-<option value='server-1.7-nominations'>server-1.7-nominations</option>
-<option value='server-1.8-branch'>server-1.8-branch</option>
-<option value='server-1_0-branch'>server-1_0-branch</option>
-<option value='server-1_1-branch'>server-1_1-branch</option>
-<option value='transform-proposal'>transform-proposal</option>
-<option value='wonderland-dev'>wonderland-dev</option>
-<option value='xf-4_0_2-branch'>xf-4_0_2-branch</option>
-<option value='xf-4_1-branch'>xf-4_1-branch</option>
-<option value='xf-4_2-branch'>xf-4_2-branch</option>
-<option value='xf-4_3-branch'>xf-4_3-branch</option>
-<option value='xfixes_2_branch'>xfixes_2_branch</option>
-<option value='xgl-0-0-1'>xgl-0-0-1</option>
-<option value='xorg-server-1.2-apple'>xorg-server-1.2-apple</option>
-<option value='xorg-server-1.4-apple'>xorg-server-1.4-apple</option>
-<option value='xorg-server-1.5-apple'>xorg-server-1.5-apple</option>
-<option value='xorg-server-1.6-apple'>xorg-server-1.6-apple</option>
-<option value='xorg-server-1.7-apple'>xorg-server-1.7-apple</option>
-<option value='xquartz-composite'>xquartz-composite</option>
-</select> <input type='submit' name='' value='switch'/></form></td></tr>
-<tr><td class='sub'>X server</td><td class='sub right'>keithp</td></tr></table>
-<table class='tabs'><tr><td>
-<a href='/xorg/xserver/'>summary</a><a href='/xorg/xserver/refs/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>refs</a><a href='/xorg/xserver/log/'>log</a><a href='/xorg/xserver/tree/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>tree</a><a class='active' href='/xorg/xserver/commit/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>commit</a><a href='/xorg/xserver/diff/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>diff</a></td><td class='form'><form class='right' method='get' action='/xorg/xserver/log/'>
-<input type='hidden' name='id' value='0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'/><select name='qt'>
-<option value='grep'>log msg</option>
-<option value='author'>author</option>
-<option value='committer'>committer</option>
-</select>
-<input class='txt' type='text' size='10' name='q' value=''/>
-<input type='submit' value='search'/>
-</form>
-</td></tr></table>
-<div class='content'><table summary='commit info' class='commit-info'>
-<tr><th>author</th><td>Tomas Carnecky &lt;tom@dbservice.com&gt;</td><td class='right'>2010-03-22 18:20:15 (GMT)</td></tr>
-<tr><th>committer</th><td> Keith Packard &lt;keithp@keithp.com&gt;</td><td class='right'>2010-03-23 02:52:14 (GMT)</td></tr>
-<tr><th>commit</th><td colspan='2' class='sha1'><a href='/xorg/xserver/commit/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9</a> (<a href='/xorg/xserver/patch/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>patch</a>)</td></tr>
-<tr><th>tree</th><td colspan='2' class='sha1'><a href='/xorg/xserver/tree/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>0747b589b1284d04b6b1044db93db8299883c577</a></td></tr>
-<tr><th>parent</th><td colspan='2' class='sha1'><a href='/xorg/xserver/commit/?id=3083c5d0c4386cdd7083b7a83ac72fdad2f1e61e'>3083c5d0c4386cdd7083b7a83ac72fdad2f1e61e</a> (<a href='/xorg/xserver/diff/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9&amp;id2=3083c5d0c4386cdd7083b7a83ac72fdad2f1e61e'>diff</a>)</td></tr><tr><th>download</th><td colspan='2' class='sha1'><a href='/xorg/xserver/snapshot/xserver-0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9.zip'>xserver-0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9.zip</a><br/><a href='/xorg/xserver/snapshot/xserver-0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9.tar.gz'>xserver-0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9.tar.gz</a><br/><a href='/xorg/xserver/snapshot/xserver-0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9.tar.bz2'>xserver-0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9.tar.bz2</a><br/></td></tr></table>
-<div class='commit-subject'>Fix typos in the swap functions</div><div class='commit-msg'>This should fix bug #3539.
+From 0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9 Mon Sep 17 00:00:00 2001
+From: Tomas Carnecky <tom@dbservice.com>
+Date: Mon, 22 Mar 2010 18:20:15 +0000
+Subject: Fix typos in the swap functions
 
-Signed-off-by: Tomas Carnecky &lt;tom@dbservice.com&gt;
-Signed-off-by: Ian Romanick &lt;ian.d.romanick@intel.com&gt;
-Reviewed-by: Keith Packard &lt;keithp@keithp.com&gt;
-Signed-off-by: Keith Packard &lt;keithp@keithp.com&gt;
-</div><div class='diffstat-header'><a href='/xorg/xserver/diff/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>Diffstat</a></div><table summary='diffstat' class='diffstat'><tr><td class='mode'>-rw-r--r--</td><td class='upd'><a href='/xorg/xserver/diff/glx/glxcmdsswap.c?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>glx/glxcmdsswap.c</a></td><td class='right'>8</td><td class='graph'><table summary='file diffstat' width='8%'><tr><td class='add' style='width: 50.0%;'/><td class='rem' style='width: 50.0%;'/><td class='none' style='width: 0.0%;'/></tr></table></td></tr>
-</table><div class='diffstat-summary'>1 files changed, 4 insertions, 4 deletions</div><table summary='diff' class='diff'><tr><td><div class='head'>diff --git a/glx/glxcmdsswap.c b/glx/glxcmdsswap.c<br/>index f1c0ce6..c414dc8 100644<br/>--- a/<a href='/xorg/xserver/tree/glx/glxcmdsswap.c?id=3083c5d0c4386cdd7083b7a83ac72fdad2f1e61e'>glx/glxcmdsswap.c</a><br/>+++ b/<a href='/xorg/xserver/tree/glx/glxcmdsswap.c?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>glx/glxcmdsswap.c</a></div><div class='hunk'>@@ -354,7 +354,7 @@ int __glXDispSwap_CreateGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)</div><div class='ctx'> </div><div class='ctx'> int __glXDispSwap_DestroyPbuffer(__GLXclientState *cl, GLbyte *pc)</div><div class='ctx'> {</div><div class='del'>-    xGLXDestroyPbufferReq *req = (xGLXDestroyPbufferReq *) req;</div><div class='add'>+    xGLXDestroyPbufferReq *req = (xGLXDestroyPbufferReq *) pc;</div><div class='ctx'>     __GLX_DECLARE_SWAP_VARIABLES;</div><div class='ctx'> </div><div class='ctx'>     __GLX_SWAP_INT(&amp;req-&gt;pbuffer);</div><div class='hunk'>@@ -364,7 +364,7 @@ int __glXDispSwap_DestroyPbuffer(__GLXclientState *cl, GLbyte *pc)</div><div class='ctx'> </div><div class='ctx'> int __glXDispSwap_DestroyGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)</div><div class='ctx'> {</div><div class='del'>-    xGLXDestroyGLXPbufferSGIXReq *req = (xGLXDestroyGLXPbufferSGIXReq *) req;</div><div class='add'>+    xGLXDestroyGLXPbufferSGIXReq *req = (xGLXDestroyGLXPbufferSGIXReq *) pc;</div><div class='ctx'>     __GLX_DECLARE_SWAP_VARIABLES;</div><div class='ctx'> </div><div class='ctx'>     __GLX_SWAP_INT(&amp;req-&gt;pbuffer);</div><div class='hunk'>@@ -375,7 +375,7 @@ int __glXDispSwap_DestroyGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)</div><div class='ctx'> int __glXDispSwap_ChangeDrawableAttributes(__GLXclientState *cl, GLbyte *pc)</div><div class='ctx'> {</div><div class='ctx'>     xGLXChangeDrawableAttributesReq *req =</div><div class='del'>-	(xGLXChangeDrawableAttributesReq *) req;</div><div class='add'>+	(xGLXChangeDrawableAttributesReq *) pc;</div><div class='ctx'>     __GLX_DECLARE_SWAP_VARIABLES;</div><div class='ctx'>     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;</div><div class='ctx'>     CARD32 *attribs;</div><div class='hunk'>@@ -392,7 +392,7 @@ int __glXDispSwap_ChangeDrawableAttributesSGIX(__GLXclientState *cl,</div><div class='ctx'> 					       GLbyte *pc)</div><div class='ctx'> {</div><div class='ctx'>     xGLXChangeDrawableAttributesSGIXReq *req =</div><div class='del'>-	(xGLXChangeDrawableAttributesSGIXReq *) req;</div><div class='add'>+	(xGLXChangeDrawableAttributesSGIXReq *) pc;</div><div class='ctx'>     __GLX_DECLARE_SWAP_VARIABLES;</div><div class='ctx'>     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;</div><div class='ctx'>     CARD32 *attribs;</div></td></tr></table></div> <!-- class=content -->
-<div class='footer'>generated  by cgit v0.8.3.1 at 2010-04-15 01:46:50 (GMT)</div>
-</div> <!-- id=cgit -->
-</body>
-</html>
+This should fix bug #3539.
+
+Signed-off-by: Tomas Carnecky <tom@dbservice.com>
+Signed-off-by: Ian Romanick <ian.d.romanick@intel.com>
+Reviewed-by: Keith Packard <keithp@keithp.com>
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+diff --git a/glx/glxcmdsswap.c b/glx/glxcmdsswap.c
+index f1c0ce6..c414dc8 100644
+--- a/glx/glxcmdsswap.c
++++ b/glx/glxcmdsswap.c
+@@ -354,7 +354,7 @@ int __glXDispSwap_CreateGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)
+ 
+ int __glXDispSwap_DestroyPbuffer(__GLXclientState *cl, GLbyte *pc)
+ {
+-    xGLXDestroyPbufferReq *req = (xGLXDestroyPbufferReq *) req;
++    xGLXDestroyPbufferReq *req = (xGLXDestroyPbufferReq *) pc;
+     __GLX_DECLARE_SWAP_VARIABLES;
+ 
+     __GLX_SWAP_INT(&req->pbuffer);
+@@ -364,7 +364,7 @@ int __glXDispSwap_DestroyPbuffer(__GLXclientState *cl, GLbyte *pc)
+ 
+ int __glXDispSwap_DestroyGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)
+ {
+-    xGLXDestroyGLXPbufferSGIXReq *req = (xGLXDestroyGLXPbufferSGIXReq *) req;
++    xGLXDestroyGLXPbufferSGIXReq *req = (xGLXDestroyGLXPbufferSGIXReq *) pc;
+     __GLX_DECLARE_SWAP_VARIABLES;
+ 
+     __GLX_SWAP_INT(&req->pbuffer);
+@@ -375,7 +375,7 @@ int __glXDispSwap_DestroyGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)
+ int __glXDispSwap_ChangeDrawableAttributes(__GLXclientState *cl, GLbyte *pc)
+ {
+     xGLXChangeDrawableAttributesReq *req =
+-	(xGLXChangeDrawableAttributesReq *) req;
++	(xGLXChangeDrawableAttributesReq *) pc;
+     __GLX_DECLARE_SWAP_VARIABLES;
+     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
+     CARD32 *attribs;
+@@ -392,7 +392,7 @@ int __glXDispSwap_ChangeDrawableAttributesSGIX(__GLXclientState *cl,
+ 					       GLbyte *pc)
+ {
+     xGLXChangeDrawableAttributesSGIXReq *req =
+-	(xGLXChangeDrawableAttributesSGIXReq *) req;
++	(xGLXChangeDrawableAttributesSGIXReq *) pc;
+     __GLX_DECLARE_SWAP_VARIABLES;
+     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
+     CARD32 *attribs;
+--
+cgit v0.8.3-6-g21f6
