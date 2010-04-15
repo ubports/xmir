@@ -1,3 +1,20 @@
+xorg-server (2:1.7.6-2ubuntu3) lucid; urgency=low
+
+  * Add several cherrypicks of fixes from upstream git tree which fix various
+    issues and that look safe with low or no risk of regression.
+    + 115_xext_fix_cursor_ref_counting.patch: Xext: Fix cursor reference
+      counting hazard.
+    + 116_fix_typos_in_swap_functions.patch: Fixes typos in several of the
+      glxcmdsswap routines.
+    + 117_fix_crash_with_createglyphset.patch:  Fixes crash introduced in
+      FindGlyphsByHash() if one client disconnects while a second is in
+      the middle of doing certain Glyph operations.
+    + 118_xkb_fix_garbage_init.patch: Fixes typo that can cause garbage
+      bits to get appended on the xkbControlsNotify changedControls mask
+      because it was uninitialized on the stack.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 14 Apr 2010 18:49:56 -0700
+
 xorg-server (2:1.7.6-2ubuntu2) lucid; urgency=low
 
   [Bryce Harrington]

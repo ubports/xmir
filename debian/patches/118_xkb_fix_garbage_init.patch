@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+<title>xorg/xserver - X server</title>
+<meta name='generator' content='cgit v0.8.3.1'/>
+<meta name='robots' content='index, nofollow'/>
+<link rel='stylesheet' type='text/css' href='http://cgit.freedesktop.org/cgit.css'/>
+<link rel='alternate' title='Atom feed' href='http://cgit.freedesktop.org/xorg/xserver/atom/?h=master' type='application/atom+xml'/>
+</head>
+<body>
+<div id='cgit'><table id='header'>
+<tr>
+<td class='logo' rowspan='2'><a href='/'><img src='http://cgit.freedesktop.org/logo.png' alt='cgit logo'/></a></td>
+<td class='main'><a href='/'>index</a> : <a title='xorg/xserver' href='/xorg/xserver/'>xorg/xserver</a></td><td class='form'><form method='get' action=''>
+<input type='hidden' name='id' value='8311cd5f89ca6781842bb24671b8122cdf8be148'/><select name='h' onchange='this.form.submit();'>
+<option value='COMPOSITEWRAP'>COMPOSITEWRAP</option>
+<option value='CYGWIN'>CYGWIN</option>
+<option value='DAMAGE-XFIXES'>DAMAGE-XFIXES</option>
+<option value='Domain-branch'>Domain-branch</option>
+<option value='IPv6-REVIEW'>IPv6-REVIEW</option>
+<option value='STSF-CURRENT'>STSF-CURRENT</option>
+<option value='XACE-SELINUX'>XACE-SELINUX</option>
+<option value='XACE-modular'>XACE-modular</option>
+<option value='XEVIE'>XEVIE</option>
+<option value='XINERAMA_2'>XINERAMA_2</option>
+<option value='XORG-6_8-branch'>XORG-6_8-branch</option>
+<option value='XORG-CURRENT'>XORG-CURRENT</option>
+<option value='XORG-RELEASE-1'>XORG-RELEASE-1</option>
+<option value='XORG-RELEASE-1-STSF'>XORG-RELEASE-1-STSF</option>
+<option value='XORG-RELEASE-1-TM'>XORG-RELEASE-1-TM</option>
+<option value='XORG-STABLE'>XORG-STABLE</option>
+<option value='XPRINT'>XPRINT</option>
+<option value='autoconfig-for-7.2'>autoconfig-for-7.2</option>
+<option value='bcook-backend'>bcook-backend</option>
+<option value='compat_output'>compat_output</option>
+<option value='dmx-2'>dmx-2</option>
+<option value='dri-0-1-branch'>dri-0-1-branch</option>
+<option value='dri2-swapbuffers'>dri2-swapbuffers</option>
+<option value='exa-damagetrack'>exa-damagetrack</option>
+<option value='glucose-2'>glucose-2</option>
+<option value='gsr-current'>gsr-current</option>
+<option value='input-hotplug'>input-hotplug</option>
+<option value='lg3d'>lg3d</option>
+<option value='lg3d-7.2'>lg3d-7.2</option>
+<option value='lg3d-dev'>lg3d-dev</option>
+<option value='lg3d-dev-0-6-1'>lg3d-dev-0-6-1</option>
+<option value='lg3d-dev-0-6-1-1'>lg3d-dev-0-6-1-1</option>
+<option value='lg3d-dev-0-6-1-current'>lg3d-dev-0-6-1-current</option>
+<option value='lg3d-dev-0-6-1-latest'>lg3d-dev-0-6-1-latest</option>
+<option value='lg3d-dev-0-6-2'>lg3d-dev-0-6-2</option>
+<option value='lg3d-dev-0-6-latest'>lg3d-dev-0-6-latest</option>
+<option value='lg3d-dev-0-7-0'>lg3d-dev-0-7-0</option>
+<option value='lg3d-dev-0-7-1'>lg3d-dev-0-7-1</option>
+<option value='lg3d-event'>lg3d-event</option>
+<option value='lg3d-master'>lg3d-master</option>
+<option value='master' selected='selected'>master</option>
+<option value='mpx'>mpx</option>
+<option value='no-pci-rework'>no-pci-rework</option>
+<option value='orib-soc-2006'>orib-soc-2006</option>
+<option value='panning-for-server-1.6'>panning-for-server-1.6</option>
+<option value='pci-rework'>pci-rework</option>
+<option value='randr-1.2'>randr-1.2</option>
+<option value='randr-1.2-for-server-1.2'>randr-1.2-for-server-1.2</option>
+<option value='randr-dpms'>randr-dpms</option>
+<option value='sco_port_update'>sco_port_update</option>
+<option value='server-1.2-branch'>server-1.2-branch</option>
+<option value='server-1.3-branch'>server-1.3-branch</option>
+<option value='server-1.4-branch'>server-1.4-branch</option>
+<option value='server-1.5-branch'>server-1.5-branch</option>
+<option value='server-1.6-branch'>server-1.6-branch</option>
+<option value='server-1.6-enterleave'>server-1.6-enterleave</option>
+<option value='server-1.7-branch'>server-1.7-branch</option>
+<option value='server-1.7-nominations'>server-1.7-nominations</option>
+<option value='server-1.8-branch'>server-1.8-branch</option>
+<option value='server-1_0-branch'>server-1_0-branch</option>
+<option value='server-1_1-branch'>server-1_1-branch</option>
+<option value='transform-proposal'>transform-proposal</option>
+<option value='wonderland-dev'>wonderland-dev</option>
+<option value='xf-4_0_2-branch'>xf-4_0_2-branch</option>
+<option value='xf-4_1-branch'>xf-4_1-branch</option>
+<option value='xf-4_2-branch'>xf-4_2-branch</option>
+<option value='xf-4_3-branch'>xf-4_3-branch</option>
+<option value='xfixes_2_branch'>xfixes_2_branch</option>
+<option value='xgl-0-0-1'>xgl-0-0-1</option>
+<option value='xorg-server-1.2-apple'>xorg-server-1.2-apple</option>
+<option value='xorg-server-1.4-apple'>xorg-server-1.4-apple</option>
+<option value='xorg-server-1.5-apple'>xorg-server-1.5-apple</option>
+<option value='xorg-server-1.6-apple'>xorg-server-1.6-apple</option>
+<option value='xorg-server-1.7-apple'>xorg-server-1.7-apple</option>
+<option value='xquartz-composite'>xquartz-composite</option>
+</select> <input type='submit' name='' value='switch'/></form></td></tr>
+<tr><td class='sub'>X server</td><td class='sub right'>keithp</td></tr></table>
+<table class='tabs'><tr><td>
+<a href='/xorg/xserver/'>summary</a><a href='/xorg/xserver/refs/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>refs</a><a href='/xorg/xserver/log/'>log</a><a href='/xorg/xserver/tree/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>tree</a><a class='active' href='/xorg/xserver/commit/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>commit</a><a href='/xorg/xserver/diff/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>diff</a></td><td class='form'><form class='right' method='get' action='/xorg/xserver/log/'>
+<input type='hidden' name='id' value='8311cd5f89ca6781842bb24671b8122cdf8be148'/><select name='qt'>
+<option value='grep'>log msg</option>
+<option value='author'>author</option>
+<option value='committer'>committer</option>
+</select>
+<input class='txt' type='text' size='10' name='q' value=''/>
+<input type='submit' value='search'/>
+</form>
+</td></tr></table>
+<div class='content'><table summary='commit info' class='commit-info'>
+<tr><th>author</th><td>Jeremy Huddleston &lt;jeremyhu@freedesktop.org&gt;</td><td class='right'>2010-03-23 17:37:36 (GMT)</td></tr>
+<tr><th>committer</th><td> Peter Hutterer &lt;peter.hutterer@who-t.net&gt;</td><td class='right'>2010-03-23 22:07:42 (GMT)</td></tr>
+<tr><th>commit</th><td colspan='2' class='sha1'><a href='/xorg/xserver/commit/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>8311cd5f89ca6781842bb24671b8122cdf8be148</a> (<a href='/xorg/xserver/patch/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>patch</a>)</td></tr>
+<tr><th>tree</th><td colspan='2' class='sha1'><a href='/xorg/xserver/tree/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>1230b138947d2fe6ae49dbc9265cdbfd7200bf5f</a></td></tr>
+<tr><th>parent</th><td colspan='2' class='sha1'><a href='/xorg/xserver/commit/?id=0ecfab89d1754b0b7e32b3964b40663d1810cd62'>0ecfab89d1754b0b7e32b3964b40663d1810cd62</a> (<a href='/xorg/xserver/diff/?id=8311cd5f89ca6781842bb24671b8122cdf8be148&amp;id2=0ecfab89d1754b0b7e32b3964b40663d1810cd62'>diff</a>)</td></tr><tr><th>download</th><td colspan='2' class='sha1'><a href='/xorg/xserver/snapshot/xserver-8311cd5f89ca6781842bb24671b8122cdf8be148.zip'>xserver-8311cd5f89ca6781842bb24671b8122cdf8be148.zip</a><br/><a href='/xorg/xserver/snapshot/xserver-8311cd5f89ca6781842bb24671b8122cdf8be148.tar.gz'>xserver-8311cd5f89ca6781842bb24671b8122cdf8be148.tar.gz</a><br/><a href='/xorg/xserver/snapshot/xserver-8311cd5f89ca6781842bb24671b8122cdf8be148.tar.bz2'>xserver-8311cd5f89ca6781842bb24671b8122cdf8be148.tar.bz2</a><br/></td></tr></table>
+<div class='commit-subject'>XKB: Fix garbage initialization</div><div class='commit-msg'>XkbEnableDisableControls set extra garbage bits on the xkbControlsNotify
+changedControls mask because it was uninitialized on the stack.
+
+Found by clang
+
+Signed-off-by: Jeremy Huddleston &lt;jeremyhu@apple.com&gt;
+Signed-off-by: Peter Hutterer &lt;peter.hutterer@who-t.net&gt;
+</div><div class='diffstat-header'><a href='/xorg/xserver/diff/?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>Diffstat</a></div><table summary='diffstat' class='diffstat'><tr><td class='mode'>-rw-r--r--</td><td class='upd'><a href='/xorg/xserver/diff/xkb/xkbUtils.c?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>xkb/xkbUtils.c</a></td><td class='right'>2</td><td class='graph'><table summary='file diffstat' width='2%'><tr><td class='add' style='width: 50.0%;'/><td class='rem' style='width: 50.0%;'/><td class='none' style='width: 0.0%;'/></tr></table></td></tr>
+</table><div class='diffstat-summary'>1 files changed, 1 insertions, 1 deletions</div><table summary='diff' class='diff'><tr><td><div class='head'>diff --git a/xkb/xkbUtils.c b/xkb/xkbUtils.c<br/>index 5b317c9..e287997 100644<br/>--- a/<a href='/xorg/xserver/tree/xkb/xkbUtils.c?id=0ecfab89d1754b0b7e32b3964b40663d1810cd62'>xkb/xkbUtils.c</a><br/>+++ b/<a href='/xorg/xserver/tree/xkb/xkbUtils.c?id=8311cd5f89ca6781842bb24671b8122cdf8be148'>xkb/xkbUtils.c</a></div><div class='hunk'>@@ -753,7 +753,7 @@ XkbSrvLedInfoPtr	sli;</div><div class='ctx'>     if (cause!=NULL) {</div><div class='ctx'> 	xkbControlsNotify cn;</div><div class='ctx'> 	cn.numGroups= ctrls-&gt;num_groups;</div><div class='del'>-	cn.changedControls|= XkbControlsEnabledMask;</div><div class='add'>+	cn.changedControls= XkbControlsEnabledMask;</div><div class='ctx'> 	cn.enabledControls= ctrls-&gt;enabled_ctrls;</div><div class='ctx'> 	cn.enabledControlChanges= (ctrls-&gt;enabled_ctrls^old);</div><div class='ctx'> 	cn.keycode= cause-&gt;kc;</div></td></tr></table></div> <!-- class=content -->
+<div class='footer'>generated  by cgit v0.8.3.1 at 2010-04-15 01:44:04 (GMT)</div>
+</div> <!-- id=cgit -->
+</body>
+</html>
