@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+<title>xorg/xserver - X server</title>
+<meta name='generator' content='cgit v0.8.3.1'/>
+<meta name='robots' content='index, nofollow'/>
+<link rel='stylesheet' type='text/css' href='http://cgit.freedesktop.org/cgit.css'/>
+<link rel='alternate' title='Atom feed' href='http://cgit.freedesktop.org/xorg/xserver/atom/?h=master' type='application/atom+xml'/>
+</head>
+<body>
+<div id='cgit'><table id='header'>
+<tr>
+<td class='logo' rowspan='2'><a href='/'><img src='http://cgit.freedesktop.org/logo.png' alt='cgit logo'/></a></td>
+<td class='main'><a href='/'>index</a> : <a title='xorg/xserver' href='/xorg/xserver/'>xorg/xserver</a></td><td class='form'><form method='get' action=''>
+<input type='hidden' name='id' value='185185eeb44a277c324be0f58a4b4a469b56b69b'/><select name='h' onchange='this.form.submit();'>
+<option value='COMPOSITEWRAP'>COMPOSITEWRAP</option>
+<option value='CYGWIN'>CYGWIN</option>
+<option value='DAMAGE-XFIXES'>DAMAGE-XFIXES</option>
+<option value='Domain-branch'>Domain-branch</option>
+<option value='IPv6-REVIEW'>IPv6-REVIEW</option>
+<option value='STSF-CURRENT'>STSF-CURRENT</option>
+<option value='XACE-SELINUX'>XACE-SELINUX</option>
+<option value='XACE-modular'>XACE-modular</option>
+<option value='XEVIE'>XEVIE</option>
+<option value='XINERAMA_2'>XINERAMA_2</option>
+<option value='XORG-6_8-branch'>XORG-6_8-branch</option>
+<option value='XORG-CURRENT'>XORG-CURRENT</option>
+<option value='XORG-RELEASE-1'>XORG-RELEASE-1</option>
+<option value='XORG-RELEASE-1-STSF'>XORG-RELEASE-1-STSF</option>
+<option value='XORG-RELEASE-1-TM'>XORG-RELEASE-1-TM</option>
+<option value='XORG-STABLE'>XORG-STABLE</option>
+<option value='XPRINT'>XPRINT</option>
+<option value='autoconfig-for-7.2'>autoconfig-for-7.2</option>
+<option value='bcook-backend'>bcook-backend</option>
+<option value='compat_output'>compat_output</option>
+<option value='dmx-2'>dmx-2</option>
+<option value='dri-0-1-branch'>dri-0-1-branch</option>
+<option value='dri2-swapbuffers'>dri2-swapbuffers</option>
+<option value='exa-damagetrack'>exa-damagetrack</option>
+<option value='glucose-2'>glucose-2</option>
+<option value='gsr-current'>gsr-current</option>
+<option value='input-hotplug'>input-hotplug</option>
+<option value='lg3d'>lg3d</option>
+<option value='lg3d-7.2'>lg3d-7.2</option>
+<option value='lg3d-dev'>lg3d-dev</option>
+<option value='lg3d-dev-0-6-1'>lg3d-dev-0-6-1</option>
+<option value='lg3d-dev-0-6-1-1'>lg3d-dev-0-6-1-1</option>
+<option value='lg3d-dev-0-6-1-current'>lg3d-dev-0-6-1-current</option>
+<option value='lg3d-dev-0-6-1-latest'>lg3d-dev-0-6-1-latest</option>
+<option value='lg3d-dev-0-6-2'>lg3d-dev-0-6-2</option>
+<option value='lg3d-dev-0-6-latest'>lg3d-dev-0-6-latest</option>
+<option value='lg3d-dev-0-7-0'>lg3d-dev-0-7-0</option>
+<option value='lg3d-dev-0-7-1'>lg3d-dev-0-7-1</option>
+<option value='lg3d-event'>lg3d-event</option>
+<option value='lg3d-master'>lg3d-master</option>
+<option value='master' selected='selected'>master</option>
+<option value='mpx'>mpx</option>
+<option value='no-pci-rework'>no-pci-rework</option>
+<option value='orib-soc-2006'>orib-soc-2006</option>
+<option value='panning-for-server-1.6'>panning-for-server-1.6</option>
+<option value='pci-rework'>pci-rework</option>
+<option value='randr-1.2'>randr-1.2</option>
+<option value='randr-1.2-for-server-1.2'>randr-1.2-for-server-1.2</option>
+<option value='randr-dpms'>randr-dpms</option>
+<option value='sco_port_update'>sco_port_update</option>
+<option value='server-1.2-branch'>server-1.2-branch</option>
+<option value='server-1.3-branch'>server-1.3-branch</option>
+<option value='server-1.4-branch'>server-1.4-branch</option>
+<option value='server-1.5-branch'>server-1.5-branch</option>
+<option value='server-1.6-branch'>server-1.6-branch</option>
+<option value='server-1.6-enterleave'>server-1.6-enterleave</option>
+<option value='server-1.7-branch'>server-1.7-branch</option>
+<option value='server-1.7-nominations'>server-1.7-nominations</option>
+<option value='server-1.8-branch'>server-1.8-branch</option>
+<option value='server-1_0-branch'>server-1_0-branch</option>
+<option value='server-1_1-branch'>server-1_1-branch</option>
+<option value='transform-proposal'>transform-proposal</option>
+<option value='wonderland-dev'>wonderland-dev</option>
+<option value='xf-4_0_2-branch'>xf-4_0_2-branch</option>
+<option value='xf-4_1-branch'>xf-4_1-branch</option>
+<option value='xf-4_2-branch'>xf-4_2-branch</option>
+<option value='xf-4_3-branch'>xf-4_3-branch</option>
+<option value='xfixes_2_branch'>xfixes_2_branch</option>
+<option value='xgl-0-0-1'>xgl-0-0-1</option>
+<option value='xorg-server-1.2-apple'>xorg-server-1.2-apple</option>
+<option value='xorg-server-1.4-apple'>xorg-server-1.4-apple</option>
+<option value='xorg-server-1.5-apple'>xorg-server-1.5-apple</option>
+<option value='xorg-server-1.6-apple'>xorg-server-1.6-apple</option>
+<option value='xorg-server-1.7-apple'>xorg-server-1.7-apple</option>
+<option value='xquartz-composite'>xquartz-composite</option>
+</select> <input type='submit' name='' value='switch'/></form></td></tr>
+<tr><td class='sub'>X server</td><td class='sub right'>keithp</td></tr></table>
+<table class='tabs'><tr><td>
+<a href='/xorg/xserver/'>summary</a><a href='/xorg/xserver/refs/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>refs</a><a href='/xorg/xserver/log/'>log</a><a href='/xorg/xserver/tree/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>tree</a><a class='active' href='/xorg/xserver/commit/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>commit</a><a href='/xorg/xserver/diff/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>diff</a></td><td class='form'><form class='right' method='get' action='/xorg/xserver/log/'>
+<input type='hidden' name='id' value='185185eeb44a277c324be0f58a4b4a469b56b69b'/><select name='qt'>
+<option value='grep'>log msg</option>
+<option value='author'>author</option>
+<option value='committer'>committer</option>
+</select>
+<input class='txt' type='text' size='10' name='q' value=''/>
+<input type='submit' value='search'/>
+</form>
+</td></tr></table>
+<div class='content'><table summary='commit info' class='commit-info'>
+<tr><th>author</th><td>Peter Harris &lt;pharris@opentext.com&gt;</td><td class='right'>2010-03-23 16:08:19 (GMT)</td></tr>
+<tr><th>committer</th><td> Keith Packard &lt;keithp@keithp.com&gt;</td><td class='right'>2010-03-24 12:02:13 (GMT)</td></tr>
+<tr><th>commit</th><td colspan='2' class='sha1'><a href='/xorg/xserver/commit/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>185185eeb44a277c324be0f58a4b4a469b56b69b</a> (<a href='/xorg/xserver/patch/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>patch</a>)</td></tr>
+<tr><th>tree</th><td colspan='2' class='sha1'><a href='/xorg/xserver/tree/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>774a83bcb7e620d423c0b781cf183e75e377bcea</a></td></tr>
+<tr><th>parent</th><td colspan='2' class='sha1'><a href='/xorg/xserver/commit/?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9</a> (<a href='/xorg/xserver/diff/?id=185185eeb44a277c324be0f58a4b4a469b56b69b&amp;id2=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>diff</a>)</td></tr><tr><th>download</th><td colspan='2' class='sha1'><a href='/xorg/xserver/snapshot/xserver-185185eeb44a277c324be0f58a4b4a469b56b69b.zip'>xserver-185185eeb44a277c324be0f58a4b4a469b56b69b.zip</a><br/><a href='/xorg/xserver/snapshot/xserver-185185eeb44a277c324be0f58a4b4a469b56b69b.tar.gz'>xserver-185185eeb44a277c324be0f58a4b4a469b56b69b.tar.gz</a><br/><a href='/xorg/xserver/snapshot/xserver-185185eeb44a277c324be0f58a4b4a469b56b69b.tar.bz2'>xserver-185185eeb44a277c324be0f58a4b4a469b56b69b.tar.bz2</a><br/></td></tr></table>
+<div class='commit-subject'>Fix crash when all glyphs of a given depth are freed, but not all glyphsets</div><div class='commit-msg'>This is how the crash can be triggered with only two clients on the system:
+Client A: (already running)
+Client B: Connect
+Client B: CreateGlyphSet(depthN)
+Client A: Disconnect
+Server: free globalGlyphs(depthN)
+Client B: AddGlyphs(depthN)
+Server: SEGV
+
+This crash was introduced with the FindGlyphsByHash function
+in 516b96387b0e57b524a37a96da22dbeeeb041712. Before that revision,
+ResizeGlyphSet was always called before FindGlyphRef, which would
+re-create globalGlyphs(depthN) if necessary.
+
+X.Org Bug 20718 &lt;http://bugs.freedesktop.org/show_bug.cgi?id=20718&gt;
+
+Reviewed-by: Adam Jackson &lt;ajax@redhat.com&gt;
+Signed-off-by: Peter Harris &lt;pharris@opentext.com&gt;
+Signed-off-by: Keith Packard &lt;keithp@keithp.com&gt;
+</div><div class='diffstat-header'><a href='/xorg/xserver/diff/?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>Diffstat</a></div><table summary='diffstat' class='diffstat'><tr><td class='mode'>-rw-r--r--</td><td class='upd'><a href='/xorg/xserver/diff/render/glyph.c?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>render/glyph.c</a></td><td class='right'>3</td><td class='graph'><table summary='file diffstat' width='3%'><tr><td class='add' style='width: 100.0%;'/><td class='rem' style='width: 0.0%;'/><td class='none' style='width: 0.0%;'/></tr></table></td></tr>
+</table><div class='diffstat-summary'>1 files changed, 3 insertions, 0 deletions</div><table summary='diff' class='diff'><tr><td><div class='head'>diff --git a/render/glyph.c b/render/glyph.c<br/>index 0b864ad..f0f3b19 100644<br/>--- a/<a href='/xorg/xserver/tree/render/glyph.c?id=0c2fde5c8ad6e94b4ed1588aa93256a2b64f74d9'>render/glyph.c</a><br/>+++ b/<a href='/xorg/xserver/tree/render/glyph.c?id=185185eeb44a277c324be0f58a4b4a469b56b69b'>render/glyph.c</a></div><div class='hunk'>@@ -217,6 +217,9 @@ FindGlyphByHash (unsigned char sha1[20], int format)</div><div class='ctx'>     GlyphRefPtr gr;</div><div class='ctx'>     CARD32 signature = *(CARD32 *) sha1;</div><div class='ctx'> </div><div class='add'>+    if (!globalGlyphs[format].hashSet)</div><div class='add'>+	return NULL;</div><div class='add'>+</div><div class='ctx'>     gr = FindGlyphRef (&amp;globalGlyphs[format],</div><div class='ctx'> 		       signature, TRUE, sha1);</div><div class='ctx'> </div></td></tr></table></div> <!-- class=content -->
+<div class='footer'>generated  by cgit v0.8.3.1 at 2010-04-15 01:43:53 (GMT)</div>
+</div> <!-- id=cgit -->
+</body>
+</html>
