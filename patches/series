@@ -29,7 +29,6 @@
 114_dri2_make_sure_x_drawable_exists.patch
 115_xext_fix_cursor_ref_counting.patch
 116_fix_typos_in_swap_functions.patch
-117_fix_crash_with_createglyphset.patch
 118_xkb_fix_garbage_init.patch
 121_only_switch_vt_when_active.diff
 122_xext_fix_card32_overflow_in_xauth.patch
