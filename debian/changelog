@@ -1,4 +1,4 @@
-xorg-server (2:1.7.6-2ubuntu7) UNRELEASED; urgency=low
+xorg-server (2:1.7.6-2ubuntu7) lucid; urgency=low
 
   * Drop 117_fix_crash_with_createglyphset.patch
     - Dupe of patch 110
@@ -15,7 +15,7 @@ xorg-server (2:1.7.6-2ubuntu7) UNRELEASED; urgency=low
       Clutter crash, but which introduced a memory leak.
       (Fixes #565981)    
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 22 Apr 2010 16:59:00 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 22 Apr 2010 17:24:38 -0700
 
 xorg-server (2:1.7.6-2ubuntu6) lucid; urgency=low
 
