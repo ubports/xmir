@@ -1,8 +1,21 @@
 xorg-server (2:1.7.6-2ubuntu7) UNRELEASED; urgency=low
 
-  * Drop 117_fix_crash_with_createglyphset.patch - dupe of patch 110
+  * Drop 117_fix_crash_with_createglyphset.patch
+    - Dupe of patch 110
+  * Drop 03_fedora_glx_versioning.diff, 04_fedora_glx14-swrast.diff
+    - These patches were brought in by Debian to provide glx 1.4 support
+      which Fedora backported from xserver 1.8, however testing in 
+      Ubuntu showed they caused a crash when closing Clutter apps (#550218),
+      and graphics corruption when opening windows.  Dropping these patches
+      returns us to GLX 1.2, which has been found to be stable; Debian has
+      also dropped these two patches.
+      (Fixes #565903).
+  * Drop 114_dri2_make_sure_x_drawable_exists.patch
+    - This was an early attempt by upstream which fixed the aforementioned
+      Clutter crash, but which introduced a memory leak.
+      (Fixes #565981)    
 
- -- Bryce Harrington <bryce@ubuntu.com>  Fri, 16 Apr 2010 09:34:39 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 22 Apr 2010 16:59:00 -0700
 
 xorg-server (2:1.7.6-2ubuntu6) lucid; urgency=low
 
