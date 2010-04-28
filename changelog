@@ -5,8 +5,12 @@ xorg-server (2:1.7.6-2ubuntu8) lucid; urgency=low
     segfault in miCopyRegion which occurs while using firefox (e.g. typing
     into fields in AOL).  Issue found by Jerry Lamos.
     (LP: #539772)
+  * Add 19-exa-handle-pixmap-create-destroy-in-lower-layers.diff: Patch
+    from Debian to fix X segfault on mouse click in xfig, when pixmaps
+    are created in the course of software fallbacks.
+    (LP: #553647)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 28 Apr 2010 12:20:10 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 28 Apr 2010 12:46:35 -0700
 
 xorg-server (2:1.7.6-2ubuntu7) lucid; urgency=low
 
