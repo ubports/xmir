@@ -49,3 +49,4 @@
 198_nohwaccess.patch
 199_xfvb-help-typo.patch
 200_randr-null.patch
+123_exa_sys_ptr_nullpointer_check.patch
