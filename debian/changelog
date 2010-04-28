@@ -1,4 +1,4 @@
-xorg-server (2:1.7.6-2ubuntu8) lucid; urgency=low
+xorg-server (2:1.7.6-2ubuntu8) lucid-updates; urgency=low
 
   [Bryce Harrington]
   * Add 123_exa_sys_ptr_nullpointer_check.patch: Patch from upstream to
