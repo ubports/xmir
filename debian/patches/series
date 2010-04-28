@@ -14,6 +14,7 @@
 13-unbreak-input-abi.diff
 14-tone-down-nidr-errors.diff
 15-keep-udev-x11-driver.diff
+19-exa-handle-pixmap-create-destroy-in-lower-layers.diff
 100_rethrow_signals.patch
 #104_nvidia_autodetect.patch
 #105_fglrx_autodetect.patch
@@ -28,6 +29,7 @@
 118_xkb_fix_garbage_init.patch
 121_only_switch_vt_when_active.diff
 122_xext_fix_card32_overflow_in_xauth.patch
+123_exa_sys_ptr_nullpointer_check.patch
 #143_default_to_vesa.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
@@ -49,4 +51,3 @@
 198_nohwaccess.patch
 199_xfvb-help-typo.patch
 200_randr-null.patch
-123_exa_sys_ptr_nullpointer_check.patch
