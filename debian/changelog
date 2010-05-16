@@ -30,8 +30,6 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
         172_cwgetbackingpicture_nullptr_check.patch:
         Fix various segfaults in xserver by checking pointers for NULL
         values before dereferencing them.
-      + 164_trap-aspect-ratios.patch:
-        Correct monitor EDIDs that have misreported aspect ratios.
       + 165_man_xorg_conf_no_device_ident.patch
         Correct man page
       + 168_glibc_trace_to_stderr.patch:
