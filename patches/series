@@ -17,7 +17,6 @@
 #143_default_to_vesa.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
-164_trap-aspect-ratios.patch
 165_man_xorg_conf_no_device_ident.patch
 166_nullptr_xinerama_keyrepeat.patch
 167_nullptr_xisbread.patch
