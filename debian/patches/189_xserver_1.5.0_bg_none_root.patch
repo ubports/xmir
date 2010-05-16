@@ -12,11 +12,9 @@ Subject: [PATCH] Add nr for background=none root
  os/utils.c                   |    3 +++
  6 files changed, 27 insertions(+), 6 deletions(-)
 
-Index: xorg-server/dix/globals.c
-===================================================================
---- xorg-server.orig/dix/globals.c	2009-12-02 19:30:15.000000000 +0200
-+++ xorg-server/dix/globals.c	2009-12-02 23:47:12.000000000 +0200
-@@ -124,6 +124,7 @@
+--- a/dix/globals.c
++++ b/dix/globals.c
+@@ -124,6 +124,7 @@ FontPtr defaultFont;   /* not declared i
  CursorPtr rootCursor;
  Bool party_like_its_1989 = FALSE;
  Bool whiteRoot = FALSE;
@@ -24,11 +22,9 @@ Index: xorg-server/dix/globals.c
  
  int cursorScreenDevPriv[MAXSCREENS];
  
-Index: xorg-server/dix/window.c
-===================================================================
---- xorg-server.orig/dix/window.c	2009-12-02 19:30:15.000000000 +0200
-+++ xorg-server/dix/window.c	2009-12-02 23:47:12.000000000 +0200
-@@ -466,22 +466,24 @@
+--- a/dix/window.c
++++ b/dix/window.c
+@@ -466,22 +466,24 @@ InitRootWindow(WindowPtr pWin)
      pWin->optional->cursor = rootCursor;
      rootCursor->refcnt++;
  
@@ -58,10 +54,8 @@ Index: xorg-server/dix/window.c
  
      MapWindow(pWin, serverClient);
  }
-Index: xorg-server/hw/xfree86/common/xf86Init.c
-===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86Init.c	2009-12-02 19:30:15.000000000 +0200
-+++ xorg-server/hw/xfree86/common/xf86Init.c	2009-12-02 23:47:12.000000000 +0200
+--- a/hw/xfree86/common/xf86Init.c
++++ b/hw/xfree86/common/xf86Init.c
 @@ -77,6 +77,7 @@
  #ifdef RENDER
  #include "picturestr.h"
@@ -70,7 +64,7 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
  
  #include "xf86VGAarbiter.h"
  #include "globals.h"
-@@ -249,6 +250,7 @@
+@@ -256,6 +257,7 @@ xf86CreateRootWindow(WindowPtr pWin)
    int ret = TRUE;
    int err = Success;
    ScreenPtr pScreen = pWin->drawable.pScreen;
@@ -78,7 +72,7 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
    RootWinPropPtr pProp;
    CreateWindowProcPtr CreateWindow = (CreateWindowProcPtr)
        dixLookupPrivate(&pScreen->devPrivates, xf86CreateRootWindowKey);
-@@ -300,6 +302,15 @@
+@@ -307,6 +309,15 @@ xf86CreateRootWindow(WindowPtr pWin)
      }
    }
  
@@ -94,11 +88,9 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
    DebugF("xf86CreateRootWindow() returns %d\n", ret);
    return (ret);
  }
-Index: xorg-server/hw/xfree86/common/xf86str.h
-===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86str.h	2009-12-02 19:30:15.000000000 +0200
-+++ xorg-server/hw/xfree86/common/xf86str.h	2009-12-02 23:47:12.000000000 +0200
-@@ -516,7 +516,7 @@
+--- a/hw/xfree86/common/xf86str.h
++++ b/hw/xfree86/common/xf86str.h
+@@ -503,7 +503,7 @@ typedef struct _confdrirec {
  } confDRIRec, *confDRIPtr;
  
  /* These values should be adjusted when new fields are added to ScrnInfoRec */
@@ -107,8 +99,8 @@ Index: xorg-server/hw/xfree86/common/xf86str.h
  #define NUM_RESERVED_POINTERS		14
  #define NUM_RESERVED_FUNCS		11
  
-@@ -788,6 +788,9 @@
-     ClockRangesPtr	clockRanges;
+@@ -775,6 +775,9 @@ typedef struct _ScrnInfoRec {
+     ClockRangePtr	clockRanges;
      int			adjustFlags;
  
 +    /* -nr support */
@@ -117,11 +109,9 @@ Index: xorg-server/hw/xfree86/common/xf86str.h
      /*
       * These can be used when the minor ABI version is incremented.
       * The NUM_* parameters must be reduced appropriately to keep the
-Index: xorg-server/include/opaque.h
-===================================================================
---- xorg-server.orig/include/opaque.h	2009-12-02 19:30:16.000000000 +0200
-+++ xorg-server/include/opaque.h	2009-12-02 23:47:12.000000000 +0200
-@@ -71,6 +71,7 @@
+--- a/include/opaque.h
++++ b/include/opaque.h
+@@ -71,6 +71,7 @@ extern _X_EXPORT Bool defeatAccessContro
  extern _X_EXPORT long maxBigRequestSize;
  extern _X_EXPORT Bool party_like_its_1989;
  extern _X_EXPORT Bool whiteRoot;
@@ -129,11 +119,9 @@ Index: xorg-server/include/opaque.h
  
  extern _X_EXPORT Bool CoreDump;
  
-Index: xorg-server/os/utils.c
-===================================================================
---- xorg-server.orig/os/utils.c	2009-12-02 19:30:16.000000000 +0200
-+++ xorg-server/os/utils.c	2009-12-02 23:47:12.000000000 +0200
-@@ -513,6 +513,7 @@
+--- a/os/utils.c
++++ b/os/utils.c
+@@ -511,6 +511,7 @@ void UseMsg(void)
  #endif
      ErrorF("-nolisten string       don't listen on protocol\n");
      ErrorF("-noreset               don't reset after last client exists\n");
@@ -141,7 +129,7 @@ Index: xorg-server/os/utils.c
      ErrorF("-reset                 reset after last client exists\n");
      ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
      ErrorF("-pn                    accept failure to listen on all ports\n");
-@@ -856,6 +857,8 @@
+@@ -852,6 +853,8 @@ ProcessCommandLine(int argc, char *argv[
  	    defaultBackingStore = WhenMapped;
          else if ( strcmp( argv[i], "-wr") == 0)
              whiteRoot = TRUE;

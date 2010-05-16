@@ -42,6 +42,8 @@
 #define GL_GLEXT_WUNDEF_SUPPORT
 
 #include <OpenGL/OpenGL.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
 #include <OpenGL/CGLContext.h>
 
 /* These next few GL_EXT pre-processing blocks are to explicitly define 
@@ -120,7 +122,7 @@
 /* Tiger PPC doesn't have the associated symbols, but glext.h says it does.  Liars!
  * http://trac.macports.org/ticket/20638
  */
-#if defined(__ppc__) && MAC_OS_X_VERSION_MIN_REQUIRED == 1040
+#if defined(__ppc__) && MAC_OS_X_VERSION_MIN_REQUIRED < 1050
 #undef GL_EXT_gpu_program_parameters
 #define GL_EXT_gpu_program_parameters 0
 #endif
@@ -471,7 +473,7 @@ static int __glXAquaContextForceCurrent(__GLXcontext *baseContext)
 }
 
 /* Drawing surface notification callbacks */
-static GLboolean __glXAquaDrawableSwapBuffers(__GLXdrawable *base) {
+static GLboolean __glXAquaDrawableSwapBuffers(ClientPtr client, __GLXdrawable *base) {
     CGLError err;
     __GLXAquaDrawable *drawable;
  
@@ -548,7 +550,7 @@ static CGLPixelFormatObj makeFormat(__GLXconfig *conf) {
        attr[i++] = conf->samples;
     }
      
-    attr[i + 1] = 0;
+    attr[i] = 0;
 
     error = CGLChoosePixelFormat(attr, &fobj, &formats);
     if(error) {

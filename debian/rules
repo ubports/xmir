@@ -20,7 +20,7 @@ ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 	MAKEFLAGS += -j$(NUMJOBS)
 endif
 
-#CPPFLAGS += -DPRE_RELEASE=0
+CPPFLAGS += -DPRE_RELEASE=0
 
 DEB_HOST_ARCH      ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
@@ -32,9 +32,17 @@ else
 	confflags += --build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
 endif
 
+# udeb is arch-dependent...
 ifneq (, $(filter %-udeb, $(shell dh_listpackages -s)))
 	udeb = yes
 endif
+
+# ...but let's support disabling it to speed up debug builds:
+ifneq (,$(filter noudeb,$(DEB_BUILD_OPTIONS)))
+	udeb =
+	DH_INSTALL_OPTIONS = -Nxserver-xorg-core-udeb
+endif
+
 
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	build_xfbdev = --enable-xfbdev
@@ -76,7 +84,7 @@ BUILDER=$(shell dpkg-parsechangelog | awk -F': ' '/^Maintainer: / {print $$2}')
 confflags += \
 	     --disable-static \
 	     --without-dtrace \
-	     --disable-werror \
+	     --disable-strict-compilation \
 	     --disable-debug \
 	     $(config_tests) \
 	     --with-int10=x86emu \
@@ -87,7 +95,6 @@ confflags += \
 	     --with-xkb-output=/var/lib/xkb \
 	     --disable-builddocs \
 	     --disable-install-libxf86config \
-	     --disable-null-root-cursor \
 	     --enable-mitshm \
 	     --enable-xres \
 	     --enable-xcsecurity \
@@ -101,7 +108,6 @@ confflags += \
 	     --enable-xorg \
 	     --disable-xquartz \
 	     --disable-xwin \
-	     --disable-xsdl \
 	     --disable-xfake \
 	     --disable-install-setuid
 
@@ -161,7 +167,7 @@ confflags_udeb = \
 	--disable-kdrive \
 	--disable-xephyr \
 	--disable-xfbdev \
-	--with-sha1=libnettle \
+	--with-sha1=nettle \
 	$(void)
 
 $(STAMP_DIR)/autoreconf: $(STAMP_DIR)/patch
@@ -242,6 +248,14 @@ endif
 	
 	install -m 755 debian/local/xvfb-run debian/tmp/main/usr/bin
 	install debian/local/xvfb-run.1 debian/tmp/main/usr/share/man/man1
+ifneq ($(DEB_HOST_ARCH_OS), linux)
+	install -d debian/tmp/main/usr/share/X11/xorg.conf.d
+	install -m 644 debian/local/10-*.conf debian/tmp/main/usr/share/X11/xorg.conf.d
+ifeq ($(udeb), yes)
+	install -d debian/tmp/udeb/usr/share/X11/xorg.conf.d
+	install -m 644 debian/local/10-*.conf debian/tmp/udeb/usr/share/X11/xorg.conf.d
+endif
+endif
 
 # stub to start building deb files, used by binary-indep and binary-arch
 binary-initial:
@@ -249,7 +263,6 @@ binary-initial:
 	dh_testroot
 
 # stub to build deb files, used by binary-indep and binary-arch
-# (cf. /usr/share/debhelper/dh_make/debianm/rules)
 binary-deb:
 	dh_compress
 	dh_fixperms
@@ -259,14 +272,24 @@ binary-deb:
 	dh_md5sums
 	dh_builddeb
 
+serverminver = $(shell cat debian/serverminver)
+
 # Build architecture-dependent files here.
 binary-arch: build install
 	$(MAKE) -f debian/rules DH_OPTIONS=-s binary-initial
 	
 	dh_installdocs -s
 	dh_installchangelogs -s ChangeLog
-	dh_install -s --sourcedir=debian/tmp --list-missing
+	dh_install $(DH_INSTALL_OPTIONS) -s --sourcedir=debian/tmp --list-missing
 	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg
+	# XXX might want to only extract the major ABI versions?
+	abi_videodrv=`PKG_CONFIG_PATH=debian/tmp/main/usr/lib/pkgconfig pkg-config --variable=abi_videodrv xorg-server`; \
+	echo videoabi=xorg-video-abi-$$abi_videodrv > debian/xserver-xorg-core.substvars && \
+	echo "xorg-video-abi-$$abi_videodrv, xserver-xorg-core (>= $(serverminver))" > debian/xserver-xorg-dev/usr/share/xserver-xorg/videodrvdep
+	abi_xinput=`PKG_CONFIG_PATH=debian/tmp/main/usr/lib/pkgconfig pkg-config --variable=abi_xinput xorg-server`; \
+	echo inputabi=xorg-input-abi-$$abi_xinput >> debian/xserver-xorg-core.substvars && \
+	echo "xorg-input-abi-$$abi_xinput, xserver-xorg-core (>= $(serverminver))" > debian/xserver-xorg-dev/usr/share/xserver-xorg/xinputdep
+
 	$(INSTALL) -m644 $(CURDIR)/debian/videoabiver \
 	           $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg/videoabiver
 	$(INSTALL) -m644 $(CURDIR)/debian/inputabiver \
@@ -275,7 +298,6 @@ binary-arch: build install
 	           $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg/serverminver
 	$(INSTALL) -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
 	$(INSTALL) -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
-
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/xserver-xorg-core/lib/udev/rules.d
 	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d

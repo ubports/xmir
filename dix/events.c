@@ -738,7 +738,11 @@ CheckPhysLimits(
 	    new.y = pSprite->physLimits.y2 - 1;
     if (pSprite->hotShape)
 	ConfineToShape(pDev, pSprite->hotShape, &new.x, &new.y);
-    if ((pScreen != pSprite->hotPhys.pScreen) ||
+    if ((
+#ifdef PANORAMIX
+            noPanoramiXExtension &&
+#endif
+            (pScreen != pSprite->hotPhys.pScreen)) ||
 	(new.x != pSprite->hotPhys.x) || (new.y != pSprite->hotPhys.y))
     {
 #ifdef PANORAMIX
@@ -1420,7 +1424,7 @@ static DevPrivateKey GrabPrivateKey = &GrabPrivateKeyIndex;
 static void
 DetachFromMaster(DeviceIntPtr dev)
 {
-    int id;
+    intptr_t id;
     if (!dev->u.master)
         return;
 
@@ -1442,7 +1446,7 @@ ReattachToOldMaster(DeviceIntPtr dev)
 
 
     p = dixLookupPrivate(&dev->devPrivates, GrabPrivateKey);
-    id = (int)p; /* silence gcc warnings */
+    id = (intptr_t) p; /* silence gcc warnings */
     dixLookupDevice(&master, id, serverClient, DixUseAccess);
 
     if (master)
@@ -3552,6 +3556,8 @@ CheckPassiveGrabsOnWindow(
                 xE = &core;
                 count = 1;
                 mask = grab->eventMask;
+                if (grab->ownerEvents)
+                    mask |= pWin->eventMask;
             } else if (match & XI2_MATCH)
             {
                 rc = EventToXI2((InternalEvent*)event, &xE);
@@ -3573,6 +3579,24 @@ CheckPassiveGrabsOnWindow(
                     mask = grab->xi2mask[device->id][((xGenericEvent*)xE)->evtype/8];
                 else if (event->type == XI_Enter || event->type == XI_FocusIn)
                     mask = grab->xi2mask[device->id][event->type/8];
+
+                if (grab->ownerEvents && wOtherInputMasks(grab->window))
+                {
+                    InputClientsPtr icp =
+                        wOtherInputMasks(grab->window)->inputClients;
+
+                    while(icp)
+                    {
+                        if (rClient(icp) == rClient(grab))
+                        {
+                            int evtype = (xE) ? ((xGenericEvent*)xE)->evtype : event->type;
+                            mask |= icp->xi2mask[device->id][evtype/8];
+                            break;
+                        }
+
+                        icp = icp->next;
+                    }
+                }
             } else
             {
                 rc = EventToXI((InternalEvent*)event, &xE, &count);
@@ -3584,6 +3608,22 @@ CheckPassiveGrabsOnWindow(
                     continue;
                 }
                 mask = grab->eventMask;
+                if (grab->ownerEvents && wOtherInputMasks(grab->window))
+                {
+                    InputClientsPtr icp =
+                        wOtherInputMasks(grab->window)->inputClients;
+
+                    while(icp)
+                    {
+                        if (rClient(icp) == rClient(grab))
+                        {
+                            mask |= icp->mask[device->id];
+                            break;
+                        }
+
+                        icp = icp->next;
+                    }
+                }
             }
 
 	    (*grabinfo->ActivateGrab)(device, grab, currentTime, TRUE);
@@ -3940,7 +3980,7 @@ DeliverGrabbedEvent(InternalEvent *event, DeviceIntPtr thisDev,
 		FreezeThaw(dev, TRUE);
 		if ((dev->deviceGrab.sync.state == FREEZE_BOTH_NEXT_EVENT) &&
 		    (CLIENT_BITS(grab->resource) ==
-		     CLIENT_BITS(dev->deviceGrab.sync.other->resource)))
+		     CLIENT_BITS(dev->deviceGrab.grab->resource)))
 		    dev->deviceGrab.sync.state = FROZEN_NO_EVENT;
 		else
                     dev->deviceGrab.sync.other = grab;

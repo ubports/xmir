@@ -1,8 +1,6 @@
-Index: xorg-server-1.7.3.902/hw/dmx/dmxinit.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/dmx/dmxinit.c	2009-12-25 15:28:41.000000000 -0800
-+++ xorg-server-1.7.3.902/hw/dmx/dmxinit.c	2010-02-03 17:29:02.000000000 -0800
-@@ -834,7 +834,7 @@
+--- a/hw/dmx/dmxinit.c
++++ b/hw/dmx/dmxinit.c
+@@ -834,7 +834,7 @@ static void dmxSetDefaultFontPath(char *
  /** This function is called in Xserver/os/utils.c from \a AbortServer().
   * We must ensure that backend and console state is restored in the
   * event the server shutdown wasn't clean. */
@@ -11,9 +9,9 @@ Index: xorg-server-1.7.3.902/hw/dmx/dmxinit.c
  {
      int i;
  
-@@ -846,6 +846,11 @@
-     }
+@@ -852,6 +852,11 @@ void ddxBeforeReset(void)
  }
+ #endif
  
 +void AbortDDX(void)
 +{
@@ -23,11 +21,9 @@ Index: xorg-server-1.7.3.902/hw/dmx/dmxinit.c
  /** This function is called in Xserver/dix/main.c from \a main() when
   * dispatchException & DE_TERMINATE (which is the only way to exit the
   * main loop without an interruption. */
-Index: xorg-server-1.7.3.902/hw/kdrive/src/kdrive.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/kdrive/src/kdrive.c	2009-10-27 23:56:21.000000000 -0700
-+++ xorg-server-1.7.3.902/hw/kdrive/src/kdrive.c	2010-02-03 17:29:02.000000000 -0800
-@@ -322,7 +322,7 @@
+--- a/hw/kdrive/src/kdrive.c
++++ b/hw/kdrive/src/kdrive.c
+@@ -322,7 +322,7 @@ KdProcessSwitch (void)
  }
  
  void
@@ -36,7 +32,7 @@ Index: xorg-server-1.7.3.902/hw/kdrive/src/kdrive.c
  {
      KdDisableScreens ();
      if (kdOsFuncs)
-@@ -339,6 +339,12 @@
+@@ -339,6 +339,12 @@ AbortDDX(void)
  }
  
  void
@@ -49,11 +45,9 @@ Index: xorg-server-1.7.3.902/hw/kdrive/src/kdrive.c
  ddxGiveUp (void)
  {
      AbortDDX ();
-Index: xorg-server-1.7.3.902/hw/vfb/InitOutput.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/vfb/InitOutput.c	2009-10-27 23:56:21.000000000 -0700
-+++ xorg-server-1.7.3.902/hw/vfb/InitOutput.c	2010-02-03 17:29:02.000000000 -0800
-@@ -214,11 +214,17 @@
+--- a/hw/vfb/InitOutput.c
++++ b/hw/vfb/InitOutput.c
+@@ -214,11 +214,17 @@ ddxGiveUp(void)
  }
  
  void
@@ -72,11 +66,9 @@ Index: xorg-server-1.7.3.902/hw/vfb/InitOutput.c
  #ifdef __APPLE__
  void
  DarwinHandleGUI(int argc, char *argv[])
-Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Events.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/xfree86/common/xf86Events.c	2009-11-29 21:42:31.000000000 -0800
-+++ xorg-server-1.7.3.902/hw/xfree86/common/xf86Events.c	2010-02-03 17:29:02.000000000 -0800
-@@ -355,6 +355,8 @@
+--- a/hw/xfree86/common/xf86Events.c
++++ b/hw/xfree86/common/xf86Events.c
+@@ -348,6 +348,8 @@ xf86InterceptSigIll(void (*sigillhandler
  int
  xf86SigWrapper(int signo)
  {
@@ -85,11 +77,9 @@ Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Events.c
    if ((signo == SIGILL) && xf86SigIllHandler) {
      (*xf86SigIllHandler)();
      return 0; /* continue */
-Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/xfree86/common/xf86Init.c	2009-12-25 15:28:41.000000000 -0800
-+++ xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c	2010-02-03 17:29:02.000000000 -0800
-@@ -1174,14 +1174,17 @@
+--- a/hw/xfree86/common/xf86Init.c
++++ b/hw/xfree86/common/xf86Init.c
+@@ -1197,14 +1197,17 @@ OsVendorInit(void)
  }
  
  /*
@@ -109,21 +99,21 @@ Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c
  {
      int i;
  
-@@ -1207,24 +1210,45 @@
- 
-     xf86CloseConsole();
+@@ -1231,24 +1234,45 @@ ddxGiveUp(void)
+     if (xorgHWOpenConsole)
+ 	xf86CloseConsole();
  
 +    ErrorF (" ddxSigGiveUp: Closing log\n");
      xf86CloseLog();
  
      /* If an unexpected signal was caught, dump a core for debugging */
 -    if (xf86Info.caughtSignal)
--	abort();
+-	OsAbort();
 +    if (xf86Info.caughtSignal) {
 +        if (signo != 0) {
 +            raise(signo);
 +        } else {
-+            abort();
++            OsAbort();
 +        }
 +    }
  }
@@ -159,7 +149,7 @@ Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c
  {
    int i;
  
-@@ -1255,7 +1279,20 @@
+@@ -1281,7 +1305,20 @@ AbortDDX(void)
     * This is needed for an abnormal server exit, since the normal exit stuff
     * MUST also be performed (i.e. the vt must be left in a defined state)
     */
@@ -181,11 +171,9 @@ Index: xorg-server-1.7.3.902/hw/xfree86/common/xf86Init.c
  }
  
  void
-Index: xorg-server-1.7.3.902/hw/xnest/Init.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/xnest/Init.c	2009-10-27 23:56:22.000000000 -0700
-+++ xorg-server-1.7.3.902/hw/xnest/Init.c	2010-02-03 17:29:02.000000000 -0800
-@@ -112,12 +112,17 @@
+--- a/hw/xnest/Init.c
++++ b/hw/xnest/Init.c
+@@ -117,12 +117,17 @@ CloseInput(void)
  /*
   * DDX - specific abort routine.  Called by AbortServer().
   */
@@ -204,11 +192,9 @@ Index: xorg-server-1.7.3.902/hw/xnest/Init.c
  /* Called by GiveUp(). */
  void ddxGiveUp(void)
  {
-Index: xorg-server-1.7.3.902/hw/xquartz/darwin.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/xquartz/darwin.c	2009-10-27 23:56:22.000000000 -0700
-+++ xorg-server-1.7.3.902/hw/xquartz/darwin.c	2010-02-03 17:29:02.000000000 -0800
-@@ -798,12 +798,12 @@
+--- a/hw/xquartz/darwin.c
++++ b/hw/xquartz/darwin.c
+@@ -765,17 +765,22 @@ void ddxGiveUp( void )
  
  
  /*
@@ -222,9 +208,7 @@ Index: xorg-server-1.7.3.902/hw/xquartz/darwin.c
 +void SigAbortDDX( void )
  {
      ErrorF( "   AbortDDX\n" );
-     /*
-@@ -813,6 +813,11 @@
-     ddxGiveUp();
+     OsAbort();
  }
  
 +void AbortDDX( void )
@@ -235,11 +219,9 @@ Index: xorg-server-1.7.3.902/hw/xquartz/darwin.c
  #include "mivalidate.h" // for union _Validate used by windowstr.h
  #include "windowstr.h"  // for struct _Window
  #include "scrnintstr.h" // for struct _Screen
-Index: xorg-server-1.7.3.902/hw/xwin/InitOutput.c
-===================================================================
---- xorg-server-1.7.3.902.orig/hw/xwin/InitOutput.c	2009-12-25 15:28:42.000000000 -0800
-+++ xorg-server-1.7.3.902/hw/xwin/InitOutput.c	2010-02-03 17:29:02.000000000 -0800
-@@ -283,7 +283,7 @@
+--- a/hw/xwin/InitOutput.c
++++ b/hw/xwin/InitOutput.c
+@@ -286,7 +286,7 @@ ddxGiveUp (void)
  
  /* See Porting Layer Definition - p. 57 */
  void
@@ -248,7 +230,7 @@ Index: xorg-server-1.7.3.902/hw/xwin/InitOutput.c
  {
  #if CYGDEBUG
    winDebug ("AbortDDX\n");
-@@ -291,6 +291,12 @@
+@@ -294,6 +294,12 @@ AbortDDX (void)
    ddxGiveUp ();
  }
  
@@ -261,11 +243,9 @@ Index: xorg-server-1.7.3.902/hw/xwin/InitOutput.c
  #ifdef __CYGWIN__
  /* hasmntopt is currently not implemented for cygwin */
  static const char *winCheckMntOpt(const struct mntent *mnt, const char *opt)
-Index: xorg-server-1.7.3.902/include/os.h
-===================================================================
---- xorg-server-1.7.3.902.orig/include/os.h	2009-12-25 15:28:42.000000000 -0800
-+++ xorg-server-1.7.3.902/include/os.h	2010-02-03 17:29:02.000000000 -0800
-@@ -434,7 +434,9 @@
+--- a/include/os.h
++++ b/include/os.h
+@@ -440,7 +440,9 @@ typedef struct {
  /* stuff for FlushCallback */
  extern _X_EXPORT CallbackListPtr FlushCallback;
  
@@ -275,11 +255,9 @@ Index: xorg-server-1.7.3.902/include/os.h
  extern _X_EXPORT void ddxGiveUp(void);
  extern _X_EXPORT int TimeSinceLastInputEvent(void);
  
-Index: xorg-server-1.7.3.902/os/log.c
-===================================================================
---- xorg-server-1.7.3.902.orig/os/log.c	2009-12-25 15:28:42.000000000 -0800
-+++ xorg-server-1.7.3.902/os/log.c	2010-02-03 17:29:30.000000000 -0800
-@@ -389,11 +389,12 @@
+--- a/os/log.c
++++ b/os/log.c
+@@ -403,11 +403,12 @@ LogMessage(MessageType type, const char 
  }
  
  #ifdef __GNUC__
@@ -293,7 +271,7 @@ Index: xorg-server-1.7.3.902/os/log.c
  {
  #ifdef XF86BIGFONT
      XF86BigfontCleanup();
-@@ -401,11 +402,21 @@
+@@ -415,11 +416,21 @@ AbortServer(void)
      CloseWellKnownConnections();
      OsCleanup(TRUE);
      CloseDownDevices();
@@ -301,15 +279,15 @@ Index: xorg-server-1.7.3.902/os/log.c
 +    SigAbortDDX(signo);
      fflush(stderr);
 -    if (CoreDump)
--	abort();
+-	OsAbort();
 -    exit (1);
 +    if (CoreDump) {
 +        if (signo != 0)
 +            raise(signo);
 +        else
-+            abort();
++            OsAbort();
 +    } else
-+	exit (1);
++       exit (1);
 +}
 +
 +void
@@ -319,7 +297,7 @@ Index: xorg-server-1.7.3.902/os/log.c
  }
  
  #define AUDIT_PREFIX "AUDIT: %s: %ld: "
-@@ -508,6 +519,27 @@
+@@ -522,6 +533,27 @@ VAuditF(const char *f, va_list args)
  }
  
  void
@@ -347,11 +325,9 @@ Index: xorg-server-1.7.3.902/os/log.c
  FatalError(const char *f, ...)
  {
      va_list args;
-Index: xorg-server-1.7.3.902/os/osinit.c
-===================================================================
---- xorg-server-1.7.3.902.orig/os/osinit.c	2009-10-27 23:56:24.000000000 -0700
-+++ xorg-server-1.7.3.902/os/osinit.c	2010-02-03 17:29:02.000000000 -0800
-@@ -148,13 +148,13 @@
+--- a/os/osinit.c
++++ b/os/osinit.c
+@@ -148,13 +148,13 @@ OsSigHandler(int signo)
            case SIGBUS:
            case SIGILL:
            case SIGFPE:

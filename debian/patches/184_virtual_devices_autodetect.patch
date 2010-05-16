@@ -1,8 +1,6 @@
-Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
-===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2009-12-02 19:30:15.000000000 +0200
-+++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2009-12-02 23:32:39.000000000 +0200
-@@ -179,6 +179,7 @@
+--- a/hw/xfree86/common/xf86AutoConfig.c
++++ b/hw/xfree86/common/xf86AutoConfig.c
+@@ -183,6 +183,7 @@ videoPtrToDriverList(struct pci_device *
  	case 0x1002:		    driverList[0] = "ati"; break;
  	case 0x102c:		    driverList[0] = "chips"; break;
  	case 0x1013:		    driverList[0] = "cirrus"; break;

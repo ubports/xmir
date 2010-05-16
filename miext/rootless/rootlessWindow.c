@@ -978,7 +978,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
                 copy_rect.y2 = oldY2;
             }
             else
-                abort();
+                OsAbort();
 
             Bpp = winRec->win->drawable.bitsPerPixel / 8;
             copy_rect_width = copy_rect.x2 - copy_rect.x1;
@@ -1553,10 +1553,6 @@ RootlessDisableRoot (ScreenPtr pScreen)
 	return;
            
     RootlessDestroyFrame (pRoot, winRec);
-    /* 
-     * gstaplin: I fixed the usage of this DeleteProperty so that it would compile.
-     * QUESTION: Where is this xa_native_window_id set?
-     */
     DeleteProperty (serverClient, pRoot, xa_native_window_id ());
 }
 

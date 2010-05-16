@@ -184,6 +184,7 @@ ProcXTestFakeInput(ClientPtr client)
     int i;
     int base = 0;
     int flags = 0;
+    int need_ptr_update = 1;
 
     nev = (stuff->length << 2) - sizeof(xReq);
     if ((nev % sizeof(xEvent)) || !nev)
@@ -387,6 +388,8 @@ ProcXTestFakeInput(ClientPtr client)
                 client->errorValue = ev->u.u.detail;
                 return BadValue;
             }
+
+            need_ptr_update = 0;
             break;
         case MotionNotify:
             if (!dev->valuator)
@@ -451,7 +454,8 @@ ProcXTestFakeInput(ClientPtr client)
     for (i = 0; i < nevents; i++)
         mieqProcessDeviceEvent(dev, (InternalEvent*)(xtest_evlist+i)->event, NULL);
 
-    miPointerUpdateSprite(dev);
+    if (need_ptr_update)
+        miPointerUpdateSprite(dev);
     return client->noClientException;
 }
 
@@ -640,8 +644,8 @@ int AllocXTestDevice (ClientPtr client, char* name,
 
     retval = AllocDevicePair( client, xtestname, ptr, keybd, CorePointerProc, CoreKeyboardProc, FALSE);
     if ( retval == Success ){
-        dixSetPrivate(&((*ptr)->devPrivates), XTestDevicePrivateKey, (void *)master_ptr->id);
-        dixSetPrivate(&((*keybd)->devPrivates), XTestDevicePrivateKey, (void *)master_keybd->id);
+        dixSetPrivate(&((*ptr)->devPrivates), XTestDevicePrivateKey, (void *)(intptr_t)master_ptr->id);
+        dixSetPrivate(&((*keybd)->devPrivates), XTestDevicePrivateKey, (void *)(intptr_t)master_keybd->id);
 
         XIChangeDeviceProperty(*ptr, XIGetKnownProperty(XI_PROP_XTEST_DEVICE),
                 XA_INTEGER, 8, PropModeReplace, 1, &dummy,
@@ -677,7 +681,7 @@ IsXTestDevice(DeviceIntPtr dev, DeviceIntPtr master)
         return is_XTest;
 
     tmp = dixLookupPrivate(&dev->devPrivates, XTestDevicePrivateKey);
-    mid = (int)tmp;
+    mid = (intptr_t)tmp;
 
     /* deviceid 0 is reserved for XIAllDevices, non-zero mid means XTest
      * device */
