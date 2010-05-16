@@ -71,6 +71,8 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
   [ Robert Hooker ]
   * Fix 190_cache-xkbcomp_output_for_fast_start_up.patch so it works.
   * Drop 164_trap-aspect-ratios.patch: obsolete.
+  * debian/rules: Adjust confflag targets so xcsecurity isn't enabled for udeb
+    with disabled xace.
 
  -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 16 May 2010 17:13:42 -0400
 
