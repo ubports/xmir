@@ -227,7 +227,7 @@ xorg-server (2:1.7.6-2ubuntu7) lucid; urgency=low
     - Dupe of patch 110
   * Drop 03_fedora_glx_versioning.diff, 04_fedora_glx14-swrast.diff
     - These patches were brought in by Debian to provide glx 1.4 support
-      which Fedora backported from xserver 1.8, however testing in 
+      which Fedora backported from xserver 1.8, however testing in
       Ubuntu showed they caused a crash when closing Clutter apps (#550218),
       and graphics corruption when opening windows.  Dropping these patches
       returns us to GLX 1.2, which has been found to be stable; Debian has
@@ -236,14 +236,14 @@ xorg-server (2:1.7.6-2ubuntu7) lucid; urgency=low
   * Drop 114_dri2_make_sure_x_drawable_exists.patch
     - This was an early attempt by upstream which fixed the aforementioned
       Clutter crash, but which introduced a memory leak.
-      (Fixes #565981)    
+      (Fixes #565981)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 22 Apr 2010 17:24:38 -0700
 
 xorg-server (2:1.7.6-2ubuntu6) lucid; urgency=low
 
-  * Add 122_xext_fix_card32_overflow_in_xauth.patch:  Prevent overflow 
-    of a CARD32 variable millis by doing bounds checking.  This is a 
+  * Add 122_xext_fix_card32_overflow_in_xauth.patch:  Prevent overflow
+    of a CARD32 variable millis by doing bounds checking.  This is a
     patch currently in discussion at fdo #27134, so this patch can be
     dropped in favor of whatever upstream decides to include.
     (LP: #519049)
@@ -289,7 +289,7 @@ xorg-server (2:1.7.6-2ubuntu2) lucid; urgency=low
 
   [Robert Sarvatt]
   * Add 114_dri2_make_sure_x_drawable_exists.patch: Makes sure
-    a corresponding X drawable exists before trying to use it, fixing 
+    a corresponding X drawable exists before trying to use it, fixing
     xserver segfaults under DRI2 when closing down GLX apps.
     (LP: #550218)
 
@@ -457,7 +457,7 @@ xorg-server (2:1.7.5-1ubuntu2) lucid; urgency=low
     instead of xEvents. With this fix, the record extension can be
     re-enabled.
     (LP: #315456)
-  
+
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 02 Mar 2010 17:09:33 +0200
 
 xorg-server (2:1.7.5-1ubuntu1) lucid; urgency=low
@@ -474,7 +474,7 @@ xorg-server (2:1.7.5-1ubuntu1) lucid; urgency=low
   [Robert Collins]
   * Add 199_xfvb-help-typo.patch to fix typo in help for xvfb (fdo #32990)
   * Add 200_randr-null.patch to clarify a pointer initialization (fdo #26389)
-  
+
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 19 Feb 2010 13:24:15 +0200
 
 xorg-server (2:1.7.5-1) unstable; urgency=low
@@ -519,10 +519,10 @@ xorg-server (2:1.7.4-1) unstable; urgency=low
  -- Julien Cristau <jcristau@debian.org>  Tue, 12 Jan 2010 10:49:22 +0000
 
 xorg-server (2:1.7.3.902-1ubuntu12) lucid; urgency=low
-  
+
   * Add 198_nohwaccess.patch: Needed for rootless X.  Adds a -nohwaccess
     argument to make X not access the hardware ports directly.
-  
+
  -- Bryce Harrington <bryce@ubuntu.com>  Fri, 05 Feb 2010 22:17:20 -0800
 
 xorg-server (2:1.7.3.902-1ubuntu11) lucid; urgency=low
@@ -631,7 +631,7 @@ xorg-server (2:1.7.3.902-1ubuntu1) lucid; urgency=low
   [ Michael Vogt ]
   * Add 101_nv-crash-fix.diff: Do not crash if gamma_set is NULL.
     (LP: #494627)
-  
+
   [ Alberto Milone ]
   * Install libglx.so and libdri.so in /usr/lib/standard-x11 as X
     seems to prefer the file in /usr/lib/xorg/modules/extensions/standard/
@@ -945,7 +945,7 @@ xorg-server (2:1.6.4-2ubuntu1) karmic; urgency=low
       + 140_quell_acpi_errmsgs.patch:
         Avoid generating extraneous warnings when acpi is missing
       + 153_make_dmx_compile.patch:
-        Change xcalloc -> calloc, so that dmx compiles. 
+        Change xcalloc -> calloc, so that dmx compiles.
       + 156_exevents_copykeyclass_nullptrcheck.patch,
         157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
         166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
@@ -1087,7 +1087,7 @@ xorg-server (2:1.6.3-1ubuntu2) karmic; urgency=low
     Fix random blanking display when system is not idle, caused by
     mishandling of negative transition triggers in XSync.
     (LP: #397839)
-  
+
  -- Bryce Harrington <bryce@ubuntu.com>  Fri, 14 Aug 2009 11:21:09 -0700
 
 xorg-server (2:1.6.3-1ubuntu1) karmic; urgency=low
@@ -1211,7 +1211,7 @@ xorg-server (2:1.6.1.901-3) unstable; urgency=low
 xorg-server (2:1.6.1.901-2ubuntu2) karmic; urgency=low
 
   * Add xserver-1.5.0-bad-fbdev-thats-mine.patch - If no xorg.conf is
-    specified, framebuffer device can erroneously grab the PCI.  Make 
+    specified, framebuffer device can erroneously grab the PCI.  Make
     it fail instead in this case.
     (LP: #383407)
 
@@ -1416,7 +1416,7 @@ xorg-server (2:1.6.0-0ubuntu5) jaunty; urgency=low
     - Fixes failure when multiple video cards are present.  Xserver currently
       exits with an error "(EE) No device detected" in such cases.
       (LP: #267241)
-  
+
  -- Bryce Harrington <bryce@ubuntu.com>  Tue, 24 Mar 2009 09:57:17 -0700
 
 xorg-server (2:1.6.0-0ubuntu4) jaunty; urgency=low
@@ -1452,7 +1452,7 @@ xorg-server (2:1.6.0-0ubuntu2) jaunty; urgency=low
       correctly, resulting in a "No modes" error in Xorg.0.log and dropping
       user to failsafe-X mode.
       (LP: #335214)
-  * Add 164_trap-aspect-ratios.patch: 
+  * Add 164_trap-aspect-ratios.patch:
     - Some monitors fib in the EDID they provide, giving their physical
       dimensions in the global block, and their aspect ratio(!) in
       the detailed timings.  This totally messes up DPI calculations
@@ -1465,7 +1465,7 @@ xorg-server (2:1.6.0-0ubuntu1) jaunty; urgency=low
 
   [ Bryce Harrington ]
   * New upstream release
-    - Fixes segfault during X startup for drivers with RANDR < 1.2 
+    - Fixes segfault during X startup for drivers with RANDR < 1.2
       (LP: #319210)
     - Fixes EDID for monitors that incorrectly report aspect ratio instead
       of resolution (LP: #311485)
@@ -1477,7 +1477,7 @@ xorg-server (2:1.6.0-0ubuntu1) jaunty; urgency=low
     (LP: #139990)
 
   [ Timo Aaltonen ]
-  * 159_xinerama_focus.patch, 
+  * 159_xinerama_focus.patch,
     161_force_paired_kbd_device.patch:
     - Dropped, applied upstream
 
@@ -1546,7 +1546,7 @@ xorg-server (2:1.5.99.902-0ubuntu2) jaunty; urgency=low
     to 512.  Trade-off is that this reduces client resources available to
     1,048,576 total resources (which should still be ample).
     (LP: #260138)
-  
+
   [Steven Harms]
   * 159_xinerama_focus.patch: Resolves xinerama focus issues
     with multiple screens
@@ -1633,7 +1633,7 @@ xorg-server (2:1.5.99.901-0ubuntu1) jaunty; urgency=low
   [ Timo Aaltonen ]
   * debian/rules: Enable dbus-support.
   * Merge current server-1.6-branch.
-  * Disable patch 107 for now, to see what kind of a performance hit 
+  * Disable patch 107 for now, to see what kind of a performance hit
     it'll be. The problem it causes is random garbage on windows
     while apps are being loaded.
     (LP: #254468)
@@ -1867,7 +1867,7 @@ xorg-server (2:1.5.2-1) experimental; urgency=low
 xorg-server (2:1.5.1-1ubuntu3) intrepid; urgency=low
 
   * Pull upstream changes from server-1.5-branch including b595b65e:
-    - Fix GKVE with key_code > 255 (LP: #274203) 
+    - Fix GKVE with key_code > 255 (LP: #274203)
     - DGA: Fix ProcXF86DGASetViewPort for missing support in driver.
       Fixes a segfault when trying to activate a DGA mode without
       checking whether DGA modesetting is at all possible.
@@ -2032,10 +2032,10 @@ xorg-server (2:1.4.99.906-1ubuntu1) intrepid; urgency=low
 
   * Merge with debian experimental, 1.5RC6 (LP: #247120, #253021)
   * Drop 120_fedora_xserver-xaa-evict-pixmaps.patch, because offscreen
-    pixmaps are already disabled by default. 
+    pixmaps are already disabled by default.
   * Drop 124_fix_randr_no_crtc.patch, fixed upstream.
-  * Add 130_fedora_call_switchcorekeyboard.patch, a hack to fix fd.o bug 
-    #16364. Breaks if the first hotplugged keyboard is not the wanted 
+  * Add 130_fedora_call_switchcorekeyboard.patch, a hack to fix fd.o bug
+    #16364. Breaks if the first hotplugged keyboard is not the wanted
     keyboard.
   * Patches from upstream master:
     131_remove_open-coded_strcasestr.patch
@@ -2075,7 +2075,7 @@ xorg-server (2:1.4.99.906-1) experimental; urgency=low
 xorg-server (2:1.4.99.905-0ubuntu5) intrepid; urgency=low
 
   * debian/rules:
-    Added --enable-record.  By default, xorg-server does not build the 
+    Added --enable-record.  By default, xorg-server does not build the
     RECORD extension.  Added the record module (for Xnee and other purposes).
 
  -- Chris Nasho <chris.nasho@sympatico.ca>  Thu, 31 Jul 2008 17:26:00 -0400
@@ -2096,7 +2096,7 @@ xorg-server (2:1.4.99.905-0ubuntu3) intrepid; urgency=low
      + In certain circumstances, xrandr multiscreen initialization fails
        to associate crtcs with monitors, resulting in startup failures
        in some GDK-based applications when using -vesa.  This occurs
-       because mode-Clock, mode->HTotal, and mode->VTotal are all 0. 
+       because mode-Clock, mode->HTotal, and mode->VTotal are all 0.
        (LP: #246585)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Tue, 15 Jul 2008 07:01:13 -0700
@@ -2104,11 +2104,11 @@ xorg-server (2:1.4.99.905-0ubuntu3) intrepid; urgency=low
 xorg-server (2:1.4.99.905-0ubuntu2) intrepid; urgency=low
 
   * Merge with debian git, new changes:
-    - Build with --enable-glx-tls, we build mesa with TLS support 
-      (otherwise swrast_dri.so might fail to load due to unresolved 
+    - Build with --enable-glx-tls, we build mesa with TLS support
+      (otherwise swrast_dri.so might fail to load due to unresolved
       symbols).
-    - Make the servers recommend libgl1-mesa-dri (>= 7.1~rc1).  Without 
-      this package, the GLX extension fails to initialise (and takes the 
+    - Make the servers recommend libgl1-mesa-dri (>= 7.1~rc1).  Without
+      this package, the GLX extension fails to initialise (and takes the
       server down) due to missing swrast_dri.so.
 
  -- Timo Aaltonen <tepsipakki@ubuntu.com>  Mon, 07 Jul 2008 11:44:39 +0300
@@ -2201,7 +2201,7 @@ xorg-server (2:1.4.99.905-1) experimental; urgency=low
 
   [ Timo Aaltonen ]
   * Re-enable dri & glx.
-  * Add a build-dep on mesa-common-dev (>= 7.1~rc1) and bump the desired 
+  * Add a build-dep on mesa-common-dev (>= 7.1~rc1) and bump the desired
     version of libgl1-mesa-dev respectively.
   * Bump the libdrm-dev build-dep version to 2.3.1.
 
@@ -2547,7 +2547,6 @@ xorg-server (2:1.4.1~git20080131-1ubuntu11) intrepid; urgency=low
       will fail to start up.  (LP: #219424)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Tue, 13 May 2008 13:09:17 -0700
-  
 
 xorg-server (2:1.4.1~git20080131-1ubuntu10) intrepid; urgency=low
 
@@ -3473,7 +3472,7 @@ xorg-server (2:1.3.0.0.dfsg-12ubuntu3) gutsy; urgency=low
 xorg-server (2:1.3.0.0.dfsg-12ubuntu2) gutsy; urgency=low
 
   * Don't send a configuration change event just because somebody's pressed
-    a brightness key 
+    a brightness key
 
  -- Matthew Garrett <mjg59@srcf.ucam.org>  Sun, 26 Aug 2007 16:17:15 +0100
 
@@ -3617,7 +3616,7 @@ xorg-server (2:1.3.0.0.dfsg-6ubuntu3) gutsy; urgency=low
 xorg-server (2:1.3.0.0.dfsg-6ubuntu2) gutsy; urgency=low
 
   * debian/patches/series:
-    - don't apply 132_composite-no-clipping.diff for now, it doesn't work 
+    - don't apply 132_composite-no-clipping.diff for now, it doesn't work
       correctly when using compiz
 
  -- Sebastien Bacher <seb128@canonical.com>  Fri, 13 Jul 2007 17:03:42 +0100
@@ -4011,7 +4010,7 @@ xorg-server (2:1.2.0-3ubuntu1) feisty; urgency=low
   * debian/control:
     - fixed Maintainer email
   * debian/xserver-xorg-core.install:
-    - list ioport, gtf, pcitweak and scanpci 
+    - list ioport, gtf, pcitweak and scanpci
       and manpages for scanpci, gtf, pcitweak
 
   [ Timo Aaltonen ]
@@ -4176,7 +4175,7 @@ xorg-server (2:1.1.1-19) unstable; urgency=high
     (/usr/X11R6/lib/X11/fonts/Type1 not "/usr/X11R6/lib/  X11/fonts/Type1")
 
   [ David Nusinow ]
-  * Conflict with and replace xserver-common, because that package used to 
+  * Conflict with and replace xserver-common, because that package used to
     provide the SecurityPolicy file. This is an RC bugfix because it breaks
     upgrades, so it gets a high urgency. Thanks Christian Tsotras and Lionel
     Elie Mamane for reporting and it. Closes: #402658
@@ -4480,10 +4479,10 @@ xorg-server (1:1.1.1-0ubuntu14) feisty; urgency=low
 xorg-server (1:1.1.1-0ubuntu13) feisty; urgency=low
 
   * 19_revert_xkb_change_breaking_XkbGetKeyboard.patch:
-    - patch from fedora (with extra Makefile.in change), revert change that 
+    - patch from fedora (with extra Makefile.in change), revert change that
       broke XkbGetKeyboard() (Ubuntu: #58083)
   * 37_Fix-__glXDRIbindTexImage-for-32-bpp-on-big-endian-platforms.diff:
-    - upstream patch copied from the Debian package, fix blue screen with 
+    - upstream patch copied from the Debian package, fix blue screen with
       compiz on ppc (Ubuntu: #58373)
 
  -- Sebastien Bacher <seb128@canonical.com>  Fri, 12 Jan 2007 12:17:28 +0100
@@ -4525,14 +4524,14 @@ xorg-server (1:1.1.1-0ubuntu10) edgy; urgency=low
 xorg-server (1:1.1.1-0ubuntu9) edgy; urgency=low
 
   * Enable composite extension by default
-  * Add patch from fd.o bugzilla #7916 to avoid aiglx hangs on vt 
+  * Add patch from fd.o bugzilla #7916 to avoid aiglx hangs on vt
     switches
 
  -- Matthew Garrett <mjg59@srcf.ucam.org>  Sat, 26 Aug 2006 03:20:31 +0100
 
 xorg-server (1:1.1.1-0ubuntu8) edgy; urgency=low
 
-  * Steal patch from Fedora to allow compiz to trigger the disabling of 
+  * Steal patch from Fedora to allow compiz to trigger the disabling of
    XAA off-screen pixmaps
 
  -- Matthew Garrett <mjg59@srcf.ucam.org>  Wed, 23 Aug 2006 21:26:08 +0100
