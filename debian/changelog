@@ -72,8 +72,9 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
 
   [ Robert Hooker ]
   * Fix 190_cache-xkbcomp_output_for_fast_start_up.patch so it works.
+  * Drop 164_trap-aspect-ratios.patch: obsolete.
 
- -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 16 May 2010 15:19:13 -0400
+ -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 16 May 2010 17:13:42 -0400
 
 xorg-server (2:1.8.1-1) experimental; urgency=low
 
