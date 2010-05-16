@@ -1,5 +1,6 @@
 xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * Merged from Debian experimental, remaining changes:
     - rules, control:
       + Disable SELinux, libaudit-dev is not in main yet (LP 406226).
@@ -69,7 +70,10 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
   * debian/local/xvfb-run: Don't disable composite, seems to run fine
     with it nowadays.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Sun, 16 May 2010 15:50:57 +0300
+  [ Robert Hooker ]
+  * Fix 190_cache-xkbcomp_output_for_fast_start_up.patch so it works.
+
+ -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 16 May 2010 15:19:13 -0400
 
 xorg-server (2:1.8.1-1) experimental; urgency=low
 
