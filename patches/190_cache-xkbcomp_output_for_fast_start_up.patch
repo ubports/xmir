@@ -162,13 +162,13 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +    out = fmemopen(xkbKeyMapBuf, sizeof(xkbKeyMapBuf), "w");
 +    if (NULL == out) {
 +        ErrorF("[xkb] Open xkbKeyMapBuf for writing failed\n");
-+        return False;
++        return FALSE;
 +    }
 +    ret = XkbWriteXKBKeymapForNames(out, names, xkb, want, need);
 +    if (fclose(out) !=0)
 +    {
 +        ErrorF("[xkb] XkbWriteXKBKeymapForNames error, perhaps xkbKeyMapBuf is too small\n");
-+        return False;
++        return FALSE;
 +    }
 +#ifdef DEBUG
 +    if (xkbDebugFlags) {
@@ -178,7 +178,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  #endif
 +    if (!ret) {
 +        ErrorF("[xkb] Generating XKB Keymap failed, giving up compiling keymap\n");
-+        return False;
++        return FALSE;
 +    }
  
 -    snprintf(keymap, sizeof(keymap), "server-%s", display);
@@ -196,7 +196,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +    /* set nameRtrn, fail if it's too small */
 +    if ((strlen(xkmfile)+1 > nameRtrnLen) && nameRtrn) {
 +        ErrorF("[xkb] nameRtrn too small to hold xkmfile name\n");
-+        return False;
++        return FALSE;
 +    }
 +    strncpy(nameRtrn, xkmfile, nameRtrnLen);
 +
@@ -205,7 +205,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +    if (access(canonicalXkmFileName, R_OK) == 0) {
 +        /* yes, we can reuse the old xkm file */
 +        LogMessage(X_INFO, "XKB: reuse xkmfile %s\n", canonicalXkmFileName);
-+        result = True;
++        result = TRUE;
 +        goto _ret;
 +    }
 +    LogMessage(X_INFO, "XKB: generating xkmfile %s\n", canonicalXkmFileName);
@@ -222,7 +222,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  
 +    if ( (tmpXkmFile = tempnam(xkm_output_dir, NULL)) == NULL ) {
 +        ErrorF("[xkb] Can't generate temp xkm file name");
-+        result = False;
++        result = FALSE;
 +        goto _ret;
 +    }
 +
@@ -262,7 +262,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +        if (EOF==fputs(xkbKeyMapBuf, out))
 +        {
 +            ErrorF("[xkb] Sending keymap to xkbcomp failed\n");
-+            result = False;
++            result = FALSE;
 +            goto _ret;
      }
 -#endif
@@ -291,14 +291,14 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +                /* in case of error, don't unlink tmpXkmFile, leave it
 +                   for debugging */
 +
-+                result = False;
++                result = FALSE;
 +                goto _ret;
  	    }
 -            if (buf != NULL)
 -                xfree (buf);
 -	    return TRUE;
 +
-+            result = True;
++            result = TRUE;
 +            goto _ret;
  	}
  	else
@@ -311,7 +311,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
      }
      if (nameRtrn)
  	nameRtrn[0]= '\0';
-+    result = False;
++    result = FALSE;
 +
 +_ret:
 +    if (tmpXkmFile)
