@@ -1,35 +1,19 @@
 ## Patches with a number < 100 are applied in debian.
 ## Ubuntu patches start with 100.
 001_fedora_extramodes.patch
-02_Add-libgcrypt-and-libnettle-as-options-for-sha1.diff
-05_only_call_gamma_set_if_nonnull.diff
+02_Add-libnettle-as-option-for-sha1.diff
 06_dont_trap_access_to_timer_and_keyboard.diff
 07-xfree86-fix-build-with-xv-disabled.diff
 #13_debian_add_xkbpath_env_variable.diff
-08-config-xorg-conf-d.diff
-09-inputclass-sans-abi9.diff
-10-config-libudev-backend.diff
-11-xfree86-fix-video-fallback.diff
-12-xfree86-dont-complain-about-missing-coredevices.diff
-13-unbreak-input-abi.diff
-14-tone-down-nidr-errors.diff
-15-keep-udev-x11-driver.diff
-19-exa-handle-pixmap-create-destroy-in-lower-layers.diff
+15-nouveau.diff
+16-xaa-fbcomposite-fix-negative-size.diff
 100_rethrow_signals.patch
 #104_nvidia_autodetect.patch
 #105_fglrx_autodetect.patch
-106_nouveau_autodetect.patch
 109_fix-swcursor-crash.patch
-110_findglyphbyhash-fix.patch
 111_armel-drv-fallbacks.patch
-112_xaa-fbcomposite-fix-negative-size.patch
-113_quell_nouveau_aiglx.patch
-115_xext_fix_cursor_ref_counting.patch
-116_fix_typos_in_swap_functions.patch
-118_xkb_fix_garbage_init.patch
 121_only_switch_vt_when_active.diff
 122_xext_fix_card32_overflow_in_xauth.patch
-123_exa_sys_ptr_nullpointer_check.patch
 #143_default_to_vesa.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
@@ -49,5 +33,4 @@
 196_xvfb-fbscreeninit-handling.patch
 197_xvfb-randr.patch
 198_nohwaccess.patch
-199_xfvb-help-typo.patch
 200_randr-null.patch

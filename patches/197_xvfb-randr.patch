@@ -1,7 +1,7 @@
 === modified file 'hw/vfb/InitOutput.c'
---- a/hw/vfb/InitOutput.c	2010-02-02 16:34:02 +0000
-+++ b/hw/vfb/InitOutput.c	2010-02-02 16:36:42 +0000
-@@ -912,6 +912,12 @@
+--- a/hw/vfb/InitOutput.c
++++ b/hw/vfb/InitOutput.c
+@@ -918,6 +918,12 @@ vfbScreenInit(int index, ScreenPtr pScre
  	fbPictureInit (pScreen, 0, 0);
  #endif
  
@@ -14,4 +14,3 @@
      miInitializeBackingStore(pScreen);
  
      /*
-
