@@ -7,7 +7,7 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
     - rules: Enable xcsecurity (LP 247537).
     - local/xvfb-run*: Add correct docs about error codes (LP 328205)
     - rules: Add --with-extra-module-dir to support GL alternatives.
-    - rules: Xvfb depends on xauth, x11-xkb-utils, recommends
+    - control: Xvfb depends on xauth, x11-xkb-utils, recommends
       libgl1-mesa-dri. (LP 500102)
     - rules, local/64-xorg-xkb.rules: Don't use keyboard-configuration
       until it's available.
