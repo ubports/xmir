@@ -1,6 +1,6 @@
 xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
 
-  * New upstream release, remaining changes:
+  * Merged from Debian experimental, remaining changes:
     - rules, control:
       + Disable SELinux, libaudit-dev is not in main yet (LP 406226).
         Drop libaudit-dev from build-deps.
