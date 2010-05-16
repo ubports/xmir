@@ -6,7 +6,6 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
         Drop libaudit-dev from build-deps.
     - rules: Enable xcsecurity (LP 247537).
     - local/xvfb-run*: Add correct docs about error codes (LP 328205)
-    - local/xvfb-run: Use "-extension Composite" to fix xvfb-run crashing.
     - rules: Add --with-extra-module-dir to support GL alternatives.
     - rules: Xvfb depends on xauth, x11-xkb-utils, recommends
       libgl1-mesa-dri. (LP 500102)
@@ -67,6 +66,8 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
   * debian/xserver-xorg-core.preinst.in: Drop the removal of the wrong
     alternative, obsolete by now.
   * debian/control: Build the udeb and bump the relaxed build-deps.
+  * debian/local/xvfb-run: Don't disable composite, seems to run fine
+    with it nowadays.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Sun, 16 May 2010 15:50:57 +0300
 
