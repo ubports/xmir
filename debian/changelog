@@ -73,8 +73,9 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
   * Drop 164_trap-aspect-ratios.patch: obsolete.
   * debian/rules: Adjust confflag targets so xcsecurity isn't enabled for udeb
     with disabled xace.
+  * Drop 184_virtual_devices_autodetect.patch: It's a noop with todays autoconfig.
 
- -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 16 May 2010 17:13:42 -0400
+ -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 02 Jun 2010 13:58:51 -0400
 
 xorg-server (2:1.8.1-1) experimental; urgency=low
 
