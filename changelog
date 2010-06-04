@@ -1,4 +1,4 @@
-xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.8.1.901-1ubuntu1) UNRELEASED; urgency=low
 
   [ Timo Aaltonen ]
   * Merged from Debian experimental, remaining changes:
@@ -77,6 +77,13 @@ xorg-server (2:1.8.1-1ubuntu1) UNRELEASED; urgency=low
 
  -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 02 Jun 2010 13:58:51 -0400
 
+xorg-server (2:1.8.1.901-1) UNRELEASED; urgency=low
+
+  * New upstream release
+  * Merge changes from 2:1.7.7-1.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 03 Jun 2010 18:29:42 +0200
+
 xorg-server (2:1.8.1-1) experimental; urgency=low
 
   * New upstream release
@@ -107,13 +114,17 @@ xorg-server (2:1.8.1-1) experimental; urgency=low
 
  -- Julien Cristau <jcristau@debian.org>  Wed, 12 May 2010 18:01:39 +0200
 
-xorg-server (2:1.7.7-2) UNRELEASED; urgency=low
+xorg-server (2:1.7.7-2) unstable; urgency=low
 
   * autoconfig: load the nouveau driver for nvidia hw.  Stolen from F13.
   * Try to catch non-event devices when running udevadm info in the bug
     script.
+  * Pull from upstream server-1.7-nominations branch
+    - dix: make DeviceEvent coordinates signed for Xinerama (closes: #581763)
+    - xfree86: dga needs to use the master keyboard state (closes: #576393)
+    - Fix null pointer dereference in xf86_reload_cursors (closes: #507916)
 
- -- Julien Cristau <jcristau@debian.org>  Fri, 07 May 2010 17:03:15 +0200
+ -- Julien Cristau <jcristau@debian.org>  Thu, 03 Jun 2010 17:00:18 +0200
 
 xorg-server (2:1.7.7-1) unstable; urgency=low
 
