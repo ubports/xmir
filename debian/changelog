@@ -75,7 +75,10 @@ xorg-server (2:1.8.1.901-1ubuntu1) UNRELEASED; urgency=low
     with disabled xace.
   * Drop 184_virtual_devices_autodetect.patch: It's a noop with todays autoconfig.
 
- -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 02 Jun 2010 13:58:51 -0400
+  [ Christopher James Halse Rogers ]
+  * Add debian/gbp.conf pointing at ubuntu branch.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 04 Jun 2010 12:29:34 +1000
 
 xorg-server (2:1.8.1.901-1) UNRELEASED; urgency=low
 
