@@ -77,7 +77,7 @@ INSTALL=/usr/bin/install
 
 VENDOR = $(shell lsb_release -i -s)
 
-BUILDER="For technical support please see http://www.ubuntu.com/support"
+BUILDER=For technical support please see http://www.ubuntu.com/support
 
 # disable-static is so we don't get libfoo.a for modules.  now if only we could
 # kill the .las.
