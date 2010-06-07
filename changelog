@@ -74,6 +74,11 @@ xorg-server (2:1.8.1.901-1ubuntu1) UNRELEASED; urgency=low
   * debian/rules: Adjust confflag targets so xcsecurity isn't enabled for udeb
     with disabled xace.
   * Drop 184_virtual_devices_autodetect.patch: It's a noop with todays autoconfig.
+  
+  [ Bryce Harrington ]
+  * debian/rules: Don't reference the package uploader for support; instead point
+    users to the standard Ubuntu support page.
+    (LP: #589811)
 
   [ Christopher James Halse Rogers ]
   * Add debian/gbp.conf pointing at ubuntu branch.
