@@ -1,4 +1,4 @@
-xorg-server (2:1.8.1.901-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.8.1.901-1ubuntu1) maverick; urgency=low
 
   [ Timo Aaltonen ]
   * Merged from Debian experimental, remaining changes:
@@ -87,7 +87,7 @@ xorg-server (2:1.8.1.901-1ubuntu1) UNRELEASED; urgency=low
     on patchwork.  This patch actually works! (tested with 
     “xauth generate :0 . trusted timeout 99999999) (LP: #519049)
   
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 07 Jun 2010 10:49:39 +1000
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 07 Jun 2010 14:50:49 -0700
 
 xorg-server (2:1.8.1.901-1) UNRELEASED; urgency=low
 
