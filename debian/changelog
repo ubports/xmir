@@ -1,3 +1,11 @@
+xorg-server (2:1.8.1.901-1ubuntu2) maverick; urgency=low
+
+  * 17-fix-DRI2-segfault-when-clientGone.diff:
+    - Pick up fix from https://bugs.freedesktop.org/show_bug.cgi?id=27497 to
+      fix server crash in DRI2SwapEvent handling (LP: #595182).
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 18 Jun 2010 13:32:45 +1000
+
 xorg-server (2:1.8.1.901-1ubuntu1) maverick; urgency=low
 
   [ Timo Aaltonen ]
