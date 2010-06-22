@@ -1,5 +1,19 @@
-xorg-server (2:1.8.1.901-1ubuntu2) maverick; urgency=low
+xorg-server (2:1.8.1.902-1~ubuntu1) maverick; urgency=low
 
+  * Merge from (unreleased) Debian experimental.  Remaining changes:  
+
+ --
+
+xorg-server (2:1.8.1.902-1) UNRELEASED; urgency=low
+
+  [ Julien Cristau ]
+  * Install the upstream changelog in xserver-common, instead of duplicating
+    its 1MB in all other packages.
+
+  [ Christopher James Halse Rogers ]
+  * New upstream RC
+    - A number of DRI2 fixes.
+    - Fix for hanging OpenGL clients with multiple heads.
   * 17-fix-DRI2-segfault-when-clientGone.diff:
     - Pick up fix from https://bugs.freedesktop.org/show_bug.cgi?id=27497 to
       fix server crash in DRI2SwapEvent handling (LP: #595182).
@@ -97,17 +111,17 @@ xorg-server (2:1.8.1.901-1ubuntu1) maverick; urgency=low
   
  -- Bryce Harrington <bryce@ubuntu.com>  Mon, 07 Jun 2010 14:50:49 -0700
 
-xorg-server (2:1.8.1.901-1) UNRELEASED; urgency=low
+xorg-server (2:1.8.1.901-1) experimental; urgency=low
 
   [ Julien Cristau ]
   * New upstream release
-  * Merge changes from 2:1.7.7-1.
+  * Merge changes from 2:1.7.7-2.
 
   [ Christopher James Halse Rogers ]
   * 16-xaa-fbcomposite-fix-negative-size.diff:
     - mi hunk merged upstream.  Update to keep just the fbpict.c hunk.
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 04 Jun 2010 14:16:14 +1000
+ -- Julien Cristau <jcristau@debian.org>  Mon, 07 Jun 2010 23:22:48 +0200
 
 xorg-server (2:1.8.1-1) experimental; urgency=low
 
