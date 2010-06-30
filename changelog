@@ -1,3 +1,11 @@
+xorg-server (2:1.8.1.902-0ubuntu2) maverick; urgency=low
+
+  * debian/rules:
+    - Drop the upstream changelog harder.  We're scrabbling for CD space
+      and this is an easy 1MB saving.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 30 Jun 2010 09:50:33 +1000
+
 xorg-server (2:1.8.1.902-0ubuntu1) maverick; urgency=low
 
   * Merge from (unreleased) Debian experimental.  Remaining changes:  
