@@ -1,7 +1,9 @@
 === modified file 'hw/vfb/InitOutput.c'
---- a/hw/vfb/InitOutput.c
-+++ b/hw/vfb/InitOutput.c
-@@ -66,6 +66,7 @@ from The Open Group.
+Index: xorg-server/hw/vfb/InitOutput.c
+===================================================================
+--- xorg-server.orig/hw/vfb/InitOutput.c	2010-07-14 14:02:26.000000000 +1000
++++ xorg-server/hw/vfb/InitOutput.c	2010-07-14 14:53:33.951453001 +1000
+@@ -66,6 +66,7 @@
  #endif /* HAS_SHM */
  #include "dix.h"
  #include "miline.h"
@@ -9,20 +11,3 @@
  
  #define VFB_DEFAULT_WIDTH      1280
  #define VFB_DEFAULT_HEIGHT     1024
-@@ -910,13 +911,13 @@ vfbScreenInit(int index, ScreenPtr pScre
- 
-     ret = fbScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
- 		       dpix, dpiy, pvfb->paddedWidth,pvfb->bitsPerPixel);
-+    if (!ret) return FALSE;
-+
- #ifdef RENDER
--    if (ret && Render) 
-+    if (Render)
- 	fbPictureInit (pScreen, 0, 0);
- #endif
- 
--    if (!ret) return FALSE;
--
-     miInitializeBackingStore(pScreen);
- 
-     /*

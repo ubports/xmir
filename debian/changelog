@@ -46,7 +46,7 @@ xorg-server (2:1.8.99.904-1ubuntu1) maverick; urgency=low
         Cache keyboard settings.
       + 191-Xorg-add-an-extra-module-path.patch:
         Add support for the alternatives module path.
-      + 196_xvfb-fbscreeninit-handling.patch, 197_xvfb-randr.patch:
+      + 197_xvfb-randr.patch:
         Adds xrandr support to xvfb. (LP 516123)
       + 198_nohwaccess.patch:
         Adds a -nohwaccess argument to make X not access the hardware
@@ -54,6 +54,8 @@ xorg-server (2:1.8.99.904-1ubuntu1) maverick; urgency=low
       + 200_randr-null.patch:
         Clarify a pointer initialization.
   * Update changelog entries for 1.8.1.902-1 which became 1.8.99.904-1
+  * Drop 196_xvfbscreeninit-handling.patch: it's semantically empty, and now 
+    doesn't apply.  Merge remaining #include change into 197_xvfb-randr.patch
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 14 Jul 2010 13:57:50 +1000
 

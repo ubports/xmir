@@ -7,7 +7,7 @@
 #13_debian_add_xkbpath_env_variable.diff
 15-nouveau.diff
 16-xaa-fbcomposite-fix-negative-size.diff
-17-fix-DRI2-segfault-when-clientGone.diff
+#17-fix-DRI2-segfault-when-clientGone.diff
 100_rethrow_signals.patch
 #104_nvidia_autodetect.patch
 #105_fglrx_autodetect.patch
@@ -28,7 +28,6 @@
 189_xserver_1.5.0_bg_none_root.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
-196_xvfb-fbscreeninit-handling.patch
 197_xvfb-randr.patch
 198_nohwaccess.patch
 200_randr-null.patch
