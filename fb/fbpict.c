@@ -31,8 +31,6 @@
 
 #include "fb.h"
 
-#ifdef RENDER
-
 #include "picturestr.h"
 #include "mipict.h"
 #include "fbpict.h"
@@ -79,8 +77,8 @@ fbWalkCompositeRegion (CARD8 op,
 				   xMask, yMask, xDst, yDst, width, height))
         return;
     
-    n = REGION_NUM_RECTS (&region);
-    pbox = REGION_RECTS (&region);
+    n = RegionNumRects (&region);
+    pbox = RegionRects (&region);
     while (n--)
     {
 	h = pbox->y2 - pbox->y1;
@@ -140,7 +138,7 @@ fbWalkCompositeRegion (CARD8 op,
 	}
 	pbox++;
     }
-    REGION_UNINIT (pDst->pDrawable->pScreen, &region);
+    RegionUninit(&region);
 }
 
 void
@@ -202,8 +200,6 @@ fbCompositeGeneral (CARD8	op,
 			xSrc, ySrc, xMask, yMask, xDst, yDst,
 			width, height);
 }
-
-#endif /* RENDER */
 
 static pixman_image_t *
 create_solid_fill_image (PicturePtr pict)
@@ -472,8 +468,6 @@ Bool
 fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 {
 
-#ifdef RENDER
-
     PictureScreenPtr    ps;
 
     if (!miPictureInit (pScreen, formats, nformats))
@@ -485,8 +479,6 @@ fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->RasterizeTrapezoid = fbRasterizeTrapezoid;
     ps->AddTraps = fbAddTraps;
     ps->AddTriangles = fbAddTriangles;
-
-#endif /* RENDER */
 
     return TRUE;
 }

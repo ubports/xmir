@@ -107,34 +107,12 @@ bus_sbus_configure(void *busData)
 static void
 bus_pci_newdev_configure(void *busData, int i, int *chipset)
 {
-	const char *VendorName;
-	const char *CardName;
 	char busnum[8];
     struct pci_device * pVideo = NULL;
 
     pVideo = (struct pci_device *) busData;
 
 	DevToConfig[i].pVideo = pVideo;
-
-	VendorName = pci_device_get_vendor_name( pVideo );
-	CardName = pci_device_get_device_name( pVideo );
-
-	if (!VendorName) {
-	    VendorName = xnfalloc(15);
-	    sprintf((char*)VendorName, "Unknown Vendor");
-	}
-
-	if (!CardName) {
-	    CardName = xnfalloc(14);
-	    sprintf((char*)CardName, "Unknown Board");
-	}
-
-	DevToConfig[i].GDev.identifier =
-	    xnfalloc(strlen(VendorName) + strlen(CardName) + 2);
-	sprintf(DevToConfig[i].GDev.identifier, "%s %s", VendorName, CardName);
-
-	DevToConfig[i].GDev.vendor = (char *)VendorName;
-	DevToConfig[i].GDev.board = (char *)CardName;
 
 	DevToConfig[i].GDev.busID = xnfalloc(16);
 	xf86FormatPciBusNumber(pVideo->bus, busnum);
@@ -163,7 +141,7 @@ bus_sbus_newdev_configure(void *busData, int i)
 	if (promPath) {
 	    DevToConfig[i].GDev.busID = xnfalloc(strlen(promPath) + 6);
 	    sprintf(DevToConfig[i].GDev.busID, "SBUS:%s", promPath);
-	    xfree(promPath);
+	    free(promPath);
 	} else {
 	    DevToConfig[i].GDev.busID = xnfalloc(12);
 	    sprintf(DevToConfig[i].GDev.busID, "SBUS:fb%d",
@@ -277,16 +255,16 @@ configureInputSection (void)
     mouse->inp_identifier = "Mouse0";
     mouse->inp_driver = "mouse";
     mouse->inp_option_lst = 
-		xf86addNewOption(mouse->inp_option_lst, xstrdup("Protocol"),
-				xstrdup(DFLT_MOUSE_PROTO));
+		xf86addNewOption(mouse->inp_option_lst, strdup("Protocol"),
+				strdup(DFLT_MOUSE_PROTO));
 #ifndef __SCO__
     mouse->inp_option_lst = 
-		xf86addNewOption(mouse->inp_option_lst, xstrdup("Device"),
-				xstrdup(DFLT_MOUSE_DEV));
+		xf86addNewOption(mouse->inp_option_lst, strdup("Device"),
+				strdup(DFLT_MOUSE_DEV));
 #endif
     mouse->inp_option_lst = 
-		xf86addNewOption(mouse->inp_option_lst, xstrdup("ZAxisMapping"),
-				xstrdup("4 5 6 7"));
+		xf86addNewOption(mouse->inp_option_lst, strdup("ZAxisMapping"),
+				strdup("4 5 6 7"));
     ptr = (XF86ConfInputPtr)xf86addListItem((glp)ptr, (glp)mouse);
     return ptr;
 }
@@ -322,7 +300,7 @@ configureScreenSection (int screennum)
 }
 
 static const char* 
-optionTypeToSting(OptionValueType type)
+optionTypeToString(OptionValueType type)
 {
     switch (type) {
     case OPTV_NONE:
@@ -339,6 +317,8 @@ optionTypeToSting(OptionValueType type)
         return "[<bool>]";
     case OPTV_FREQ:
         return "<freq>";
+    case OPTV_PERCENT:
+        return "<percent>";
     default:
         return "";
     }
@@ -355,9 +335,6 @@ configureDeviceSection (int screennum)
     /* Move device info to parser structure */
     sprintf(identifier, "Card%d", screennum);
     ptr->dev_identifier = strdup(identifier);
-/*    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;*/
-    ptr->dev_vendor = DevToConfig[screennum].GDev.vendor;
-    ptr->dev_board = DevToConfig[screennum].GDev.board;
     ptr->dev_chipset = DevToConfig[screennum].GDev.chipset;
     ptr->dev_busid = DevToConfig[screennum].GDev.busID;
     ptr->dev_driver = DevToConfig[screennum].GDev.driver;
@@ -384,9 +361,10 @@ configureDeviceSection (int screennum)
 	    "        ### Available Driver options are:-\n"
 	    "        ### Values: <i>: integer, <f>: float, "
 			"<bool>: \"True\"/\"False\",\n"
-	    "        ### <string>: \"String\", <freq>: \"<f> Hz/kHz/MHz\"\n"
+	    "        ### <string>: \"String\", <freq>: \"<f> Hz/kHz/MHz\",\n"
+	    "        ### <percent>: \"<f>%\"\n"
 	    "        ### [arg]: arg optional\n";
-	ptr->dev_comment = xstrdup(descrip);
+	ptr->dev_comment = strdup(descrip);
 	if (ptr->dev_comment) {
     	    for (p = DevToConfig[screennum].GDev.options;
 		 p->name != NULL; p++) {
@@ -394,12 +372,12 @@ configureDeviceSection (int screennum)
 		const char *prefix = "        #Option     ";
 		const char *middle = " \t# ";
 		const char *suffix = "\n";
-		const char *opttype = optionTypeToSting(p->type);
+		const char *opttype = optionTypeToString(p->type);
 		char *optname;
 		int len = strlen(ptr->dev_comment) + strlen(prefix) +
 			  strlen(middle) + strlen(suffix) + 1;
 		
-		optname = xalloc(strlen(p->name) + 2 + 1);
+		optname = malloc(strlen(p->name) + 2 + 1);
 		if (!optname)
 		    break;
 		sprintf(optname, "\"%s\"", p->name);
@@ -407,13 +385,13 @@ configureDeviceSection (int screennum)
 		len += max(20, strlen(optname));
 		len += strlen(opttype);
 
-		ptr->dev_comment = xrealloc(ptr->dev_comment, len);
+		ptr->dev_comment = realloc(ptr->dev_comment, len);
 		if (!ptr->dev_comment)
 		    break;
 		p_e = ptr->dev_comment + strlen(ptr->dev_comment);
 		sprintf(p_e, "%s%-20s%s%s%s", prefix, optname, middle,
 			opttype, suffix);
-		xfree(optname);
+		free(optname);
 	    }
     	}
     }
@@ -437,7 +415,7 @@ configureLayoutSection (void)
 	iptr->iref_option_lst = NULL;
 	iptr->iref_inputdev_str = "Mouse0";
 	iptr->iref_option_lst =
-		xf86addNewOption (iptr->iref_option_lst, xstrdup("CorePointer"), NULL);
+		xf86addNewOption (iptr->iref_option_lst, strdup("CorePointer"), NULL);
 	ptr->lay_input_lst = (XF86ConfInputrefPtr)
 		xf86addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
     }
@@ -450,7 +428,7 @@ configureLayoutSection (void)
 	iptr->iref_option_lst = NULL;
 	iptr->iref_inputdev_str = "Keyboard0";
 	iptr->iref_option_lst =
-		xf86addNewOption (iptr->iref_option_lst, xstrdup("CoreKeyboard"), NULL);
+		xf86addNewOption (iptr->iref_option_lst, strdup("CoreKeyboard"), NULL);
 	ptr->lay_input_lst = (XF86ConfInputrefPtr)
 		xf86addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
     }
@@ -512,7 +490,7 @@ configureModuleSection (void)
             ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
                                 (glp)ptr->mod_load_lst, (glp)module);
     	}
-	xfree(elist);
+	free(elist);
     }
 
     return ptr;
@@ -623,7 +601,7 @@ configureDDCMonitorSection (int screennum)
                              ptr);
 
     if (ConfiguredMonitor->features.dpms) {
-      ptr->mon_option_lst = xf86addNewOption(ptr->mon_option_lst, xstrdup("DPMS"), NULL);
+      ptr->mon_option_lst = xf86addNewOption(ptr->mon_option_lst, strdup("DPMS"), NULL);
     }
 
     return ptr;
@@ -658,7 +636,7 @@ DoConfigure(void)
     /* Load all the drivers that were found. */
     xf86LoadModules(vlist, NULL);
 
-    xfree(vlist);
+    free(vlist);
 
     for (i = 0; i < xf86NumDrivers; i++) {
 	xorgHWFlags flags;
@@ -678,8 +656,6 @@ DoConfigure(void)
 	    xorgHWAccess = FALSE;
     }
 
-    xf86FindPrimaryDevice();
- 
     /* Create XF86Config file structure */
     xf86config = calloc(1, sizeof(XF86ConfigRec));
 
@@ -807,7 +783,7 @@ DoConfigure(void)
 		}
 	    }
 	}
-	xfree(driverProbed);
+	free(driverProbed);
     }
     
 
@@ -818,7 +794,6 @@ DoConfigure(void)
     }
 
     xf86PostProbe();
-    xf86EntityInit();
 
     for (j = 0; j < xf86NumScreens; j++) {
 	xf86Screens[j]->scrnIndex = j;
@@ -834,7 +809,6 @@ DoConfigure(void)
 
 	ConfiguredMonitor = NULL;
 
-	xf86EnableAccess(xf86Screens[dev2screen[j]]);
 	if ((*xf86Screens[dev2screen[j]]->PreInit)(xf86Screens[dev2screen[j]], 
 						   PROBE_DETECT) &&
 	    ConfiguredMonitor) {

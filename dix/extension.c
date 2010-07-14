@@ -89,26 +89,31 @@ AddExtension(char *name, int NumEvents, int NumErrors,
         return((ExtensionEntry *) NULL);
     }
 
-    ext = xalloc(sizeof(ExtensionEntry));
+    ext = calloc(sizeof (ExtensionEntry), 1);
     if (!ext)
-	return(NULL);
-    ext->name = xalloc(strlen(name) + 1);
+	return NULL;
+    if (!dixAllocatePrivates(&ext->devPrivates, PRIVATE_EXTENSION)) {
+	free(ext);
+	return NULL;
+    }
+    ext->name = malloc(strlen(name) + 1);
     ext->num_aliases = 0;
     ext->aliases = (char **)NULL;
-    ext->devPrivates = NULL;
     if (!ext->name)
     {
-	xfree(ext);
+	dixFreePrivates(ext->devPrivates, PRIVATE_EXTENSION);
+	free(ext);
 	return((ExtensionEntry *) NULL);
     }
     strcpy(ext->name,  name);
     i = NumExtensions;
-    newexts = (ExtensionEntry **) xrealloc(extensions,
+    newexts = (ExtensionEntry **) realloc(extensions,
 					   (i + 1) * sizeof(ExtensionEntry *));
     if (!newexts)
     {
-	xfree(ext->name);
-	xfree(ext);
+	free(ext->name);
+	dixFreePrivates(ext->devPrivates, PRIVATE_EXTENSION);
+	free(ext);
 	return((ExtensionEntry *) NULL);
     }
     NumExtensions++;
@@ -144,7 +149,7 @@ AddExtension(char *name, int NumEvents, int NumErrors,
     }
 
     RegisterExtensionNames(ext);
-    return(ext);
+    return ext;
 }
 
 Bool AddExtensionAlias(char *alias, ExtensionEntry *ext)
@@ -154,12 +159,12 @@ Bool AddExtensionAlias(char *alias, ExtensionEntry *ext)
 
     if (!ext)
         return FALSE ;
-    aliases = (char **)xrealloc(ext->aliases,
+    aliases = (char **)realloc(ext->aliases,
 				(ext->num_aliases + 1) * sizeof(char *));
     if (!aliases)
 	return FALSE;
     ext->aliases = aliases;
-    name = xalloc(strlen(alias) + 1);
+    name = malloc(strlen(alias) + 1);
     if (!name)
 	return FALSE;
     strcpy(name,  alias);
@@ -249,14 +254,14 @@ CloseDownExtensions(void)
 	if (extensions[i]->CloseDown)
 	    extensions[i]->CloseDown(extensions[i]);
 	NumExtensions = i;
-	xfree(extensions[i]->name);
+	free(extensions[i]->name);
 	for (j = extensions[i]->num_aliases; --j >= 0;)
-	    xfree(extensions[i]->aliases[j]);
-	xfree(extensions[i]->aliases);
-	dixFreePrivates(extensions[i]->devPrivates);
-	xfree(extensions[i]);
+	    free(extensions[i]->aliases[j]);
+	free(extensions[i]->aliases);
+	dixFreePrivates(extensions[i]->devPrivates, PRIVATE_EXTENSION);
+	free(extensions[i]);
     }
-    xfree(extensions);
+    free(extensions);
     extensions = (ExtensionEntry **)NULL;
     lastEvent = EXTENSION_EVENT_BASE;
     lastError = FirstExtensionError;
@@ -293,7 +298,7 @@ ProcQueryExtension(ClientPtr client)
 	}
     }
     WriteReplyToClient(client, sizeof(xQueryExtensionReply), &reply);
-    return(client->noClientException);
+    return Success;
 }
 
 int
@@ -328,9 +333,9 @@ ProcListExtensions(ClientPtr client)
 		total_length += strlen(extensions[i]->aliases[j]) + 1;
 	}
         reply.length = bytes_to_int32(total_length);
-	buffer = bufptr = xalloc(total_length);
+	buffer = bufptr = malloc(total_length);
 	if (!buffer)
-	    return(BadAlloc);
+	    return BadAlloc;
         for (i=0;  i<NumExtensions; i++)
         {
 	    int len;
@@ -352,7 +357,7 @@ ProcListExtensions(ClientPtr client)
     if (reply.length)
     {
         WriteToClient(client, total_length, buffer);
-    	xfree(buffer);
+        free(buffer);
     }
-    return(client->noClientException);
+    return Success;
 }

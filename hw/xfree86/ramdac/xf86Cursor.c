@@ -18,8 +18,7 @@
 #include "inputstr.h"
 extern InputInfo inputInfo;
 
-static int xf86CursorScreenKeyIndex;
-DevPrivateKey xf86CursorScreenKey = &xf86CursorScreenKeyIndex;
+DevPrivateKeyRec xf86CursorScreenKeyRec;
 
 /* sprite functions */
 
@@ -65,7 +64,10 @@ xf86InitCursor(
     if (!xf86InitHardwareCursor(pScreen, infoPtr))
 	return FALSE;
 
-    ScreenPriv = xcalloc(1, sizeof(xf86CursorScreenRec));
+    if (!dixRegisterPrivateKey(&xf86CursorScreenKeyRec, PRIVATE_SCREEN, 0))
+	return FALSE;
+
+    ScreenPriv = calloc(1, sizeof(xf86CursorScreenRec));
     if (!ScreenPriv)
 	return FALSE;
 
@@ -144,8 +146,8 @@ xf86CursorCloseScreen(int i, ScreenPtr pScreen)
     pScrn->EnableDisableFBAccess = ScreenPriv->EnableDisableFBAccess;
     pScrn->SwitchMode = ScreenPriv->SwitchMode;
 
-    xfree(ScreenPriv->transparentData);
-    xfree(ScreenPriv);
+    free(ScreenPriv->transparentData);
+    free(ScreenPriv);
 
     return (*pScreen->CloseScreen)(i, pScreen);
 }
@@ -286,7 +288,7 @@ xf86CursorUnrealizeCursor(DeviceIntPtr pDev, ScreenPtr pScreen,
 	&pScreen->devPrivates, xf86CursorScreenKey);
 
     if (pCurs->refcnt <= 1) {
-	xfree(dixLookupPrivate(&pCurs->devPrivates, CursorScreenKey(pScreen)));
+	free(dixLookupPrivate(&pCurs->devPrivates, CursorScreenKey(pScreen)));
 	dixSetPrivate(&pCurs->devPrivates, CursorScreenKey(pScreen), NULL);
     }
 
@@ -439,13 +441,13 @@ xf86ForceHWCursor (ScreenPtr pScreen, Bool on)
 xf86CursorInfoPtr
 xf86CreateCursorInfoRec(void)
 {
-    return xcalloc(1, sizeof(xf86CursorInfoRec));
+    return calloc(1, sizeof(xf86CursorInfoRec));
 }
 
 void
 xf86DestroyCursorInfoRec(xf86CursorInfoPtr infoPtr)
 {
-    xfree(infoPtr);
+    free(infoPtr);
 }
 
 /**

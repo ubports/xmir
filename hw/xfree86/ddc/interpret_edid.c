@@ -183,10 +183,10 @@ xf86InterpretEDID(int scrnIndex, Uchar *block)
     handle_edid_quirks(m);
     encode_aspect_ratio(m);
 
-    return (m);
+    return m;
 
  error:
-    xfree(m);
+    free(m);
     return NULL;
 }
 

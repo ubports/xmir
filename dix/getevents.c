@@ -33,6 +33,7 @@
 #include <X11/X.h>
 #include <X11/keysym.h>
 #include <X11/Xproto.h>
+#include <math.h>
 
 #include "misc.h"
 #include "resource.h"
@@ -56,6 +57,7 @@
 
 #include <X11/extensions/XI.h>
 #include <X11/extensions/XIproto.h>
+#include <pixman.h>
 #include "exglobals.h"
 #include "exevents.h"
 #include "exglobals.h"
@@ -325,8 +327,7 @@ void
 AllocateMotionHistory(DeviceIntPtr pDev)
 {
     int size;
-    if (pDev->valuator->motion)
-        xfree(pDev->valuator->motion);
+    free(pDev->valuator->motion);
 
     if (pDev->valuator->numMotionEvents < 1)
         return;
@@ -342,7 +343,7 @@ AllocateMotionHistory(DeviceIntPtr pDev)
 
     size += sizeof(Time);
 
-    pDev->valuator->motion = xcalloc(pDev->valuator->numMotionEvents, size);
+    pDev->valuator->motion = calloc(pDev->valuator->numMotionEvents, size);
     pDev->valuator->first_motion = 0;
     pDev->valuator->last_motion = 0;
     if (!pDev->valuator->motion)
@@ -384,7 +385,7 @@ GetMotionHistory(DeviceIntPtr pDev, xTimecoord **buff, unsigned long start,
     else
         size = (sizeof(INT32) * pDev->valuator->numAxes) + sizeof(Time);
 
-    *buff = xalloc(size * pDev->valuator->numMotionEvents);
+    *buff = malloc(size * pDev->valuator->numMotionEvents);
     if (!(*buff))
         return 0;
     obuff = (char *)*buff;
@@ -959,20 +960,20 @@ InitEventList(int num_events)
     EventListPtr events;
     int i;
 
-    events = (EventListPtr)xcalloc(num_events, sizeof(EventList));
+    events = (EventListPtr)calloc(num_events, sizeof(EventList));
     if (!events)
         return NULL;
 
     for (i = 0; i < num_events; i++)
     {
         events[i].evlen = sizeof(InternalEvent);
-        events[i].event = xcalloc(1, sizeof(InternalEvent));
+        events[i].event = calloc(1, sizeof(InternalEvent));
         if (!events[i].event)
         {
             /* rollback */
             while(i--)
-                xfree(events[i].event);
-            xfree(events);
+                free(events[i].event);
+            free(events);
             events = NULL;
             break;
         }
@@ -993,8 +994,24 @@ FreeEventList(EventListPtr list, int num_events)
     if (!list)
         return;
     while(num_events--)
-        xfree(list[num_events].event);
-    xfree(list);
+        free(list[num_events].event);
+    free(list);
+}
+
+static void
+transformAbsolute(DeviceIntPtr dev, int v[MAX_VALUATORS])
+{
+    struct pixman_f_vector p;
+
+    /* p' = M * p in homogeneous coordinates */
+    p.v[0] = v[0];
+    p.v[1] = v[1];
+    p.v[2] = 1.0;
+
+    pixman_f_transform_point(&dev->transform, &p);
+
+    v[0] = lround(p.v[0]);
+    v[1] = lround(p.v[1]);
 }
 
 /**
@@ -1068,6 +1085,7 @@ GetPointerEvents(EventList *events, DeviceIntPtr pDev, int type, int buttons,
                         scr->height);
         }
 
+        transformAbsolute(pDev, valuators);
         moveAbsolute(pDev, &x, &y, first_valuator, num_valuators, valuators);
     } else {
         if (flags & POINTER_ACCELERATE) {
@@ -1191,8 +1209,8 @@ PostSyntheticMotion(DeviceIntPtr pDev,
        will translate from sprite screen to screen 0 upon reentry
        to the DIX layer. */
     if (!noPanoramiXExtension) {
-        x += panoramiXdataPtr[0].x - panoramiXdataPtr[screen].x;
-        y += panoramiXdataPtr[0].y - panoramiXdataPtr[screen].y;
+        x += screenInfo.screens[0]->x - screenInfo.screens[screen]->x;
+        y += screenInfo.screens[0]->y - screenInfo.screens[screen]->y;
     }
 #endif
 

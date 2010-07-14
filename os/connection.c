@@ -183,7 +183,7 @@ struct _ct_node *ct_head[256];
 
 void InitConnectionTranslation(void)
 {
-    bzero(ct_head, sizeof(ct_head));
+    memset(ct_head, 0, sizeof(ct_head));
 }
 
 int GetConnectionTranslation(int conn)
@@ -226,7 +226,7 @@ void SetConnectionTranslation(int conn, int client)
             }
             node = &((*node)->next);
         }
-        *node = xalloc(sizeof(struct _ct_node));
+        *node = malloc(sizeof(struct _ct_node));
         (*node)->next = NULL;
         (*node)->key = conn;
         (*node)->value = client;
@@ -244,7 +244,7 @@ void ClearConnectionTranslation(void)
         {
             struct _ct_node *temp = node;
             node = node->next;
-            xfree(temp);
+            free(temp);
         }
     }
 }
@@ -267,7 +267,7 @@ lookup_trans_conn (int fd)
 		return ListenTransConns[i];
     }
 
-    return (NULL);
+    return NULL;
 }
 
 /* Set MaxClients and lastfdesc, and allocate ConnectionTranslation */
@@ -397,7 +397,7 @@ CreateWellKnownSockets(void)
 	}
 	else
 	{
-	    ListenTransFds = xalloc (ListenTransCount * sizeof (int));
+	    ListenTransFds = malloc(ListenTransCount * sizeof (int));
 
 	    for (i = 0; i < ListenTransCount; i++)
 	    {
@@ -679,7 +679,7 @@ ClientAuthorized(ClientPtr client,
 			proto_n, auth_proto, auth_id);
 	    }
 
-	    xfree (from);
+	    free(from);
 	}
 
 	if (auth_id == (XID) ~0L) {
@@ -701,7 +701,7 @@ ClientAuthorized(ClientPtr client,
 	    AuthAudit(client, TRUE, (struct sockaddr *) from, fromlen,
 		      proto_n, auth_proto, auth_id);
 
-	    xfree (from);
+	    free(from);
 	}
     }
     priv->auth_id = auth_id;
@@ -737,7 +737,7 @@ AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time)
 #endif
 	)
 	return NullClient;
-    oc = xalloc(sizeof(OsCommRec));
+    oc = malloc(sizeof(OsCommRec));
     if (!oc)
 	return NullClient;
     oc->trans_conn = trans_conn;
@@ -748,7 +748,7 @@ AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time)
     oc->conn_time = conn_time;
     if (!(client = NextAvailableClient((pointer)oc)))
     {
-	xfree (oc);
+	free(oc);
 	return NullClient;
     }
 #if !defined(WIN32)
@@ -1040,7 +1040,7 @@ CloseDownConnection(ClientPtr client)
 #endif
     CloseDownFileDescriptor(oc);
     FreeOsBuffers(oc);
-    xfree(client->osPrivate);
+    free(client->osPrivate);
     client->osPrivate = (pointer)NULL;
     if (auditTrailLevel > 1)
 	AuditF("client %d disconnected\n", client->index);
@@ -1147,6 +1147,10 @@ IgnoreClient (ClientPtr client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
+    client->ignoreCount++;
+    if (client->ignoreCount > 1)
+	return;
+
     isItTimeToYield = TRUE;
     if (!GrabInProgress || FD_ISSET(connection, &AllClients))
     {
@@ -1181,6 +1185,11 @@ AttendClient (ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
+
+    client->ignoreCount--;
+    if (client->ignoreCount)
+	return;
+
     if (!GrabInProgress || GrabInProgress == client->index ||
 	FD_ISSET(connection, &GrabImperviousClients))
     {
@@ -1276,8 +1285,8 @@ void ListenOnOpenFD(int fd, int noxauth) {
         ciptr->flags = ciptr->flags | TRANS_NOXAUTH;
 
     /* Allocate space to store it */
-    ListenTransFds = (int *) xrealloc(ListenTransFds, (ListenTransCount + 1) * sizeof (int));
-    ListenTransConns = (XtransConnInfo *) xrealloc(ListenTransConns, (ListenTransCount + 1) * sizeof (XtransConnInfo));
+    ListenTransFds = (int *) realloc(ListenTransFds, (ListenTransCount + 1) * sizeof (int));
+    ListenTransConns = (XtransConnInfo *) realloc(ListenTransConns, (ListenTransCount + 1) * sizeof (XtransConnInfo));
     
     /* Store it */
     ListenTransConns[ListenTransCount] = ciptr;

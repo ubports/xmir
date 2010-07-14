@@ -22,7 +22,7 @@ Build-Depends:
  xfonts-utils (>= 1:7.5+1),
  x11proto-bigreqs-dev (>= 1:1.1.0),
  x11proto-composite-dev (>= 1:0.4), 
- x11proto-core-dev (>= 7.0.13),
+ x11proto-core-dev (>= 7.0.17),
  x11proto-damage-dev (>= 1.1),
  x11proto-fixes-dev (>= 1:4.1),
  x11proto-kb-dev (>= 1.0.3),
@@ -41,9 +41,9 @@ Build-Depends:
  xtrans-dev (>= 1.2.2),
  libxau-dev (>= 1:1.0.5-2),
  x11proto-input-dev (>= 1.9.99.902),
- x11proto-dri2-dev (>= 2.2),
+ x11proto-dri2-dev (>= 2.3),
  libxdmcp-dev (>= 1:0.99.1),
- libxfont-dev (>= 1:1.4.1-2),
+ libxfont-dev (>= 1:1.4.2),
  libxkbfile-dev (>= 1:0.99.1),
  libpixman-1-dev (>= 0.15.20),
  libpciaccess-dev (>= 0.11.0-2),
@@ -78,7 +78,7 @@ Build-Depends:
  libglib2.0-dev,
  xkb-data,
  x11-xkb-utils,
-Standards-Version: 3.8.4
+Standards-Version: 3.9.0
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
 
@@ -149,14 +149,15 @@ Package: xserver-xorg-dev
 Architecture: any
 Depends:
  libpixman-1-dev (>= 0.15.20),
- x11proto-core-dev (>= 7.0.14),
+ x11proto-core-dev (>= 7.0.17),
  x11proto-input-dev (>= 1.9.99.902),
  x11proto-xext-dev (>= 7.0.99.3),
  x11proto-video-dev,
  x11proto-randr-dev (>= 1.2.99.3),
  x11proto-render-dev (>= 2:0.11),
- x11proto-dri2-dev (>= 2.1),
+ x11proto-dri2-dev (>= 2.3),
  x11proto-fonts-dev,
+ x11proto-xinerama-dev,
  x11proto-kb-dev,
  libxkbfile-dev,
  libpciaccess-dev,
@@ -269,7 +270,7 @@ Depends:
  xserver-common (>= ${source:Version}),
  ${shlibs:Depends},
  ${misc:Depends},
-Recommends: xbase-clients, libgl1-mesa-dri (>= 7.1~rc1)
+Recommends: libgl1-mesa-dri (>= 7.1~rc1)
 Description: nested X server
  Xephyr is an X server that can be run inside another X server,
  much like Xnest. It is based on the kdrive X server, and as a
@@ -287,7 +288,6 @@ Depends:
  xserver-common (>= ${source:Version}),
  ${shlibs:Depends},
  ${misc:Depends},
-Recommends: xbase-clients
 Description: Linux framebuffer device tiny X server
  xserver-xfbdev is a Linux framebuffer device tiny X server based on the
  kdrive X server.
@@ -321,7 +321,9 @@ Depends:
  xkb-data,
  x11-xkb-utils,
  ${misc:Depends},
-Recommends: xfonts-base
+Recommends:
+ xfonts-base,
+ xauth,
 Replaces: xserver-xorg-core (<< 2:1.5.2)
 Description: common files used by various X servers
  This package provides files necessary for all X.Org based X servers.

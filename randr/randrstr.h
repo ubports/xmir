@@ -47,10 +47,8 @@
 #include "rrtransform.h"
 #include <X11/extensions/randr.h>
 #include <X11/extensions/randrproto.h>
-#ifdef RENDER
 #include <X11/extensions/render.h> 	/* we share subpixel order information */
 #include "picturestr.h"
-#endif
 #include <X11/Xfuncproto.h>
 
 /* required for ABI compatibility for now */
@@ -301,7 +299,8 @@ typedef struct _rrScrPriv {
 #endif
 } rrScrPrivRec, *rrScrPrivPtr;
 
-extern _X_EXPORT DevPrivateKey rrPrivKey;
+extern _X_EXPORT DevPrivateKeyRec rrPrivKeyRec;
+#define rrPrivKey (&rrPrivKeyRec)
 
 #define rrGetScrPriv(pScr)  ((rrScrPrivPtr)dixLookupPrivate(&(pScr)->devPrivates, rrPrivKey))
 #define rrScrPriv(pScr)	rrScrPrivPtr    pScrPriv = rrGetScrPriv(pScr)
@@ -337,7 +336,8 @@ typedef struct _RRClient {
 } RRClientRec, *RRClientPtr;
 
 extern _X_EXPORT RESTYPE RRClientType, RREventType; /* resource types for event masks */
-extern _X_EXPORT DevPrivateKey RRClientPrivateKey;
+extern _X_EXPORT DevPrivateKeyRec RRClientPrivateKeyRec;
+#define RRClientPrivateKey (&RRClientPrivateKeyRec)
 extern _X_EXPORT RESTYPE RRCrtcType, RRModeType, RROutputType;
 
 #define VERIFY_RR_OUTPUT(id, ptr, a)\
@@ -346,7 +346,7 @@ extern _X_EXPORT RESTYPE RRCrtcType, RRModeType, RROutputType;
 	                                 RROutputType, client, a);\
 	if (rc != Success) {\
 	    client->errorValue = id;\
-	    return (rc == BadValue) ? RRErrorBase + BadRROutput : rc;\
+	    return rc;\
 	}\
     }
 
@@ -356,7 +356,7 @@ extern _X_EXPORT RESTYPE RRCrtcType, RRModeType, RROutputType;
 	                                 RRCrtcType, client, a);\
 	if (rc != Success) {\
 	    client->errorValue = id;\
-	    return (rc == BadValue) ? RRErrorBase + BadRRCrtc : rc;\
+	    return rc;\
 	}\
     }
 
@@ -366,7 +366,7 @@ extern _X_EXPORT RESTYPE RRCrtcType, RRModeType, RROutputType;
 	                                 RRModeType, client, a);\
 	if (rc != Success) {\
 	    client->errorValue = id;\
-	    return (rc == BadValue) ? RRErrorBase + BadRRMode : rc;\
+	    return rc;\
 	}\
     }
 

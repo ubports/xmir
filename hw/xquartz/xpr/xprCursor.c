@@ -57,12 +57,11 @@ typedef struct {
     miPointerSpriteFuncPtr  spriteFuncs;
 } QuartzCursorScreenRec, *QuartzCursorScreenPtr;
 
-static int darwinCursorScreenKeyIndex;
-static DevPrivateKey darwinCursorScreenKey = &darwinCursorScreenKeyIndex;
+static DevPrivateKeyRec darwinCursorScreenKeyRec;
+#define darwinCursorScreenKey (&darwinCursorScreenKeyRec)
 
 #define CURSOR_PRIV(pScreen) ((QuartzCursorScreenPtr) \
     dixLookupPrivate(&pScreen->devPrivates, darwinCursorScreenKey))
-
 
 static Bool
 load_cursor(CursorPtr src, int screen)
@@ -95,7 +94,7 @@ load_cursor(CursorPtr src, int screen)
         const uint32_t *be_data=(uint32_t *) src->bits->argb;
         unsigned i;
         rowbytes = src->bits->width * sizeof (CARD32);
-        data = xalloc(rowbytes * src->bits->height);
+        data = malloc(rowbytes * src->bits->height);
         if(!data) {
             FatalError("Failed to allocate memory in %s\n", __func__);
         }
@@ -121,7 +120,7 @@ load_cursor(CursorPtr src, int screen)
 
         /* round up to 8 pixel boundary so we can convert whole bytes */
         rowbytes = ((src->bits->width * 4) + 31) & ~31;
-        data = xalloc(rowbytes * src->bits->height);
+        data = malloc(rowbytes * src->bits->height);
         if(!data) {
             FatalError("Failed to allocate memory in %s\n", __func__);
         }
@@ -174,7 +173,7 @@ load_cursor(CursorPtr src, int screen)
     }
 
     err = xp_set_cursor(width, height, hot_x, hot_y, data, rowbytes);
-    xfree(data);
+    free(data);
     return err == Success;
 }
 
@@ -296,8 +295,8 @@ QuartzWarpCursor(DeviceIntPtr pDev, ScreenPtr pScreen, int x, int y)
     {
         int sx, sy;
 
-        sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
-        sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
+        sx = pScreen->x + darwinMainScreenX;
+        sy = pScreen->y + darwinMainScreenY;
 
         CGWarpMouseCursorPosition(CGPointMake(sx + x, sy + y));
     }
@@ -360,7 +359,10 @@ QuartzInitCursor(ScreenPtr pScreen)
     if (!miDCInitialize(pScreen, &quartzScreenFuncsRec))
         return FALSE;
 
-    ScreenPriv = xcalloc(1, sizeof(QuartzCursorScreenRec));
+    if (!dixRegisterPrivateKey(&darwinCursorScreenKeyRec, PRIVATE_SCREEN, 0))
+	return FALSE;
+
+    ScreenPriv = calloc(1, sizeof(QuartzCursorScreenRec));
     if (ScreenPriv == NULL)
         return FALSE;
 

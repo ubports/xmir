@@ -64,15 +64,15 @@ RRCrtcCreate (ScreenPtr pScreen, void *devPrivate)
 
     /* make space for the crtc pointer */
     if (pScrPriv->numCrtcs)
-	crtcs = xrealloc (pScrPriv->crtcs, 
+	crtcs = realloc(pScrPriv->crtcs, 
 			  (pScrPriv->numCrtcs + 1) * sizeof (RRCrtcPtr));
     else
-	crtcs = xalloc (sizeof (RRCrtcPtr));
+	crtcs = malloc(sizeof (RRCrtcPtr));
     if (!crtcs)
 	return FALSE;
     pScrPriv->crtcs = crtcs;
     
-    crtc = xcalloc (1, sizeof (RRCrtcRec));
+    crtc = calloc(1, sizeof (RRCrtcRec));
     if (!crtc)
 	return NULL;
     crtc->id = FakeClientID (0);
@@ -181,17 +181,16 @@ RRCrtcNotify (RRCrtcPtr	    crtc,
 	if (numOutputs)
 	{
 	    if (crtc->numOutputs)
-		newoutputs = xrealloc (crtc->outputs,
+		newoutputs = realloc(crtc->outputs,
 				    numOutputs * sizeof (RROutputPtr));
 	    else
-		newoutputs = xalloc (numOutputs * sizeof (RROutputPtr));
+		newoutputs = malloc(numOutputs * sizeof (RROutputPtr));
 	    if (!newoutputs)
 		return FALSE;
 	}
 	else
 	{
-	    if (crtc->outputs)
-		xfree (crtc->outputs);
+	    free(crtc->outputs);
 	    newoutputs = NULL;
 	}
 	crtc->outputs = newoutputs;
@@ -254,7 +253,6 @@ RRDeliverCrtcEvent (ClientPtr client, WindowPtr pWin, RRCrtcPtr crtc)
     
     ce.type = RRNotify + RREventBase;
     ce.subCode = RRNotify_CrtcChange;
-    ce.sequenceNumber = client->sequence;
     ce.timestamp = pScrPriv->lastSetTime.milliseconds;
     ce.window = pWin->drawable.id;
     ce.crtc = crtc->id;
@@ -441,11 +439,10 @@ RRCrtcDestroyResource (pointer value, XID pid)
 	    }
 	}
     }
-    if (crtc->gammaRed)
-	xfree (crtc->gammaRed);
+    free(crtc->gammaRed);
     if (crtc->mode)
 	RRModeDestroy (crtc->mode);
-    xfree (crtc);
+    free(crtc);
     return 1;
 }
 
@@ -558,14 +555,13 @@ RRCrtcGammaSetSize (RRCrtcPtr	crtc,
 	return TRUE;
     if (size)
     {
-	gamma = xalloc (size * 3 * sizeof (CARD16));
+	gamma = malloc(size * 3 * sizeof (CARD16));
 	if (!gamma)
 	    return FALSE;
     }
     else
 	gamma = NULL;
-    if (crtc->gammaRed)
-	xfree (crtc->gammaRed);
+    free(crtc->gammaRed);
     crtc->gammaRed = gamma;
     crtc->gammaGreen = gamma + size;
     crtc->gammaBlue = gamma + size*2;
@@ -635,6 +631,7 @@ RRCrtcInit (void)
     RRCrtcType = CreateNewResourceType (RRCrtcDestroyResource, "CRTC");
     if (!RRCrtcType)
 	return FALSE;
+    SetResourceTypeErrorValue(RRCrtcType, RRErrorBase + BadRRCrtc);
     return TRUE;
 }
 
@@ -704,7 +701,7 @@ ProcRRGetCrtcInfo (ClientPtr client)
     extraLen = rep.length << 2;
     if (extraLen)
     {
-	extra = xalloc (extraLen);
+	extra = malloc(extraLen);
 	if (!extra)
 	    return BadAlloc;
     }
@@ -749,10 +746,10 @@ ProcRRGetCrtcInfo (ClientPtr client)
     if (extraLen)
     {
 	WriteToClient (client, extraLen, (char *) extra);
-	xfree (extra);
+	free(extra);
     }
     
-    return client->noClientException;
+    return Success;
 }
 
 int
@@ -791,7 +788,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
     }
     if (numOutputs)
     {
-	outputs = xalloc (numOutputs * sizeof (RROutputPtr));
+	outputs = malloc(numOutputs * sizeof (RROutputPtr));
 	if (!outputs)
 	    return BadAlloc;
     }
@@ -805,9 +802,8 @@ ProcRRSetCrtcConfig (ClientPtr client)
 				     RROutputType, client, DixSetAttrAccess);
 	if (rc != Success)
 	{
-	    if (outputs)
-		xfree (outputs);
-	    return (rc == BadValue) ? RRErrorBase + BadRROutput : rc;
+	    free(outputs);
+	    return rc;
 	}
 	/* validate crtc for this output */
 	for (j = 0; j < outputs[i]->numCrtcs; j++)
@@ -815,8 +811,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
 		break;
 	if (j == outputs[i]->numCrtcs)
 	{
-	    if (outputs)
-		xfree (outputs);
+	    free(outputs);
 	    return BadMatch;
 	}
 	/* validate mode for this output */
@@ -830,8 +825,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
 	}
 	if (j == outputs[i]->numModes + outputs[i]->numUserModes)
 	{
-	    if (outputs)
-		xfree (outputs);
+	    free(outputs);
 	    return BadMatch;
 	}
     }
@@ -850,8 +844,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
 	    }
 	    if (k == outputs[i]->numClones)
 	    {
-		if (outputs)
-		    xfree (outputs);
+		free(outputs);
 		return BadMatch;
 	    }
 	}
@@ -870,19 +863,6 @@ ProcRRSetCrtcConfig (ClientPtr client)
 	goto sendReply;
     }
     
-#if 0
-    /*
-     * if the client's config timestamp is not the same as the last config
-     * timestamp, then the config information isn't up-to-date and
-     * can't even be validated
-     */
-    if (CompareTimeStamps (configTime, pScrPriv->lastConfigTime) != 0)
-    {
-	rep.status = RRSetConfigInvalidConfigTime;
-	goto sendReply;
-    }
-#endif
-    
     /*
      * Validate requested rotation
      */
@@ -900,8 +880,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
 	 * Invalid rotation
 	 */
 	client->errorValue = stuff->rotation;
-	if (outputs)
-	    xfree (outputs);
+	free(outputs);
 	return BadValue;
     }
 
@@ -913,8 +892,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
 	     * requested rotation or reflection not supported by screen
 	     */
 	    client->errorValue = stuff->rotation;
-	    if (outputs)
-		xfree (outputs);
+	    free(outputs);
 	    return BadMatch;
 	}
     
@@ -943,32 +921,20 @@ ProcRRSetCrtcConfig (ClientPtr client)
 	    if (stuff->x + source_width > pScreen->width)
 	    {
 		client->errorValue = stuff->x;
-		if (outputs)
-		    xfree (outputs);
+		free(outputs);
 		return BadValue;
 	    }
 	    
 	    if (stuff->y + source_height > pScreen->height)
 	    {
 		client->errorValue = stuff->y;
-		if (outputs)
-		    xfree (outputs);
+		free(outputs);
 		return BadValue;
 	    }
 	}
 #endif
     }
     
-    /*
-     * Make sure the requested set-time is not older than
-     * the last set-time
-     */
-    if (CompareTimeStamps (time, pScrPriv->lastSetTime) < 0)
-    {
-	rep.status = RRSetConfigInvalidTime;
-	goto sendReply;
-    }
-
     if (!RRCrtcSet (crtc, mode, stuff->x, stuff->y,
 		   rotation, numOutputs, outputs))
     {
@@ -979,8 +945,7 @@ ProcRRSetCrtcConfig (ClientPtr client)
     pScrPriv->lastSetTime = time;
     
 sendReply:
-    if (outputs)
-	xfree (outputs);
+    free(outputs);
     
     rep.type = X_Reply;
     /* rep.status has already been filled in */
@@ -997,7 +962,7 @@ sendReply:
     }
     WriteToClient(client, sizeof(xRRSetCrtcConfigReply), (char *)&rep);
     
-    return client->noClientException;
+    return Success;
 }
 
 int
@@ -1066,7 +1031,7 @@ ProcRRGetPanning (ClientPtr client)
 	swaps(&rep.border_bottom, n);
     }
     WriteToClient(client, sizeof(xRRGetPanningReply), (char *)&rep);
-    return client->noClientException;
+    return Success;
 }
 
 int
@@ -1100,16 +1065,6 @@ ProcRRSetPanning (ClientPtr client)
     
     time = ClientTimeToServerTime(stuff->timestamp);
     
-    /*
-     * Make sure the requested set-time is not older than
-     * the last set-time
-     */
-    if (CompareTimeStamps (time, pScrPriv->lastSetTime) < 0)
-    {
-	rep.status = RRSetConfigInvalidTime;
-	goto sendReply;
-    }
-
     if (!pScrPriv->rrGetPanning)
 	return RRErrorBase + BadRRCrtc;
 
@@ -1145,7 +1100,7 @@ sendReply:
 	swaps(&rep.newTimestamp, n);
     }
     WriteToClient(client, sizeof(xRRSetPanningReply), (char *)&rep);
-    return client->noClientException;
+    return Success;
 }
 
 int
@@ -1173,7 +1128,7 @@ ProcRRGetCrtcGammaSize (ClientPtr client)
 	swaps (&reply.size, n);
     }
     WriteToClient (client, sizeof (xRRGetCrtcGammaSizeReply), (char *) &reply);
-    return client->noClientException;
+    return Success;
 }
 
 int
@@ -1196,7 +1151,7 @@ ProcRRGetCrtcGamma (ClientPtr client)
     len = crtc->gammaSize * 3 * 2;
     
     if (crtc->gammaSize) {
-	extra = xalloc(len);
+	extra = malloc(len);
 	if (!extra)
 	    return BadAlloc;
     }
@@ -1216,9 +1171,9 @@ ProcRRGetCrtcGamma (ClientPtr client)
 	memcpy(extra, crtc->gammaRed, len);
 	client->pSwapReplyFunc = (ReplySwapPtr)CopySwap16Write;
 	WriteSwappedDataToClient (client, len, extra);
-	xfree(extra);
+	free(extra);
     }
-    return client->noClientException;
+    return Success;
 }
 
 int
@@ -1354,7 +1309,7 @@ ProcRRGetCrtcTransform (ClientPtr client)
     nextra = (transform_filter_length (pending) +
 	      transform_filter_length (current));
 
-    reply = xalloc (sizeof (xRRGetCrtcTransformReply) + nextra);
+    reply = malloc(sizeof (xRRGetCrtcTransformReply) + nextra);
     if (!reply)
 	return BadAlloc;
 
@@ -1382,6 +1337,6 @@ ProcRRGetCrtcTransform (ClientPtr client)
 	swapl (&reply->length, n);
     }
     WriteToClient (client, sizeof (xRRGetCrtcTransformReply) + nextra, (char *) reply);
-    xfree(reply);
-    return client->noClientException;
+    free(reply);
+    return Success;
 }
