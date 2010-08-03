@@ -56,8 +56,17 @@ xorg-server (2:1.8.99.905-1ubuntu1) maverick; urgency=low
   * Update changelog entries for 1.8.1.902-1 which became 1.8.99.904-1
   * Drop 196_xvfbscreeninit-handling.patch: it's semantically empty, and now 
     doesn't apply.  Merge remaining #include change into 197_xvfb-randr.patch
+  * debian/patches/201_report-real-dpi.patch:
+    - Where available, again use the (primary) screen physical size and 
+      resolution to compute the DPI reported by the core X protocol, rather
+      than always reporting 96 DPI.  We want to make this policy decision
+      higher in the stack (LP: #589485).
+  * New upstream version will start correctly when no outputs are connected,
+    as long as the video driver can dynamically resize the framebuffer
+    (true for all KMS drivers) (LP: #337889)
+  * New upstream version fixes crash on non-admin logout with KDE (LP: #569879)
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 14 Jul 2010 13:57:50 +1000
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 03 Aug 2010 15:32:46 +1000
 
 xorg-server (2:1.8.99.905-2) UNRELEASED; urgency=low
 
