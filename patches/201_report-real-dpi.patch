@@ -10,8 +10,8 @@ Author: Christopher James Halse Rogers <christopher.halse.rogers@canonical.com>
 
 Index: xorg-server/hw/xfree86/modes/xf86RandR12.c
 ===================================================================
---- xorg-server.orig/hw/xfree86/modes/xf86RandR12.c	2010-07-30 12:27:39.524213611 +1000
-+++ xorg-server/hw/xfree86/modes/xf86RandR12.c	2010-07-30 14:02:00.852767368 +1000
+--- xorg-server.orig/hw/xfree86/modes/xf86RandR12.c	2010-07-30 15:11:49.286575680 +1000
++++ xorg-server/hw/xfree86/modes/xf86RandR12.c	2010-07-30 15:13:58.711329071 +1000
 @@ -805,6 +805,7 @@
  	else
  	{
@@ -24,13 +24,13 @@ Index: xorg-server/hw/xfree86/modes/xf86RandR12.c
  		mmWidth = output->conf_monitor->mon_width;
  		mmHeight = output->conf_monitor->mon_height;
  	    }
-+	    else if (pScrPriv && pScrPriv->PrimaryOutput)
++	    else if (pScrPriv && pScrPriv->primaryOutput)
 +	    {
 +		/* Calculate DPI based on primary display size, not the entire display size */
-+		mmWidth = pScrPriv->primaryOutput->mmWidth * width / pScrPriv->primaryOutput->crtc->mode->width;
-+		mmHeight = pScrPriv->primaryOutput->mmHeight * height / pScrPriv->primaryOutput->crtc->mode->height;
++		mmWidth = pScrPriv->primaryOutput->mmWidth * width / pScrPriv->primaryOutput->crtc->mode->mode.width;
++		mmHeight = pScrPriv->primaryOutput->mmHeight * height / pScrPriv->primaryOutput->crtc->mode->mode.height;
 +	    }
-+	    else if (output && output->crtc && output->crtc->mode->HDisplay &&
++	    else if (output && output->crtc && output->crtc->mode.HDisplay &&
 +		     output->mm_width && output->mm_height)
 +	    {
 +		/*
