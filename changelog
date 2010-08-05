@@ -65,8 +65,9 @@ xorg-server (2:1.8.99.905-1ubuntu1) maverick; urgency=low
     as long as the video driver can dynamically resize the framebuffer
     (true for all KMS drivers) (LP: #337889)
   * New upstream version fixes crash on non-admin logout with KDE (LP: #569879)
+  * Refresh 111_armel-drv-fallbacks.patch to fix the build on armel
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 03 Aug 2010 15:32:46 +1000
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Thu, 05 Aug 2010 11:25:14 +1000
 
 xorg-server (2:1.8.99.905-2) UNRELEASED; urgency=low
 
