@@ -10,8 +10,8 @@ Author: Christopher James Halse Rogers <christopher.halse.rogers@canonical.com>
 
 Index: xorg-server/hw/xfree86/modes/xf86RandR12.c
 ===================================================================
---- xorg-server.orig/hw/xfree86/modes/xf86RandR12.c	2010-07-30 15:11:49.286575680 +1000
-+++ xorg-server/hw/xfree86/modes/xf86RandR12.c	2010-07-30 15:13:58.711329071 +1000
+--- xorg-server.orig/hw/xfree86/modes/xf86RandR12.c	2010-08-03 15:59:57.750272356 +1000
++++ xorg-server/hw/xfree86/modes/xf86RandR12.c	2010-08-03 16:00:00.750380508 +1000
 @@ -805,6 +805,7 @@
  	else
  	{
