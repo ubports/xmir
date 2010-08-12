@@ -31,3 +31,5 @@
 198_nohwaccess.patch
 200_randr-null.patch
 201_report-real-dpi.patch
+202_xf86CoordinationsToWindows.patch
+203_gestures-extension.patch
