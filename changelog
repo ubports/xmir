@@ -1,3 +1,13 @@
+xorg-server (2:1.8.99.905-1ubuntu2) maverick; urgency=low
+
+  * Add in gesture support (LP: #616678)
+    - add debian/patches/203_gestures-extension.patch
+      and debian/patches/202_xf86CoordinationsToWindows.patch
+    - debian/rules:
+      - switch configure option to enable gesture
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 09 Aug 2010 14:33:40 +0000
+
 xorg-server (2:1.8.99.905-1ubuntu1) maverick; urgency=low
 
   * Merge from (unreleased) Debian experimental.  Remaining Ubuntu changes:
