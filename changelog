@@ -1,3 +1,9 @@
+xorg-server (2:1.8.99.905-1ubuntu3) maverick; urgency=low
+
+  * Bump debian/serverminver for gesture support
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 20 Aug 2010 16:35:22 -0400
+
 xorg-server (2:1.8.99.905-1ubuntu2) maverick; urgency=low
   
     * Add in gesture support (LP: #616678)
