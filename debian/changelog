@@ -1,6 +1,64 @@
-xorg-server (2:1.9.0-1) UNRELEASED; urgency=low
+xorg-server (2:1.9.0-0ubuntu1) UNRELEASED; urgency=low
   
-  * New upstream release.  
+  * Merge from (unreleased) Debian experimental.  Remaining Ubuntu changes:
+    - rules, control:
+      + Disable SELinux, libaudit-dev is not in main yet (LP 406226).
+        Drop libaudit-dev from build-deps.
+    - rules: Enable xcsecurity (LP 247537).
+    - local/xvfb-run*: Add correct docs about error codes (LP 328205)
+    - rules: Add --with-extra-module-dir to support GL alternatives.
+    - control: Xvfb depends on xauth, x11-xkb-utils. (LP 500102)
+    - rules, local/64-xorg-xkb.rules: Don't use keyboard-configuration
+      until it's available.
+    - control: Update some versioned Breaks for Ubuntu versions.
+    - debian/patches:
+      + 100_rethrow_signals.patch:
+        When aborting, re-raise signals for apport
+      + 109_fix-swcursor-crash.patch:
+        Avoid dereferencing null pointer while reloading cursors during
+        resume. (LP 371405)
+      + 111_armel-drv-fallbacks.patch:
+        Add support for armel driver fallbacks.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 122_xext_fix_card32_overflow_in_xauth.patch:
+        Fix server crash when “xauth generate” is called with large timeout.
+      + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
+        166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
+        169_mipointer_nullptr_checks.patch,
+        172_cwgetbackingpicture_nullptr_check.patch:
+        Fix various segfaults in xserver by checking pointers for NULL
+        values before dereferencing them.
+      + 165_man_xorg_conf_no_device_ident.patch
+        Correct man page
+      + 168_glibc_trace_to_stderr.patch:
+        Report abort traces to stderr instead of terminal
+      + 184_virtual_devices_autodetect.patch:
+        Use vesa for qemu device, which is not supported by cirrus
+      + 187_edid_quirk_hp_nc8430.patch:
+        Quirk for another LPL monitor (LP 380009)
+      + 188_default_primary_to_first_busid.patch:
+        Pick the first device and carry on (LP 459512)
+      + 189_xserver_1.5.0_bg_none_root.patch:
+        Create a root window with no background.
+      + 190_cache-xkbcomp_output_for_fast_start_up.patch:
+        Cache keyboard settings.
+      + 191-Xorg-add-an-extra-module-path.patch:
+        Add support for the alternatives module path.
+      + 197_xvfb-randr.patch:
+        Adds xrandr support to xvfb. (LP 516123)
+      + 198_nohwaccess.patch:
+        Adds a -nohwaccess argument to make X not access the hardware
+        ports directly.
+      + 200_randr-null.patch:
+        Clarify a pointer initialization.  
+      + 203_gestures-extension.patch:
+      + 202_xf86CoordinationsToWindows.patch:
+        Add gesture extension support (LP: 616678)
+      + debian/serverminver:
+        Bump for gesture support
+  * New upstream release:
     - Fixes crash in DamageUnregister on session close (LP: #343694)
     - Fixes crash with extremely large windows exposed by xpdf (Closes: #320627)
   * Drop 17-fix-DRI2-segfault-when-clientGone.diff: fixed upstream in more
