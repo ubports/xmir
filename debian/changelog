@@ -1,4 +1,4 @@
-xorg-server (2:1.9.0-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.9.0-0ubuntu1) maverick; urgency=low
   
   * Merge from (unreleased) Debian experimental.  Remaining Ubuntu changes:
     - rules, control:
