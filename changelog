@@ -8,6 +8,9 @@ xorg-server (2:1.10.2.902-1) unstable; urgency=low
     + Add Breaks on drivers abandoned between lenny and squeeze.  This helps
       apt decide to remove them instead of removing all of X.  Thanks, David
       Kalnischkies!
+    + Set default xkb rules to evdev on linux, to work around a wrong default in
+      configure.ac and an Xorg issue where it reverts to the default on reset.
+      Thanks to Bastian Blank for the report.
 
  -- Cyril Brulebois <kibi@debian.org>  Sat, 02 Jul 2011 11:58:58 +0200
 
