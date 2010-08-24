@@ -63,8 +63,11 @@ xorg-server (2:1.9.0-0ubuntu1) UNRELEASED; urgency=low
     - Fixes crash with extremely large windows exposed by xpdf (Closes: #320627)
   * Drop 17-fix-DRI2-segfault-when-clientGone.diff: fixed upstream in more
     generality.
+  * debian/patches/204_fix-neg-sync-transition.patch:
+    - Fix edge case in SYNC extension resulting in GNOME screensaver's 
+      fade-to-screensaver being uninteruptible.  (LP: #595555)
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 23 Aug 2010 12:28:45 +1000
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 24 Aug 2010 15:44:10 +1000
 
 xorg-server (2:1.8.99.905-1ubuntu3) maverick; urgency=low
 
