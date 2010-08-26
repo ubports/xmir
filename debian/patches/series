@@ -34,3 +34,4 @@
 202_xf86CoordinationsToWindows.patch
 203_gestures-extension.patch
 204_fix-neg-sync-transition.patch
+205_udev-product-ids.patch
