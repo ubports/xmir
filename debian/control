@@ -111,6 +111,7 @@ Breaks:
  xserver-xorg-input-tslib (<= 0.0.6-3),
  xserver-xorg-input-vmmouse (<= 1:12.6.5-4ubuntu2),
  xserver-xorg-input-wacom (<= 0.10.5+20100415-1),
+ xserver-xorg-video-v4l (<< 1:0.2.0-4ubuntu1)
 Provides:
  xserver,
  ${videoabi},

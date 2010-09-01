@@ -1,3 +1,12 @@
+xorg-server (2:1.9.0-0ubuntu2) maverick; urgency=low
+
+  * debian/control:
+    - add explict breaks from xserver-xorg-core against 
+      xserver-xorg-video-v4l (<< 1:0.2.0-4ubuntu1) to ensure that
+      upgrades with universe disabled work (LP: #614993)
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Mon, 30 Aug 2010 15:40:07 +0200
+
 xorg-server (2:1.9.0-0ubuntu1) maverick; urgency=low
   
   * Merge from (unreleased) Debian experimental.  Remaining Ubuntu changes:
