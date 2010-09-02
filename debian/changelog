@@ -1,4 +1,4 @@
-xorg-server (2:1.9.0-0ubuntu3) maverick; urgency=low
+xorg-server (2:1.9.0-0ubuntu3) UNRELEASED; urgency=low
 
   * Fix udev USB product ID parsing (LP: #628214)
     - debian/patches:
