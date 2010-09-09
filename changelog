@@ -1,10 +1,35 @@
-xorg-server (2:1.9.0-0ubuntu3) UNRELEASED; urgency=low
-
+xorg-server (2:1.9.0-0ubuntu6) UNRELEASED; urgency=low
+   
   * Fix udev USB product ID parsing (LP: #628214)
     - debian/patches:
       + 205_udev-product-ids.patch
 
  -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 01 Sep 2010 16:28:23 -0400
+
+xorg-server (2:1.9.0-0ubuntu5) maverick; urgency=low
+
+  * debian/control:
+    - fix duplicated breaks for xserver-xorg-video-v4l
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Wed, 08 Sep 2010 10:57:49 +0200
+
+xorg-server (2:1.9.0-0ubuntu4) maverick; urgency=low
+
+  * debian/control:
+    - add more "breaks" for leftover drivers that have no
+      xserver 1.9 abi version, thanks to Jean-Baptiste Lallement
+      (LP: #614993)
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Tue, 31 Aug 2010 10:52:29 +0200
+
+xorg-server (2:1.9.0-0ubuntu3) maverick; urgency=low
+
+  * debian/control:
+    - add additional breaks for video drivers that have no ABI for
+      xserver 1.9 (LP: #614993)
+    - merge the "breaks" list from the debian git tree
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Tue, 31 Aug 2010 10:04:01 +0200
 
 xorg-server (2:1.9.0-0ubuntu2) maverick; urgency=low
 

@@ -111,7 +111,24 @@ Breaks:
  xserver-xorg-input-tslib (<= 0.0.6-3),
  xserver-xorg-input-vmmouse (<= 1:12.6.5-4ubuntu2),
  xserver-xorg-input-wacom (<= 0.10.5+20100415-1),
- xserver-xorg-video-v4l (<< 1:0.2.0-4ubuntu1)
+# from the debian-git
+ xserver-xorg-video-cyrix (<= 1:1.1.0-8),
+ xserver-xorg-video-i810 (<< 2:2.4),
+ xserver-xorg-video-imstt (<= 1:1.1.0-7),
+ xserver-xorg-video-nsc (<= 1:2.8.3-4),
+ xserver-xorg-video-sunbw2 (<= 1:1.1.0-5),
+ xserver-xorg-video-vga (<= 1:4.1.0-8),
+# unavailable for abi-8 in ubuntu
+ xserver-xorg-video-v4l (<< 1:0.2.0-4ubuntu1),
+ xserver-xorg-video-dummy (<= 1:0.3.3-2build1),
+ xserver-xorg-video-radeonhd (<= 1.3.0-2),
+ xserver-xorg-video-glamo (<= 0.0.0+20091108.git9918e082-1),
+ xserver-xorg-video-glide (<= 1.0.3-2),
+# leftovers from hardy
+ xserver-xorg-video-newport (<= 1:0.2.1-4ubuntu1),
+ xserver-xorg-video-psb (<= 0.2.1-1ubuntu3),
+ xserver-xorg-video-tga (<= 1:1.1.0-9ubuntu1),
+ xserver-xorg-video-unichrome (<= 1:0.2.6.99-0ubuntu1),
 Provides:
  xserver,
  ${videoabi},
