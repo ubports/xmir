@@ -1,10 +1,17 @@
-xorg-server (2:1.9.0-0ubuntu6) UNRELEASED; urgency=low
-   
+xorg-server (2:1.9.0-0ubuntu6) maverick; urgency=low
+
+  [ Chase Douglas ] 
   * Fix udev USB product ID parsing (LP: #628214)
     - debian/patches:
       + 205_udev-product-ids.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 01 Sep 2010 16:28:23 -0400
+  [ Christopher James Halse Rogers ]
+  * debian/patches/206_intel_8xx_default_to_fbdev.patch:
+    - Don't autoload the intel driver on i830, i845g and i855.  These are
+      still too unstable with KMS/GEM.  X will autoload the fbdev driver
+      (if using KMS) or the vesa driver instead.  (LP: #633593)
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 13 Sep 2010 18:48:54 +1000
 
 xorg-server (2:1.9.0-0ubuntu5) maverick; urgency=low
 
