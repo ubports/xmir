@@ -13,7 +13,6 @@
 111_armel-drv-fallbacks.patch
 121_only_switch_vt_when_active.diff
 122_xext_fix_card32_overflow_in_xauth.patch
-#143_default_to_vesa.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
 165_man_xorg_conf_no_device_ident.patch
