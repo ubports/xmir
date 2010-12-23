@@ -1,10 +1,15 @@
 xorg-server (2:1.9.0.902-1ubuntu2) UNRELEASED; urgency=low
 
+  [ Christopher James Halse Rogers ]
   * Cherry-pick 3effb61e from server-1.9 branch.  Fixes a typo in Xinerama
     support which caused Qt apps to crash X when using Xinerama multi-head
     (LP: #650539)
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 22 Nov 2010 13:09:14 +1100
+  [ Robert Hooker ]
+  * Add 105_nvidia_fglrx_autodetect.patch, enables fglrx and nvidia to work
+    without an xorg.conf.
+
+ -- Robert Hooker <sarvatt@ubuntu.com>  Thu, 23 Dec 2010 11:47:44 -0500
 
 xorg-server (2:1.9.0.902-1ubuntu1) natty; urgency=low
 
