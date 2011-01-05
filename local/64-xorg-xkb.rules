@@ -5,4 +5,9 @@ KERNEL!="event*", GOTO="xorg_xkb_end"
 # import keyboard layout from /etc/default/keyboard
 ENV{ID_INPUT_KEY}=="?*", IMPORT{file}="/etc/default/keyboard"
 
+# ignore "SKIP" keyboard model, which is a magic value from console-setup's debconf
+ENV{XKBMODEL}=="SKIP", ENV{XKBMODEL}=""
+# Similarly, ignore this broken default variant, which breaks keyboard entirely
+ENV{XKBVARIANT}=="U.S. English", ENV{XKBVARIANT}=""
+
 LABEL="xorg_xkb_end"
