@@ -87,6 +87,7 @@ Architecture: any
 Depends:
  xserver-common (>= ${source:Version}),
  xserver-xorg,
+ keyboard-configuration [linux-any kfreebsd-any],
  udev (>= 149) [linux-any],
  ${shlibs:Depends},
  ${misc:Depends},

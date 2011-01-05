@@ -1,4 +1,4 @@
-xorg-server (2:1.9.0.902-1ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.9.0.902-1ubuntu2) natty; urgency=low
 
   [ Christopher James Halse Rogers ]
   * Cherry-pick 3effb61e from server-1.9 branch.  Fixes a typo in Xinerama
@@ -8,8 +8,10 @@ xorg-server (2:1.9.0.902-1ubuntu2) UNRELEASED; urgency=low
   [ Robert Hooker ]
   * Add 105_nvidia_fglrx_autodetect.patch, enables fglrx and nvidia to work
     without an xorg.conf.
+  * debian/local/64-xorg-xkb.rules, control: Use keyboard-configuration
+    information for keymaps (/etc/default/keyboard)
 
- -- Robert Hooker <sarvatt@ubuntu.com>  Thu, 23 Dec 2010 11:47:44 -0500
+ -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 05 Jan 2011 11:29:17 -0500
 
 xorg-server (2:1.9.0.902-1ubuntu1) natty; urgency=low
 
