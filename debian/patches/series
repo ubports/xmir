@@ -33,3 +33,4 @@
 203_gestures-extension.patch
 204_fix-neg-sync-transition.patch
 206_intel_8xx_default_to_fbdev.patch
+207_dga_master_device.patch
