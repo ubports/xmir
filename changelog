@@ -1,3 +1,11 @@
+xorg-server (2:1.9.0.902-1ubuntu3) natty; urgency=low
+
+  * Add 207_dga_master_device.patch: Cherrypick from upstream xserver git
+    to fix crash with a bluetooth keyboard when using XBMC full screen.
+    (LP: #597895)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 06 Jan 2011 12:17:16 -0800
+
 xorg-server (2:1.9.0.902-1ubuntu2) natty; urgency=low
 
   [ Christopher James Halse Rogers ]
