@@ -1,3 +1,13 @@
+xorg-server (2:1.9.0.902-1ubuntu4) natty; urgency=low
+
+  * Add 208_switch_on_release.diff: Perform keyboard layout switches on
+    key-release rather than key-press events.  This solves a very
+    long-standing issue where e.g. <ctrl>+<shift>+<key> fails when
+    ctrl+shift is configured for layout switching.
+    (LP: #36812)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 06 Jan 2011 14:35:59 -0800
+
 xorg-server (2:1.9.0.902-1ubuntu3) natty; urgency=low
 
   * Add 207_dga_master_device.patch: Cherrypick from upstream xserver git
