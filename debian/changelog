@@ -1,4 +1,4 @@
-xorg-server (2:1.9.99.901-1ubuntu1) natty; urgency=low
+xorg-server (2:1.9.99.901-1ubuntu1) UNRELEASED; urgency=low
 
   * Merge from (unreleased) debian-experimental.  Remaining Ubuntu changes:
     - …
