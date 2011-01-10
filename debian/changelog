@@ -3,6 +3,8 @@ xorg-server (2:1.9.99.901-1ubuntu1) natty; urgency=low
   * Merge from (unreleased) debian-experimental.  Remaining Ubuntu changes:
     - …
   * Refresh 121_only_switch_vt_when_active.diff for new upstream.
+  * Drop 189_xserver_1.5.0_bg_none_root.patch; functionality now upstream.
+  * Refresh 190_cache-xkbcomp_output_for_fast_start_up.patch for new upstream.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 10 Jan 2011 15:53:23 -0600
 
