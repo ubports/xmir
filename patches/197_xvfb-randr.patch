@@ -1,8 +1,8 @@
 === modified file 'hw/vfb/InitOutput.c'
 Index: xorg-server/hw/vfb/InitOutput.c
 ===================================================================
---- xorg-server.orig/hw/vfb/InitOutput.c	2010-07-14 15:06:03.511453001 +1000
-+++ xorg-server/hw/vfb/InitOutput.c	2010-07-14 15:07:00.101453002 +1000
+--- xorg-server.orig/hw/vfb/InitOutput.c	2011-01-10 16:10:26.000000000 -0600
++++ xorg-server/hw/vfb/InitOutput.c	2011-01-10 17:02:37.000000000 -0600
 @@ -66,6 +66,7 @@
  #endif /* HAS_SHM */
  #include "dix.h"
@@ -15,12 +15,12 @@ Index: xorg-server/hw/vfb/InitOutput.c
  
      if (!ret) return FALSE;
  
-+    if (!miRandRInit(pScreen))
-+        /* Not sure how to emit warnings in xorg. Should warn here though:
-+	 * ("Could not initialise RANDR\n");
-+	 */
-+        return FALSE;
++    if (!miRandRInit(pScreen)) {
++	xf86DrvMsg(pScreen->index, X_WARNING,
++		   "Could not initialise RANDR\n");
++	return FALSE;
++    }
 +
-     miInitializeBackingStore(pScreen);
- 
-     /*
+     pScreen->InstallColormap = vfbInstallColormap;
+     pScreen->UninstallColormap = vfbUninstallColormap;
+     pScreen->ListInstalledColormaps = vfbListInstalledColormaps;
