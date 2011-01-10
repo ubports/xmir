@@ -20,7 +20,6 @@
 172_cwgetbackingpicture_nullptr_check.patch
 187_edid_quirk_hp_nc8430.patch
 188_default_primary_to_first_busid.patch
-189_xserver_1.5.0_bg_none_root.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
 197_xvfb-randr.patch
@@ -31,3 +30,4 @@
 #203_gestures-extension.patch
 204_fix-neg-sync-transition.patch
 206_intel_8xx_default_to_fbdev.patch
+209_add_legacy_bgnone_option.patch
