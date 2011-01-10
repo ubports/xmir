@@ -26,8 +26,8 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 AC_PREREQ(2.57)
-AC_INIT([xorg-server], 1.9.0.902, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
-RELEASE_DATE="2010-10-15"
+AC_INIT([xorg-server], 1.9.99.901, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
+RELEASE_DATE="2010-12-06"
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
 AM_MAINTAINER_MODE
@@ -64,21 +64,17 @@ dnl version-config.h covers the version numbers so they can be bumped without
 dnl forcing an entire recompile.x
 AC_CONFIG_HEADERS(include/version-config.h)
 
-AC_PROG_CC
 AM_PROG_AS
-AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_LIBTOOL_WIN32_DLL
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
-DOLT
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
 AC_PROG_LEX
 AC_PROG_YACC
 AC_SYS_LARGEFILE
 XORG_PROG_RAWCPP
-AC_PROG_SED
 
 # Quoted so that make will expand $(CWARNFLAGS) in makefiles to allow
 # easier overrides at build time.
@@ -601,9 +597,6 @@ AC_ARG_ENABLE(pc98,     	AC_HELP_STRING([--enable-pc98], [Enable PC98 support in
 				[SUPPORT_PC98=auto])
 
 dnl GLX build options
-AC_ARG_WITH(dri-driver-path,  AS_HELP_STRING([--with-dri-driver-path=PATH], [Path to DRI drivers (default: ${libdir}/dri)]),
-				[ DRI_DRIVER_PATH="$withval" ],
-				[ DRI_DRIVER_PATH="${libdir}/dri" ])
 AC_ARG_ENABLE(aiglx,          AS_HELP_STRING([--enable-aiglx], [Build accelerated indirect GLX (default: enabled)]),
                                 [AIGLX=$enableval],
                                 [AIGLX=yes])
@@ -718,6 +711,7 @@ fi
 
 dnl Handle building documentation
 AM_CONDITIONAL(BUILDDOCS, test "x$BUILDDOCS" = xyes)
+XORG_ENABLE_DOCS
 XORG_ENABLE_DEVEL_DOCS
 XORG_WITH_XMLTO(0.0.20)
 XORG_WITH_FOP
@@ -794,7 +788,7 @@ WINDOWSWMPROTO="windowswmproto"
 APPLEWMPROTO="applewmproto >= 1.4"
 
 dnl Core modules for most extensions, et al.
-SDK_REQUIRED_MODULES="[xproto >= 7.0.17] [randrproto >= 1.2.99.3] [renderproto >= 0.11] [xextproto >= 7.0.99.3] [inputproto >= 1.9.99.902] [kbproto >= 1.0.3] fontsproto"
+SDK_REQUIRED_MODULES="[xproto >= 7.0.17] [randrproto >= 1.4] [renderproto >= 0.11] [xextproto >= 7.1.99] [inputproto >= 1.9.99.902] [kbproto >= 1.0.3] fontsproto"
 # Make SDK_REQUIRED_MODULES available for inclusion in xorg-server.pc
 AC_SUBST(SDK_REQUIRED_MODULES)
 
@@ -1258,7 +1252,8 @@ AC_DEFINE_DIR(COMPILEDDEFAULTFONTPATH, FONTPATH, [Default font path])
 AC_DEFINE_DIR(PCI_TXT_IDS_PATH, PCI_TXT_IDS_DIR, [Default PCI text file ID path])
 AC_DEFINE_DIR(SERVER_MISC_CONFIG_PATH, SERVERCONFIG, [Server miscellaneous config path])
 AC_DEFINE_DIR(BASE_FONT_PATH, FONTROOTDIR, [Default base font path])
-AC_DEFINE_DIR(DRI_DRIVER_PATH, DRI_DRIVER_PATH, [Default DRI driver path])
+dridriverdir=`$PKG_CONFIG --variable=dridriverdir dri`
+AC_DEFINE_DIR(DRI_DRIVER_PATH, dridriverdir, [Default DRI driver path])
 AC_DEFINE_UNQUOTED(XVENDORNAME, ["$VENDOR_NAME"], [Vendor name])
 AC_DEFINE_UNQUOTED(XVENDORNAMESHORT, ["$VENDOR_NAME_SHORT"], [Short vendor name])
 AC_DEFINE_UNQUOTED(XORG_DATE, ["$RELEASE_DATE"], [Vendor release])
@@ -1337,7 +1332,7 @@ AC_DEFINE(BIGREQS, 1, [Support BigRequests extension])
 
 if test "x$SPECIAL_DTRACE_OBJECTS" = "xyes" ; then
   DIX_LIB='$(top_builddir)/dix/dix.O'
-  OS_LIB='$(top_builddir)/os/os.O $(SHA1_LIBS)'
+  OS_LIB='$(top_builddir)/os/os.O $(SHA1_LIBS) $(DLOPEN_LIBS)'
 else
   DIX_LIB='$(top_builddir)/dix/libdix.la'
   OS_LIB='$(top_builddir)/os/libos.la'
@@ -1355,6 +1350,8 @@ FB_LIB='$(top_builddir)/fb/libfb.la'
 FB_INC='-I$(top_srcdir)/fb'
 MIEXT_SHADOW_INC='-I$(top_srcdir)/miext/shadow'
 MIEXT_SHADOW_LIB='$(top_builddir)/miext/shadow/libshadow.la'
+MIEXT_SYNC_INC='-I$(top_srcdir)/miext/sync'
+MIEXT_SYNC_LIB='$(top_builddir)/miext/sync/libsync.la'
 CORE_INCS='-I$(top_srcdir)/include -I$(top_builddir)/include'
 
 # SHA1 hashing
@@ -1494,7 +1491,7 @@ AC_EGREP_CPP([I_AM_SVR4],[
 AC_DEFINE([SVR4],1,[Define to 1 on systems derived from System V Release 4])
 AC_MSG_RESULT([yes])], AC_MSG_RESULT([no]))
 
-XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC"
+XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SYNC_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC"
 
 dnl ---------------------------------------------------------------------------
 dnl DDX section.
@@ -1507,7 +1504,7 @@ AC_MSG_RESULT([$XVFB])
 AM_CONDITIONAL(XVFB, [test "x$XVFB" = xyes])
 
 if test "x$XVFB" = xyes; then
-	XVFB_LIBS="$FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB"
+	XVFB_LIBS="$FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB"
 	XVFB_SYS_LIBS="$XVFBMODULES_LIBS $GLX_SYS_LIBS"
 	AC_SUBST([XVFB_LIBS])
 	AC_SUBST([XVFB_SYS_LIBS])
@@ -1528,7 +1525,7 @@ if test "x$XNEST" = xyes; then
 	if test "x$have_xnest" = xno; then
 		AC_MSG_ERROR([Xnest build explicitly requested, but required modules not found.])
 	fi
-	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DIX_LIB $MAIN_LIB $OS_LIB"
+	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DIX_LIB $MAIN_LIB $OS_LIB"
 	XNEST_SYS_LIBS="$XNESTMODULES_LIBS $GLX_SYS_LIBS"
 	AC_SUBST([XNEST_LIBS])
 	AC_SUBST([XNEST_SYS_LIBS])
@@ -1556,7 +1553,7 @@ if test "x$XORG" = xyes; then
 	XORG_OSINCS='-I$(top_srcdir)/hw/xfree86/os-support -I$(top_srcdir)/hw/xfree86/os-support/bus -I$(top_srcdir)/os'
 	XORG_INCS="$XORG_DDXINCS $XORG_OSINCS"
 	XORG_CFLAGS="$XORGSERVER_CFLAGS -DHAVE_XORG_CONFIG_H"
-	XORG_LIBS="$COMPOSITE_LIB $FIXES_LIB $XEXTXORG_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB"
+	XORG_LIBS="$COMPOSITE_LIB $FIXES_LIB $XEXTXORG_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB"
 
 	dnl ==================================================================
 	dnl symbol visibility
@@ -1891,7 +1888,7 @@ if test "x$XWIN" = xyes; then
 			XWIN_SYS_LIBS=-lwinsock2
 			;;
 	esac
-	XWIN_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $RANDR_LIB $RENDER_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $OS_LIB"
+	XWIN_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $CONFIG_LIB $RANDR_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $OS_LIB"
 	XWIN_SYS_LIBS="$XWIN_SYS_LIBS $XWINMODULES_LIBS"
 	AC_SUBST(XWIN_LIBS)
 	AC_SUBST(XWIN_SERVER_NAME)
@@ -1921,7 +1918,7 @@ if test "x$XQUARTZ" = xyes; then
 	AC_DEFINE(XQUARTZ,1,[Have Quartz])
 	AC_DEFINE(ROOTLESS,1,[Build Rootless code])
 
-	DARWIN_LIBS="$MI_LIB $OS_LIB $DIX_LIB $MAIN_LIB $FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $XPSTUBS_LIB"
+	DARWIN_LIBS="$MI_LIB $OS_LIB $DIX_LIB $MAIN_LIB $FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $XPSTUBS_LIB"
 	AC_SUBST([DARWIN_LIBS])
 
 	AC_CHECK_LIB([Xplugin],[xp_init],[:])
@@ -1982,7 +1979,7 @@ if test "x$DMX" = xyes; then
 	fi
 	DMX_INCLUDES="$XEXT_INC $RENDER_INC $RECORD_INC"
 	XDMX_CFLAGS="$DMXMODULES_CFLAGS"
-	XDMX_LIBS="$FB_LIB $MI_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $XEXT_LIB $MAIN_LIB $DIX_LIB $OS_LIB $FIXES_LIB"
+	XDMX_LIBS="$FB_LIB $MI_LIB $XEXT_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $MIEXT_SYNC_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $COMPOSITE_LIB $DAMAGE_LIB $MAIN_LIB $DIX_LIB $CONFIG_LIB $OS_LIB $FIXES_LIB"
 	XDMX_SYS_LIBS="$DMXMODULES_LIBS"
 	AC_SUBST([XDMX_CFLAGS])
 	AC_SUBST([XDMX_LIBS])
@@ -2037,7 +2034,10 @@ if test "$KDRIVE" = yes; then
 
     PKG_CHECK_MODULES([TSLIB], [tslib-0.0], [HAVE_TSLIB="yes"], [HAVE_TSLIB="no"])
     if test "x$HAVE_TSLIB" = xno; then
-        AC_CHECK_LIB(ts, ts_open, [HAVE_TSLIB="yes"])
+        AC_CHECK_LIB(ts, ts_open, [
+			HAVE_TSLIB="yes"
+			TSLIB_LIBS="-lts"
+		])
     fi
 
     if test "xTSLIB" = xauto; then
@@ -2084,13 +2084,13 @@ if test "$KDRIVE" = yes; then
     
     # damage shadow extension glx (NOTYET) fb mi
     KDRIVE_INC='-I$(top_srcdir)/hw/kdrive/src'
-    KDRIVE_PURE_INCS="$KDRIVE_INC $MIEXT_DAMAGE_INC $MIEXT_SHADOW_INC $XEXT_INC $FB_INC $MI_INC"
+    KDRIVE_PURE_INCS="$KDRIVE_INC $MIEXT_SYNC_INC $MIEXT_DAMAGE_INC $MIEXT_SHADOW_INC $XEXT_INC $FB_INC $MI_INC"
     KDRIVE_OS_INC='-I$(top_srcdir)/hw/kdrive/linux'
     KDRIVE_INCS="$KDRIVE_PURE_INCS $KDRIVE_OS_INC"
     
     KDRIVE_CFLAGS="$XSERVER_CFLAGS -DHAVE_KDRIVE_CONFIG_H $TSLIB_CFLAGS"
 
-    KDRIVE_PURE_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $OS_LIB"
+    KDRIVE_PURE_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $OS_LIB"
     KDRIVE_LIB='$(top_builddir)/hw/kdrive/src/libkdrive.la'
     case $host_os in
 	*linux*)
@@ -2121,8 +2121,8 @@ if test "$KDRIVE" = yes; then
     KDRIVE_STUB_LIB='$(top_builddir)/hw/kdrive/src/libkdrivestubs.la'
     KDRIVE_LOCAL_LIBS="$MAIN_LIB $DIX_LIB $KDRIVE_LIB $KDRIVE_STUB_LIB"
     KDRIVE_LOCAL_LIBS="$KDRIVE_LOCAL_LIBS $FB_LIB $MI_LIB $KDRIVE_PURE_LIBS"
-    KDRIVE_LOCAL_LIBS="$KDRIVE_LOCAL_LIBS $KDRIVE_OS_LIB $OS_LIB"
-    KDRIVE_LIBS="$TSLIB_LIBS $KDRIVE_LOCAL_LIBS $XSERVER_SYS_LIBS $GLX_SYS_LIBS $DLOPEN_LIBS"
+    KDRIVE_LOCAL_LIBS="$KDRIVE_LOCAL_LIBS $KDRIVE_OS_LIB"
+    KDRIVE_LIBS="$KDRIVE_LOCAL_LIBS $XSERVER_SYS_LIBS $GLX_SYS_LIBS $DLOPEN_LIBS $TSLIB_LIBS"
 
     AC_SUBST([XEPHYR_LIBS])
     AC_SUBST([XEPHYR_INCS])
@@ -2182,6 +2182,7 @@ damageext/Makefile
 dbe/Makefile
 dix/Makefile
 doc/Makefile
+doc/man/Makefile
 doc/xml/Makefile
 doc/xml/dtrace/Makefile
 doc/xml/xserver.ent
@@ -2190,6 +2191,7 @@ record/Makefile
 config/Makefile
 mi/Makefile
 miext/Makefile
+miext/sync/Makefile
 miext/damage/Makefile
 miext/shadow/Makefile
 miext/cw/Makefile
@@ -2229,7 +2231,6 @@ hw/xfree86/os-support/misc/Makefile
 hw/xfree86/os-support/linux/Makefile
 hw/xfree86/os-support/sco/Makefile
 hw/xfree86/os-support/solaris/Makefile
-hw/xfree86/os-support/sysv/Makefile
 hw/xfree86/parser/Makefile
 hw/xfree86/ramdac/Makefile
 hw/xfree86/shadowfb/Makefile
@@ -2237,7 +2238,6 @@ hw/xfree86/vbe/Makefile
 hw/xfree86/vgahw/Makefile
 hw/xfree86/x86emu/Makefile
 hw/xfree86/xaa/Makefile
-hw/xfree86/xf8_16bpp/Makefile
 hw/xfree86/utils/Makefile
 hw/xfree86/utils/cvt/Makefile
 hw/xfree86/utils/gtf/Makefile

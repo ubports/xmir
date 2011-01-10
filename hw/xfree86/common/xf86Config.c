@@ -60,10 +60,9 @@
 #include "configProcs.h"
 #include "globals.h"
 #include "extension.h"
-#include "Pci.h"
+#include "xf86pciBus.h"
 
 #include "xf86Xinput.h"
-extern DeviceAssocRec mouse_assoc;
 
 #include "xkbsrv.h"
 
@@ -78,19 +77,19 @@ extern DeviceAssocRec mouse_assoc;
 			"/etc/X11/%R," "%P/etc/X11/%R," \
 			"%E," "%F," \
 			"/etc/X11/%F," "%P/etc/X11/%F," \
-			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
-			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"/etc/X11/%X," "/etc/%X," \
+			"%P/etc/X11/%X.%H," \
 			"%P/etc/X11/%X," \
-			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
+			"%P/lib/X11/%X.%H," \
 			"%P/lib/X11/%X"
 #endif
 #ifndef USER_CONFIGPATH
 #define USER_CONFIGPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
 			"/etc/X11/%G," "%P/etc/X11/%G," \
-			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
-			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"/etc/X11/%X," "/etc/%X," \
+			"%P/etc/X11/%X.%H," \
 			"%P/etc/X11/%X," \
-			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
+			"%P/lib/X11/%X.%H," \
 			"%P/lib/X11/%X"
 #endif
 #ifndef ROOT_CONFIGDIRPATH
@@ -136,7 +135,7 @@ static Bool configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
 static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor);
 static Bool configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device,
 			 Bool active);
-static Bool configInput(IDevPtr inputp, XF86ConfInputPtr conf_input,
+static Bool configInput(InputInfoPtr pInfo, XF86ConfInputPtr conf_input,
 			MessageType from);
 static Bool configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display);
 static Bool addDefaultModes(MonPtr monitorp);
@@ -445,8 +444,8 @@ xf86InputDriverlistFromConfig(void)
 {
     int count = 0;
     char **modulearray;
-    IDevPtr* idp;
-    
+    InputInfoPtr *idp;
+
     /*
      * make sure the config file has been parsed and that we have a
      * ModulePath set; if no ModulePath was given, use the default
@@ -504,7 +503,6 @@ fixup_video_driver_list(char **drivers)
     static const char *fallback[4] = { "vesa", "fbdev", "wsfb", NULL };
     char **end, **drv;
     char *x;
-    char **ati, **atimisc;
     int i;
 
     /* walk to the end of the list */
@@ -524,24 +522,6 @@ fixup_video_driver_list(char **drivers)
             }
         }
     }
-    /*
-     * since the ati wrapper driver is gross and awful, sort ati before
-     * atimisc, which makes sure all the ati symbols are visible in xorgcfg.
-     */
-    for (drv = drivers; drv != end; drv++) {
-        if (!strcmp(*drv, "atimisc")) {
-            atimisc = drv;
-            for (drv = atimisc; drv != end; drv++) {
-                if (!strcmp(*drv, "ati")) {
-                    ati = drv;
-                    x = *ati; *ati = *atimisc; *atimisc = x;
-                    return;
-                }
-            }
-            /* if we get here, ati was already ahead of atimisc */
-            return;
-        }
-    }
 }
 
 static char **
@@ -549,7 +529,7 @@ GenerateDriverlist(char * dirname)
 {
     char **ret;
     const char *subdirs[] = { dirname, NULL };
-    static const char *patlist[] = {"(.*)_drv\\.so", "(.*)_drv\\.o", NULL};
+    static const char *patlist[] = {"(.*)_drv\\.so", NULL};
     ret = LoaderListDirs(subdirs, patlist);
     
     /* fix up the probe order for video drivers */
@@ -761,8 +741,6 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_AIGLX,			"AIGLX",			OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_ALLOW_EMPTY_INPUT,     "AllowEmptyInput",              OPTV_BOOLEAN,
-        {0}, FALSE },
   { FLAG_IGNORE_ABI,		"IgnoreABI",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_USE_DEFAULT_FONT_PATH,  "UseDefaultFontPath",		OPTV_BOOLEAN,
@@ -973,13 +951,13 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     }
 #endif
 
-    /* AllowEmptyInput is automatically true if we're hotplugging */
-    xf86Info.allowEmptyInput = (xf86Info.autoAddDevices && xf86Info.autoEnableDevices);
-    xf86GetOptValBool(FlagOptions, FLAG_ALLOW_EMPTY_INPUT, &xf86Info.allowEmptyInput);
+    /* if we're not hotplugging, force some input devices to exist */
+    xf86Info.forceInputDevices = !(xf86Info.autoAddDevices && xf86Info.autoEnableDevices);
 
-    /* AEI on? Then we're not using kbd, so use the evdev rules set. */
+    /* when forcing input devices, we use kbd. otherwise evdev, so use the
+     * evdev rules set. */
 #if defined(linux)
-    if (xf86Info.allowEmptyInput)
+    if (!xf86Info.forceInputDevices)
         set.rules = "evdev";
 #endif
     XkbSetRulesDflts(&set);
@@ -1111,12 +1089,12 @@ Bool xf86DRI2Enabled(void)
 static Bool
 checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 {
-    IDevPtr corePointer = NULL, coreKeyboard = NULL;
+    InputInfoPtr corePointer = NULL, coreKeyboard = NULL;
     Bool foundPointer = FALSE, foundKeyboard = FALSE;
     const char *pointerMsg = NULL, *keyboardMsg = NULL;
-    IDevPtr *devs, /* iterator */
+    InputInfoPtr *devs, /* iterator */
             indp;
-    IDevRec Pointer, Keyboard;
+    InputInfoRec Pointer = {}, Keyboard = {};
     XF86ConfInputPtr confInput;
     XF86ConfInputRec defPtr, defKbd;
     int count = 0;
@@ -1131,49 +1109,27 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
      * remove the core attribute from the later ones.
      */
     for (devs = servlayoutp->inputs; devs && *devs; devs++) {
-	pointer opt1 = NULL, opt2 = NULL;
         indp = *devs;
-	if (indp->commonOptions &&
-	    xf86CheckBoolOption(indp->commonOptions, "CorePointer", FALSE)) {
-	    opt1 = indp->commonOptions;
-	}
-	if (indp->extraOptions &&
-	    xf86CheckBoolOption(indp->extraOptions, "CorePointer", FALSE)) {
-	    opt2 = indp->extraOptions;
-	}
-	if (opt1 || opt2) {
+	if (indp->options &&
+	    xf86CheckBoolOption(indp->options, "CorePointer", FALSE)) {
 	    if (!corePointer) {
 		corePointer = indp;
 	    } else {
-		if (opt1)
-		    xf86ReplaceBoolOption(opt1, "CorePointer", FALSE);
-		if (opt2)
-		    xf86ReplaceBoolOption(opt2, "CorePointer", FALSE);
+		    xf86ReplaceBoolOption(indp->options, "CorePointer", FALSE);
 		xf86Msg(X_WARNING, "Duplicate core pointer devices.  "
 			"Removing core pointer attribute from \"%s\"\n",
-			indp->identifier);
+			indp->name);
 	    }
 	}
-	opt1 = opt2 = NULL;
-	if (indp->commonOptions &&
-	    xf86CheckBoolOption(indp->commonOptions, "CoreKeyboard", FALSE)) {
-	    opt1 = indp->commonOptions;
-	}
-	if (indp->extraOptions &&
-	    xf86CheckBoolOption(indp->extraOptions, "CoreKeyboard", FALSE)) {
-	    opt2 = indp->extraOptions;
-	}
-	if (opt1 || opt2) {
+	if (indp->options &&
+	    xf86CheckBoolOption(indp->options, "CoreKeyboard", FALSE)) {
 	    if (!coreKeyboard) {
 		coreKeyboard = indp;
 	    } else {
-		if (opt1)
-		    xf86ReplaceBoolOption(opt1, "CoreKeyboard", FALSE);
-		if (opt2)
-		    xf86ReplaceBoolOption(opt2, "CoreKeyboard", FALSE);
+		    xf86ReplaceBoolOption(indp->options, "CoreKeyboard", FALSE);
 		xf86Msg(X_WARNING, "Duplicate core keyboard devices.  "
 			"Removing core keyboard attribute from \"%s\"\n",
-			indp->identifier);
+			indp->name);
 	    }
 	}
 	count++;
@@ -1200,7 +1156,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 		if (*devs == corePointer)
                 {
                     free(*devs);
-                    *devs = (IDevPtr)0x1; /* ensure we dont skip next loop*/
+                    *devs = (InputInfoPtr)0x1; /* ensure we dont skip next loop*/
 		    break;
                 }
 	    for (; devs && *devs; devs++)
@@ -1218,7 +1174,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     /* 3. First core pointer device. */
-    if (!foundPointer && (!xf86Info.allowEmptyInput || implicitLayout)) {
+    if (!foundPointer && (xf86Info.forceInputDevices || implicitLayout)) {
 	XF86ConfInputPtr p;
 
 	for (p = xf86configptr->conf_input_lst; p; p = p->list.next) {
@@ -1234,7 +1190,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     /* 4. First pointer with an allowed mouse driver. */
-    if (!foundPointer && !xf86Info.allowEmptyInput) {
+    if (!foundPointer && xf86Info.forceInputDevices) {
 	const char **driver = mousedrivers;
 	confInput = xf86findInput(CONF_IMPLICIT_POINTER,
 				  xf86configptr->conf_input_lst);
@@ -1251,7 +1207,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     /* 5. Built-in default. */
-    if (!foundPointer && !xf86Info.allowEmptyInput) {
+    if (!foundPointer && xf86Info.forceInputDevices) {
 	memset(&defPtr, 0, sizeof(defPtr));
 	defPtr.inp_identifier = strdup("<default pointer>");
 	defPtr.inp_driver = strdup("mouse");
@@ -1267,17 +1223,17 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
         if (foundPointer) {
 	    count++;
 	    devs = xnfrealloc(servlayoutp->inputs,
-			      (count + 1) * sizeof(IDevPtr));
-            devs[count - 1] = xnfalloc(sizeof(IDevRec));
+			      (count + 1) * sizeof(InputInfoPtr));
+            devs[count - 1] = xnfalloc(sizeof(InputInfoRec));
 	    *devs[count - 1] = Pointer;
-	    devs[count - 1]->extraOptions =
+	    devs[count - 1]->options =
 				xf86addNewOption(NULL, xnfstrdup("CorePointer"), NULL);
 	    devs[count] = NULL;
 	    servlayoutp->inputs = devs;
 	}
     }
 
-    if (!foundPointer && !xf86Info.allowEmptyInput) {
+    if (!foundPointer && xf86Info.forceInputDevices) {
 	/* This shouldn't happen. */
 	xf86Msg(X_ERROR, "Cannot locate a core pointer device.\n");
 	return FALSE;
@@ -1301,7 +1257,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	    driver++;
 	}
     }
-    if (!found && !xf86Info.allowEmptyInput) {
+    if (!found && xf86Info.forceInputDevices) {
 	xf86Msg(X_INFO, "No default mouse found, adding one\n");
 	memset(&defPtr, 0, sizeof(defPtr));
 	defPtr.inp_identifier = strdup("<default pointer>");
@@ -1311,10 +1267,10 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
         if (foundPointer) {
 	    count++;
 	    devs = xnfrealloc(servlayoutp->inputs,
-			      (count + 1) * sizeof(IDevPtr));
-            devs[count - 1] = xnfalloc(sizeof(IDevRec));
+			      (count + 1) * sizeof(InputInfoPtr));
+            devs[count - 1] = xnfalloc(sizeof(InputInfoRec));
 	    *devs[count - 1] = Pointer;
-	    devs[count - 1]->extraOptions =
+	    devs[count - 1]->options =
 				xf86addNewOption(NULL, xnfstrdup("AlwaysCore"), NULL);
 	    devs[count] = NULL;
 	    servlayoutp->inputs = devs;
@@ -1342,7 +1298,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 		if (*devs == coreKeyboard)
                 {
                     free(*devs);
-                    *devs = (IDevPtr)0x1; /* ensure we dont skip next loop */
+                    *devs = (InputInfoPtr)0x1; /* ensure we dont skip next loop */
 		    break;
                 }
 	    for (; devs && *devs; devs++)
@@ -1360,7 +1316,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     /* 3. First core keyboard device. */
-    if (!foundKeyboard && (!xf86Info.allowEmptyInput || implicitLayout)) {
+    if (!foundKeyboard && (xf86Info.forceInputDevices || implicitLayout)) {
 	XF86ConfInputPtr p;
 
 	for (p = xf86configptr->conf_input_lst; p; p = p->list.next) {
@@ -1376,7 +1332,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     /* 4. First keyboard with 'keyboard' or 'kbd' as the driver. */
-    if (!foundKeyboard && !xf86Info.allowEmptyInput) {
+    if (!foundKeyboard && xf86Info.forceInputDevices) {
 	confInput = xf86findInput(CONF_IMPLICIT_KEYBOARD,
 				  xf86configptr->conf_input_lst);
 	if (!confInput) {
@@ -1391,7 +1347,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
 
     /* 5. Built-in default. */
-    if (!foundKeyboard && !xf86Info.allowEmptyInput) {
+    if (!foundKeyboard && xf86Info.forceInputDevices) {
 	memset(&defKbd, 0, sizeof(defKbd));
 	defKbd.inp_identifier = strdup("<default keyboard>");
 	defKbd.inp_driver = strdup("kbd");
@@ -1407,17 +1363,17 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
         if (foundKeyboard) {
 	    count++;
 	    devs = xnfrealloc(servlayoutp->inputs,
-			      (count + 1) * sizeof(IDevPtr));
-            devs[count - 1] = xnfalloc(sizeof(IDevRec));
+			      (count + 1) * sizeof(InputInfoPtr));
+            devs[count - 1] = xnfalloc(sizeof(InputInfoRec));
 	    *devs[count - 1] = Keyboard;
-	    devs[count - 1]->extraOptions =
+	    devs[count - 1]->options =
 				xf86addNewOption(NULL, xnfstrdup("CoreKeyboard"), NULL);
 	    devs[count] = NULL;
 	    servlayoutp->inputs = devs;
 	}
     }
 
-    if (!foundKeyboard && !xf86Info.allowEmptyInput) {
+    if (!foundKeyboard && xf86Info.forceInputDevices) {
 	/* This shouldn't happen. */
 	xf86Msg(X_ERROR, "Cannot locate a core keyboard device.\n");
 	return FALSE;
@@ -1443,7 +1399,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	            "\tUsing the %s.\n", keyboardMsg);
     }
 
-    if (xf86Info.allowEmptyInput && !(foundPointer && foundKeyboard)) {
+    if (!xf86Info.forceInputDevices && !(foundPointer && foundKeyboard)) {
 #if defined(CONFIG_HAL) || defined(CONFIG_UDEV)
 	const char *config_backend;
 #if defined(CONFIG_HAL)
@@ -1456,8 +1412,10 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	                "reconfigure %s or disable AutoAddDevices.\n",
 			config_backend, config_backend);
 #else
-	xf86Msg(X_INFO, "Hotplugging is disabled and no input devices were configured.\n"
-			"\tTry disabling AllowEmptyInput.\n");
+	xf86Msg(X_WARNING, "Hotplugging requested but the server was "
+			   "compiled without a config backend. "
+			   "No input devices were configured, the server "
+			   "will start without any input devices.\n");
 #endif
     }
 
@@ -1482,7 +1440,7 @@ static Bool
 configInputDevices(XF86ConfLayoutPtr layout, serverLayoutPtr servlayoutp)
 {
     XF86ConfInputrefPtr irp;
-    IDevPtr *indp;
+    InputInfoPtr *indp;
     int count = 0;
 
     /*
@@ -1495,19 +1453,20 @@ configInputDevices(XF86ConfLayoutPtr layout, serverLayoutPtr servlayoutp)
     }
     DebugF("Found %d input devices in the layout section %s\n",
 	    count, layout->lay_identifier);
-    indp = xnfcalloc((count + 1), sizeof(IDevPtr));
+    indp = xnfcalloc((count + 1), sizeof(InputInfoPtr));
     indp[count] = NULL;
     irp = layout->lay_input_lst;
     count = 0;
     while (irp) {
-	indp[count] = xnfalloc(sizeof(IDevRec));
+	indp[count] = xf86AllocateInput();
 	if (!configInput(indp[count], irp->iref_inputdev, X_CONFIG)) {
 	    while(count--)
 		free(indp[count]);
 	    free(indp);
 	    return FALSE;
 	}
-	indp[count]->extraOptions = irp->iref_option_lst;
+	indp[count]->options = xf86OptionListMerge(indp[count]->options,
+						   irp->iref_option_lst);
 	count++;
 	irp = (XF86ConfInputrefPtr)irp->list.next;
     }
@@ -1730,7 +1689,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen,
     MessageType from;
     XF86ConfScreenPtr s;
     screenLayoutPtr slp;
-    IDevPtr *indp;
+    InputInfoPtr *indp;
     XF86ConfLayoutRec layout;
 
     if (!servlayoutp)
@@ -1776,7 +1735,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen,
 	from = X_DEFAULT;
     } else {
 	/* Set up an empty input device list, then look for some core devices. */
-	indp = xnfalloc(sizeof(IDevPtr));
+	indp = xnfalloc(sizeof(InputInfoPtr));
 	*indp = NULL;
 	servlayoutp->inputs = indp;
     }
@@ -2229,15 +2188,10 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
 static void
 configDRI(XF86ConfDRIPtr drip)
 {
-    int                count = 0;
-    XF86ConfBuffersPtr bufs;
-    int                i;
     struct group       *grp;
 
     xf86ConfigDRI.group      = -1;
     xf86ConfigDRI.mode       = 0;
-    xf86ConfigDRI.bufs_count = 0;
-    xf86ConfigDRI.bufs       = NULL;
 
     if (drip) {
 	if (drip->dri_group_name) {
@@ -2248,24 +2202,6 @@ configDRI(XF86ConfDRIPtr drip)
 		xf86ConfigDRI.group = drip->dri_group;
 	}
 	xf86ConfigDRI.mode = drip->dri_mode;
-	for (bufs = drip->dri_buffers_lst; bufs; bufs = bufs->list.next)
-	    ++count;
-	
-	xf86ConfigDRI.bufs_count = count;
-	xf86ConfigDRI.bufs = xnfalloc(count * sizeof(*xf86ConfigDRI.bufs));
-	
-	for (i = 0, bufs = drip->dri_buffers_lst;
-	     i < count;
-	     i++, bufs = bufs->list.next) {
-	    
-	    xf86ConfigDRI.bufs[i].count = bufs->buf_count;
-	    xf86ConfigDRI.bufs[i].size  = bufs->buf_size;
-				/* FIXME: Flags not implemented.  These
-                                   could be used, for example, to specify a
-                                   contiguous block and/or write-combining
-                                   cache policy. */
-	    xf86ConfigDRI.bufs[i].flags = 0;
-	}
     }
 }
 #endif
@@ -2323,13 +2259,12 @@ configExtensions(XF86ConfExtensionsPtr conf_ext)
 }
 
 static Bool
-configInput(IDevPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
+configInput(InputInfoPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
 {
     xf86Msg(from, "|-->Input Device \"%s\"\n", conf_input->inp_identifier);
-    inputp->identifier = conf_input->inp_identifier;
+    inputp->name = conf_input->inp_identifier;
     inputp->driver = conf_input->inp_driver;
-    inputp->commonOptions = conf_input->inp_option_lst;
-    inputp->extraOptions = NULL;
+    inputp->options = conf_input->inp_option_lst;
     inputp->attrs = NULL;
 
     return TRUE;
@@ -2378,12 +2313,13 @@ static void
 checkInput(serverLayoutPtr layout, Bool implicit_layout) {
     checkCoreInputDevices(layout, implicit_layout);
 
-    /* AllowEmptyInput and the "kbd" and "mouse" drivers are mutually
-     * exclusive. Trawl the list for mouse/kbd devices and disable them.
+    /* Unless we're forcing input devices, disable mouse/kbd devices in the
+     * config. Otherwise the same physical device is added multiple times,
+     * leading to duplicate events.
      */
-    if (xf86Info.allowEmptyInput && layout->inputs)
+    if (!xf86Info.forceInputDevices && layout->inputs)
     {
-        IDevPtr *dev = layout->inputs;
+        InputInfoPtr *dev = layout->inputs;
         BOOL warned = FALSE;
 
         while(*dev)
@@ -2392,15 +2328,15 @@ checkInput(serverLayoutPtr layout, Bool implicit_layout) {
                 strcmp((*dev)->driver, "mouse") == 0 ||
                 strcmp((*dev)->driver, "vmmouse") == 0)
             {
-                IDevPtr *current;
+                InputInfoPtr *current;
                 if (!warned)
                 {
-                    xf86Msg(X_WARNING, "AllowEmptyInput is on, devices using "
+                    xf86Msg(X_WARNING, "Hotplugging is on, devices using "
                             "drivers 'kbd', 'mouse' or 'vmmouse' will be disabled.\n");
                     warned = TRUE;
                 }
 
-                xf86Msg(X_WARNING, "Disabling %s\n", (*dev)->identifier);
+                xf86Msg(X_WARNING, "Disabling %s\n", (*dev)->name);
 
                 current = dev;
                 free(*dev);
@@ -2535,18 +2471,11 @@ xf86HandleConfigFile(Bool autoconfig)
            scanptr = xf86ConfigLayout.screens->screen->device->busID;
     }
     if (scanptr) {
-       int bus, device, func;
        if (strncmp(scanptr, "PCI:", 4) != 0) {
            xf86Msg(X_WARNING, "Bus types other than PCI not yet isolable.\n"
                               "\tIgnoring IsolateDevice option.\n");
-       } else if (sscanf(scanptr, "PCI:%d:%d:%d", &bus, &device, &func) == 3) {
-           xf86IsolateDevice.domain = PCI_DOM_FROM_BUS(bus);
-           xf86IsolateDevice.bus = PCI_BUS_NO_DOMAIN(bus);
-           xf86IsolateDevice.dev = device;
-           xf86IsolateDevice.func = func;
-           xf86Msg(X_INFO,
-                   "Isolating PCI bus \"%d:%d:%d\"\n", bus, device, func);
-       }
+       } else
+           xf86PciIsolateDevice(scanptr);
     }
 
     /* Now process everything else */

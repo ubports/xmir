@@ -25,7 +25,6 @@
 #include <X11/extensions/xf86dgaproto.h>
 #include "swaprep.h"
 #include "dgaproc.h"
-#include "xf86dgaext.h"
 #include "protocol-versions.h"
 
 #include <string.h>
@@ -34,24 +33,6 @@
 
 #define DGA_PROTOCOL_OLD_SUPPORT 1
 
-static DISPATCH_PROC(ProcXDGADispatch);
-static DISPATCH_PROC(SProcXDGADispatch);
-static DISPATCH_PROC(ProcXDGAQueryVersion);
-static DISPATCH_PROC(ProcXDGAQueryModes);
-static DISPATCH_PROC(ProcXDGASetMode);
-static DISPATCH_PROC(ProcXDGAOpenFramebuffer);
-static DISPATCH_PROC(ProcXDGACloseFramebuffer);
-static DISPATCH_PROC(ProcXDGASetViewport);
-static DISPATCH_PROC(ProcXDGAInstallColormap);
-static DISPATCH_PROC(ProcXDGASelectInput);
-static DISPATCH_PROC(ProcXDGAFillRectangle);
-static DISPATCH_PROC(ProcXDGACopyArea);
-static DISPATCH_PROC(ProcXDGACopyTransparentArea);
-static DISPATCH_PROC(ProcXDGAGetViewportStatus);
-static DISPATCH_PROC(ProcXDGASync);
-static DISPATCH_PROC(ProcXDGASetClientVersion);
-static DISPATCH_PROC(ProcXDGAChangePixmapMode);
-static DISPATCH_PROC(ProcXDGACreateColormap);
 
 static void XDGAResetProc(ExtensionEntry *extEntry);
 
@@ -83,36 +64,6 @@ typedef struct {
     dixLookupPrivate(&(c)->devPrivates, DGAClientPrivateKey))
 #define DGA_SETPRIV(c,p) \
     dixSetPrivate(&(c)->devPrivates, DGAClientPrivateKey, p)
-
-
-void
-XFree86DGAExtensionInit(INITARGS)
-{
-    ExtensionEntry* extEntry;
-
-    if (!dixRegisterPrivateKey(&DGAClientPrivateKeyRec, PRIVATE_CLIENT, 0))
-	return;
-
-    if (!dixRegisterPrivateKey(&DGAScreenPrivateKeyRec, PRIVATE_SCREEN, 0))
-	return;
-
-    if ((extEntry = AddExtension(XF86DGANAME,
-				XF86DGANumberEvents,
-				XF86DGANumberErrors,
-				ProcXDGADispatch,
-				SProcXDGADispatch,
-				XDGAResetProc,
-				StandardMinorOpcode))) {
-	int i;
-
-	DGAReqCode = (unsigned char)extEntry->base;
-	DGAErrorBase = extEntry->errorBase;
-	DGAEventBase = extEntry->eventBase;
-	for (i = KeyPress; i <= MotionNotify; i++)
-	    SetCriticalEvent (DGAEventBase + i);
-    }
-}
-
 
 
 static void
@@ -148,7 +99,7 @@ ProcXDGAOpenFramebuffer(ClientPtr client)
     char *deviceName;
     int nameSize;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if (!DGAAvailable(stuff->screen))
@@ -182,7 +133,7 @@ ProcXDGACloseFramebuffer(ClientPtr client)
 {
     REQUEST(xXDGACloseFramebufferReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if (!DGAAvailable(stuff->screen))
@@ -204,7 +155,7 @@ ProcXDGAQueryModes(ClientPtr client)
     xXDGAModeInfo info;
     XDGAModePtr mode;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     REQUEST_SIZE_MATCH(xXDGAQueryModesReq);
@@ -323,7 +274,7 @@ ProcXDGASetMode(ClientPtr client)
     ClientPtr owner;
     int size;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
     owner = DGA_GETCLIENT(stuff->screen);
 
@@ -412,7 +363,7 @@ ProcXDGASetViewport(ClientPtr client)
 {
     REQUEST(xXDGASetViewportReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -432,7 +383,7 @@ ProcXDGAInstallColormap(ClientPtr client)
     int rc;
     REQUEST(xXDGAInstallColormapReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -454,7 +405,7 @@ ProcXDGASelectInput(ClientPtr client)
 {
     REQUEST(xXDGASelectInputReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -474,7 +425,7 @@ ProcXDGAFillRectangle(ClientPtr client)
 {
     REQUEST(xXDGAFillRectangleReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -494,7 +445,7 @@ ProcXDGACopyArea(ClientPtr client)
 {
     REQUEST(xXDGACopyAreaReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -515,7 +466,7 @@ ProcXDGACopyTransparentArea(ClientPtr client)
 {
     REQUEST(xXDGACopyTransparentAreaReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -537,7 +488,7 @@ ProcXDGAGetViewportStatus(ClientPtr client)
     REQUEST(xXDGAGetViewportStatusReq);
     xXDGAGetViewportStatusReply rep;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -560,7 +511,7 @@ ProcXDGASync(ClientPtr client)
     REQUEST(xXDGASyncReq);
     xXDGASyncReply rep;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -605,7 +556,7 @@ ProcXDGAChangePixmapMode(ClientPtr client)
     xXDGAChangePixmapModeReply rep;
     int x, y;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -636,7 +587,7 @@ ProcXDGACreateColormap(ClientPtr client)
     REQUEST(xXDGACreateColormapReq);
     int result;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
         return BadValue;
 
     if(DGA_GETCLIENT(stuff->screen) != client)
@@ -663,15 +614,6 @@ ProcXDGACreateColormap(ClientPtr client)
 
 #ifdef DGA_PROTOCOL_OLD_SUPPORT
 
-static DISPATCH_PROC(ProcXF86DGADirectVideo);
-static DISPATCH_PROC(ProcXF86DGAGetVidPage);
-static DISPATCH_PROC(ProcXF86DGAGetVideoLL);
-static DISPATCH_PROC(ProcXF86DGAGetViewPortSize);
-static DISPATCH_PROC(ProcXF86DGASetVidPage);
-static DISPATCH_PROC(ProcXF86DGASetViewPort);
-static DISPATCH_PROC(ProcXF86DGAInstallColormap);
-static DISPATCH_PROC(ProcXF86DGAQueryDirectVideo);
-static DISPATCH_PROC(ProcXF86DGAViewPortChanged);
 
 
 static int
@@ -683,7 +625,7 @@ ProcXF86DGAGetVideoLL(ClientPtr client)
     int num, offset, flags;
     char *name;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     REQUEST_SIZE_MATCH(xXF86DGAGetVideoLLReq);
@@ -722,7 +664,7 @@ ProcXF86DGADirectVideo(ClientPtr client)
     ClientPtr owner;
     REQUEST(xXF86DGADirectVideoReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
     REQUEST_SIZE_MATCH(xXF86DGADirectVideoReq);
 
@@ -776,7 +718,7 @@ ProcXF86DGAGetViewPortSize(ClientPtr client)
     REQUEST(xXF86DGAGetViewPortSizeReq);
     xXF86DGAGetViewPortSizeReply rep;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     REQUEST_SIZE_MATCH(xXF86DGAGetViewPortSizeReq);
@@ -804,7 +746,7 @@ ProcXF86DGASetViewPort(ClientPtr client)
 {
     REQUEST(xXF86DGASetViewPortReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     if (DGA_GETCLIENT(stuff->screen) != client)
@@ -831,7 +773,7 @@ ProcXF86DGAGetVidPage(ClientPtr client)
     REQUEST(xXF86DGAGetVidPageReq);
     xXF86DGAGetVidPageReply rep;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     REQUEST_SIZE_MATCH(xXF86DGAGetVidPageReq);
@@ -850,7 +792,7 @@ ProcXF86DGASetVidPage(ClientPtr client)
 {
     REQUEST(xXF86DGASetVidPageReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     REQUEST_SIZE_MATCH(xXF86DGASetVidPageReq);
@@ -868,7 +810,7 @@ ProcXF86DGAInstallColormap(ClientPtr client)
     int rc;
     REQUEST(xXF86DGAInstallColormapReq);
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     if (DGA_GETCLIENT(stuff->screen) != client)
@@ -895,7 +837,7 @@ ProcXF86DGAQueryDirectVideo(ClientPtr client)
     REQUEST(xXF86DGAQueryDirectVideoReq);
     xXF86DGAQueryDirectVideoReply rep;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     REQUEST_SIZE_MATCH(xXF86DGAQueryDirectVideoReq);
@@ -917,7 +859,7 @@ ProcXF86DGAViewPortChanged(ClientPtr client)
     REQUEST(xXF86DGAViewPortChangedReq);
     xXF86DGAViewPortChangedReply rep;
 
-    if (stuff->screen > screenInfo.numScreens)
+    if (stuff->screen >= screenInfo.numScreens)
 	return BadValue;
 
     if (DGA_GETCLIENT(stuff->screen) != client)
@@ -1062,4 +1004,32 @@ void
 XFree86DGARegister(INITARGS)
 {
   XDGAEventBase = &DGAEventBase;
+}
+
+void
+XFree86DGAExtensionInit(INITARGS)
+{
+    ExtensionEntry* extEntry;
+
+    if (!dixRegisterPrivateKey(&DGAClientPrivateKeyRec, PRIVATE_CLIENT, 0))
+	return;
+
+    if (!dixRegisterPrivateKey(&DGAScreenPrivateKeyRec, PRIVATE_SCREEN, 0))
+	return;
+
+    if ((extEntry = AddExtension(XF86DGANAME,
+				XF86DGANumberEvents,
+				XF86DGANumberErrors,
+				ProcXDGADispatch,
+				SProcXDGADispatch,
+				XDGAResetProc,
+				StandardMinorOpcode))) {
+	int i;
+
+	DGAReqCode = (unsigned char)extEntry->base;
+	DGAErrorBase = extEntry->errorBase;
+	DGAEventBase = extEntry->eventBase;
+	for (i = KeyPress; i <= MotionNotify; i++)
+	    SetCriticalEvent (DGAEventBase + i);
+    }
 }

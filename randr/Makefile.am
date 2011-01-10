@@ -9,7 +9,6 @@ sdk_HEADERS = randrstr.h rrtransform.h
 endif
 
 librandr_la_SOURCES =	\
-	mirandr.c	\
 	randr.c		\
 	randrstr.h	\
 	rrcrtc.c	\
@@ -17,12 +16,16 @@ librandr_la_SOURCES =	\
 	rrinfo.c	\
 	rrmode.c	\
 	rroutput.c	\
+	rrpixmap.c	\
 	rrpointer.c	\
 	rrproperty.c	\
 	rrscreen.c	\
 	rrsdispatch.c	\
+	rrsprite.c	\
 	rrtransform.h	\
-	rrtransform.c
+	rrtransform.c	\
+	mirrcrtc.c
+
 
 if XINERAMA
 librandr_la_SOURCES += ${XINERAMA_SRCS}

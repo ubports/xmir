@@ -104,6 +104,7 @@ static void xf86XVClipNotify(WindowPtr pWin, int dx, int dy);
 static Bool xf86XVEnterVT(int, int);
 static void xf86XVLeaveVT(int, int);
 static void xf86XVAdjustFrame(int index, int x, int y, int flags);
+static void xf86XVModeSet(ScrnInfoPtr pScrn);
 
 /* misc */
 
@@ -287,6 +288,7 @@ xf86XVScreenInit(
   ScreenPriv->EnterVT = pScrn->EnterVT;
   ScreenPriv->LeaveVT = pScrn->LeaveVT;
   ScreenPriv->AdjustFrame = pScrn->AdjustFrame;
+  ScreenPriv->ModeSet = pScrn->ModeSet;
 
   pScreen->DestroyWindow = xf86XVDestroyWindow;
   pScreen->WindowExposures = xf86XVWindowExposures;
@@ -295,6 +297,7 @@ xf86XVScreenInit(
   pScrn->LeaveVT = xf86XVLeaveVT;
   if(pScrn->AdjustFrame)
      pScrn->AdjustFrame = xf86XVAdjustFrame;
+  pScrn->ModeSet = xf86XVModeSet;
 
   if(!xf86XVInitAdaptors(pScreen, adaptors, num))
 	return FALSE;
@@ -429,8 +432,7 @@ xf86XVInitAdaptors(
       pa->ddGetPortAttribute = xf86XVGetPortAttribute;
       pa->ddQueryBestSize = xf86XVQueryBestSize;
       pa->ddQueryImageAttributes = xf86XVQueryImageAttributes;
-      if((pa->name = malloc(strlen(adaptorPtr->name) + 1)))
-	  strcpy(pa->name, adaptorPtr->name);
+      pa->name = strdup(adaptorPtr->name);
 
       if(adaptorPtr->nEncodings &&
 	(pEncode = calloc(adaptorPtr->nEncodings, sizeof(XvEncodingRec)))) {
@@ -440,8 +442,7 @@ xf86XVInitAdaptors(
 	{
 	    pe->id = encodingPtr->id;
 	    pe->pScreen = pScreen;
-	    if((pe->name = malloc(strlen(encodingPtr->name) + 1)))
-		strcpy(pe->name, encodingPtr->name);
+	    pe->name = strdup(encodingPtr->name);
 	    pe->width = encodingPtr->width;
 	    pe->height = encodingPtr->height;
 	    pe->rate.numerator = encodingPtr->rate.numerator;
@@ -493,8 +494,7 @@ xf86XVInitAdaptors(
 	    pat->flags = attributePtr->flags;
 	    pat->min_value = attributePtr->min_value;
 	    pat->max_value = attributePtr->max_value;
-	    if((pat->name = malloc(strlen(attributePtr->name) + 1)))
-		strcpy(pat->name, attributePtr->name);
+	    pat->name = strdup(attributePtr->name);
 	}
 	pa->nAttributes = adaptorPtr->nAttributes;
 	pa->pAttributes = pAttribute;
@@ -559,7 +559,7 @@ xf86XVInitAdaptors(
       adaptorPriv->QueryBestSize = adaptorPtr->QueryBestSize;
       adaptorPriv->QueryImageAttributes = adaptorPtr->QueryImageAttributes;
       adaptorPriv->PutImage = adaptorPtr->PutImage;
-      adaptorPriv->ReputImage = adaptorPtr->ReputImage;
+      adaptorPriv->ReputImage = adaptorPtr->ReputImage; /* image/still */
 
       pa->devPriv.ptr = (pointer)adaptorPriv;
 
@@ -664,8 +664,7 @@ xf86XVUpdateCompositeClip(XvPortRecPrivatePtr portPriv)
    pCompositeClip = RegionCreate(NullBox, 1);
    RegionCopy(pCompositeClip, portPriv->clientClip);
    RegionTranslate(pCompositeClip,
-			portPriv->pDraw->x + portPriv->clipOrg.x,
-			portPriv->pDraw->y + portPriv->clipOrg.y);
+		   portPriv->pDraw->x, portPriv->pDraw->y);
    RegionIntersect(pCompositeClip, pregWin, pCompositeClip);
 
    portPriv->pCompositeClip = pCompositeClip;
@@ -690,6 +689,8 @@ xf86XVCopyClip(
 	    portPriv->clientClip = RegionCreate(NullBox, 1);
 	/* Note: this is in window coordinates */
 	RegionCopy(portPriv->clientClip, pGC->clientClip);
+	RegionTranslate(portPriv->clientClip,
+			pGC->clipOrg.x, pGC->clipOrg.y);
     } else if(portPriv->clientClip) { /* free the old clientClip */
 	RegionDestroy(portPriv->clientClip);
 	portPriv->clientClip = NULL;
@@ -700,7 +701,27 @@ xf86XVCopyClip(
 	RegionDestroy(portPriv->pCompositeClip);
     }
 
-    portPriv->clipOrg = pGC->clipOrg;
+    portPriv->pCompositeClip = pGC->pCompositeClip;
+    portPriv->FreeCompositeClip = FALSE;
+    portPriv->subWindowMode = pGC->subWindowMode;
+}
+
+static void
+xf86XVCopyCompositeClip(XvPortRecPrivatePtr portPriv,
+			GCPtr pGC,
+			DrawablePtr pDraw)
+{
+    if (!portPriv->clientClip)
+	portPriv->clientClip = RegionCreate(NullBox, 1);
+    /* Keep the original GC composite clip around for ReputImage */
+    RegionCopy(portPriv->clientClip, pGC->pCompositeClip);
+    RegionTranslate(portPriv->clientClip,
+		    -pDraw->x, -pDraw->y);
+
+    /* get rid of the old clip list */
+    if (portPriv->pCompositeClip && portPriv->FreeCompositeClip)
+	RegionDestroy(portPriv->pCompositeClip);
+
     portPriv->pCompositeClip = pGC->pCompositeClip;
     portPriv->FreeCompositeClip = FALSE;
     portPriv->subWindowMode = pGC->subWindowMode;
@@ -855,6 +876,7 @@ CLIP_VIDEO_BAILOUT:
   return ret;
 }
 
+/* Reput image/still */
 static int
 xf86XVReputImage(XvPortRecPrivatePtr portPriv)
 {
@@ -865,6 +887,11 @@ xf86XVReputImage(XvPortRecPrivatePtr portPriv)
   Bool clippedAway = FALSE;
 
   xf86XVUpdateCompositeClip(portPriv);
+
+  /* the clip can get smaller over time */
+  RegionCopy(portPriv->clientClip, portPriv->pCompositeClip);
+  RegionTranslate(portPriv->clientClip,
+		  -portPriv->pDraw->x, -portPriv->pDraw->y);
 
   /* translate the video region to the screen */
   WinBox.x1 = portPriv->pDraw->x + portPriv->drw_x;
@@ -915,7 +942,10 @@ xf86XVReputImage(XvPortRecPrivatePtr portPriv)
   }
 
   ret = (*portPriv->AdaptorRec->ReputImage)(portPriv->pScrn,
+			portPriv->vid_x, portPriv->vid_y,
 			WinBox.x1, WinBox.y1,
+			portPriv->vid_w, portPriv->vid_h,
+			portPriv->drw_w, portPriv->drw_h,
 			&ClipRegion, portPriv->DevPriv.ptr,
 			portPriv->pDraw);
 
@@ -1007,6 +1037,71 @@ xf86XVRemovePortFromWindow(WindowPtr pWin, XvPortRecPrivatePtr portPriv)
      portPriv->pDraw = NULL;
 }
 
+static void
+xf86XVReputOrStopPort(XvPortRecPrivatePtr pPriv,
+		      WindowPtr pWin,
+		      Bool visible)
+{
+    if (!visible) {
+	if (pPriv->isOn == XV_ON) {
+	    (*pPriv->AdaptorRec->StopVideo)(pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
+	    pPriv->isOn = XV_PENDING;
+	}
+
+	if (!pPriv->type) /* overlaid still/image*/
+	    xf86XVRemovePortFromWindow(pWin, pPriv);
+
+	return;
+    }
+
+    switch (pPriv->type) {
+    case XvInputMask:
+	xf86XVReputVideo(pPriv);
+	break;
+    case XvOutputMask:
+	xf86XVRegetVideo(pPriv);
+	break;
+    default:  /* overlaid still/image*/
+	if (pPriv->AdaptorRec->ReputImage)
+	    xf86XVReputImage(pPriv);
+	break;
+    }
+}
+
+static void
+xf86XVReputOrStopAllPorts(ScrnInfoPtr pScrn)
+{
+    ScreenPtr pScreen = pScrn->pScreen;
+    XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
+    XvAdaptorPtr pa;
+    int c, i;
+
+    for (c = pxvs->nAdaptors, pa = pxvs->pAdaptors; c > 0; c--, pa++) {
+	XvPortPtr pPort = pa->pPorts;
+
+	for (i = pa->nPorts; i > 0; i--, pPort++) {
+	    XvPortRecPrivatePtr pPriv = (XvPortRecPrivatePtr)pPort->devPriv.ptr;
+	    WindowPtr pWin = (WindowPtr)pPriv->pDraw;
+	    Bool visible;
+
+	    if (pPriv->isOn == XV_OFF || !pWin)
+		continue;
+
+	    visible = pWin->visibility == VisibilityUnobscured ||
+		      pWin->visibility == VisibilityPartiallyObscured;
+
+	    /*
+	     * Stop and remove still/images if
+	     * ReputImage isn't supported.
+	     */
+	    if (!pPriv->type && !pPriv->AdaptorRec->ReputImage)
+		visible = FALSE;
+
+	    xf86XVReputOrStopPort(pPriv, pWin, visible);
+	}
+    }
+}
+
 /****  ScreenRec fields ****/
 
 static Bool
@@ -1051,7 +1146,6 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
   ScreenPtr pScreen = pWin->drawable.pScreen;
   XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
   XF86XVWindowPtr WinPriv = GET_XF86XV_WINDOW(pWin);
-  XF86XVWindowPtr pPrev;
   XvPortRecPrivatePtr pPriv;
   Bool AreasExposed;
 
@@ -1064,47 +1158,20 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
   /* filter out XClearWindow/Area */
   if (!pWin->valdata) return;
 
-  pPrev = NULL;
-
   while(WinPriv) {
+     Bool visible = TRUE;
+
      pPriv = WinPriv->PortRec;
 
-     /* Reput anyone with a reput function */
+     /*
+      * Stop and remove still/images if areas were exposed and
+      * ReputImage isn't supported.
+      */
+     if (!pPriv->type && !pPriv->AdaptorRec->ReputImage)
+	visible = !AreasExposed;
 
-     switch(pPriv->type) {
-     case XvInputMask:
-	xf86XVReputVideo(pPriv);
-	break;
-     case XvOutputMask:
-	xf86XVRegetVideo(pPriv);
-	break;
-     default:  /* overlaid still/image*/
-	if (pPriv->AdaptorRec->ReputImage)
-	   xf86XVReputImage(pPriv);
-	else if(AreasExposed) {
-	    XF86XVWindowPtr tmp;
-
-	    if (pPriv->isOn == XV_ON) {
-		(*pPriv->AdaptorRec->StopVideo)(
-		    pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-		pPriv->isOn = XV_PENDING;
-	    }
-	    pPriv->pDraw = NULL;
-
-	    if(!pPrev)
-		dixSetPrivate(&pWin->devPrivates, XF86XVWindowKey,
-			      WinPriv->next);
-	    else
-	       pPrev->next = WinPriv->next;
-	    tmp = WinPriv;
-	    WinPriv = WinPriv->next;
-	    free(tmp);
-	    continue;
-	}
-	break;
-     }
-     pPrev = WinPriv;
      WinPriv = WinPriv->next;
+     xf86XVReputOrStopPort(pPriv, pWin, visible);
   }
 }
 
@@ -1115,16 +1182,14 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
   ScreenPtr pScreen = pWin->drawable.pScreen;
   XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
   XF86XVWindowPtr WinPriv = GET_XF86XV_WINDOW(pWin);
-  XF86XVWindowPtr tmp, pPrev = NULL;
   XvPortRecPrivatePtr pPriv;
-  Bool visible = (pWin->visibility == VisibilityUnobscured) ||
-		 (pWin->visibility == VisibilityPartiallyObscured);
 
   while(WinPriv) {
+     Bool visible = pWin->visibility == VisibilityUnobscured ||
+		    pWin->visibility == VisibilityPartiallyObscured;
+
      pPriv = WinPriv->PortRec;
 
-     if(!pPriv) goto next;
- 
      if(pPriv->pCompositeClip && pPriv->FreeCompositeClip)
 	RegionDestroy(pPriv->pCompositeClip);
 
@@ -1134,34 +1199,15 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
         (*pPriv->AdaptorRec->ClipNotify)(pPriv->pScrn, pPriv->DevPriv.ptr,
                                          pWin, dx, dy);
 
-     /* Stop everything except images, but stop them too if the
-	window isn't visible.  But we only remove the images. */
+     /*
+      * Stop and remove still/images if
+      * ReputImage isn't supported.
+      */
+     if (!pPriv->type && !pPriv->AdaptorRec->ReputImage)
+	visible = FALSE;
 
-     if(pPriv->type || !visible) {
-	if(pPriv->isOn == XV_ON) {
-	    (*pPriv->AdaptorRec->StopVideo)(
-			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	    pPriv->isOn = XV_PENDING;
-	}
-
-	if(!pPriv->type) {  /* overlaid still/image */
-	    pPriv->pDraw = NULL;
-
-	    if(!pPrev)
-		dixSetPrivate(&pWin->devPrivates, XF86XVWindowKey,
-			      WinPriv->next);
-	    else
-	       pPrev->next = WinPriv->next;
-	    tmp = WinPriv;
-	    WinPriv = WinPriv->next;
-	    free(tmp);
-	    continue;
-	}
-     }
-
-next:
-     pPrev = WinPriv;
      WinPriv = WinPriv->next;
+     xf86XVReputOrStopPort(pPriv, pWin, visible);
   }
 
   if(ScreenPriv->ClipNotify) {
@@ -1198,6 +1244,7 @@ xf86XVCloseScreen(int i, ScreenPtr pScreen)
   pScrn->EnterVT = ScreenPriv->EnterVT;
   pScrn->LeaveVT = ScreenPriv->LeaveVT;
   pScrn->AdjustFrame = ScreenPriv->AdjustFrame;
+  pScrn->ModeSet = ScreenPriv->ModeSet;
 
   for(c = 0, pa = pxvs->pAdaptors; c < pxvs->nAdaptors; c++, pa++) {
        xf86XVFreeAdaptor(pa);
@@ -1290,11 +1337,7 @@ xf86XVAdjustFrame(int index, int x, int y, int flags)
 {
   ScrnInfoPtr pScrn = xf86Screens[index];
   ScreenPtr pScreen = pScrn->pScreen;
-  XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
   XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
-  WindowPtr pWin;
-  XvAdaptorPtr pa;
-  int c, i;
 
   if(ScreenPriv->AdjustFrame) {
 	pScrn->AdjustFrame = ScreenPriv->AdjustFrame;
@@ -1302,39 +1345,29 @@ xf86XVAdjustFrame(int index, int x, int y, int flags)
 	pScrn->AdjustFrame = xf86XVAdjustFrame;
   }
 
-  for(c = pxvs->nAdaptors, pa = pxvs->pAdaptors; c > 0; c--, pa++) {
-      XvPortPtr pPort = pa->pPorts;
-      XvPortRecPrivatePtr pPriv;
-
-      for(i = pa->nPorts; i > 0; i--, pPort++) {
-	pPriv = (XvPortRecPrivatePtr)pPort->devPriv.ptr;
-
-	if(!pPriv->type && (pPriv->isOn != XV_OFF)) { /* overlaid still/image */
-
-	  if(pPriv->pCompositeClip && pPriv->FreeCompositeClip)
-	     RegionDestroy(pPriv->pCompositeClip);
-
-	  pPriv->pCompositeClip = NULL;
-
-	  pWin = (WindowPtr)pPriv->pDraw;
-
-	  if ((pPriv->AdaptorRec->ReputImage) &&
-	     ((pWin->visibility == VisibilityUnobscured) ||
-	      (pWin->visibility == VisibilityPartiallyObscured)))
-	  {
-	      xf86XVReputImage(pPriv);
-	  } else if (pPriv->isOn == XV_ON) {
-	     (*pPriv->AdaptorRec->StopVideo)(
-				 pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	     xf86XVRemovePortFromWindow(pWin, pPriv);
-	     pPriv->isOn = XV_PENDING;
-	     continue;
-	  }
-	}
-     }
-  }
+  xf86XVReputOrStopAllPorts(pScrn);
 }
 
+static void
+xf86XVModeSet(ScrnInfoPtr pScrn)
+{
+    ScreenPtr pScreen = pScrn->pScreen;
+    XF86XVScreenPtr ScreenPriv;
+
+    /* Can be called before pScrn->pScreen is set */
+    if (!pScreen)
+	return;
+
+    ScreenPriv = GET_XF86XV_SCREEN(pScreen);
+
+    if (ScreenPriv->ModeSet) {
+	pScrn->ModeSet = ScreenPriv->ModeSet;
+	(*pScrn->ModeSet)(pScrn);
+	pScrn->ModeSet = xf86XVModeSet;
+    }
+
+    xf86XVReputOrStopAllPorts(pScrn);
+}
 
 /**** XvAdaptorRec fields ****/
 
@@ -1432,6 +1465,8 @@ xf86XVPutStill(
   WinBox.x2 = WinBox.x1 + drw_w;
   WinBox.y2 = WinBox.y1 + drw_h;
 
+  xf86XVCopyCompositeClip(portPriv, pGC, pDraw);
+
   RegionInit(&WinRegion, &WinBox, 1);
   RegionNull(&ClipRegion);
   RegionIntersect(&ClipRegion, &WinRegion, pGC->pCompositeClip);
@@ -1485,6 +1520,8 @@ xf86XVPutStill(
 
      xf86XVEnlistPortInWindow((WindowPtr)pDraw, portPriv);
      portPriv->isOn = XV_ON;
+     portPriv->vid_x = vid_x;  portPriv->vid_y = vid_y;
+     portPriv->vid_w = vid_w;  portPriv->vid_h = vid_h;
      portPriv->drw_x = drw_x;  portPriv->drw_y = drw_y;
      portPriv->drw_w = drw_w;  portPriv->drw_h = drw_h;
      portPriv->type = 0;  /* no mask means it's transient and should
@@ -1499,6 +1536,10 @@ PUT_STILL_BAILOUT:
 		portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
 	portPriv->isOn = XV_PENDING;
   }
+
+  /* This clip was copied and only good for one shot */
+  if(!portPriv->FreeCompositeClip)
+     portPriv->pCompositeClip = NULL;
 
   RegionUninit(&WinRegion);
   RegionUninit(&ClipRegion);
@@ -1721,6 +1762,8 @@ xf86XVPutImage(
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
 
+  xf86XVCopyCompositeClip(portPriv, pGC, pDraw);
+
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;
   WinBox.x2 = WinBox.x1 + drw_w;
@@ -1782,6 +1825,8 @@ xf86XVPutImage(
 	(portPriv->AdaptorRec->flags & VIDEO_OVERLAID_IMAGES)) {
 
      portPriv->isOn = XV_ON;
+     portPriv->vid_x = src_x;  portPriv->vid_y = src_y;
+     portPriv->vid_w = src_w;  portPriv->vid_h = src_h;
      portPriv->drw_x = drw_x;  portPriv->drw_y = drw_y;
      portPriv->drw_w = drw_w;  portPriv->drw_h = drw_h;
      portPriv->type = 0;  /* no mask means it's transient and should
@@ -1796,6 +1841,10 @@ PUT_IMAGE_BAILOUT:
 		portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
 	portPriv->isOn = XV_PENDING;
   }
+
+  /* This clip was copied and only good for one shot */
+  if(!portPriv->FreeCompositeClip)
+     portPriv->pCompositeClip = NULL;
 
   RegionUninit(&WinRegion);
   RegionUninit(&ClipRegion);

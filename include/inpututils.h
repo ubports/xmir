@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Adam Jackson.
+ * Copyright © 2010 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -19,19 +19,30 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
+ *
  */
 
-#ifndef _CFB8_16_H
-#define _CFB8_16_H
+#ifdef HAVE_DIX_CONFIG_H
+#include "dix-config.h"
+#endif
 
-#include "regionstr.h"
-#include "windowstr.h"
+#ifndef INPUTUTILS_H
+#define INPUTUTILS_H
 
-/* this has to stay misnamed for ABI reasons */
+#include "input.h"
 
-extern _X_EXPORT Bool
-cfb8_16ScreenInit(ScreenPtr pScreen, pointer pbits16, pointer pbits8,
-                  int xsize, int ysize, int dpix, int dpiy,
-                  int width16, int width8);
+struct _ValuatorMask {
+    int8_t      last_bit; /* highest bit set in mask */
+    uint8_t     mask[(MAX_VALUATORS + 7)/8];
+    int         valuators[MAX_VALUATORS]; /* valuator data */
+};
 
-#endif /* _CFB8_16_H */
+/* server-internal */
+extern _X_HIDDEN int valuator_mask_size(const ValuatorMask *mask);
+extern _X_HIDDEN int valuator_mask_isset(const ValuatorMask *mask, int bit);
+extern _X_HIDDEN void valuator_mask_unset(ValuatorMask *mask, int bit);
+extern _X_HIDDEN int valuator_mask_num_valuators(const ValuatorMask *mask);
+extern _X_HIDDEN void valuator_mask_copy(ValuatorMask *dest, const ValuatorMask *src);
+extern _X_HIDDEN int valuator_mask_get(const ValuatorMask *mask, int valnum);
+
+#endif

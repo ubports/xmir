@@ -111,13 +111,6 @@ XIShouldNotify(ClientPtr client, DeviceIntPtr dev)
     return 0;
 }
 
-void
-RegisterOtherDevice(DeviceIntPtr device)
-{
-    device->public.processInputProc = ProcessOtherEvent;
-    device->public.realInputProc = ProcessOtherEvent;
-}
-
 Bool
 IsPointerEvent(InternalEvent* event)
 {
@@ -563,7 +556,6 @@ DeepCopyPointerClasses(DeviceIntPtr from, DeviceIntPtr to)
 
         v->axisVal = (double*)(v->axes + from->valuator->numAxes);
         v->sourceid = from->id;
-        v->mode = from->valuator->mode;
     } else if (to->valuator && !from->valuator)
     {
         ClassesPtr classes;
@@ -878,8 +870,10 @@ UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
                     continue;
                 if (!sd->button)
                     continue;
-                if (button_is_down(sd, key, BUTTON_PROCESSED))
-                    return DONT_PROCESS;
+                for (i = 1; i <= sd->button->numButtons; i++)
+                    if (sd->button->map[i] == key &&
+                        button_is_down(sd, i, BUTTON_PROCESSED))
+                        return DONT_PROCESS;
             }
         }
         set_button_up(device, key, BUTTON_PROCESSED);
@@ -898,9 +892,9 @@ UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
         mask = PointerMotionMask | b->state | b->motionMask;
         SetMaskForEvent(device->id, mask, MotionNotify);
     } else if (event->type == ET_ProximityIn)
-	device->valuator->mode &= ~OutOfProximity;
+	device->proximity->in_proximity = TRUE;
     else if (event->type == ET_ProximityOut)
-	device->valuator->mode |= OutOfProximity;
+	device->proximity->in_proximity = FALSE;
 
     return DEFAULT;
 }
@@ -1119,6 +1113,7 @@ InitProximityClassDeviceStruct(DeviceIntPtr dev)
     if (!proxc)
 	return FALSE;
     proxc->sourceid = dev->id;
+    proxc->in_proximity = TRUE;
     dev->proximity = proxc;
     return TRUE;
 }
@@ -1134,7 +1129,7 @@ InitProximityClassDeviceStruct(DeviceIntPtr dev)
  */
 void
 InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, Atom label, int minval, int maxval,
-		       int resolution, int min_res, int max_res)
+		       int resolution, int min_res, int max_res, int mode)
 {
     AxisInfoPtr ax;
 
@@ -1151,6 +1146,10 @@ InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, Atom label, int minval, int 
     ax->min_resolution = min_res;
     ax->max_resolution = max_res;
     ax->label = label;
+    ax->mode = mode;
+
+    if (mode & OutOfProximity)
+        dev->proximity->in_proximity = FALSE;
 }
 
 static void
@@ -1179,7 +1178,7 @@ FixDeviceStateNotify(DeviceIntPtr dev, deviceStateNotify * ev, KeyClassPtr k,
 	int nval = v->numAxes - first;
 
 	ev->classes_reported |= (1 << ValuatorClass);
-	ev->classes_reported |= (dev->valuator->mode << ModeBitsShift);
+	ev->classes_reported |= valuator_get_mode(dev, 0) << ModeBitsShift;
 	ev->num_valuators = nval < 3 ? nval : 3;
 	switch (ev->num_valuators) {
 	case 3:

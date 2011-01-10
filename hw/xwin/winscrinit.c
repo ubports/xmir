@@ -54,28 +54,16 @@ winMWExtWMProcs = {
   winMWExtWMStartDrawing,
   winMWExtWMStopDrawing,
   winMWExtWMUpdateRegion,
-#ifndef ROOTLESS_TRACK_DAMAGE
   winMWExtWMDamageRects,
-#endif
   winMWExtWMRootlessSwitchWindow,
   NULL,//winMWExtWMDoReorderWindow,
   NULL,//winMWExtWMHideWindow,
   NULL,//winMWExtWMUpdateColorMap,
 
   NULL,//winMWExtWMCopyBytes,
-  NULL,//winMWExtWMFillBytes,
-  NULL,//winMWExtWMCompositePixels,
   winMWExtWMCopyWindow
 };
 #endif
-
-
-/*
- * References to external symbols
- */
-
-extern Bool                     g_fSoftwareCursor;
-
 
 /*
  * Prototypes
@@ -406,13 +394,6 @@ winFinishScreenInitFB (int index,
     }
 #endif
 
-  /*
-   * Backing store support should reduce network traffic and increase
-   * performance.
-   */
-  miInitializeBackingStore (pScreen);
-
-  /* KDrive does miDCInitialize right after miInitializeBackingStore */
   /* Setup the cursor routines */
 #if CYGDEBUG
   winDebug ("winFinishScreenInitFB - Calling miDCInitialize ()\n");
@@ -465,8 +446,6 @@ winFinishScreenInitFB (int index,
       winDebug ("winScreenInit - MultiWindowExtWM - RootlessInit returned\n");
       
       rootless_CopyBytes_threshold = 0;
-      rootless_FillBytes_threshold = 0;
-      rootless_CompositePixels_threshold = 0;
       /* FIXME: How many? Profiling needed? */
       rootless_CopyWindow_threshold = 1;
 

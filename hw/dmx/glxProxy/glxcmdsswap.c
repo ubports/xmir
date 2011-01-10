@@ -252,7 +252,7 @@ int __glXSwapGetVisualConfigs(__GLXclientState *cl, GLbyte *pc)
 
     __GLX_SWAP_INT(&req->screen);
     screen = req->screen;
-    if (screen > screenInfo.numScreens) {
+    if (screen >= screenInfo.numScreens) {
 	/* The client library must send a valid screen number. */
 	client->errorValue = screen;
 	return BadValue;
@@ -702,9 +702,9 @@ int __glXSwapRenderLarge(__GLXclientState *cl, GLbyte *pc)
 	*/
 	if (cl->largeCmdBufSize < hdr->length) {
 	    if (!cl->largeCmdBuf) {
-		cl->largeCmdBuf = (GLbyte *) __glXMalloc(hdr->length);
+		cl->largeCmdBuf = (GLbyte *) malloc(hdr->length);
 	    } else {
-		cl->largeCmdBuf = (GLbyte *) __glXRealloc(cl->largeCmdBuf, hdr->length);
+		cl->largeCmdBuf = (GLbyte *) realloc(cl->largeCmdBuf, hdr->length);
 	    }
 	    if (!cl->largeCmdBuf) {
 	       cl->largeCmdRequestsTotal = 0;

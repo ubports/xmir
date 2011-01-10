@@ -61,6 +61,7 @@ static Bool ExtendedEnabled = FALSE;
       !defined(__mc68000__) && \
       !defined(__sparc__) && \
       !defined(__mips__) && \
+      !defined(__nds32__) && \
       !defined(__arm__)
 
 /*
@@ -519,7 +520,7 @@ xf86EnableIO(void)
 #endif
 	}
 	close(fd);
-#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__) && !defined(__s390__) && !defined(__arm__) && !defined(__m32r__)
+#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__) && !defined(__s390__) && !defined(__arm__) && !defined(__m32r__) && !defined(__nds32__)
         if (ioperm(0, 1024, 1) || iopl(3)) {
                 if (errno == ENODEV)
                         ErrorF("xf86EnableIOPorts: no I/O ports found\n");
@@ -529,6 +530,8 @@ xf86EnableIO(void)
 		return FALSE;
         }
 # if !defined(__alpha__)
+	/* XXX: this is actually not trapping anything because of iopl(3)
+	 * above */
 	ioperm(0x40,4,0); /* trap access to the timer chip */
 	ioperm(0x60,4,0); /* trap access to the keyboard controller */
 # endif
@@ -546,7 +549,7 @@ xf86DisableIO(void)
 #if defined(__powerpc__)
 	munmap(ioBase, 0x20000);
 	ioBase = NULL;
-#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__) && !defined(__arm__) && !defined(__s390__) && !defined(__m32r__)
+#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__) && !defined(__arm__) && !defined(__s390__) && !defined(__m32r__) && !defined(__nds32__)
 	iopl(0);
 	ioperm(0, 1024, 0);
 #endif

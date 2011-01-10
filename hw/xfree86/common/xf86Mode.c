@@ -1402,6 +1402,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	strategy &= ~LOOKUP_OPTIONAL_TOLERANCES;
     } else {
 	const char *type = "";
+        Bool specified = FALSE;
 
 	if (scrp->monitor->nHsync <= 0) {
 	    if (numTimings > 0) {
@@ -1412,11 +1413,13 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		}
 	    } else {
 		scrp->monitor->hsync[0].lo = 31.5;
-		scrp->monitor->hsync[0].hi = 37.9;
+		scrp->monitor->hsync[0].hi = 48.0;
 		scrp->monitor->nHsync = 1;
 	    }
 	    type = "default ";
-	}
+	} else {
+            specified = TRUE;
+        }
 	for (i = 0; i < scrp->monitor->nHsync; i++) {
 	    if (scrp->monitor->hsync[i].lo == scrp->monitor->hsync[i].hi)
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
@@ -1445,7 +1448,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		scrp->monitor->nVrefresh = 1;
 	    }
 	    type = "default ";
-	}
+	} else {
+            specified = TRUE;
+        }
 	for (i = 0; i < scrp->monitor->nVrefresh; i++) {
 	    if (scrp->monitor->vrefresh[i].lo == scrp->monitor->vrefresh[i].hi)
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
@@ -1459,10 +1464,16 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			 scrp->monitor->vrefresh[i].lo,
 			 scrp->monitor->vrefresh[i].hi);
 	}
+
+        type = "";
+	if (!scrp->monitor->maxPixClock && !specified) {
+            type = "default ";
+            scrp->monitor->maxPixClock = 65000.0;
+        }
 	if (scrp->monitor->maxPixClock) {
 	    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-		       "%s: Using maximum pixel clock of %.2f MHz\n",
-		       scrp->monitor->id,
+		       "%s: Using %smaximum pixel clock of %.2f MHz\n",
+		       scrp->monitor->id, type,
 		       (float)scrp->monitor->maxPixClock / 1000.0);
 	}
     }
@@ -1632,8 +1643,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    new = xnfcalloc(1, sizeof(DisplayModeRec));
 	    new->prev = last;
 	    new->type = M_T_USERDEF;
-	    new->name = xnfalloc(strlen(modeNames[i]) + 1);
-	    strcpy(new->name, modeNames[i]);
+	    new->name = xnfstrdup(modeNames[i]);
 	    if (new->prev)
 		new->prev->next = new;
 	    *endp = last = new;
@@ -1705,10 +1715,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 
 	    p = xnfcalloc(1, sizeof(DisplayModeRec));
 	    p->prev = last;
-	    p->name = xnfalloc(strlen(r->name) + 1);
+	    p->name = xnfstrdup(r->name);
 	    if (!userModes)
 		p->type = M_T_USERDEF;
-	    strcpy(p->name, r->name);
 	    if (p->prev)
 		p->prev->next = p;
 	    *endp = last = p;
@@ -1831,8 +1840,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	numModes++;
     }
 
-#undef _VIRTUALX
-
     /*
      * If we estimated the virtual size above, we may have filtered away all
      * the modes that maximally match that size; scan again to find out and
@@ -1847,13 +1854,69 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    }
 	}
 	if (vx < virtX || vy < virtY) {
+	    const int types[] = {
+		M_T_BUILTIN | M_T_PREFERRED,
+		M_T_BUILTIN,
+		M_T_DRIVER | M_T_PREFERRED,
+		M_T_DRIVER,
+		0
+	    };
+	    const int ntypes = sizeof(types) / sizeof(int);
+	    int n;
+
+	    /* 
+	     * We did not find the estimated virtual size. So now we want to 
+	     * find the largest mode available, but we want to search in the
+	     * modes in the order of "types" listed above.
+	     */
+	    for (n = 0; n < ntypes; n++) {
+		int type = types[n];
+
+		vx = 0; vy = 0;
+		for (p = scrp->modes; p; p = p->next) {
+		    /* scan through the modes in the sort order above */
+		    if ((p->type & type) != type)
+			continue;
+		    if (p->HDisplay > vx && p->VDisplay > vy) {
+			vx = p->HDisplay;
+			vy = p->VDisplay;
+		    }
+		}
+		if (vx && vy)
+		    /* Found one */
+		    break;
+	    }
 	    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 		       "Shrinking virtual size estimate from %dx%d to %dx%d\n",
 		       virtX, virtY, vx, vy);
-	    virtX = vx;
+	    virtX = _VIRTUALX(vx);
 	    virtY = vy;
-	    linePitch = scanLineWidth(vx, vy, minPitch, apertureSize,
-				      BankFormat, pitchInc);
+	    for (p = scrp->modes; p; p = p->next) {
+		if (numModes > 0) {
+		    if (p->HDisplay > virtX)
+			p->status = MODE_VIRTUAL_X;
+		    if (p->VDisplay > virtY)
+			p->status = MODE_VIRTUAL_Y;
+		    if (p->status != MODE_OK) {
+			numModes--;
+			printModeRejectMessage(scrp->scrnIndex, p, p->status);
+		    }
+		}
+	    }
+	    if (linePitches != NULL) {
+		for (i = 0; linePitches[i] != 0; i++) {
+		    if ((linePitches[i] >= virtX) &&
+			(linePitches[i] ==
+			scanLineWidth(virtX, virtY, linePitches[i],
+				      apertureSize, BankFormat, pitchInc))) {
+			linePitch = linePitches[i];
+			break;
+		    }
+		}
+	    } else {
+		linePitch = scanLineWidth(virtX, virtY, minPitch,
+					  apertureSize, BankFormat, pitchInc);
+	    }
 	}
     }
 

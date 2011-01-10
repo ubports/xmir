@@ -102,6 +102,15 @@ EventToCore(InternalEvent *event, xEvent *core)
     switch(event->any.type)
     {
         case ET_Motion:
+            {
+                DeviceEvent *e = &event->device_event;
+                /* Don't create core motion event if neither x nor y are
+                 * present */
+                if (!BitIsOn(e->valuators.mask, 0) &&
+                    !BitIsOn(e->valuators.mask, 1))
+                    return BadMatch;
+            }
+            /* fallthrough */
         case ET_ButtonPress:
         case ET_ButtonRelease:
         case ET_KeyPress:
@@ -252,6 +261,12 @@ eventToKeyButtonPointer(DeviceEvent *ev, xEvent **xi, int *count)
     }
 
     num_events = (countValuators(ev, &first) + 5)/6; /* valuator ev */
+    if (num_events <= 0)
+    {
+        *count = 0;
+        return BadMatch;
+    }
+
     num_events++; /* the actual event event */
 
     *xi = calloc(num_events, sizeof(xEvent));
@@ -431,7 +446,7 @@ appendValuatorInfo(DeviceChangedEvent *dce, xXIValuatorInfo *info, int axisnumbe
     info->value.frac = 0;
     info->resolution = dce->valuators[axisnumber].resolution;
     info->number = axisnumber;
-    info->mode = dce->valuators[axisnumber].mode; /* Server doesn't have per-axis mode yet */
+    info->mode = dce->valuators[axisnumber].mode;
     info->sourceid = dce->sourceid;
 
     return info->length * 4;
