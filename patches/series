@@ -22,7 +22,6 @@
 188_default_primary_to_first_busid.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
-197_xvfb-randr.patch
 198_nohwaccess.patch
 200_randr-null.patch
 #201_report-real-dpi.patch
