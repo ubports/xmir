@@ -48,6 +48,7 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) UNRELEASED; urgency=low
       + 206_intel_8xx_default_to_fbdev.patch:
         Makes 8xx class intel GPUs default to fbdev for stability. (LP: #633593)
   * Refresh 121_only_switch_vt_when_active.diff for new upstream.
+  * Drop 187_edid_quirk_hp_nc8430.patch; upstream.
   * Drop 189_xserver_1.5.0_bg_none_root.patch; functionality now upstream.
   * Refresh 190_cache-xkbcomp_output_for_fast_start_up.patch for new upstream.
   * Drop 197_xvfb-randr.patch:

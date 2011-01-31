@@ -18,7 +18,6 @@
 168_glibc_trace_to_stderr.patch
 169_mipointer_nullptr_checks.patch
 172_cwgetbackingpicture_nullptr_check.patch
-187_edid_quirk_hp_nc8430.patch
 188_default_primary_to_first_busid.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
