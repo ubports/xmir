@@ -1,24 +1,28 @@
-From 2b3600e55fdc8270181a1e818ad1c607c7406b16 Mon Sep 17 00:00:00 2001
+From 09db1a38853ddf8ad8a72e644c7b8e9b1863f4d6 Mon Sep 17 00:00:00 2001
 From: Chase Douglas <chase.douglas@canonical.com>
-Date: Sat, 24 Jul 2010 06:02:59 -0400
-Subject: [PATCH] Gesture Extension
+Date: Tue, 25 Jan 2011 20:28:35 -0500
+Subject: [PATCH] Gesture support
 
 ---
- Makefile.am                 |    5 +
- configure.ac                |   26 ++-
- dix/window.c                |    7 +
- gesture/Makefile.am         |   10 +
- gesture/gesture.c           |  421 +++++++++++++++++++++++++++++++++++++++++++
- gesture/gesture.h           |   77 ++++++++
- gesture/gestureint.h        |   49 +++++
- gesture/gestureproto.h      |  141 +++++++++++++++
- gesture/init.c              |  282 +++++++++++++++++++++++++++++
- include/dix-config.h.in     |    3 +
- include/protocol-versions.h |    4 +
- include/windowstr.h         |   10 +
- mi/miinitext.c              |   15 ++
- os/utils.c                  |    3 +
- 14 files changed, 1045 insertions(+), 8 deletions(-)
+ Makefile.am                    |    5 +
+ configure.ac                   |   26 ++-
+ dix/events.c                   |    3 +
+ dix/window.c                   |   10 +
+ gesture/Makefile.am            |   10 +
+ gesture/gesture.c              |  430 ++++++++++++++++++++++++++++++++++++++++
+ gesture/gesture.h              |   78 ++++++++
+ gesture/gestureint.h           |   49 +++++
+ gesture/gestureproto.h         |  132 ++++++++++++
+ gesture/init.c                 |  280 ++++++++++++++++++++++++++
+ hw/xfree86/common/xf86Xinput.c |   43 ++++
+ include/dix-config.h.in        |    3 +
+ include/eventstr.h             |   14 ++
+ include/protocol-versions.h    |    4 +
+ include/windowstr.h            |   14 ++
+ mi/mieq.c                      |   35 ++++
+ mi/miinitext.c                 |   15 ++
+ os/utils.c                     |    3 +
+ 18 files changed, 1146 insertions(+), 8 deletions(-)
  create mode 100644 gesture/Makefile.am
  create mode 100644 gesture/gesture.c
  create mode 100644 gesture/gesture.h
@@ -49,7 +53,7 @@ Subject: [PATCH] Gesture Extension
  	test
 --- a/configure.ac
 +++ b/configure.ac
-@@ -602,6 +602,8 @@ AC_ARG_ENABLE(visibility,     AC_HELP_ST
+@@ -596,6 +596,8 @@ AC_ARG_ENABLE(visibility,     AC_HELP_ST
  AC_ARG_ENABLE(pc98,     	AC_HELP_STRING([--enable-pc98], [Enable PC98 support in Xorg (default: auto)]),
  				[SUPPORT_PC98=$enableval],
  				[SUPPORT_PC98=auto])
@@ -57,9 +61,9 @@ Subject: [PATCH] Gesture Extension
 +				[GESTURES=$enableval])
  
  dnl GLX build options
- AC_ARG_WITH(dri-driver-path,  AS_HELP_STRING([--with-dri-driver-path=PATH], [Path to DRI drivers (default: ${libdir}/dri)]),
-@@ -1360,6 +1362,13 @@ MIEXT_SHADOW_INC='-I$(top_srcdir)/miext/
- MIEXT_SHADOW_LIB='$(top_builddir)/miext/shadow/libshadow.la'
+ AC_ARG_ENABLE(aiglx,          AS_HELP_STRING([--enable-aiglx], [Build accelerated indirect GLX (default: enabled)]),
+@@ -1353,6 +1355,13 @@ MIEXT_SYNC_INC='-I$(top_srcdir)/miext/sy
+ MIEXT_SYNC_LIB='$(top_builddir)/miext/sync/libsync.la'
  CORE_INCS='-I$(top_srcdir)/include -I$(top_builddir)/include'
  
 +AM_CONDITIONAL(GESTURES, [test "x$GESTURES" = "xyes"])
@@ -72,79 +76,79 @@ Subject: [PATCH] Gesture Extension
  # SHA1 hashing
  AC_ARG_WITH([sha1],
              [AS_HELP_STRING([--with-sha1=libc|libmd|libgcrypt|libcrypto|libsha1|CommonCrypto|nettle],
-@@ -1507,7 +1516,7 @@ AC_EGREP_CPP([I_AM_SVR4],[
+@@ -1500,7 +1509,7 @@ AC_EGREP_CPP([I_AM_SVR4],[
  AC_DEFINE([SVR4],1,[Define to 1 on systems derived from System V Release 4])
  AC_MSG_RESULT([yes])], AC_MSG_RESULT([no]))
  
--XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC"
-+XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC $GESTURE_INC"
+-XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SYNC_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC"
++XSERVER_CFLAGS="$XSERVER_CFLAGS $CORE_INCS $XEXT_INC $COMPOSITE_INC $DAMAGE_INC $FIXES_INC $XI_INC $MI_INC $MIEXT_SYNC_INC $MIEXT_SHADOW_INC $MIEXT_LAYER_INC $MIEXT_DAMAGE_INC $RENDER_INC $RANDR_INC $FB_INC $GESTURE_INC"
  
  dnl ---------------------------------------------------------------------------
  dnl DDX section.
-@@ -1520,7 +1529,7 @@ AC_MSG_RESULT([$XVFB])
+@@ -1513,7 +1522,7 @@ AC_MSG_RESULT([$XVFB])
  AM_CONDITIONAL(XVFB, [test "x$XVFB" = xyes])
  
  if test "x$XVFB" = xyes; then
--	XVFB_LIBS="$FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB"
-+	XVFB_LIBS="$FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $GESTURE_LIB"
+-	XVFB_LIBS="$FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB"
++	XVFB_LIBS="$FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $GESTURE_LIB"
  	XVFB_SYS_LIBS="$XVFBMODULES_LIBS $GLX_SYS_LIBS"
  	AC_SUBST([XVFB_LIBS])
  	AC_SUBST([XVFB_SYS_LIBS])
-@@ -1541,7 +1550,7 @@ if test "x$XNEST" = xyes; then
+@@ -1534,7 +1543,7 @@ if test "x$XNEST" = xyes; then
  	if test "x$have_xnest" = xno; then
  		AC_MSG_ERROR([Xnest build explicitly requested, but required modules not found.])
  	fi
--	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DIX_LIB $MAIN_LIB $OS_LIB"
-+	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DIX_LIB $MAIN_LIB $OS_LIB $GESTURE_LIB"
+-	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DIX_LIB $MAIN_LIB $OS_LIB"
++	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DIX_LIB $MAIN_LIB $OS_LIB $GESTURE_LIB"
  	XNEST_SYS_LIBS="$XNESTMODULES_LIBS $GLX_SYS_LIBS"
  	AC_SUBST([XNEST_LIBS])
  	AC_SUBST([XNEST_SYS_LIBS])
-@@ -1569,7 +1578,7 @@ if test "x$XORG" = xyes; then
+@@ -1562,7 +1571,7 @@ if test "x$XORG" = xyes; then
  	XORG_OSINCS='-I$(top_srcdir)/hw/xfree86/os-support -I$(top_srcdir)/hw/xfree86/os-support/bus -I$(top_srcdir)/os'
  	XORG_INCS="$XORG_DDXINCS $XORG_OSINCS"
  	XORG_CFLAGS="$XORGSERVER_CFLAGS -DHAVE_XORG_CONFIG_H"
--	XORG_LIBS="$COMPOSITE_LIB $FIXES_LIB $XEXTXORG_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB"
-+	XORG_LIBS="$COMPOSITE_LIB $FIXES_LIB $XEXTXORG_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $GESTURE_LIB"
+-	XORG_LIBS="$COMPOSITE_LIB $FIXES_LIB $XEXTXORG_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB"
++	XORG_LIBS="$COMPOSITE_LIB $FIXES_LIB $XEXTXORG_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $GESTURE_LIB"
  
  	dnl ==================================================================
  	dnl symbol visibility
-@@ -1905,7 +1914,7 @@ if test "x$XWIN" = xyes; then
+@@ -1898,7 +1907,7 @@ if test "x$XWIN" = xyes; then
  			XWIN_SYS_LIBS=-lwinsock2
  			;;
  	esac
--	XWIN_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $RANDR_LIB $RENDER_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $OS_LIB"
-+	XWIN_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $RANDR_LIB $RENDER_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $OS_LIB $GESTURE_LIB"
+-	XWIN_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $RANDR_LIB $RENDER_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $OS_LIB"
++	XWIN_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $RANDR_LIB $RENDER_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $OS_LIB $GESTURE_LIB"
  	XWIN_SYS_LIBS="$XWIN_SYS_LIBS $XWINMODULES_LIBS"
  	AC_SUBST(XWIN_LIBS)
  	AC_SUBST(XWIN_SERVER_NAME)
-@@ -1935,7 +1944,7 @@ if test "x$XQUARTZ" = xyes; then
+@@ -1928,7 +1937,7 @@ if test "x$XQUARTZ" = xyes; then
  	AC_DEFINE(XQUARTZ,1,[Have Quartz])
  	AC_DEFINE(ROOTLESS,1,[Build Rootless code])
  
--	DARWIN_LIBS="$MI_LIB $OS_LIB $DIX_LIB $MAIN_LIB $FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $XPSTUBS_LIB"
-+	DARWIN_LIBS="$MI_LIB $OS_LIB $DIX_LIB $MAIN_LIB $FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $XPSTUBS_LIB $GESTURE_LIB"
+-	DARWIN_LIBS="$MI_LIB $OS_LIB $DIX_LIB $MAIN_LIB $FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $XPSTUBS_LIB"
++	DARWIN_LIBS="$MI_LIB $OS_LIB $DIX_LIB $MAIN_LIB $FB_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $XPSTUBS_LIB $GESTURE_LIB"
  	AC_SUBST([DARWIN_LIBS])
  
  	AC_CHECK_LIB([Xplugin],[xp_init],[:])
-@@ -1996,7 +2005,7 @@ if test "x$DMX" = xyes; then
+@@ -1989,7 +1998,7 @@ if test "x$DMX" = xyes; then
  	fi
  	DMX_INCLUDES="$XEXT_INC $RENDER_INC $RECORD_INC"
  	XDMX_CFLAGS="$DMXMODULES_CFLAGS"
--	XDMX_LIBS="$FB_LIB $MI_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $XEXT_LIB $MAIN_LIB $DIX_LIB $OS_LIB $FIXES_LIB"
-+	XDMX_LIBS="$FB_LIB $MI_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $XEXT_LIB $MAIN_LIB $DIX_LIB $OS_LIB $FIXES_LIB $GESTURE_LIB"
+-	XDMX_LIBS="$FB_LIB $MI_LIB $XEXT_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $MIEXT_SYNC_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $COMPOSITE_LIB $DAMAGE_LIB $MAIN_LIB $DIX_LIB $CONFIG_LIB $OS_LIB $FIXES_LIB"
++	XDMX_LIBS="$FB_LIB $MI_LIB $XEXT_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $MIEXT_SYNC_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $COMPOSITE_LIB $DAMAGE_LIB $MAIN_LIB $DIX_LIB $CONFIG_LIB $OS_LIB $FIXES_LIB $GESTURE_LIB"
  	XDMX_SYS_LIBS="$DMXMODULES_LIBS"
  	AC_SUBST([XDMX_CFLAGS])
  	AC_SUBST([XDMX_LIBS])
-@@ -2104,7 +2113,7 @@ if test "$KDRIVE" = yes; then
+@@ -2100,7 +2109,7 @@ if test "$KDRIVE" = yes; then
      
      KDRIVE_CFLAGS="$XSERVER_CFLAGS -DHAVE_KDRIVE_CONFIG_H $TSLIB_CFLAGS"
  
--    KDRIVE_PURE_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $OS_LIB"
-+    KDRIVE_PURE_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $OS_LIB $GESTURE_LIB"
+-    KDRIVE_PURE_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $OS_LIB"
++    KDRIVE_PURE_LIBS="$FB_LIB $MI_LIB $FIXES_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $OS_LIB $GESTURE_LIB"
      KDRIVE_LIB='$(top_builddir)/hw/kdrive/src/libkdrive.la'
      case $host_os in
  	*linux*)
-@@ -2215,6 +2224,7 @@ Xext/Makefile
+@@ -2214,6 +2223,7 @@ Xext/Makefile
  Xi/Makefile
  xfixes/Makefile
  exa/Makefile
@@ -152,9 +156,21 @@ Subject: [PATCH] Gesture Extension
  hw/Makefile
  hw/xfree86/Makefile
  hw/xfree86/common/Makefile
+--- a/dix/events.c
++++ b/dix/events.c
+@@ -5442,6 +5442,9 @@ DeleteWindowFromAnyEvents(WindowPtr pWin
+ 	    FreeResource(oc->resource, RT_NONE);
+ 	while ( (passive = wPassiveGrabs(pWin)) )
+ 	    FreeResource(passive->resource, RT_NONE);
++#ifdef GESTURES
++        DeleteWindowFromGestureEvents(pWin);
++#endif
+      }
+ 
+     DeleteWindowFromAnyExtEvents(pWin, freeResources);
 --- a/dix/window.c
 +++ b/dix/window.c
-@@ -397,6 +397,9 @@ CreateRootWindow(ScreenPtr pScreen)
+@@ -403,6 +403,9 @@ CreateRootWindow(ScreenPtr pScreen)
      pWin->optional->deviceCursors = NULL;
      pWin->optional->colormap = pScreen->defColormap;
      pWin->optional->visual = pScreen->rootVisual;
@@ -164,7 +180,7 @@ Subject: [PATCH] Gesture Extension
  
      pWin->nextSib = NullWindow;
  
-@@ -3397,6 +3400,10 @@ CheckWindowOptionalNeed (WindowPtr w)
+@@ -3408,6 +3411,10 @@ CheckWindowOptionalNeed (WindowPtr w)
              pNode = pNode->next;
          }
      }
@@ -175,7 +191,7 @@ Subject: [PATCH] Gesture Extension
  
      parentOptional = FindWindowWithOptional(w)->optional;
      if (optional->visual != parentOptional->visual)
-@@ -3440,6 +3447,9 @@ MakeWindowOptional (WindowPtr pWin)
+@@ -3451,6 +3458,9 @@ MakeWindowOptional (WindowPtr pWin)
      optional->inputShape = NULL;
      optional->inputMasks = NULL;
      optional->deviceCursors = NULL;
@@ -1182,6 +1198,65 @@ Subject: [PATCH] Gesture Extension
 +    }
 +}
 +
+--- a/hw/xfree86/common/xf86Xinput.c
++++ b/hw/xfree86/common/xf86Xinput.c
+@@ -99,6 +99,15 @@
+ 		return;								\
+ 	}
+ 
++#include "gestureproto.h"
++
++_X_EXPORT void
++xf86PostGestureEvent(DeviceIntPtr dev, unsigned short x, unsigned short y,
++                     unsigned short client_id, unsigned short gesture_id,
++                     unsigned short gesture_type, Window root, Window event,
++                     Window child, unsigned short status,
++                     unsigned short num_props, float *props);
++
+ EventListPtr xf86Events = NULL;
+ 
+ static int
+@@ -966,6 +975,40 @@ DeleteInputDeviceRequest(DeviceIntPtr pD
+  */
+ 
+ void
++xf86PostGestureEvent(DeviceIntPtr dev, unsigned short x, unsigned short y,
++                     unsigned short client_id, unsigned short gesture_id,
++                     unsigned short gesture_type, Window root, Window event,
++                     Window child, unsigned short status,
++                     unsigned short num_props, float *props)
++{
++    DeviceEvent *ev = (DeviceEvent *)xf86Events->event;
++
++    if (num_props > MAX_GESTURE_PROPS)
++        num_props = MAX_GESTURE_PROPS;
++
++    memset(ev, 0, sizeof(DeviceEvent));
++    ev->header = ET_Internal;
++    ev->length = sizeof(DeviceEvent);
++    ev->time = GetTimeInMillis();
++    ev->deviceid = dev->id;
++    ev->sourceid = dev->id;
++    ev->type = ET_Gesture;
++    ev->root_x = x;
++    ev->root_y = y;
++    ev->gesture.client_id = client_id;
++    ev->gesture.id = gesture_id;
++    ev->gesture.type = gesture_type;
++    ev->root = root;
++    ev->gesture.event = event;
++    ev->gesture.child = child;
++    ev->gesture.status = status;
++    ev->gesture.num_props = num_props;
++    memcpy(ev->gesture.props, props, num_props * sizeof(float));
++
++    mieqEnqueue(dev, (InternalEvent*)ev);
++}
++
++void
+ xf86PostMotionEvent(DeviceIntPtr	device,
+                     int			is_absolute,
+                     int			first_valuator,
 --- a/include/dix-config.h.in
 +++ b/include/dix-config.h.in
 @@ -30,6 +30,9 @@
@@ -1194,9 +1269,46 @@ Subject: [PATCH] Gesture Extension
  /* Build for darwin with Quartz support */
  #undef DARWIN_WITH_QUARTZ
  
+--- a/include/eventstr.h
++++ b/include/eventstr.h
+@@ -65,6 +65,7 @@ enum EventType {
+     ET_RawButtonRelease,
+     ET_RawMotion,
+     ET_XQuartz,
++    ET_Gesture,
+     ET_Internal = 0xFF /* First byte */
+ };
+ 
+@@ -72,6 +73,9 @@ enum EventType {
+                           FatalError("Wrong event type %d.\n", \
+                                      ((InternalEvent*)(ev))->any.header);
+ 
++/* Should match DIM_GRAIL_PROP in grail.h */
++#define MAX_GESTURE_PROPS 32
++
+ /**
+  * Used for ALL input device events internal in the server until
+  * copied into the matching protocol event.
+@@ -114,6 +118,16 @@ struct _DeviceEvent
+         uint8_t locked;  /**< XKB locked group */
+         uint8_t effective;/**< XKB effective group */
+     } group;
++    struct {
++        uint16_t client_id;
++        uint16_t id;
++        uint16_t type;
++        Window event;
++        Window child;
++        uint16_t status;
++        uint16_t num_props;
++        float props[MAX_GESTURE_PROPS];
++    } gesture;
+     Window      root; /**< Root window of the event */
+     int corestate;    /**< Core key/button state BEFORE the event */
+     int key_repeat;   /**< Internally-generated key repeat event */
 --- a/include/protocol-versions.h
 +++ b/include/protocol-versions.h
-@@ -141,4 +141,8 @@
+@@ -145,4 +145,8 @@
  #define SERVER_XVMC_MAJOR_VERSION		1
  #define SERVER_XVMC_MINOR_VERSION		1
  
@@ -1239,7 +1351,7 @@ Subject: [PATCH] Gesture Extension
  } WindowOptRec, *WindowOptPtr;
  
  #define BackgroundPixel	    2L
-@@ -199,6 +210,9 @@ extern _X_EXPORT Mask	DontPropagateMasks
+@@ -202,6 +213,9 @@ extern _X_EXPORT Mask	DontPropagateMasks
  #define wInputShape(w)          wUseDefault(w, inputShape, NULL)
  #define wClient(w)		(clients[CLIENT_ID((w)->drawable.id)])
  #define wBorderWidth(w)		((int) (w)->borderWidth)
@@ -1248,6 +1360,57 @@ Subject: [PATCH] Gesture Extension
 +#endif
  
  /* true when w needs a border drawn. */
+ 
+--- a/mi/mieq.c
++++ b/mi/mieq.c
+@@ -58,6 +58,8 @@ in this Software without prior written a
+ # include <X11/extensions/dpmsconst.h>
+ #endif
+ 
++#include "gestureproto.h"
++
+ #define QUEUE_SIZE  512
+ 
+ #define EnqueueScreen(dev) dev->spriteInfo->sprite->pEnqueueScreen
+@@ -376,6 +378,39 @@ mieqProcessDeviceEvent(DeviceIntPtr dev,
+ 
+     CHECKEVENT(event);
+ 
++    if (event->any.header == ET_Internal && event->any.type == ET_Gesture){
++        GestureEvent gev;
++        DeviceEvent *ev = (DeviceEvent *)event;
++        ClientPtr client = clients[ev->gesture.client_id];
++
++        /* Check if client still exists */
++        if (!client)
++            return;
++
++        gev.type = GenericEvent;
++        gev.extension =  GestureReqCode;
++        gev.sequenceNumber = client->sequence;
++        gev.evtype = 0;
++        gev.time = ev->time;
++        gev.length = (sizeof(GestureEvent) +
++                      ev->gesture.num_props * sizeof(float) -
++                       sizeof(xEvent)) / 4;
++        gev.gesture_id = ev->gesture.id;
++        gev.gesture_type = ev->gesture.type;
++        gev.device_id = ev->deviceid;
++        gev.root = ev->root;
++        gev.event = ev->gesture.event;
++        gev.child = ev->gesture.child;
++        gev.focus_x = ev->root_x;
++        gev.focus_y = ev->root_y;
++        gev.status = ev->gesture.status;
++        gev.num_props = ev->gesture.num_props;
++
++        WriteToClient(client, sizeof(GestureEvent), &gev);
++        WriteToClient(client, sizeof(float) * gev.num_props, ev->gesture.props);
++        return;
++    }
++
+     /* Custom event handler */
+     handler = miEventQueue.handlers[event->any.type];
  
 --- a/mi/miinitext.c
 +++ b/mi/miinitext.c
@@ -1281,7 +1444,7 @@ Subject: [PATCH] Gesture Extension
      { NULL, NULL }
  };
  
-@@ -472,6 +481,9 @@ InitExtensions(int argc, char *argv[])
+@@ -470,6 +479,9 @@ InitExtensions(int argc, char *argv[])
  	GlxPushProvider(&__glXDRISWRastProvider);
      if (!noGlxExtension) GlxExtensionInit();
  #endif
@@ -1291,7 +1454,7 @@ Subject: [PATCH] Gesture Extension
  }
  
  #else /* XFree86LOADER */
-@@ -513,6 +525,9 @@ static ExtensionModule staticExtensions[
+@@ -511,6 +523,9 @@ static ExtensionModule staticExtensions[
  #ifdef DAMAGE
      { DamageExtensionInit, "DAMAGE", &noDamageExtension, NULL },
  #endif
@@ -1313,15 +1476,3 @@ Subject: [PATCH] Gesture Extension
  
  Bool noGEExtension = FALSE;
  
---- a/dix/events.c
-+++ b/dix/events.c
-@@ -5471,6 +5471,9 @@ DeleteWindowFromAnyEvents(WindowPtr pWin
- 	    FreeResource(oc->resource, RT_NONE);
- 	while ( (passive = wPassiveGrabs(pWin)) )
- 	    FreeResource(passive->resource, RT_NONE);
-+#ifdef GESTURES
-+        DeleteWindowFromGestureEvents(pWin);
-+#endif
-      }
- 
-     DeleteWindowFromAnyExtEvents(pWin, freeResources);
