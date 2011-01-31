@@ -1,19 +1,64 @@
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) UNRELEASED; urgency=low
 
   * Merge from (unreleased) debian-experimental.  Remaining Ubuntu changes:
-    - …
+    - rules:
+      + Disable SELinux, libaudit-dev is not in main yet. (LP: #406226)
+      + Enable xcsecurity. (LP: #247537)
+      + Add --with-extra-module-dir to support GL alternatives.
+    - control: 
+      + Xvfb depends on xauth, x11-xkb-utils. (LP: #500102)
+      + Add breaks for incompatible drivers. (LP: #614993)
+      + Drop libaudit-dev from build-deps.
+    - local/xvfb-run*: Add correct docs about error codes. (LP #328205)
+    - debian/patches:
+      + 100_rethrow_signals.patch:
+        When aborting, re-raise signals for apport
+      + 109_fix-swcursor-crash.patch:
+        Avoid dereferencing null pointer while reloading cursors during
+        resume. (LP: #371405)
+      + 111_armel-drv-fallbacks.patch:
+        Add support for armel driver fallbacks.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 122_xext_fix_card32_overflow_in_xauth.patch:
+        Fix server crash when “xauth generate” is called with large timeout.
+      + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
+        166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
+        169_mipointer_nullptr_checks.patch,
+        172_cwgetbackingpicture_nullptr_check.patch:
+        Fix various segfaults in xserver by checking pointers for NULL
+        values before dereferencing them.
+      + 165_man_xorg_conf_no_device_ident.patch
+        Correct man page
+      + 168_glibc_trace_to_stderr.patch:
+        Report abort traces to stderr instead of terminal
+      + 184_virtual_devices_autodetect.patch:
+        Use vesa for qemu device, which is not supported by cirrus
+      + 188_default_primary_to_first_busid.patch:
+        Pick the first device and carry on (LP: #459512)
+      + 190_cache-xkbcomp_output_for_fast_start_up.patch:
+      + 191-Xorg-add-an-extra-module-path.patch:
+        Add support for the alternatives module path.
+      + 198_nohwaccess.patch:
+        Adds a -nohwaccess argument to make X not access the hardware
+        ports directly.
+      + 200_randr-null.patch:
+        Clarify a pointer initialization.
+      + 206_intel_8xx_default_to_fbdev.patch:
+        Makes 8xx class intel GPUs default to fbdev for stability. (LP: #633593)
   * Refresh 121_only_switch_vt_when_active.diff for new upstream.
   * Drop 189_xserver_1.5.0_bg_none_root.patch; functionality now upstream.
   * Refresh 190_cache-xkbcomp_output_for_fast_start_up.patch for new upstream.
   * Drop 197_xvfb-randr.patch:
     - miRandR, which this used, has been removed from the server. 
+  * Drop 204_fix-neg-sync-transition.patch; upstream.
   * Drop 207_dga_master_device.patch; upstream.
   * Drop 208_switch_on_release.diff; upstream.
   * debian/patches/209_add_legacy_bgnone_option.patch:
     - Add "-nr" as a synonym for "-background none" to ease the transition from
       the old 189_xserver_1.5.0_bg_none_root.patch patch.  Can be dropped once
       all the ?DM have been updated to use the new option.
-  * Drop 204_fix-neg-sync-transition.patch; upstream.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 10 Jan 2011 15:53:23 -0600
 
