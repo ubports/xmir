@@ -60,8 +60,12 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) UNRELEASED; urgency=low
     - Add "-nr" as a synonym for "-background none" to ease the transition from
       the old 189_xserver_1.5.0_bg_none_root.patch patch.  Can be dropped once
       all the ?DM have been updated to use the new option.
+  * debian/control:
+    - Add Breaks: to xserver-xorg-video-8 and current fglrx.  These proprietary
+      drivers don't yet have appropriate dependency information, so manually
+      handle them here to prevent broken upgrades.
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 10 Jan 2011 15:53:23 -0600
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 31 Jan 2011 19:45:19 +1100
 
 xorg-server (2:1.9.99.901-1) experimental; urgency=low
   

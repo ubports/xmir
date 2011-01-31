@@ -130,6 +130,10 @@ Breaks:
  xserver-xorg-video-psb (<= 0.2.1-1ubuntu3),
  xserver-xorg-video-tga (<= 1:1.1.0-9ubuntu1),
  xserver-xorg-video-unichrome (<= 1:0.2.6.99-0ubuntu1),
+# Proprietary drivers don't have proper depends in Maverick
+# Drop after Natty release.
+ xserver-xorg-video-8,
+ fglrx (<= 2:8.801-0ubuntu2),
 Provides:
  xserver,
  ${videoabi},
