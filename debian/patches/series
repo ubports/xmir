@@ -25,7 +25,7 @@
 198_nohwaccess.patch
 200_randr-null.patch
 #201_report-real-dpi.patch
-202_xf86CoordinationsToWindows.patch
+#202_xf86CoordinationsToWindows.patch
 #203_gestures-extension.patch
 204_fix-neg-sync-transition.patch
 206_intel_8xx_default_to_fbdev.patch
