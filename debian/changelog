@@ -13,6 +13,7 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) UNRELEASED; urgency=low
     - Add "-nr" as a synonym for "-background none" to ease the transition from
       the old 189_xserver_1.5.0_bg_none_root.patch patch.  Can be dropped once
       all the ?DM have been updated to use the new option.
+  * Drop 204_fix-neg-sync-transition.patch; upstream.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 10 Jan 2011 15:53:23 -0600
 
