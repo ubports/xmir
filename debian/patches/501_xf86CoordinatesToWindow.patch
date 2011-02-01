@@ -1,18 +1,8 @@
-From 88538741de597a2595d89d7518f123c3b16c6d4f Mon Sep 17 00:00:00 2001
-From: Chase Douglas <chase.douglas@canonical.com>
-Date: Tue, 25 Jan 2011 22:44:41 -0500
-Subject: [PATCH] Add xf86CoordinatesToWIndow
-
----
- dix/events.c                   |   44 ++++++++++++++++++++++++++++++++++++++++
- hw/xfree86/common/xf86Xinput.c |    6 +++++
- hw/xfree86/common/xf86Xinput.h |    2 +
- include/events.h               |    3 ++
- 4 files changed, 55 insertions(+), 0 deletions(-)
-
+diff --git a/dix/events.c b/dix/events.c
+index 8c590f0..43803ab 100644
 --- a/dix/events.c
 +++ b/dix/events.c
-@@ -5811,3 +5811,47 @@ IsInterferingGrab(ClientPtr client, Devi
+@@ -5837,3 +5837,47 @@ IsInterferingGrab(ClientPtr client, DeviceIntPtr dev, xEvent* event)
      return FALSE;
  }
  
@@ -60,10 +50,12 @@ Subject: [PATCH] Add xf86CoordinatesToWIndow
 +    return ret;
 +}
 +
+diff --git a/hw/xfree86/common/xf86Xinput.c b/hw/xfree86/common/xf86Xinput.c
+index 9b21c31..adef044 100644
 --- a/hw/xfree86/common/xf86Xinput.c
 +++ b/hw/xfree86/common/xf86Xinput.c
-@@ -1396,4 +1396,10 @@ xf86EnableDevice(DeviceIntPtr dev)
-     EnableDevice(dev, TRUE);
+@@ -1441,4 +1441,10 @@ xf86PostTouchEvent(DeviceIntPtr dev, uint32_t touchid, uint16_t type,
+         mieqEnqueue(dev, (InternalEvent *)((xf86Events + i)->event));
  }
  
 +WindowPtr
@@ -73,15 +65,19 @@ Subject: [PATCH] Add xf86CoordinatesToWIndow
 +}
 +
  /* end of xf86Xinput.c */
+diff --git a/hw/xfree86/common/xf86Xinput.h b/hw/xfree86/common/xf86Xinput.h
+index f1afb09..b6254c6 100644
 --- a/hw/xfree86/common/xf86Xinput.h
 +++ b/hw/xfree86/common/xf86Xinput.h
-@@ -179,4 +179,6 @@ extern _X_EXPORT void xf86VIDrvMsgVerb(I
+@@ -184,4 +184,6 @@ extern _X_EXPORT void xf86VIDrvMsgVerb(InputInfoPtr dev,
  /* xf86Option.c */
  extern _X_EXPORT void xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts);
  
 +extern _X_EXPORT WindowPtr xf86CoordinatesToWindow(int x, int y, int screen);
 +
  #endif /* _xf86Xinput_h */
+diff --git a/include/events.h b/include/events.h
+index 222cc3d..8b87cb6 100644
 --- a/include/events.h
 +++ b/include/events.h
 @@ -24,6 +24,7 @@
@@ -91,8 +87,8 @@ Subject: [PATCH] Add xf86CoordinatesToWIndow
 +
  typedef struct _DeviceEvent DeviceEvent;
  typedef struct _DeviceChangedEvent DeviceChangedEvent;
- #if XFreeXDGA
-@@ -35,4 +36,6 @@ typedef struct _XQuartzEvent XQuartzEven
+ typedef struct _TouchOwnershipEvent TouchOwnershipEvent;
+@@ -36,4 +37,6 @@ typedef struct _XQuartzEvent XQuartzEvent;
  #endif
  typedef union _InternalEvent InternalEvent;
  
