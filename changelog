@@ -87,7 +87,15 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
       Regression from 1.9, keyboard events are not converted to protocol
       events. (LP: #714696)
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 22 Feb 2011 09:52:26 +1100
+  [ Chase Douglas ]
+  * Add in preliminary xi2.1 support
+    - Added 500_xi2.1.patch
+    - Moved 202_xf86CoordinationsToWindows.patch to
+      501_xf86CoordinatesToWindow.patch
+    - Moved 203_gestures-extension.patch to 502_gestures-extension.patch
+    - Bump dependency on x11proto-input for xi 2.1
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 21 Feb 2011 20:45:49 -0500
 
 xorg-server (2:1.9.99.902-2) experimental; urgency=low
 
