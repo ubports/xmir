@@ -1,4 +1,4 @@
-xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu2) natty; urgency=low
+xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu2) UNRELEASED; urgency=low
 
   * Restore 208_switch_on_release.diff - the patch does not appear to be
     upstream actually.  Users confirm the fix regressed without it.
