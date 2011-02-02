@@ -1,3 +1,11 @@
+xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu2) natty; urgency=low
+
+  * Restore 208_switch_on_release.diff - the patch does not appear to be
+    upstream actually.  Users confirm the fix regressed without it.
+    (LP: #711842)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 02 Feb 2011 09:39:54 -0800
+
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) natty; urgency=low
 
   * Merge from (unreleased) debian-experimental.  Remaining Ubuntu changes:
@@ -5,7 +13,7 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) natty; urgency=low
       + Disable SELinux, libaudit-dev is not in main yet. (LP: #406226)
       + Enable xcsecurity. (LP: #247537)
       + Add --with-extra-module-dir to support GL alternatives.
-    - control: 
+    - control:
       + Xvfb depends on xauth, x11-xkb-utils. (LP: #500102)
       + Add breaks for incompatible drivers. (LP: #614993)
       + Drop libaudit-dev from build-deps.
@@ -52,7 +60,7 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) natty; urgency=low
   * Drop 189_xserver_1.5.0_bg_none_root.patch; functionality now upstream.
   * Refresh 190_cache-xkbcomp_output_for_fast_start_up.patch for new upstream.
   * Drop 197_xvfb-randr.patch:
-    - miRandR, which this used, has been removed from the server. 
+    - miRandR, which this used, has been removed from the server.
   * Drop 204_fix-neg-sync-transition.patch; upstream.
   * Drop 207_dga_master_device.patch; upstream.
   * Drop 208_switch_on_release.diff; upstream.
@@ -68,7 +76,7 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) natty; urgency=low
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 31 Jan 2011 19:45:19 +1100
 
 xorg-server (2:1.9.99.901-1) experimental; urgency=low
-  
+
   * New upstream release (1.10 rc1)
   * Drop 16-xaa-fbcomposite-fix-negative-size.diff, the mod macro that this
     patch fixes is no longer used.
