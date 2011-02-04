@@ -1,10 +1,15 @@
-xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu3) natty; urgency=low
 
   * Restore 208_switch_on_release.diff - the patch does not appear to be
     upstream actually.  Users confirm the fix regressed without it.
     (LP: #711842)
+  * Add 210_pixman_null_ptr_check.patch: pixman_image_create_bits() can
+    return NULL under a variety of circumstances, thus needs checked
+    before dereferencing it in the pixman_image_set_has_client_clip()
+    call.
+    (LP: #705078)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 02 Feb 2011 09:39:54 -0800
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Feb 2011 22:42:52 -0800
 
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) natty; urgency=low
 

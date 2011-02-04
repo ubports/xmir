@@ -29,3 +29,4 @@
 206_intel_8xx_default_to_fbdev.patch
 208_switch_on_release.diff
 209_add_legacy_bgnone_option.patch
+210_pixman_null_ptr_check.patch
