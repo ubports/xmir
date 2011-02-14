@@ -1,3 +1,13 @@
+xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu4) natty; urgency=low
+
+  * Add 211_glx_fix_bindtextimageext_length_check.patch,
+    212_fix_request_length_check_for_createglxpbuffersgix.patch:
+    - Correct wrong request size match for xGLXCreateGLXPbufferSGIXReq.
+      This can result in some invalid BadLength errors.
+      (LP: #714280)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 14 Feb 2011 12:07:45 -0800
+
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu3) natty; urgency=low
 
   * Restore 208_switch_on_release.diff - the patch does not appear to be
@@ -7,7 +17,7 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu3) natty; urgency=low
     return NULL under a variety of circumstances, thus needs checked
     before dereferencing it in the pixman_image_set_has_client_clip()
     call.
-    (LP: #705078)
+    (LP: #705078, deb: 596155, fdo: 28882)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 03 Feb 2011 22:42:52 -0800
 

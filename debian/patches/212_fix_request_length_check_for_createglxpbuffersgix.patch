@@ -1,0 +1,26 @@
+diff --git a/glx/glxcmds.c b/glx/glxcmds.c
+index 3ef567d..0b375c3 100644
+--- a/glx/glxcmds.c
++++ b/glx/glxcmds.c
+@@ -1436,7 +1436,7 @@ int __glXDisp_CreateGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)
+     ClientPtr client = cl->client;
+     xGLXCreateGLXPbufferSGIXReq *req = (xGLXCreateGLXPbufferSGIXReq *) pc;
+ 
+-    REQUEST_SIZE_MATCH(xGLXCreateGLXPbufferSGIXReq);
++    REQUEST_AT_LEAST_SIZE(xGLXCreateGLXPbufferSGIXReq);
+ 
+     return DoCreatePbuffer(cl->client, req->screen, req->fbconfig,
+ 			   req->width, req->height, req->pbuffer);
+diff --git a/glx/glxcmdsswap.c b/glx/glxcmdsswap.c
+index 3bb4cad..9d96c9d 100644
+--- a/glx/glxcmdsswap.c
++++ b/glx/glxcmdsswap.c
+@@ -421,7 +421,7 @@ int __glXDispSwap_CreateGLXPbufferSGIX(__GLXclientState *cl, GLbyte *pc)
+     xGLXCreateGLXPbufferSGIXReq *req = (xGLXCreateGLXPbufferSGIXReq *) pc;    
+     __GLX_DECLARE_SWAP_VARIABLES;
+ 
+-    REQUEST_SIZE_MATCH(xGLXCreateGLXPbufferSGIXReq);
++    REQUEST_AT_LEAST_SIZE(xGLXCreateGLXPbufferSGIXReq);
+ 
+     __GLX_SWAP_INT(&req->screen);
+     __GLX_SWAP_INT(&req->fbconfig);

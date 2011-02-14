@@ -30,3 +30,5 @@
 208_switch_on_release.diff
 209_add_legacy_bgnone_option.patch
 210_pixman_null_ptr_check.patch
+211_glx_fix_bindtextimageext_length_check.patch
+212_fix_request_length_check_for_createglxpbuffersgix.patch
