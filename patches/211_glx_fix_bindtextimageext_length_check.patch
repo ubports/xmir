@@ -1,0 +1,56 @@
+diff --git a/glx/glxcmds.c b/glx/glxcmds.c
+index 0b375c3..5d633df 100644
+--- a/glx/glxcmds.c
++++ b/glx/glxcmds.c
+@@ -1697,13 +1697,21 @@ int __glXDisp_BindTexImageEXT(__GLXclientState *cl, GLbyte *pc)
+     GLXDrawable		 drawId;
+     int			 buffer;
+     int			 error;
++    CARD32		 num_attribs;
+ 
+-    REQUEST_FIXED_SIZE(xGLXVendorPrivateReq, 8);
++    if ((sizeof(xGLXVendorPrivateReq) + 12) >> 2 > client->req_len)
++	return BadLength;
+ 
+     pc += __GLX_VENDPRIV_HDR_SIZE;
+ 
+     drawId = *((CARD32 *) (pc));
+     buffer = *((INT32 *)  (pc + 4));
++    num_attribs = *((CARD32 *) (pc + 8));
++    if (num_attribs > (UINT32_MAX >> 3)) {
++	client->errorValue = num_attribs;
++	return BadValue;
++    }
++    REQUEST_FIXED_SIZE(xGLXVendorPrivateReq, 12 + (num_attribs << 3));
+ 
+     if (buffer != GLX_FRONT_LEFT_EXT)
+ 	return __glXError(GLXBadPixmap);
+diff --git a/glx/glxcmdsswap.c b/glx/glxcmdsswap.c
+index 9d96c9d..d58de62 100644
+--- a/glx/glxcmdsswap.c
++++ b/glx/glxcmdsswap.c
+@@ -648,19 +648,23 @@ int __glXDispSwap_BindTexImageEXT(__GLXclientState *cl, GLbyte *pc)
+     xGLXVendorPrivateReq *req = (xGLXVendorPrivateReq *) pc;
+     GLXDrawable		 *drawId;
+     int			 *buffer;
++    CARD32		 *num_attribs;
+     __GLX_DECLARE_SWAP_VARIABLES;
+ 
+-    REQUEST_FIXED_SIZE(xGLXVendorPrivateReq, 8);
++    if ((sizeof(xGLXVendorPrivateReq) + 12) >> 2 > client->req_len)
++	return BadLength;
+ 
+     pc += __GLX_VENDPRIV_HDR_SIZE;
+ 
+     drawId = ((GLXDrawable *) (pc));
+     buffer = ((int *)	      (pc + 4));
++    num_attribs = ((CARD32 *) (pc + 8));
+     
+     __GLX_SWAP_SHORT(&req->length);
+     __GLX_SWAP_INT(&req->contextTag);
+     __GLX_SWAP_INT(drawId);
+     __GLX_SWAP_INT(buffer);
++    __GLX_SWAP_INT(num_attribs);
+ 
+     return __glXDisp_BindTexImageEXT(cl, (GLbyte *)pc);
+ }
