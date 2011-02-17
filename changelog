@@ -1,3 +1,12 @@
+xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu5) natty; urgency=low
+
+  * Add 213_xichangehierarchy-check-oom.patch: Another NULL pointer check
+    for out-of-memory conditions, this time leading to a segfault in an
+    unchecked calloc in XISendDeviceHierarchyEvent().
+    (LP: #720445)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 16 Feb 2011 16:46:35 -0800
+
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu4) natty; urgency=low
 
   * Add 211_glx_fix_bindtextimageext_length_check.patch,
