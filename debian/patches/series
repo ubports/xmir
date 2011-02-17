@@ -32,3 +32,4 @@
 210_pixman_null_ptr_check.patch
 211_glx_fix_bindtextimageext_length_check.patch
 212_fix_request_length_check_for_createglxpbuffersgix.patch
+213_xichangehierarchy-check-oom.patch
