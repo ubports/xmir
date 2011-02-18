@@ -33,3 +33,4 @@
 211_glx_fix_bindtextimageext_length_check.patch
 212_fix_request_length_check_for_createglxpbuffersgix.patch
 213_xichangehierarchy-check-oom.patch
+214_glx_dri_searchdirs.patch
