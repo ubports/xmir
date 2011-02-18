@@ -4,8 +4,11 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu6) natty; urgency=low
     - Search for DRI drivers for AIGLX in the same set of directories as mesa.
       Allows us to fall back to the classic radeon drivers when KMS is not
       available.
+  * debian/rules:
+    - --disable-builddocs → --disable-devel-docs to match upstream rename.
+      Makes local builds faster and less prone to doxygen errors.
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 18 Feb 2011 11:19:30 +1100
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 18 Feb 2011 17:03:46 +1100
 
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu5) natty; urgency=low
 
