@@ -1,4 +1,4 @@
-xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu6) natty; urgency=low
+xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu6) UNRELEASED; urgency=low
 
   * debian/patches/214_glx_dri_searchdirs.patch:
     - Search for DRI drivers for AIGLX in the same set of directories as mesa.
