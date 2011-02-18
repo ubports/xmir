@@ -56,7 +56,7 @@ Build-Depends:
  x11proto-xf86dri-dev (>= 2.1.0),
  libdrm-dev (>= 2.4.3) [!hurd-i386],
  x11proto-gl-dev (>= 1.4.10),
- mesa-common-dev (>= 7.8),
+ mesa-common-dev (>= 7.10.1~git20110215.cc1636b6-0ubuntu2),
  libgl1-mesa-dev (>= 7.8),
  libxmuu-dev (>= 1:0.99.1),
  libxext-dev (>= 1:0.99.1),
