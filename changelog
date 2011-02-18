@@ -7,6 +7,9 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu6) UNRELEASED; urgency=low
   * debian/rules:
     - --disable-builddocs → --disable-devel-docs to match upstream rename.
       Makes local builds faster and less prone to doxygen errors.
+  * debian/control:
+    - Bump build-depends on mesa to pick up new drisearchdirs variable in
+      dri.pc
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 18 Feb 2011 17:03:46 +1100
 
