@@ -1,7 +1,7 @@
 Index: xorg-server/glx/glxdri.c
 ===================================================================
---- xorg-server.orig/glx/glxdri.c	2011-02-18 12:53:47.493408035 +1100
-+++ xorg-server/glx/glxdri.c	2011-02-18 12:53:47.963408733 +1100
+--- xorg-server.orig/glx/glxdri.c	2011-02-21 16:27:15.608549466 +1100
++++ xorg-server/glx/glxdri.c	2011-02-21 16:37:17.849432756 +1100
 @@ -858,8 +858,6 @@
  
  
@@ -67,7 +67,7 @@ Index: xorg-server/glx/glxdri.c
 -		   driverName);
 -	goto handle_error;
 -    }
-+    from = strcmp(driverName, "nouveau_vieux") ? X_ERROR : X_INFO;
++    from = strncmp(driverName, "nouveau", sizeof "nouveau") ? X_ERROR : X_INFO;
 +    screen->driver = glxProbeDriver(driverName, &cookie,
 +				    (void **)&screen->core,
 +				    __DRI_CORE, __DRI_CORE_VERSION,
@@ -126,8 +126,8 @@ Index: xorg-server/glx/glxdri.c
  
 Index: xorg-server/glx/glxdri2.c
 ===================================================================
---- xorg-server.orig/glx/glxdri2.c	2011-02-18 12:53:47.493408035 +1100
-+++ xorg-server/glx/glxdri2.c	2011-02-18 12:53:47.963408733 +1100
+--- xorg-server.orig/glx/glxdri2.c	2011-02-21 16:27:15.618549476 +1100
++++ xorg-server/glx/glxdri2.c	2011-02-21 16:32:47.869036782 +1100
 @@ -599,8 +599,6 @@
      NULL
  };
@@ -137,7 +137,7 @@ Index: xorg-server/glx/glxdri2.c
  static Bool
  glxDRIEnterVT (int index, int flags)
  {
-@@ -701,13 +699,11 @@
+@@ -701,14 +699,11 @@
  __glXDRIscreenProbe(ScreenPtr pScreen)
  {
      const char *driverName, *deviceName;
@@ -149,10 +149,11 @@ Index: xorg-server/glx/glxdri2.c
 -    const __DRIextension **extensions;
      const __DRIconfig **driConfigs;
 -    int i;
-     int from = X_ERROR;
+-    int from = X_ERROR;
  
      screen = calloc(1, sizeof *screen);
-@@ -730,54 +726,24 @@
+     if (screen == NULL)
+@@ -730,54 +725,24 @@
  
      __glXInitExtensionEnableBits(screen->glx_enable_bits);
  
@@ -223,7 +224,7 @@ Index: xorg-server/glx/glxdri2.c
  
      initializeExtensions(screen);
  
-@@ -819,7 +785,7 @@
+@@ -819,7 +784,7 @@
      pScrn->LeaveVT = glxDRILeaveVT;
  
      LogMessage(X_INFO,
@@ -232,10 +233,20 @@ Index: xorg-server/glx/glxdri2.c
  
      return &screen->base;
  
+@@ -829,7 +794,8 @@
+ 
+     free(screen);
+ 
+-    LogMessage(from, "AIGLX: reverting to software rendering\n");
++    LogMessage(strncmp(driverName, "nouveau", sizeof "nouveau") ? X_ERROR : X_INFO,
++	       "AIGLX: reverting to software rendering\n");
+ 
+     return NULL;
+ }
 Index: xorg-server/glx/glxdricommon.c
 ===================================================================
---- xorg-server.orig/glx/glxdricommon.c	2011-02-18 12:53:23.303372560 +1100
-+++ xorg-server/glx/glxdricommon.c	2011-02-18 16:52:47.373554735 +1100
+--- xorg-server.orig/glx/glxdricommon.c	2011-02-21 16:14:58.587468479 +1100
++++ xorg-server/glx/glxdricommon.c	2011-02-21 16:27:16.768551168 +1100
 @@ -29,6 +29,7 @@
  
  #include <stdint.h>
@@ -335,8 +346,8 @@ Index: xorg-server/glx/glxdricommon.c
 +}
 Index: xorg-server/glx/glxdricommon.h
 ===================================================================
---- xorg-server.orig/glx/glxdricommon.h	2011-02-18 12:53:23.383372676 +1100
-+++ xorg-server/glx/glxdricommon.h	2011-02-18 12:53:47.963408733 +1100
+--- xorg-server.orig/glx/glxdricommon.h	2011-02-21 16:14:58.617468523 +1100
++++ xorg-server/glx/glxdricommon.h	2011-02-21 16:27:16.778551178 +1100
 @@ -38,4 +38,9 @@
  
  extern const __DRIsystemTimeExtension systemTimeExtension;
@@ -349,8 +360,8 @@ Index: xorg-server/glx/glxdricommon.h
  #endif
 Index: xorg-server/glx/glxdriswrast.c
 ===================================================================
---- xorg-server.orig/glx/glxdriswrast.c	2011-02-18 12:53:23.313372568 +1100
-+++ xorg-server/glx/glxdriswrast.c	2011-02-18 12:53:47.963408733 +1100
+--- xorg-server.orig/glx/glxdriswrast.c	2011-02-21 16:15:25.147507439 +1100
++++ xorg-server/glx/glxdriswrast.c	2011-02-21 16:27:16.778551178 +1100
 @@ -427,17 +427,13 @@
      }
  }
@@ -427,9 +438,9 @@ Index: xorg-server/glx/glxdriswrast.c
  
 Index: xorg-server/configure.ac
 ===================================================================
---- xorg-server.orig/configure.ac	2011-02-18 12:53:47.823408519 +1100
-+++ xorg-server/configure.ac	2011-02-18 12:53:47.963408733 +1100
-@@ -1254,7 +1254,12 @@
+--- xorg-server.orig/configure.ac	2011-02-21 16:27:16.498550772 +1100
++++ xorg-server/configure.ac	2011-02-21 16:27:16.778551178 +1100
+@@ -1259,7 +1259,12 @@
  AC_DEFINE_DIR(SERVER_MISC_CONFIG_PATH, SERVERCONFIG, [Server miscellaneous config path])
  AC_DEFINE_DIR(BASE_FONT_PATH, FONTROOTDIR, [Default base font path])
  dridriverdir=`$PKG_CONFIG --variable=dridriverdir dri`

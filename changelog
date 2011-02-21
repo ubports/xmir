@@ -69,8 +69,12 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
   * 211_glx_fix_bindtextimageext_length_check.patch:
   * 212_fix_request_length_check_for_createglxpbuffersgix.patch:
     - Drop; these cherry-picks are included in 1.10RC2
-  
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 21 Feb 2011 15:40:19 +1100
+  * debian/patches/214_glx_dri_searchdirs.patch:
+    - Fix nouveau check to downgrade missing DRI error messages to info.
+      We don't support nouveau's 3D, so let's not complain too strenuously
+      when it's not installed.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 21 Feb 2011 16:39:06 +1100
 
 xorg-server (2:1.9.99.902-2) experimental; urgency=low
 
