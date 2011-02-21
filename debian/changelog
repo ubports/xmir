@@ -1,3 +1,111 @@
+xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian experimental.  Remaining Ubuntu changes:
+    - rules:
+      + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
+      + Enable xcsecurity. (LP #247537)
+      + Add --with-extra-module-dir to support GL alternatives.
+      + Mention Ubuntu support in builderstring rather than package uploader's
+        email address.
+    - control:
+      + Xvfb depends on xauth, x11-xkb-utils. (LP #500102)
+      + Add breaks for incompatible drivers. (LP #614993)
+      + Drop libaudit-dev from build-deps.
+      + Build-depend on newer mesa to pick up DRI search paths variable.
+    - local/xvfb-run*: Add correct docs about error codes. (LP #328205)
+    - debian/patches:
+      + 100_rethrow_signals.patch:
+        When aborting, re-raise signals for apport
+      + 105_nvidia_fglrx_autodetect.patch:
+        Load proprietary drivers automatically when installed.
+      + 109_fix-swcursor-crash.patch:
+        Avoid dereferencing null pointer while reloading cursors during
+        resume. (LP: #371405)
+      + 111_armel-drv-fallbacks.patch:
+        Add support for armel driver fallbacks.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 122_xext_fix_card32_overflow_in_xauth.patch:
+        Fix server crash when “xauth generate” is called with large timeout.
+      + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
+        166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
+        169_mipointer_nullptr_checks.patch,
+        172_cwgetbackingpicture_nullptr_check.patch:
+        Fix various segfaults in xserver by checking pointers for NULL
+        values before dereferencing them.
+      + 165_man_xorg_conf_no_device_ident.patch
+        Correct man page
+      + 168_glibc_trace_to_stderr.patch:
+        Report abort traces to stderr instead of terminal
+      + 184_virtual_devices_autodetect.patch:
+        Use vesa for qemu device, which is not supported by cirrus
+      + 188_default_primary_to_first_busid.patch:
+        Pick the first device and carry on (LP: #459512)
+      + 190_cache-xkbcomp_output_for_fast_start_up.patch:
+      + 191-Xorg-add-an-extra-module-path.patch:
+        Add support for the alternatives module path.
+      + 198_nohwaccess.patch:
+        Adds a -nohwaccess argument to make X not access the hardware
+        ports directly.
+      + 200_randr-null.patch:
+        Clarify a pointer initialization.
+      + 206_intel_8xx_default_to_fbdev.patch:
+        Makes 8xx class intel GPUs default to fbdev for stability. (LP: #633593)
+      + 208_switch_on_release.diff:
+        Switch keyboard layouts on key-release rather than key-press
+  	(LP #36812)
+      + 209_add_legacy_bgnone_option.patch:
+        Add -nr as a synonym for -background none until all ?DM are updated for
+  	the new option.
+      + 210_pixman_null_ptr_check.patch: 
+        Catch NULL pointer access after pixman_image_create_bits() failure
+  	(LP #705078)
+      + Add 213_xichangehierarchy-check-oom.patch:
+        Add NULL pointer check for out-of-memory conditions. (LP #720445)
+      + debian/patches/214_glx_dri_searchdirs.patch:
+        Search in same paths as mesa for DRI drivers for AIGLX so we can handle
+        UMS fallback for radeon gracefully.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 21 Feb 2011 15:40:19 +1100
+
+xorg-server (2:1.9.99.902-2) experimental; urgency=low
+
+  * Bump dependency on x11proto-randr-dev, needed since xorg-server.pc
+    pulls a newer randrproto version.
+  * Merge from debian-unstable (picking packaging updates from 2:1.9.4-3).
+  * Mention some basic checks to perform when updating to a new upstream
+    release, in README.source: ABI bumps and SDK_REQUIRED_MODULES updates.
+  * Accordingly:
+    - Bump the x11proto-xext-dev dependency.
+    - Don't bump the x11proto-kb-dev dependency (even etch had a
+      sufficient version).
+
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 20 Feb 2011 07:02:20 +0100
+
+xorg-server (2:1.9.99.902-1) experimental; urgency=low
+
+  [ Christopher James Halse Rogers ]
+  * New upstream release (1.10 rc1)
+  * Drop 16-xaa-fbcomposite-fix-negative-size.diff, the mod macro that this
+    patch fixes is no longer used.
+  * debian/control:
+    - Bump x11proto-randr-dev and x11proto-xext-dev build-deps to 1.3.99 and
+      7.1.99 for new XRandR and XSync extension protocols.
+
+  [ Julien Cristau ]
+  * Bump serverminver and ABI versions.
+
+  [ Cyril Brulebois ]
+  * New upstream release (1.10 rc2).
+  * bug script: Report libGL-related diversions.
+  * Bump serverminver again, since ABI_XINPUT_VERSION was bumped from 12.0
+    to 12.2.
+  * Update debian/copyright from upstream COPYING.
+  * Add patch to work around out-of-tree issues: 16-oot-build.diff
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 19 Feb 2011 15:29:54 +0100
+
 xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu6) natty; urgency=low
 
   * debian/patches/214_glx_dri_searchdirs.patch:
@@ -114,13 +222,111 @@ xorg-server (2:1.9.99.901+git20110131.be3be758-0ubuntu1) natty; urgency=low
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 31 Jan 2011 19:45:19 +1100
 
-xorg-server (2:1.9.99.901-1) experimental; urgency=low
+xorg-server (2:1.9.4-3) unstable; urgency=low
 
-  * New upstream release (1.10 rc1)
-  * Drop 16-xaa-fbcomposite-fix-negative-size.diff, the mod macro that this
-    patch fixes is no longer used.
+  * Maintainer script clean-up:
+    - xserver-xorg-core.preinst.in: Remove, 1.5 is long gone.
+    - xserver-xorg-core.postinst.in: Remove, 1.5 is long gone, and 1.7.4
+      was between lenny and squeeze.
+    - xserver-xorg-core.postrm.in: Rename as xserver-xorg-core.postrm,
+      handling upgrades from 1.5 is no longer needed, only keep the logs
+      removal and the #DEBHELPER# placeholder.
+  * Move remaining xsfbs bits to debian/rules:
+    - Create/clean stampdir/.
+    - Use quilt.make, $(QUILT_STAMPFN), unpatch.
+    - Define SOURCE_NAME and SOURCE_VERSION.
+  * Remove debian/xsfbs accordingly.
+  * Remove reference to xsfbs in README.source accordingly.
+  * Add patch: 20-update-gpu-pitch.diff (from upstream bug 33929), fixing
+    issues with the radeon driver (Closes: #613957).
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 10 Jan 2011 12:12:01 -0600
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 20 Feb 2011 05:35:50 +0100
+
+xorg-server (2:1.9.4-2) unstable; urgency=low
+
+  * Put an end to the dependency hell! Now that we have proper
+    dependencies between drivers and the server, remove xserver-xorg from
+    xserver-xorg-core's Depends (Closes: #362313). In a nutshell, one may
+    want to choose between installing:
+    - xserver-xorg-core: the server itself, with no strings attached.
+    - xserver-xorg: pulls the server and drivers, contains the X wrapper
+      and some documentation.
+    - xorg: pulls xserver-xorg as well as various X11 clients and fonts.
+  * bug script: Report KMS configuration files and their contents.
+  * bug script: Keep only one lspci call (with proper filtering), which
+    makes PCI IDs come back.
+  * bug script: Report libGL-related diversions.
+  * Stop providing xorg-input-abi-11.0 and xorg-video-abi-8.0 now that
+    drivers have reached unstable.
+  * Merge server-1.9-branch up to 0a4b0de9af.
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 16 Feb 2011 23:17:07 +0100
+
+xorg-server (2:1.9.4-1) unstable; urgency=low
+
+  * The “squeeze is released, target sid!” upload.
+  * New upstream release.
+  * Unfuzzy all patches.
+  * Get rid of long obsolete NEWS file.
+  * Replace “--remaining-packages” with “-Nfoo -Nbar” in the “dh_strip -s”
+    call, to avoid non-stripped binaries if the build is resumed.
+  * Use “dh_prep” instead of deprecated “dh_clean -k”.
+  * Bump debhelper build-dep accordingly.
+  * Introduce dh_xsf_substvars, to be used in driver packages to set
+    appropriate substitution variables for Depends and Provides, before
+    calling dh_gencontrol. Ship it in xserver-xorg-dev.
+  * Also ship a debhelper sequence: xsf.pm, to insert dh_xsf_substvars
+    before dh_gencontrol. Usage: “dh $@ --with xsf” when using dh.
+  * Get rid of inputabiver and videoabiver files, they've been deprecated
+    for a while, and drivers should all have switched by now.
+  * rules: Only read the first line of debian/serverminver to set the
+    serverminver variable, used to prepare xinputdep and videodrvdep
+    files.
+  * rules: Keep only the major ABI version from pkg-config's output to
+    build xorg-{input,video}-abi-$ABI. To handle minor ABI versions, we
+    have the serverminver mechanism.
+  * To avoid having to binNMU all drivers to update their Depends from
+    xorg-*-abi-$MAJOR-$MINOR to xorg-*-abi-$MAJOR, add xorg-video-abi-8.0
+    and xorg-input-abi-11.0 to the server's Provides temporarily (until
+    the next ABI bump).
+  * Add ${videoabi}, ${inputabi} to the udeb's Provides. There's no reason
+    for udebs to have loose dependencies.
+  * Accordingly, copy server's substvars as udeb's substvars once the
+    videoabi/inputabi variables are computed.
+  * Add an abibumpcheck target which checks for xinput and videodrv ABI
+    updates, based on the versions stored in debian/serverminver; make
+    clean depend on it to make sure such an update is noticed at the very
+    beginning of the build.
+  * Add current versions to debian/serverminver accordingly.
+  * Remove “xserver” from Provides, it's deprecated.
+  * Use architecture wildcards for build-deps.
+  * Make xserver-xfbdev linux-any; add armhf and powerpcspe to the udeb
+    (Closes: #585697, #605764).
+  * Cherry-pick, thanks to Samuel Thibault (Closes: #590715):
+    - xserver: enable TLS even if AIGLX is not enabled
+  * Update Uploaders list. Thanks, David & Steve & Brice!
+  * Bump Standards-Version to 3.9.1 (no changes needed).
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 05 Feb 2011 10:40:55 +0100
+
+xorg-server (2:1.9.3.902-1) experimental; urgency=low
+
+  * New upstream release (1.9.4 rc2).
+  * Improve bug script:
+    - Stop reporting about roster and checksum for config file and server
+      symlink, they are no longer used.
+    - Replace printf with echo everywhere, it's slightly more readable and
+      all lines are newline-terminated anyway.
+    - Also use a “pecho” (pretty echo) function to underline some strings,
+      making the output slightly more readable.
+    - Fix listing xorg.conf.d's contents. Previously, that was only done
+      if xorg.conf existed.
+    - Check for local libraries by running ldd on the server.
+    - Check for obsolete libraries in the same way (/usr/X11R6/lib might
+      still exist in some cases, and be referenced in /etc/ld.so.conf, so
+      using ldd is sufficient to find out, see #546836 for an example).
+
+ -- Cyril Brulebois <kibi@debian.org>  Mon, 31 Jan 2011 14:00:41 +0100
 
 xorg-server (2:1.9.3.901-1) experimental; urgency=low
 
