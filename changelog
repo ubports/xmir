@@ -66,7 +66,10 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
       + debian/patches/214_glx_dri_searchdirs.patch:
         Search in same paths as mesa for DRI drivers for AIGLX so we can handle
         UMS fallback for radeon gracefully.
-
+  * 211_glx_fix_bindtextimageext_length_check.patch:
+  * 212_fix_request_length_check_for_createglxpbuffersgix.patch:
+    - Drop; these cherry-picks are included in 1.10RC2
+  
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 21 Feb 2011 15:40:19 +1100
 
 xorg-server (2:1.9.99.902-2) experimental; urgency=low
