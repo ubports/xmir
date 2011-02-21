@@ -37,3 +37,4 @@
 213_xichangehierarchy-check-oom.patch
 214_glx_dri_searchdirs.patch
 215_glx_drawable_refcounting.diff
+216_dix-valuator-count-of-0-is-valid.diff
