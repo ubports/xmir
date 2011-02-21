@@ -73,6 +73,10 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
     - Fix nouveau check to downgrade missing DRI error messages to info.
       We don't support nouveau's 3D, so let's not complain too strenuously
       when it's not installed.
+  * debian/patches/215_glx_drawable_refcounting.diff:
+    - Refcount GLXDrawables to avoid use-after-free crashes.  Patch from
+      xorg-devel mailing list.  Prevents segfault on logout and server
+      regenerate, and possibly other times. (LP: #711422)
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 21 Feb 2011 16:39:06 +1100
 
