@@ -86,6 +86,9 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
     - Temporarily re-add these to xserver-xorg-dev so we don't need to merge
       all the driver changes from Debian en masse.  These should be dropped
       once all drivers have been merged from Debian, and certainly in Natty+1.
+  * debian/serverminver:
+    - Include 2ubuntu1 string; Xi 2.1 bumps the minor input ABI, so drivers
+      built against it need the Xi 2.1 patched server.
 
   [ Timo Aaltonen ]
   * debian/patches/216_dix-valuator-count-of-0-is-valid.diff:
