@@ -182,7 +182,7 @@
  
          /* Add state and motionMask to the filter for this event */
          mask = DevicePointerMotionMask | b->state | b->motionMask;
-@@ -926,6 +981,929 @@ ProcessRawEvent(RawDeviceEvent *ev, Devi
+@@ -926,6 +981,936 @@ ProcessRawEvent(RawDeviceEvent *ev, Devi
  }
  
  /**
@@ -858,6 +858,9 @@
 +                    if (ev == ti->history + ti->history_size)
 +                        ev = ti->history;
 +                }
++            } else if (tc->type == TOUCH_SELECT_UNOWNED &&
++                       !ti->emulate_pointer) {
++                DeliverTouchOwnershipEvent(tc, ti);
 +            }
 +        }
 +
@@ -1077,11 +1080,15 @@
 +
 +            /* An ending emulated touchpoint must release the primary mouse
 +             * button. */
-+            if (ev->any.type == ET_TouchEnd && ti == sourcedev->touch->emulate)
-+                ReleaseButton(masterdev, 1);
-+
 +            if (ev->any.type == ET_TouchEnd)
++            {
++                if (ti == sourcedev->touch->emulate)
++                    ReleaseButton(masterdev, 1);
++                else
++                    DeliverOneTouchEvent(client, ti, ev);
++
 +                EndTouchPoint(sourcedev, ti);
++            }
 +        }
 +    }
 +
@@ -1112,7 +1119,7 @@
   * Main device event processing function.
   * Called from when processing the events from the event queue.
   *
-@@ -954,6 +1932,33 @@ ProcessOtherEvent(InternalEvent *ev, Dev
+@@ -954,6 +1939,33 @@ ProcessOtherEvent(InternalEvent *ev, Dev
      {
          ProcessRawEvent(&ev->raw_event, device);
          return;
@@ -1146,7 +1153,7 @@
      }
  
      if (IsPointerDevice(device))
-@@ -1152,6 +2157,50 @@ InitValuatorAxisStruct(DeviceIntPtr dev,
+@@ -1152,6 +2164,50 @@ InitValuatorAxisStruct(DeviceIntPtr dev,
          dev->proximity->in_proximity = FALSE;
  }
  
@@ -1197,7 +1204,7 @@
  static void
  FixDeviceStateNotify(DeviceIntPtr dev, deviceStateNotify * ev, KeyClassPtr k,
  		     ButtonClassPtr b, ValuatorClassPtr v, int first)
-@@ -1562,6 +2611,38 @@ GrabWindow(ClientPtr client, DeviceIntPt
+@@ -1562,6 +2618,38 @@ GrabWindow(ClientPtr client, DeviceIntPt
      return AddPassiveGrabToList(client, grab);
  }
  
@@ -1236,7 +1243,7 @@
  int
  SelectForWindow(DeviceIntPtr dev, WindowPtr pWin, ClientPtr client,
  		Mask mask, Mask exclusivemasks)
-@@ -1695,10 +2776,65 @@ RecalculateDeviceDeliverableEvents(Windo
+@@ -1695,10 +2783,65 @@ RecalculateDeviceDeliverableEvents(Windo
      }
  }
  
@@ -1302,7 +1309,7 @@
  
      if (!wOtherInputMasks(pWin))
  	return Success;
-@@ -1734,6 +2870,54 @@ InputClientGone(WindowPtr pWin, XID id)
+@@ -1734,6 +2877,54 @@ InputClientGone(WindowPtr pWin, XID id)
      FatalError("client not on device event list");
  }
  
