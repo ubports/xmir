@@ -4,3 +4,7 @@ main/usr/share/aclocal	usr/share
 
 ../../debian/local/dh_xsf_substvars usr/bin
 ../../debian/local/xsf.pm /usr/share/perl5/Debian/Debhelper/Sequence/
+
+# Temporary, so we don't have a driver flag day:
+../../debian/inputabiver usr/share/xserver-xorg
+../../debian/videoabiver usr/share/xserver-xorg

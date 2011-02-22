@@ -80,6 +80,12 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
       regenerate, and possibly other times. (LP: #711422)
   * 214_glx_dri_searchdirs.patch:
     - Fix dlclose/free snafu. (LP: #722563)
+  * debian/inputabiver:
+  * debian/videoabiver:
+  * debian/xserver-xorg-dev.install
+    - Temporarily re-add these to xserver-xorg-dev so we don't need to merge
+      all the driver changes from Debian en masse.  These should be dropped
+      once all drivers have been merged from Debian, and certainly in Natty+1.
 
   [ Timo Aaltonen ]
   * debian/patches/216_dix-valuator-count-of-0-is-valid.diff:
@@ -95,7 +101,7 @@ xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
     - Moved 203_gestures-extension.patch to 502_gestures-extension.patch
     - Bump dependency on x11proto-input for xi 2.1
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 21 Feb 2011 20:45:49 -0500
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 23 Feb 2011 09:40:07 +1100
 
 xorg-server (2:1.9.99.902-2) experimental; urgency=low
 
