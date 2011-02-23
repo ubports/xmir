@@ -1,4 +1,4 @@
-xorg-server (2:1.9.99.902-2ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.9.99.902-2ubuntu1) natty; urgency=low
 
   [ Christopher James Halse Rogers ]
   * Merge from Debian experimental.  Remaining Ubuntu changes:
