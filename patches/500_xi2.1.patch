@@ -182,7 +182,7 @@
  
          /* Add state and motionMask to the filter for this event */
          mask = DevicePointerMotionMask | b->state | b->motionMask;
-@@ -926,6 +981,934 @@ ProcessRawEvent(RawDeviceEvent *ev, Devi
+@@ -926,6 +981,939 @@ ProcessRawEvent(RawDeviceEvent *ev, Devi
  }
  
  /**
@@ -674,7 +674,12 @@
 +        {
 +            if (win == master->deviceGrab.grab->window)
 +            {
-+                ti->owner = j + 1;
++                if (j >= ti->active_clients - 1)
++                {
++                    ti->owner = -1;
++                    ti->active_clients = 0;
++                } else
++                    ti->owner = j + 1;
 +                return TRUE;
 +            } else
 +                goto next;
@@ -1117,7 +1122,7 @@
   * Main device event processing function.
   * Called from when processing the events from the event queue.
   *
-@@ -954,6 +1937,33 @@ ProcessOtherEvent(InternalEvent *ev, Dev
+@@ -954,6 +1942,33 @@ ProcessOtherEvent(InternalEvent *ev, Dev
      {
          ProcessRawEvent(&ev->raw_event, device);
          return;
@@ -1151,7 +1156,7 @@
      }
  
      if (IsPointerDevice(device))
-@@ -1152,6 +2162,50 @@ InitValuatorAxisStruct(DeviceIntPtr dev,
+@@ -1152,6 +2167,50 @@ InitValuatorAxisStruct(DeviceIntPtr dev,
          dev->proximity->in_proximity = FALSE;
  }
  
@@ -1202,7 +1207,7 @@
  static void
  FixDeviceStateNotify(DeviceIntPtr dev, deviceStateNotify * ev, KeyClassPtr k,
  		     ButtonClassPtr b, ValuatorClassPtr v, int first)
-@@ -1562,6 +2616,38 @@ GrabWindow(ClientPtr client, DeviceIntPt
+@@ -1562,6 +2621,38 @@ GrabWindow(ClientPtr client, DeviceIntPt
      return AddPassiveGrabToList(client, grab);
  }
  
@@ -1241,7 +1246,7 @@
  int
  SelectForWindow(DeviceIntPtr dev, WindowPtr pWin, ClientPtr client,
  		Mask mask, Mask exclusivemasks)
-@@ -1695,10 +2781,65 @@ RecalculateDeviceDeliverableEvents(Windo
+@@ -1695,10 +2786,65 @@ RecalculateDeviceDeliverableEvents(Windo
      }
  }
  
@@ -1307,7 +1312,7 @@
  
      if (!wOtherInputMasks(pWin))
  	return Success;
-@@ -1734,6 +2875,54 @@ InputClientGone(WindowPtr pWin, XID id)
+@@ -1734,6 +2880,54 @@ InputClientGone(WindowPtr pWin, XID id)
      FatalError("client not on device event list");
  }
  
