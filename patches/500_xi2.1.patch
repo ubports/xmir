@@ -2936,7 +2936,17 @@
      if (grab->ownerEvents)
      {
  	WindowPtr focus;
-@@ -4955,7 +5297,7 @@ InitEvents(void)
+@@ -3821,6 +4163,9 @@ DeliverGrabbedEvent(InternalEvent *event
+                 mask = grab->xi2mask[XIAllDevices][evtype/8] |
+                     grab->xi2mask[XIAllMasterDevices][evtype/8] |
+                     grab->xi2mask[thisDev->id][evtype/8];
++                if (IsTouchEvent(event))
++                    mask |=
++                        grab->xi2mask[event->device_event.sourceid][evtype/8];
+                 /* try XI2 event */
+                 FixUpEventFromWindow(pSprite, xi2, grab->window, None, TRUE);
+                 /* XXX: XACE */
+@@ -4955,7 +5300,7 @@ InitEvents(void)
  	free(syncEvents.pending);
  	syncEvents.pending = next;
      }
