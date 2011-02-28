@@ -2343,7 +2343,7 @@
              return;
  
          event->root = RootWindow(pSprite)->drawable.id;
-@@ -2369,12 +2490,112 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
+@@ -2369,12 +2490,115 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
      xEvent core;
      xEvent *xE = NULL;
      int rc, mask, count = 0;
@@ -2413,9 +2413,12 @@
 +                    ti->emulate_pointer = FALSE;
 +                    if (IsPointerEvent(event))
 +                        return 0;
++                } else {
++                    ti->owner = -1;
++                    ti->active_clients = 0;
++                    if (IsTouchEvent(event))
++                        return 0;
 +                }
-+                else if (IsTouchEvent(event))
-+                    return 0;
 +
 +                break;
 +            }
@@ -2457,7 +2460,7 @@
          {
              /* XI2 events first */
              if (mask & XI2_MASK)
-@@ -2383,10 +2604,25 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
+@@ -2383,10 +2607,25 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
                  rc = EventToXI2(event, &xi2);
                  if (rc == Success)
                  {
@@ -2485,7 +2488,7 @@
                                                         filter, grab);
                      free(xi2);
                      if (deliveries > 0)
-@@ -2439,6 +2675,14 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
+@@ -2439,6 +2678,14 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
                  goto unwind;
              }
          }
@@ -2500,7 +2503,7 @@
  
          child = pWin->drawable.id;
          pWin = pWin->parent;
-@@ -2591,7 +2835,7 @@ XYToWindow(SpritePtr pSprite, int x, int
+@@ -2591,7 +2838,7 @@ XYToWindow(SpritePtr pSprite, int x, int
  	else
  	    pWin = pWin->nextSib;
      }
@@ -2509,7 +2512,7 @@
  }
  
  /**
-@@ -2629,7 +2873,8 @@ ActivateFocusInGrab(DeviceIntPtr dev, Wi
+@@ -2629,7 +2876,8 @@ ActivateFocusInGrab(DeviceIntPtr dev, Wi
      event.deviceid = dev->id;
      event.sourceid = dev->id;
      event.detail.button = 0;
@@ -2519,7 +2522,7 @@
      if (rc)
          DoEnterLeaveEvents(dev, dev->id, old, win, XINotifyPassiveUngrab);
      return rc;
-@@ -2666,7 +2911,8 @@ ActivateEnterGrab(DeviceIntPtr dev, Wind
+@@ -2666,7 +2914,8 @@ ActivateEnterGrab(DeviceIntPtr dev, Wind
      event.deviceid = dev->id;
      event.sourceid = dev->id;
      event.detail.button = 0;
@@ -2529,7 +2532,7 @@
      if (rc)
          DoEnterLeaveEvents(dev, dev->id, old, win, XINotifyPassiveGrab);
      return rc;
-@@ -3353,7 +3599,7 @@ GrabPtr
+@@ -3353,7 +3602,7 @@ GrabPtr
  CheckPassiveGrabsOnWindow(
      WindowPtr pWin,
      DeviceIntPtr device,
@@ -2538,7 +2541,7 @@
      BOOL checkCore,
      BOOL activate)
  {
-@@ -3370,9 +3616,22 @@ CheckPassiveGrabsOnWindow(
+@@ -3370,9 +3619,22 @@ CheckPassiveGrabsOnWindow(
  	return NULL;
      /* Fill out the grab details, but leave the type for later before
       * comparing */
@@ -2562,7 +2565,7 @@
      tempGrab.detail.pMask = NULL;
      tempGrab.modifiersDetail.pMask = NULL;
      tempGrab.next = NULL;
-@@ -3380,6 +3639,9 @@ CheckPassiveGrabsOnWindow(
+@@ -3380,6 +3642,9 @@ CheckPassiveGrabsOnWindow(
      {
  	DeviceIntPtr	gdev;
  	XkbSrvInfoPtr	xkbi = NULL;
@@ -2572,7 +2575,7 @@
  
  	gdev= grab->modifierDevice;
          if (grab->grabtype == GRABTYPE_CORE)
-@@ -3405,16 +3667,15 @@ CheckPassiveGrabsOnWindow(
+@@ -3405,16 +3670,15 @@ CheckPassiveGrabsOnWindow(
          tempGrab.modifiersDetail.exact = xkbi ? xkbi->state.grab_mods : 0;
  
          /* Check for XI2 and XI grabs first */
@@ -2591,7 +2594,7 @@
                  (GrabMatchesSecond(&tempGrab, grab, FALSE)))
                  match = XI_MATCH;
          }
-@@ -3423,125 +3684,143 @@ CheckPassiveGrabsOnWindow(
+@@ -3423,125 +3687,143 @@ CheckPassiveGrabsOnWindow(
          if (!match && checkCore)
          {
              tempGrab.grabtype = GRABTYPE_CORE;
@@ -2832,7 +2835,7 @@
      }
      return NULL;
  #undef CORE_MATCH
-@@ -3580,8 +3859,13 @@ CheckDeviceGrabs(DeviceIntPtr device, De
+@@ -3580,8 +3862,13 @@ CheckDeviceGrabs(DeviceIntPtr device, De
  {
      int i;
      WindowPtr pWin = NULL;
@@ -2847,7 +2850,7 @@
  
      if (event->type != ET_ButtonPress &&
          event->type != ET_KeyPress)
-@@ -3609,7 +3893,8 @@ CheckDeviceGrabs(DeviceIntPtr device, De
+@@ -3609,7 +3896,8 @@ CheckDeviceGrabs(DeviceIntPtr device, De
  	for (; i < focus->traceGood; i++)
  	{
  	    pWin = focus->trace[i];
@@ -2857,7 +2860,7 @@
  		return TRUE;
  	}
  
-@@ -3619,11 +3904,54 @@ CheckDeviceGrabs(DeviceIntPtr device, De
+@@ -3619,11 +3907,54 @@ CheckDeviceGrabs(DeviceIntPtr device, De
  	    return FALSE;
      }
  
@@ -2915,7 +2918,7 @@
      }
  
      return FALSE;
-@@ -3745,6 +4073,17 @@ DeliverGrabbedEvent(InternalEvent *event
+@@ -3745,6 +4076,17 @@ DeliverGrabbedEvent(InternalEvent *event
      grabinfo = &thisDev->deviceGrab;
      grab = grabinfo->grab;
  
@@ -2933,7 +2936,7 @@
      if (grab->ownerEvents)
      {
  	WindowPtr focus;
-@@ -4955,7 +5294,7 @@ InitEvents(void)
+@@ -4955,7 +5297,7 @@ InitEvents(void)
  	free(syncEvents.pending);
  	syncEvents.pending = next;
      }
