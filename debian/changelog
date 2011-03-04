@@ -5,8 +5,9 @@ xorg-server (2:1.9.99.902-2ubuntu2) UNRELEASED; urgency=low
   * Cancel touch clients if emulated button press is delivered. (LP: #725191)
   * Check slave device touch selection mask during implicit grab. (LP: #725241)
   * Cancel slave touch selections when attached to master device. (LP: #723904)
+  * Check for touch selections only when there are active clients. (LP: #723900)
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 04 Mar 2011 11:36:19 -0500
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 04 Mar 2011 14:18:45 -0500
 
 xorg-server (2:1.9.99.902-2ubuntu1) natty; urgency=low
 
