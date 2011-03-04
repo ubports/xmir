@@ -2007,6 +2007,78 @@
  /*
   * Check if the given buffer contains elements between low (inclusive) and
   * high (inclusive) only.
+@@ -2375,6 +2535,58 @@ RecalculateMasterButtons(DeviceIntPtr sl
+     }
+ }
+ 
++static void
++DropTouchSelectionsOnWindow(DeviceIntPtr dev, WindowPtr win)
++{
++    WindowPtr child;
++
++    if (wOtherInputMasks(win) &&
++        BitIsOn(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchBegin))
++    {
++        InputClientsPtr client = wOtherInputMasks(win)->inputClients;
++
++        /* Don't bother deleting client record if there are no other
++         * selections. The client will likely reselect when it gets the
++         * HierarchyChange event. */
++        while (client)
++        {
++            ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchBegin);
++            ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchEnd);
++            ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchOwnership);
++            ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchUpdate);
++            ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchUpdateUnowned);
++
++            client = client->next;
++        }
++
++        ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchBegin);
++        ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchEnd);
++        ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchOwnership);
++        ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchUpdate);
++        ClearBit(wOtherInputMasks(win)->xi2mask[dev->id], XI_TouchUpdateUnowned);
++    }
++
++    child = win->firstChild;
++    while (child)
++    {
++        DropTouchSelectionsOnWindow(dev, child);
++        child = child->nextSib;
++    }
++}
++
++static void
++DropTouchSelections(DeviceIntPtr dev)
++{
++    int i;
++
++    for (i = 0; i < screenInfo.numScreens; i++)
++    {
++        WindowPtr win = screenInfo.screens[i]->root;
++
++        DropTouchSelectionsOnWindow(dev, win);
++    }
++}
++
+ /**
+  * Attach device 'dev' to device 'master'.
+  * Client is set to the client that issued the request, or NULL if it comes
+@@ -2440,6 +2652,12 @@ AttachDevice(ClientPtr client, DeviceInt
+         dev->spriteInfo->spriteOwner = FALSE;
+ 
+         RecalculateMasterButtons(master);
++
++        /* Only one client may select for touch events from a device on a window
++         * at any time. Reattaching could break this, so drop all touch event
++         * selections for this specific slave device on all windows. */
++        if (dev->touch)
++            DropTouchSelections(dev);
+     }
+ 
+     /* XXX: in theory, the MD should change back to its old, original
 --- a/dix/eventconvert.c
 +++ b/dix/eventconvert.c
 @@ -55,6 +55,7 @@ static int eventToKeyButtonPointer(Devic
