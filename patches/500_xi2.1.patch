@@ -3107,7 +3107,19 @@
  }
  
  /**
-@@ -1165,7 +1170,16 @@ GetPointerEvents(EventList *events, Devi
+@@ -1116,7 +1121,10 @@ GetPointerEvents(EventList *events, Devi
+     switch (type)
+     {
+         case MotionNotify:
+-            if (!mask_in || valuator_mask_num_valuators(mask_in) <= 0)
++            if (!mask_in || valuator_mask_num_valuators(mask_in) <= 0 ||
++                (pDev->touch && pDev->touch->active_touches > 1 &&
++                 (pDev->touch->mode == XIDependentTouch ||
++                  pDev->touch->mode == XISemiMultitouch)))
+                 return 0;
+             break;
+         case ButtonPress:
+@@ -1165,7 +1173,16 @@ GetPointerEvents(EventList *events, Devi
              }
          }
  
@@ -3125,7 +3137,7 @@
          moveAbsolute(pDev, &x, &y, &mask);
      } else {
          if (flags & POINTER_ACCELERATE) {
-@@ -1286,6 +1300,130 @@ GetProximityEvents(EventList *events, De
+@@ -1286,6 +1303,130 @@ GetProximityEvents(EventList *events, De
      return num_events;
  }
  
