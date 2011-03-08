@@ -1,7 +1,10 @@
 xorg-server (2:1.9.99.902-2ubuntu2) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * Remove 169_mipointer_nullptr_checks.patch, fixed in another way
     upstream since 1.6.1.901.
+
+  [ Chase Douglas ]
   * Cancel touch clients if emulated button press is delivered. (LP: #725191)
   * Check slave device touch selection mask during implicit grab. (LP: #725241)
   * Cancel slave touch selections when attached to master device. (LP: #723904)
