@@ -1,15 +1,23 @@
-xorg-server (2:1.9.99.902-2ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.9.99.902-2ubuntu2) natty; urgency=low
 
   [ Timo Aaltonen ]
   * Remove 169_mipointer_nullptr_checks.patch, fixed in another way
     upstream since 1.6.1.901.
 
   [ Chase Douglas ]
-  * Cancel touch clients if emulated button press is delivered. (LP: #725191)
-  * Check slave device touch selection mask during implicit grab. (LP: #725241)
-  * Cancel slave touch selections when attached to master device. (LP: #723904)
-  * Check for touch selections only when there are active clients. (LP: #723900)
-  * Prevent pointer motion when more than one touch on touchpad. (LP: #730881)
+  * Cancel touch clients if emulated button press is delivered.
+    (LP: #725191)
+  * Check slave device touch selection mask during implicit grab.
+    (LP: #725241)
+  * Cancel slave touch selections when attached to master device.
+    (LP: #723904)
+  * Check for touch selections only when there are active clients.
+    (LP: #723900)
+  * Prevent pointer motion when more than one touch on touchpad.
+    (LP: #730881)
+
+  [ Bryce Harrington ]
+  * Drop specification for linux-any.  Breaks pbuilder test builds.
 
  -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 07 Mar 2011 14:28:02 -0500
 
@@ -74,30 +82,29 @@ xorg-server (2:1.9.99.902-2ubuntu1) natty; urgency=low
       + 209_add_legacy_bgnone_option.patch:
         Add -nr as a synonym for -background none until all ?DM are updated for
   	the new option.
-      + 210_pixman_null_ptr_check.patch: 
+      + 210_pixman_null_ptr_check.patch:
         Catch NULL pointer access after pixman_image_create_bits() failure
   	(LP #705078)
-      + Add 213_xichangehierarchy-check-oom.patch:
+      + 213_xichangehierarchy-check-oom.patch:
         Add NULL pointer check for out-of-memory conditions. (LP #720445)
-      + debian/patches/214_glx_dri_searchdirs.patch:
+      + 214_glx_dri_searchdirs.patch:
         Search in same paths as mesa for DRI drivers for AIGLX so we can handle
         UMS fallback for radeon gracefully.
   * 211_glx_fix_bindtextimageext_length_check.patch:
   * 212_fix_request_length_check_for_createglxpbuffersgix.patch:
     - Drop; these cherry-picks are included in 1.10RC2
-  * debian/patches/214_glx_dri_searchdirs.patch:
+  * 214_glx_dri_searchdirs.patch:
+    - Fix dlclose/free snafu. (LP: #722563)
     - Fix nouveau check to downgrade missing DRI error messages to info.
       We don't support nouveau's 3D, so let's not complain too strenuously
       when it's not installed.
-  * debian/patches/215_glx_drawable_refcounting.diff:
+  * 215_glx_drawable_refcounting.diff:
     - Refcount GLXDrawables to avoid use-after-free crashes.  Patch from
       xorg-devel mailing list.  Prevents segfault on logout and server
       regenerate, and possibly other times. (LP: #711422)
-  * 214_glx_dri_searchdirs.patch:
-    - Fix dlclose/free snafu. (LP: #722563)
-  * debian/inputabiver:
-  * debian/videoabiver:
-  * debian/xserver-xorg-dev.install
+  * debian/inputabiver,
+    debian/videoabiver,
+    debian/xserver-xorg-dev.install
     - Temporarily re-add these to xserver-xorg-dev so we don't need to merge
       all the driver changes from Debian en masse.  These should be dropped
       once all drivers have been merged from Debian, and certainly in Natty+1.
