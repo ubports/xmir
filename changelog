@@ -1,3 +1,119 @@
+xorg-server (2:1.9.99.903-2ubuntu1) natty; urgency=low
+  
+  * Merge from unreleased Debian experimental.  Remaining Ubuntu changes:
+    - rules:
+      + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
+      + Enable xcsecurity. (LP #247537)
+      + Add --with-extra-module-dir to support GL alternatives.
+      + Mention Ubuntu support in builderstring rather than package uploader's
+        email address.
+    - control:
+      + Xvfb depends on xauth, x11-xkb-utils. (LP #500102)
+      + Add breaks for incompatible drivers. (LP #614993)
+      + Drop libaudit-dev from build-deps.
+      + Build-depend on newer mesa to pick up DRI search paths variable.
+      + Bump dependency on x11proto-input-dev for Xi 2.1
+      + Drop linux-any specifier to make pbuilder less narky.
+      + Bump build-depends on mesa-common-dev to pick up dri.pc DRI search
+        paths change for 214_glx_dri_searchdirs.patch
+    - local/xvfb-run*: Add correct docs about error codes. (LP #328205)
+    - debian/patches:
+      + 100_rethrow_signals.patch:
+        When aborting, re-raise signals for apport
+      + 105_nvidia_fglrx_autodetect.patch:
+        Load proprietary drivers automatically when installed.
+      + 109_fix-swcursor-crash.patch:
+        Avoid dereferencing null pointer while reloading cursors during
+        resume. (LP #371405)
+      + 111_armel-drv-fallbacks.patch:
+        Add support for armel driver fallbacks.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 122_xext_fix_card32_overflow_in_xauth.patch:
+        Fix server crash when “xauth generate” is called with large timeout.
+      + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
+        166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
+        172_cwgetbackingpicture_nullptr_check.patch:
+        Fix various segfaults in xserver by checking pointers for NULL
+        values before dereferencing them.
+      + 165_man_xorg_conf_no_device_ident.patch
+        Correct man page
+      + 168_glibc_trace_to_stderr.patch:
+        Report abort traces to stderr instead of terminal
+      + 184_virtual_devices_autodetect.patch:
+        Use vesa for qemu device, which is not supported by cirrus
+      + 188_default_primary_to_first_busid.patch:
+        Pick the first device and carry on (LP #459512)
+      + 190_cache-xkbcomp_output_for_fast_start_up.patch:
+      + 191-Xorg-add-an-extra-module-path.patch:
+        Add support for the alternatives module path.
+      + 198_nohwaccess.patch:
+        Adds a -nohwaccess argument to make X not access the hardware
+        ports directly.
+      + 200_randr-null.patch:
+        Clarify a pointer initialization.
+      + 206_intel_8xx_default_to_fbdev.patch:
+        Makes 8xx class intel GPUs default to fbdev for stability. (LP #633593)
+      + 208_switch_on_release.diff:
+        Switch keyboard layouts on key-release rather than key-press
+  	(LP #36812)
+      + 209_add_legacy_bgnone_option.patch:
+        Add -nr as a synonym for -background none until all ?DM are updated for
+  	the new option.
+      + 210_pixman_null_ptr_check.patch:
+        Catch NULL pointer access after pixman_image_create_bits() failure
+  	(LP #705078)
+      + 213_xichangehierarchy-check-oom.patch:
+        Add NULL pointer check for out-of-memory conditions. (LP #720445)
+      + 214_glx_dri_searchdirs.patch:
+        Search in same paths as mesa for DRI drivers for AIGLX so we can handle
+        UMS fallback for radeon gracefully.
+      + 215_glx_drawable_refcounting.diff:
+        Prevents segfault on logout and server regenerate, and possibly other
+        times. (LP #711422)
+      + 500_xi2.1.patch:
+      + 501_xf86CoordinatesToWindow.patch:
+      + 502_gestures-extension.patch:
+        Add Xi 2.1 and Gesture extension support.
+  * debian/serverminver:
+    - Bump to 1.9.99.903-2ubuntu1~ for Xi 2.1 ABI
+  * New upstream release fixes crash in Record, trigerred by x11vnc 
+    (LP: #525066)
+  * Refresh 500_xi2.1.patch for new upstream version
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 09 Mar 2011 12:18:52 +1100
+  
+xorg-server (2:1.9.99.903-2) UNRELEASED; urgency=low
+
+  * Relax build-dep and dep on x11proto-randr-dev since the XRandR 1.4
+    bits were finally reverted upstream.
+
+ -- Cyril Brulebois <kibi@debian.org>  Fri, 25 Feb 2011 16:15:45 +0100
+
+xorg-server (2:1.9.99.903-1) experimental; urgency=low
+
+  * New upstream release candidate (1.10 rc3).
+  * Remove patch: 17-fix-ftbfs-on-sparc.diff (merged upstream).
+  * Remove patch: 20-update-gpu-pitch.diff (merged upstream).
+  * Refresh patch: 07-xfree86-fix-build-with-xv-disabled.diff
+  * Replace patch fixing out-of-tree-build:
+    - 16-oot-build.diff (dirty local hack).
+    + 16-construct-paths-in-doxygen.conf.diff (from upstream,
+      without the gitignore hunk to get patching working).
+  * Bump video ABI version, and serverminver accordingly.
+
+ -- Cyril Brulebois <kibi@debian.org>  Fri, 25 Feb 2011 15:22:39 +0100
+
+xorg-server (2:1.9.99.902-3) experimental; urgency=low
+
+  * Merge from master up to 93a7399370.
+  * New patch: 17-fix-ftbfs-on-sparc.diff; let's try it for real before
+    asking for its being merged upstream.
+  * Refresh all patches.
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 23 Feb 2011 13:36:13 +0100
+
 xorg-server (2:1.9.99.902-2ubuntu2) natty; urgency=low
 
   [ Timo Aaltonen ]
