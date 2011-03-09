@@ -5,8 +5,7 @@
 07-xfree86-fix-build-with-xv-disabled.diff
 #13_debian_add_xkbpath_env_variable.diff
 15-nouveau.diff
-16-oot-build.diff
-20-update-gpu-pitch.diff
+16-construct-paths-in-doxygen.conf.diff
 
 # Ubuntu patches
 100_rethrow_signals.patch
@@ -34,7 +33,6 @@
 213_xichangehierarchy-check-oom.patch
 214_glx_dri_searchdirs.patch
 215_glx_drawable_refcounting.diff
-216_dix-valuator-count-of-0-is-valid.diff
 500_xi2.1.patch
 501_xf86CoordinatesToWindow.patch
 502_gestures-extension.patch
