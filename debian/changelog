@@ -81,8 +81,10 @@ xorg-server (2:1.9.99.903-2ubuntu1) natty; urgency=low
   * New upstream release fixes crash in Record, trigerred by x11vnc 
     (LP: #525066)
   * Refresh 500_xi2.1.patch for new upstream version
+  * debian/videoabiver:
+    - Bump to 10 for XRandR 1.4 revert.
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 09 Mar 2011 12:18:52 +1100
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 11 Mar 2011 10:29:37 +1100
   
 xorg-server (2:1.9.99.903-2) UNRELEASED; urgency=low
 
