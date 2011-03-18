@@ -1,3 +1,10 @@
+xorg-server (2:1.10.0-0ubuntu2) UNRELEASED; urgency=low
+
+  * Process ownership properly when activating an async passive grab
+    (LP: #733483)
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 18 Mar 2011 11:08:13 -0400
+
 xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
   
   * Update to new upstream final release.
