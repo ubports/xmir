@@ -1,5 +1,7 @@
-xorg-server (2:1.9.99.903-2ubuntu1) natty; urgency=low
+xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
   
+  * Update to new upstream final release.
+    + Drop 16-construct-paths-in-doxygen.conf.diff; included in new upstream.
   * Merge from unreleased Debian experimental.  Remaining Ubuntu changes:
     - rules:
       + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
