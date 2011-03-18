@@ -2,6 +2,9 @@ xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
   
   * Update to new upstream final release.
     + Drop 16-construct-paths-in-doxygen.conf.diff; included in new upstream.
+  * debian/patches/216_fix_sdksyms_build.diff:
+    + Cherry-pick from 1.10 branch, fixing the stale sdksyms.c file picked up
+      in the udeb build, causing the udeb build to fail with missing symbols.
   * Merge from unreleased Debian experimental.  Remaining Ubuntu changes:
     - rules:
       + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
