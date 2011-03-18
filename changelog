@@ -82,7 +82,7 @@ xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
       + 502_gestures-extension.patch:
         Add Xi 2.1 and Gesture extension support.
   * debian/serverminver:
-    - Bump to 1.9.99.903-2ubuntu1~ for Xi 2.1 ABI
+    - Bump to 1.10.0-0ubuntu1~ for Xi 2.1 ABI
   * New upstream release fixes crash in Record, trigerred by x11vnc 
     (LP: #525066)
   * Refresh 500_xi2.1.patch for new upstream version
