@@ -1,12 +1,12 @@
 xorg-server (2:1.10.0-0ubuntu2) UNRELEASED; urgency=low
 
-  * Process ownership properly when activating an async passive grab
-    (LP: #733483)
+  * patches/500_xi2.1.patch: Process ownership properly when activating an
+    async passive grab (LP: #733483)
 
  -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 18 Mar 2011 11:08:13 -0400
 
 xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
-  
+
   * Update to new upstream final release.
     + Drop 16-construct-paths-in-doxygen.conf.diff; included in new upstream.
   * debian/patches/216_fix_sdksyms_build.diff:
@@ -84,20 +84,20 @@ xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
       + 215_glx_drawable_refcounting.diff:
         Prevents segfault on logout and server regenerate, and possibly other
         times. (LP #711422)
-      + 500_xi2.1.patch:
-      + 501_xf86CoordinatesToWindow.patch:
-      + 502_gestures-extension.patch:
+      + 500_xi2.1.patch,
+        501_xf86CoordinatesToWindow.patch,
+        502_gestures-extension.patch:
         Add Xi 2.1 and Gesture extension support.
   * debian/serverminver:
     - Bump to 1.10.0-0ubuntu1~ for Xi 2.1 ABI
-  * New upstream release fixes crash in Record, trigerred by x11vnc 
+  * New upstream release fixes crash in Record, trigerred by x11vnc
     (LP: #525066)
   * Refresh 500_xi2.1.patch for new upstream version
   * debian/videoabiver:
     - Bump to 10 for XRandR 1.4 revert.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 11 Mar 2011 10:29:37 +1100
-  
+
 xorg-server (2:1.9.99.903-2) UNRELEASED; urgency=low
 
   * Relax build-dep and dep on x11proto-randr-dev since the XRandR 1.4
