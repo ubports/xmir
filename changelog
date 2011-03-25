@@ -11,7 +11,7 @@ xorg-server (2:1.10.0-0ubuntu2) natty; urgency=low
     windows display graphical corruption briefly.
     (LP: #726807)
 
-  -- Bryce Harrington <bryce@ubuntu.com>  Thu, 24 Mar 2011 15:16:12 -0700
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 24 Mar 2011 15:27:40 -0700
 
 xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
 
