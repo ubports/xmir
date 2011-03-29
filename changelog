@@ -1,9 +1,15 @@
 xorg-server (2:1.10.0-0ubuntu3) UNRELEASED; urgency=low
 
+  [ Bryce Harrington ]
   * patches/111_armel-drv-fallbacks.patch: Always fallback to -fbdev,
     not just when no other X driver matches. (Thanks jcristau)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Thu, 24 Mar 2011 21:52:17 -0700
+  [ Chase Douglas ]
+  * Fix jumpy cursor in XI 1.x applications (LP: #736500)
+    - Added 218_getValuatorEvents_cleanup.patch
+    - Added 219_xi1_handle_noncontinuous_valuator_data.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 28 Mar 2011 12:20:01 -0400
 
 xorg-server (2:1.10.0-0ubuntu2) natty; urgency=low
 
