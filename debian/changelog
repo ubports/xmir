@@ -5,19 +5,21 @@ xorg-server (2:1.10.0-0ubuntu3) natty; urgency=low
     not just when no other X driver matches. (Thanks jcristau)
 
   [ Chase Douglas ]
-  * Fix jumpy cursor in XI 1.x applications (LP: #736500)
+  * Fix jumpy cursor in XI 1.x applications.
+    (LP: #736500)
     - Added 218_getValuatorEvents_cleanup.patch
     - Added 219_xi1_handle_noncontinuous_valuator_data.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 28 Mar 2011 12:20:01 -0400
+ -- Bryce Harrington <bryce@ubuntu.com>  Thu, 31 Mar 2011 23:58:07 -0700
 
 xorg-server (2:1.10.0-0ubuntu2) natty; urgency=low
 
-  [Chase Douglas]
+  [ Chase Douglas ]
   * patches/500_xi2.1.patch: Process ownership properly when activating an
-    async passive grab (LP: #733483)
+    async passive grab.
+    (LP: #733483)
 
-  [Bryce Harrington]
+  [ Bryce Harrington ]
   * 217_revert_bgnonevisitwindow.patch: Cherrypick from upstream.  Drops
     recent change that inhibits drawing backfill for non-bg-None windows.
     This causes a regression on -ati (at least) where menus and other
