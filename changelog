@@ -1,4 +1,4 @@
-xorg-server (2:1.10.0-0ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.10.0-0ubuntu3) natty; urgency=low
 
   [ Bryce Harrington ]
   * patches/111_armel-drv-fallbacks.patch: Always fallback to -fbdev,
