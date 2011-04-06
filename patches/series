@@ -32,7 +32,6 @@
 213_xichangehierarchy-check-oom.patch
 214_glx_dri_searchdirs.patch
 215_glx_drawable_refcounting.diff
-216_fix_sdksyms_build.diff
 217_revert_bgnonevisitwindow.patch
 218_getValuatorEvents_cleanup.patch
 219_xi1_handle_noncontinuous_valuator_data.patch
