@@ -1,3 +1,22 @@
+xorg-server (2:1.10.0.901-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian experimental.
+    - drop 216_fix_sdksyms_build.diff, included upstream.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 06 Apr 2011 18:16:11 +0300
+
+xorg-server (2:1.10.0.901-1) experimental; urgency=low
+
+  * New upstream release (1.10.1 rc1).
+  * Relax build-dep and dep on x11proto-randr-dev since the XRandR 1.4
+    bits were finally reverted upstream.
+  * Remove patch: 16-construct-paths-in-doxygen.conf.diff (merged
+    upstream).
+  * Pass --enable-xcsecurity to the main build to restore the XC-SECURITY
+    extension, thanks to Stefan Fritsch's report (Closes: #599657).
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 30 Mar 2011 02:22:56 +0200
+
 xorg-server (2:1.10.0-0ubuntu3) natty; urgency=low
 
   [ Bryce Harrington ]
@@ -121,12 +140,7 @@ xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 11 Mar 2011 10:29:37 +1100
 
-xorg-server (2:1.9.99.903-2) UNRELEASED; urgency=low
-
-  * Relax build-dep and dep on x11proto-randr-dev since the XRandR 1.4
-    bits were finally reverted upstream.
-
- -- Cyril Brulebois <kibi@debian.org>  Fri, 25 Feb 2011 16:15:45 +0100
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 30 Mar 2011 02:22:56 +0200
 
 xorg-server (2:1.9.99.903-1) experimental; urgency=low
 
