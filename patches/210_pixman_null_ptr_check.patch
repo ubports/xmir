@@ -1,8 +1,8 @@
-diff --git a/fb/fbpict.c b/fb/fbpict.c
-index 7636040..2798e24 100644
---- a/fb/fbpict.c
-+++ b/fb/fbpict.c
-@@ -163,7 +163,19 @@ create_bits_picture (PicturePtr pict,
+Index: xorg-server/fb/fbpict.c
+===================================================================
+--- xorg-server.orig/fb/fbpict.c	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/fb/fbpict.c	2011-04-09 10:38:11.000000000 +0300
+@@ -163,7 +163,19 @@
  	pict->format,
  	pixmap->drawable.width, pixmap->drawable.height,
  	(uint32_t *)bits, stride * sizeof (FbStride));

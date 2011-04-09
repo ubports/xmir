@@ -1,7 +1,8 @@
-diff -Nurp patched/hw/xfree86/common/xisb.c working/hw/xfree86/common/xisb.c
---- patched/hw/xfree86/common/xisb.c	2009-02-02 21:53:58.000000000 +0100
-+++ working/hw/xfree86/common/xisb.c	2009-02-02 21:55:09.000000000 +0100
-@@ -98,6 +98,9 @@ XisbRead (XISBuffer *b)
+Index: xorg-server/hw/xfree86/common/xisb.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xisb.c	2011-04-09 10:36:57.000000000 +0300
++++ xorg-server/hw/xfree86/common/xisb.c	2011-04-09 10:38:10.000000000 +0300
+@@ -98,6 +98,9 @@
  {
  	int ret;
  

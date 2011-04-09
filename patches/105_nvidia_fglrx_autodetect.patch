@@ -9,11 +9,11 @@ Signed-off-by: Robert Hooker <sarvatt@ubuntu.com>
  hw/xfree86/common/xf86pciBus.c     |   14 +++++++++-----
  2 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/hw/xfree86/common/xf86AutoConfig.c b/hw/xfree86/common/xf86AutoConfig.c
-index 8ef602d..a8f04b9 100644
---- a/hw/xfree86/common/xf86AutoConfig.c
-+++ b/hw/xfree86/common/xf86AutoConfig.c
-@@ -81,6 +81,13 @@
+Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2011-04-09 10:36:57.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2011-04-09 10:45:07.000000000 +0300
+@@ -75,6 +75,13 @@
  	"\tDevice\t" BUILTIN_DEVICE_NAME "\n" \
  	"EndSection\n\n"
  
@@ -27,7 +27,7 @@ index 8ef602d..a8f04b9 100644
  #define BUILTIN_LAYOUT_SECTION_PRE \
  	"Section \"ServerLayout\"\n" \
  	"\tIdentifier\t\"Builtin Default Layout\"\n"
-@@ -159,7 +166,10 @@ xf86AutoConfig(void)
+@@ -153,7 +160,10 @@
      for (p = deviceList; *p; p++) {
  	snprintf(buf, sizeof(buf), BUILTIN_DEVICE_SECTION, *p, 0, *p);
  	AppendToConfig(buf);
@@ -39,11 +39,11 @@ index 8ef602d..a8f04b9 100644
  	AppendToConfig(buf);
      }
  
-diff --git a/hw/xfree86/common/xf86pciBus.c b/hw/xfree86/common/xf86pciBus.c
-index 930ed83..a6aa4f4 100644
---- a/hw/xfree86/common/xf86pciBus.c
-+++ b/hw/xfree86/common/xf86pciBus.c
-@@ -1102,7 +1102,10 @@ videoPtrToDriverList(struct pci_device *dev,
+Index: xorg-server/hw/xfree86/common/xf86pciBus.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86pciBus.c	2011-04-09 10:38:10.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86pciBus.c	2011-04-09 10:44:46.000000000 +0300
+@@ -1107,7 +1107,10 @@
  	case 0x1142:		    driverList[0] = "apm"; break;
  	case 0xedd8:		    driverList[0] = "ark"; break;
  	case 0x1a03:		    driverList[0] = "ast"; break;
@@ -55,7 +55,7 @@ index 930ed83..a6aa4f4 100644
  	case 0x102c:		    driverList[0] = "chips"; break;
  	case 0x1013:		    driverList[0] = "cirrus"; break;
  	case 0x3d3d:		    driverList[0] = "glint"; break;
-@@ -1119,20 +1122,21 @@ videoPtrToDriverList(struct pci_device *dev,
+@@ -1124,20 +1127,21 @@
  	case 0x102b:		    driverList[0] = "mga";	break;
  	case 0x10c8:		    driverList[0] = "neomagic"; break;
  	case 0x10de: case 0x12d2:
@@ -81,6 +81,3 @@ index 930ed83..a6aa4f4 100644
  		break;
  	    }
  	    break;
--- 
-1.7.2
-

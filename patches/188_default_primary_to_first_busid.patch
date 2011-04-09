@@ -3,11 +3,11 @@ pick the first device and carry on (LP 459512)
 
 signed-off-by: Bryce Harrington <bryce@canonical.com>
 
-diff --git a/hw/xfree86/common/xf86pciBus.c b/hw/xfree86/common/xf86pciBus.c
-index ac018e7..c00391c 100644
---- a/hw/xfree86/common/xf86pciBus.c
-+++ b/hw/xfree86/common/xf86pciBus.c
-@@ -141,8 +141,8 @@ xf86PciProbe(void)
+Index: xorg-server/hw/xfree86/common/xf86pciBus.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86pciBus.c	2011-04-09 10:38:10.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86pciBus.c	2011-04-09 10:44:27.000000000 +0300
+@@ -147,8 +147,8 @@
  		    primaryBus.id.pci = info;
  		} else {
  		    xf86Msg(X_NOTICE,

@@ -12,9 +12,9 @@ Signed-off-by: Bryce Harrington <bryce@bryceharrington.org>
 
 Index: xorg-server/mi/mipointer.c
 ===================================================================
---- xorg-server.orig/mi/mipointer.c	2009-12-02 23:07:03.000000000 +0200
-+++ xorg-server/mi/mipointer.c	2009-12-02 23:08:42.000000000 +0200
-@@ -306,6 +306,10 @@
+--- xorg-server.orig/mi/mipointer.c	2011-04-09 10:36:57.000000000 +0300
++++ xorg-server/mi/mipointer.c	2011-04-09 10:38:10.000000000 +0300
+@@ -300,6 +300,10 @@
      SetupScreen (pScreen);
      pPointer = MIPOINTER(pDev);
  

@@ -1,9 +1,11 @@
 From: Ian Pilcher <arequipeno@gmail.com>
 Subject: Backout commit 6dd775f57d2f94f0ddaee324aeec33b9b66ed5bc
 
---- a/composite/compalloc.c	2010-11-30 17:58:29.000000000 -0600
-+++ b/composite/compalloc.c	2011-02-26 12:15:20.167570918 -0600
-@@ -472,17 +472,6 @@
+Index: xorg-server/composite/compalloc.c
+===================================================================
+--- xorg-server.orig/composite/compalloc.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/composite/compalloc.c	2011-04-09 10:39:42.000000000 +0300
+@@ -508,17 +508,6 @@
      return Success;
  }
  
@@ -21,7 +23,7 @@ Subject: Backout commit 6dd775f57d2f94f0ddaee324aeec33b9b66ed5bc
  static PixmapPtr
  compNewPixmap (WindowPtr pWin, int x, int y, int w, int h, Bool map)
  {
-@@ -504,17 +493,6 @@
+@@ -540,17 +529,6 @@
  	return pPixmap;
  
      /*

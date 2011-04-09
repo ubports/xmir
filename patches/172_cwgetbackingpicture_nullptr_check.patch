@@ -10,22 +10,21 @@ Signed-off-by: Bryce Harrington <bryce@bryceharrington.org>
  miext/cw/cw_render.c |   13 +++++++++----
  1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/miext/cw/cw_render.c b/miext/cw/cw_render.c
-index 6e0c727..fe8cba7 100644
---- a/miext/cw/cw_render.c
-+++ b/miext/cw/cw_render.c
-@@ -125,10 +125,15 @@ cwGetBackingPicture (PicturePtr pPicture, int *x_off, int *y_off)
+Index: xorg-server/miext/cw/cw_render.c
+===================================================================
+--- xorg-server.orig/miext/cw/cw_render.c	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/miext/cw/cw_render.c	2011-04-09 10:38:10.000000000 +0300
+@@ -123,10 +123,15 @@
  	WindowPtr   pWindow = (WindowPtr) pDrawable;
  	PixmapPtr   pPixmap = getCwPixmap (pWindow);
  
 -	*x_off = pDrawable->x - pPixmap->screen_x;
 -	*y_off = pDrawable->y - pPixmap->screen_y;
--
--	return pPicturePrivate->pBackingPicture;
 +        if (pDrawable && pPixmap) {
 +            *x_off = pDrawable->x - pPixmap->screen_x;
 +            *y_off = pDrawable->y - pPixmap->screen_y;
-+
+ 
+-	return pPicturePrivate->pBackingPicture;
 +            return pPicturePrivate->pBackingPicture;
 +        } else {
 +            *x_off = *y_off = 0;
@@ -34,6 +33,3 @@ index 6e0c727..fe8cba7 100644
      }
      else
      {
--- 
-1.6.0.4
-

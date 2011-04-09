@@ -1,6 +1,8 @@
---- a/Xi/allowev.c
-+++ b/Xi/allowev.c
-@@ -125,5 +125,24 @@ ProcXAllowDeviceEvents(ClientPtr client)
+Index: xorg-server/Xi/allowev.c
+===================================================================
+--- xorg-server.orig/Xi/allowev.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/Xi/allowev.c	2011-04-09 10:42:15.000000000 +0300
+@@ -125,5 +125,24 @@
  	client->errorValue = stuff->mode;
  	return BadValue;
      }
@@ -25,9 +27,11 @@
 +
      return Success;
  }
---- a/Xi/exevents.c
-+++ b/Xi/exevents.c
-@@ -44,6 +44,31 @@ SOFTWARE.
+Index: xorg-server/Xi/exevents.c
+===================================================================
+--- xorg-server.orig/Xi/exevents.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/Xi/exevents.c	2011-04-09 10:42:15.000000000 +0300
+@@ -44,6 +44,31 @@
  
  ********************************************************/
  
@@ -59,7 +63,7 @@
  /********************************************************************
   *
   *  Routines to register and initialize extension input devices.
-@@ -77,6 +102,9 @@ SOFTWARE.
+@@ -77,6 +102,9 @@
  #include "xiquerydevice.h" /* For List*Info */
  #include "eventconvert.h"
  #include "eventstr.h"
@@ -69,7 +73,7 @@
  
  #include <X11/extensions/XKBproto.h>
  #include "xkbsrv.h"
-@@ -127,6 +155,20 @@ IsPointerEvent(InternalEvent* event)
+@@ -127,6 +155,20 @@
      return FALSE;
  }
  
@@ -90,7 +94,7 @@
  /**
   * @return the device matching the deviceid of the device set in the event, or
   * NULL if the event is not an XInput event.
-@@ -725,6 +767,46 @@ ChangeMasterDeviceClasses(DeviceIntPtr d
+@@ -725,6 +767,46 @@
      XISendDeviceChangedEvent(slave, device, dce);
  }
  
@@ -137,7 +141,7 @@
  /**
   * Update the device state according to the data in the event.
   *
-@@ -732,8 +814,6 @@ ChangeMasterDeviceClasses(DeviceIntPtr d
+@@ -732,8 +814,6 @@
   *   DEFAULT ... process as normal
   *   DONT_PROCESS ... return immediately from caller
   */
@@ -146,7 +150,7 @@
  int
  UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
  {
-@@ -857,34 +937,9 @@ UpdateDeviceState(DeviceIntPtr device, D
+@@ -857,34 +937,9 @@
  
          if (!button_is_down(device, key, BUTTON_PROCESSED))
              return DONT_PROCESS;
@@ -182,7 +186,7 @@
  
          /* Add state and motionMask to the filter for this event */
          mask = DevicePointerMotionMask | b->state | b->motionMask;
-@@ -926,6 +981,955 @@ ProcessRawEvent(RawDeviceEvent *ev, Devi
+@@ -926,6 +981,955 @@
  }
  
  /**
@@ -1138,7 +1142,7 @@
   * Main device event processing function.
   * Called from when processing the events from the event queue.
   *
-@@ -954,6 +1958,33 @@ ProcessOtherEvent(InternalEvent *ev, Dev
+@@ -954,6 +1958,33 @@
      {
          ProcessRawEvent(&ev->raw_event, device);
          return;
@@ -1172,7 +1176,7 @@
      }
  
      if (IsPointerDevice(device))
-@@ -1152,6 +2183,50 @@ InitValuatorAxisStruct(DeviceIntPtr dev,
+@@ -1152,6 +2183,50 @@
          dev->proximity->in_proximity = FALSE;
  }
  
@@ -1223,7 +1227,7 @@
  static void
  FixDeviceStateNotify(DeviceIntPtr dev, deviceStateNotify * ev, KeyClassPtr k,
  		     ButtonClassPtr b, ValuatorClassPtr v, int first)
-@@ -1562,6 +2637,38 @@ GrabWindow(ClientPtr client, DeviceIntPt
+@@ -1562,6 +2637,38 @@
      return AddPassiveGrabToList(client, grab);
  }
  
@@ -1262,7 +1266,7 @@
  int
  SelectForWindow(DeviceIntPtr dev, WindowPtr pWin, ClientPtr client,
  		Mask mask, Mask exclusivemasks)
-@@ -1695,10 +2802,65 @@ RecalculateDeviceDeliverableEvents(Windo
+@@ -1699,10 +2806,65 @@
      }
  }
  
@@ -1328,7 +1332,7 @@
  
      if (!wOtherInputMasks(pWin))
  	return Success;
-@@ -1734,6 +2896,54 @@ InputClientGone(WindowPtr pWin, XID id)
+@@ -1738,6 +2900,54 @@
      FatalError("client not on device event list");
  }
  
@@ -1383,9 +1387,11 @@
  int
  SendEvent(ClientPtr client, DeviceIntPtr d, Window dest, Bool propagate,
  	  xEvent * ev, Mask mask, int count)
---- a/Xi/extinit.c
-+++ b/Xi/extinit.c
-@@ -258,7 +258,8 @@ static int (*ProcIVector[])(ClientPtr) =
+Index: xorg-server/Xi/extinit.c
+===================================================================
+--- xorg-server.orig/Xi/extinit.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/Xi/extinit.c	2011-04-09 10:42:15.000000000 +0300
+@@ -259,7 +259,8 @@
          ProcXIChangeProperty,                   /* 57 */
          ProcXIDeleteProperty,                   /* 58 */
          ProcXIGetProperty,                      /* 59 */
@@ -1395,7 +1401,7 @@
  };
  
  /* For swapped clients */
-@@ -323,7 +324,8 @@ static int (*SProcIVector[])(ClientPtr)
+@@ -324,7 +325,8 @@
          SProcXIChangeProperty,                   /* 57 */
          SProcXIDeleteProperty,                   /* 58 */
          SProcXIGetProperty,                      /* 59 */
@@ -1405,7 +1411,7 @@
  };
  
  /*****************************************************************
-@@ -854,6 +856,21 @@ static void SRawEvent(xXIRawEvent *from,
+@@ -855,6 +857,21 @@
      swaps(&to->valuators_len, n);
  }
  
@@ -1427,7 +1433,7 @@
  
  /** Event swapping function for XI2 events. */
  void
-@@ -881,8 +898,16 @@ XI2EventSwap(xGenericEvent *from, xGener
+@@ -884,8 +901,16 @@
          case XI_KeyRelease:
          case XI_ButtonPress:
          case XI_ButtonRelease:
@@ -1444,8 +1450,10 @@
          case XI_RawMotion:
          case XI_RawKeyPress:
          case XI_RawKeyRelease:
---- a/Xi/xiallowev.c
-+++ b/Xi/xiallowev.c
+Index: xorg-server/Xi/xiallowev.c
+===================================================================
+--- xorg-server.orig/Xi/xiallowev.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/Xi/xiallowev.c	2011-04-09 10:42:15.000000000 +0300
 @@ -35,11 +35,15 @@
  
  #include "inputstr.h"	/* DeviceIntPtr      */
@@ -1462,7 +1470,7 @@
  
  int
  SProcXIAllowEvents(ClientPtr client)
-@@ -98,6 +102,113 @@ ProcXIAllowEvents(ClientPtr client)
+@@ -98,6 +102,113 @@
  	ret = BadValue;
      }
  
@@ -1576,8 +1584,10 @@
 +
 +    return Success;
 +}
---- a/Xi/xiallowev.h
-+++ b/Xi/xiallowev.h
+Index: xorg-server/Xi/xiallowev.h
+===================================================================
+--- xorg-server.orig/Xi/xiallowev.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/Xi/xiallowev.h	2011-04-09 10:42:15.000000000 +0300
 @@ -32,5 +32,7 @@
  
  int ProcXIAllowEvents(ClientPtr client);
@@ -1586,9 +1596,11 @@
 +int SProcXIAllowTouchEvents(ClientPtr client);
  
  #endif /* XIALLOWEV_H */
---- a/Xi/xipassivegrab.c
-+++ b/Xi/xipassivegrab.c
-@@ -105,19 +105,30 @@ ProcXIPassiveGrabDevice(ClientPtr client
+Index: xorg-server/Xi/xipassivegrab.c
+===================================================================
+--- xorg-server.orig/Xi/xipassivegrab.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/Xi/xipassivegrab.c	2011-04-09 10:42:15.000000000 +0300
+@@ -105,19 +105,30 @@
      if (stuff->grab_type != XIGrabtypeButton &&
          stuff->grab_type != XIGrabtypeKeycode &&
          stuff->grab_type != XIGrabtypeEnter &&
@@ -1621,7 +1633,7 @@
      if (XICheckInvalidMaskBits(client, (unsigned char*)&stuff[1],
                                 stuff->mask_len * 4) != Success)
          return BadValue;
-@@ -185,6 +196,9 @@ ProcXIPassiveGrabDevice(ClientPtr client
+@@ -185,6 +196,9 @@
                  status = GrabWindow(client, dev, stuff->grab_type,
                                      &param, &mask);
                  break;
@@ -1631,9 +1643,11 @@
          }
  
          if (status != GrabSuccess)
---- a/Xi/xiquerydevice.c
-+++ b/Xi/xiquerydevice.c
-@@ -232,6 +232,12 @@ SizeDeviceClasses(DeviceIntPtr dev)
+Index: xorg-server/Xi/xiquerydevice.c
+===================================================================
+--- xorg-server.orig/Xi/xiquerydevice.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/Xi/xiquerydevice.c	2011-04-09 10:42:15.000000000 +0300
+@@ -235,6 +235,12 @@
      if (dev->valuator)
          len += sizeof(xXIValuatorInfo) * dev->valuator->numAxes;
  
@@ -1646,7 +1660,7 @@
      return len;
  }
  
-@@ -373,6 +379,73 @@ SwapValuatorInfo(DeviceIntPtr dev, xXIVa
+@@ -376,6 +382,73 @@
      swaps(&info->sourceid, n);
  }
  
@@ -1720,7 +1734,7 @@
  int GetDeviceUse(DeviceIntPtr dev, uint16_t *attachment)
  {
      DeviceIntPtr master = dev->u.master;
-@@ -462,6 +535,22 @@ ListDeviceClasses(ClientPtr client, Devi
+@@ -465,6 +538,22 @@
          total_len += len;
      }
  
@@ -1743,7 +1757,7 @@
      return total_len;
  }
  
-@@ -489,6 +578,12 @@ SwapDeviceInfo(DeviceIntPtr dev, xXIDevi
+@@ -492,6 +581,12 @@
              case XIValuatorClass:
                  SwapValuatorInfo(dev, (xXIValuatorInfo*)any);
                  break;
@@ -1756,9 +1770,11 @@
          }
  
          any += len * 4;
---- a/Xi/xiquerydevice.h
-+++ b/Xi/xiquerydevice.h
-@@ -44,4 +44,7 @@ int ListButtonInfo(DeviceIntPtr dev, xXI
+Index: xorg-server/Xi/xiquerydevice.h
+===================================================================
+--- xorg-server.orig/Xi/xiquerydevice.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/Xi/xiquerydevice.h	2011-04-09 10:42:15.000000000 +0300
+@@ -44,4 +44,7 @@
  int ListKeyInfo(DeviceIntPtr dev, xXIKeyInfo* info);
  int ListValuatorInfo(DeviceIntPtr dev, xXIValuatorInfo* info,
  		     int axisnumber, Bool reportState);
@@ -1766,9 +1782,11 @@
 +int ListTouchValuatorInfo(DeviceIntPtr dev, xXITouchValuatorInfo* val,
 +                          int axisnumber);
  #endif /* QUERYDEV_H */
---- a/Xi/xiselectev.c
-+++ b/Xi/xiselectev.c
-@@ -152,6 +152,60 @@ ProcXISelectEvents(ClientPtr client)
+Index: xorg-server/Xi/xiselectev.c
+===================================================================
+--- xorg-server.orig/Xi/xiselectev.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/Xi/xiselectev.c	2011-04-09 10:42:15.000000000 +0300
+@@ -152,6 +152,60 @@
              }
          }
  
@@ -1829,9 +1847,11 @@
          if (XICheckInvalidMaskBits(client, (unsigned char*)&evmask[1],
                                     evmask->mask_len * 4) != Success)
              return BadValue;
---- a/configure.ac
-+++ b/configure.ac
-@@ -792,7 +792,7 @@ WINDOWSWMPROTO="windowswmproto"
+Index: xorg-server/configure.ac
+===================================================================
+--- xorg-server.orig/configure.ac	2011-04-09 10:39:42.000000000 +0300
++++ xorg-server/configure.ac	2011-04-09 10:42:43.000000000 +0300
+@@ -795,7 +795,7 @@
  APPLEWMPROTO="applewmproto >= 1.4"
  
  dnl Core modules for most extensions, et al.
@@ -1840,9 +1860,11 @@
  # Make SDK_REQUIRED_MODULES available for inclusion in xorg-server.pc
  AC_SUBST(SDK_REQUIRED_MODULES)
  
---- a/dix/devices.c
-+++ b/dix/devices.c
-@@ -754,6 +754,20 @@ FreeDeviceClass(int type, pointer *class
+Index: xorg-server/dix/devices.c
+===================================================================
+--- xorg-server.orig/dix/devices.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/dix/devices.c	2011-04-09 10:42:15.000000000 +0300
+@@ -754,6 +754,20 @@
                  free((*v));
                  break;
              }
@@ -1863,7 +1885,7 @@
          case FocusClass:
              {
                  FocusClassPtr *f = (FocusClassPtr*)class;
-@@ -862,6 +876,7 @@ FreeAllDeviceClasses(ClassesPtr classes)
+@@ -862,6 +876,7 @@
  
      FreeDeviceClass(KeyClass, (pointer)&classes->key);
      FreeDeviceClass(ValuatorClass, (pointer)&classes->valuator);
@@ -1871,7 +1893,7 @@
      FreeDeviceClass(ButtonClass, (pointer)&classes->button);
      FreeDeviceClass(FocusClass, (pointer)&classes->focus);
      FreeDeviceClass(ProximityClass, (pointer)&classes->proximity);
-@@ -1545,6 +1560,151 @@ InitPointerDeviceStruct(DevicePtr device
+@@ -1547,6 +1562,151 @@
  	   InitPtrFeedbackClassDeviceStruct(dev, controlProc));
  }
  
@@ -2023,8 +2045,8 @@
  /*
   * Check if the given buffer contains elements between low (inclusive) and
   * high (inclusive) only.
-@@ -2377,6 +2537,58 @@ RecalculateMasterButtons(DeviceIntPtr sl
-     }
+@@ -2419,6 +2579,58 @@
+     FreeEventList(eventlist, GetMaximumEventsNum());
  }
  
 +static void
@@ -2082,7 +2104,7 @@
  /**
   * Attach device 'dev' to device 'master'.
   * Client is set to the client that issued the request, or NULL if it comes
-@@ -2442,6 +2654,12 @@ AttachDevice(ClientPtr client, DeviceInt
+@@ -2486,6 +2698,12 @@
          dev->spriteInfo->spriteOwner = FALSE;
  
          RecalculateMasterButtons(master);
@@ -2095,9 +2117,11 @@
      }
  
      /* XXX: in theory, the MD should change back to its old, original
---- a/dix/eventconvert.c
-+++ b/dix/eventconvert.c
-@@ -55,6 +55,7 @@ static int eventToKeyButtonPointer(Devic
+Index: xorg-server/dix/eventconvert.c
+===================================================================
+--- xorg-server.orig/dix/eventconvert.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/dix/eventconvert.c	2011-04-09 10:42:15.000000000 +0300
+@@ -55,6 +55,7 @@
  static int eventToDeviceChanged(DeviceChangedEvent *ev, xEvent **dcce);
  static int eventToDeviceEvent(DeviceEvent *ev, xEvent **xi);
  static int eventToRawEvent(RawDeviceEvent *ev, xEvent **xi);
@@ -2105,7 +2129,7 @@
  
  /* Do not use, read comments below */
  BOOL EventIsKeyRepeat(xEvent *event);
-@@ -139,6 +140,11 @@ EventToCore(InternalEvent *event, xEvent
+@@ -139,6 +140,11 @@
          case ET_RawButtonPress:
          case ET_RawButtonRelease:
          case ET_RawMotion:
@@ -2117,7 +2141,7 @@
              return BadMatch;
          default:
              /* XXX: */
-@@ -184,6 +190,11 @@ EventToXI(InternalEvent *ev, xEvent **xi
+@@ -184,6 +190,11 @@
          case ET_RawButtonPress:
          case ET_RawButtonRelease:
          case ET_RawMotion:
@@ -2129,7 +2153,7 @@
              *count = 0;
              *xi = NULL;
              return BadMatch;
-@@ -225,7 +236,13 @@ EventToXI2(InternalEvent *ev, xEvent **x
+@@ -225,7 +236,13 @@
          case ET_ButtonRelease:
          case ET_KeyPress:
          case ET_KeyRelease:
@@ -2143,7 +2167,7 @@
          case ET_ProximityIn:
          case ET_ProximityOut:
              *xi = NULL;
-@@ -588,6 +605,7 @@ eventToDeviceEvent(DeviceEvent *ev, xEve
+@@ -581,6 +598,7 @@
      xde->root_x         = FP1616(ev->root_x, ev->root_x_frac);
      xde->root_y         = FP1616(ev->root_y, ev->root_y_frac);
  
@@ -2151,7 +2175,7 @@
      if (ev->key_repeat)
          xde->flags      |= XIKeyRepeat;
  
-@@ -625,6 +643,27 @@ eventToDeviceEvent(DeviceEvent *ev, xEve
+@@ -618,6 +636,27 @@
  }
  
  static int
@@ -2179,7 +2203,7 @@
  eventToRawEvent(RawDeviceEvent *ev, xEvent **xi)
  {
      xXIRawEvent* raw;
-@@ -739,6 +778,11 @@ GetXI2Type(InternalEvent *event)
+@@ -732,6 +771,11 @@
          case ET_RawMotion:      xi2type = XI_RawMotion;        break;
          case ET_FocusIn:        xi2type = XI_FocusIn;          break;
          case ET_FocusOut:       xi2type = XI_FocusOut;         break;
@@ -2191,9 +2215,11 @@
          default:
              break;
      }
---- a/dix/events.c
-+++ b/dix/events.c
-@@ -1089,7 +1089,7 @@ NoticeEventTime(InternalEvent *ev)
+Index: xorg-server/dix/events.c
+===================================================================
+--- xorg-server.orig/dix/events.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/dix/events.c	2011-04-09 10:42:46.000000000 +0300
+@@ -1089,7 +1089,7 @@
  void
  EnqueueEvent(InternalEvent *ev, DeviceIntPtr device)
  {
@@ -2202,7 +2228,7 @@
      QdEventPtr	qe;
      SpritePtr	pSprite = device->spriteInfo->sprite;
      int		eventlen;
-@@ -1160,8 +1160,10 @@ EnqueueEvent(InternalEvent *ev, DeviceIn
+@@ -1160,8 +1160,10 @@
      qe->event = (InternalEvent *)(qe + 1);
      memcpy(qe->event, event, eventlen);
      if (tail)
@@ -2215,7 +2241,7 @@
  }
  
  /**
-@@ -1176,18 +1178,19 @@ EnqueueEvent(InternalEvent *ev, DeviceIn
+@@ -1176,18 +1178,19 @@
  static void
  PlayReleasedEvents(void)
  {
@@ -2240,7 +2266,7 @@
  		syncEvents.pendtail = prev;
  	    if (qe->event->any.type == ET_Motion)
  		CheckVirtualMotion(pDev, qe, NullWindow);
-@@ -1219,6 +1222,7 @@ PlayReleasedEvents(void)
+@@ -1219,6 +1222,7 @@
  
  	    }
  #endif
@@ -2248,7 +2274,7 @@
  	    (*qe->device->public.processInputProc)(qe->event, qe->device);
  	    free(qe);
  	    for (dev = inputInfo.devices; dev && dev->deviceGrab.sync.frozen; dev = dev->next)
-@@ -1227,10 +1231,14 @@ PlayReleasedEvents(void)
+@@ -1227,10 +1231,14 @@
  		break;
  	    /* Playing the event may have unfrozen another device. */
  	    /* So to play it safe, restart at the head of the queue */
@@ -2265,7 +2291,7 @@
      }
  }
  
-@@ -1252,6 +1260,76 @@ FreezeThaw(DeviceIntPtr dev, Bool frozen
+@@ -1252,6 +1260,76 @@
  	dev->public.processInputProc = dev->public.realInputProc;
  }
  
@@ -2342,7 +2368,7 @@
  /**
   * Unfreeze devices and replay all events to the respective clients.
   *
-@@ -1278,6 +1356,14 @@ ComputeFreezes(void)
+@@ -1278,6 +1356,14 @@
      {
          DeviceEvent* event = replayDev->deviceGrab.sync.event;
  
@@ -2357,7 +2383,7 @@
  	syncEvents.replayDev = (DeviceIntPtr)NULL;
  
          w = XYToWindow(replayDev->spriteInfo->sprite,
-@@ -1291,6 +1377,7 @@ ComputeFreezes(void)
+@@ -1291,6 +1377,7 @@
                                      NullWindow, replayDev);
          }
      }
@@ -2365,7 +2391,7 @@
      for (dev = inputInfo.devices; dev; dev = dev->next)
      {
  	if (!dev->deviceGrab.sync.frozen)
-@@ -1510,6 +1597,20 @@ DeactivatePointerGrab(DeviceIntPtr mouse
+@@ -1510,6 +1597,20 @@
      if (!wasImplicit && grab->grabtype == GRABTYPE_XI2)
          ReattachToOldMaster(mouse);
  
@@ -2386,7 +2412,7 @@
      ComputeFreezes();
  }
  
-@@ -1757,6 +1858,25 @@ ProcAllowEvents(ClientPtr client)
+@@ -1757,6 +1858,25 @@
  	    client->errorValue = stuff->mode;
  	    return BadValue;
      }
@@ -2412,7 +2438,7 @@
      return Success;
  }
  
-@@ -2174,7 +2294,7 @@ MaybeDeliverEventsToClient(WindowPtr pWi
+@@ -2174,7 +2294,7 @@
  
  static Window FindChildForEvent(SpritePtr pSprite, WindowPtr event)
  {
@@ -2421,7 +2447,7 @@
      Window child = None;
  
      /* If the search ends up past the root should the child field be
-@@ -2232,7 +2352,8 @@ FixUpEventFromWindow(
+@@ -2232,7 +2352,8 @@
              event->evtype == XI_RawMotion ||
              event->evtype == XI_DeviceChanged ||
              event->evtype == XI_HierarchyChanged ||
@@ -2431,7 +2457,7 @@
              return;
  
          event->root = RootWindow(pSprite)->drawable.id;
-@@ -2369,12 +2490,119 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
+@@ -2369,12 +2490,119 @@
      xEvent core;
      xEvent *xE = NULL;
      int rc, mask, count = 0;
@@ -2552,7 +2578,7 @@
          {
              /* XI2 events first */
              if (mask & XI2_MASK)
-@@ -2383,10 +2611,25 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
+@@ -2383,10 +2611,25 @@
                  rc = EventToXI2(event, &xi2);
                  if (rc == Success)
                  {
@@ -2580,7 +2606,7 @@
                                                         filter, grab);
                      free(xi2);
                      if (deliveries > 0)
-@@ -2439,6 +2682,14 @@ DeliverDeviceEvents(WindowPtr pWin, Inte
+@@ -2439,6 +2682,14 @@
                  goto unwind;
              }
          }
@@ -2595,7 +2621,7 @@
  
          child = pWin->drawable.id;
          pWin = pWin->parent;
-@@ -2591,7 +2842,7 @@ XYToWindow(SpritePtr pSprite, int x, int
+@@ -2591,7 +2842,7 @@
  	else
  	    pWin = pWin->nextSib;
      }
@@ -2604,7 +2630,7 @@
  }
  
  /**
-@@ -2629,7 +2880,8 @@ ActivateFocusInGrab(DeviceIntPtr dev, Wi
+@@ -2629,7 +2880,8 @@
      event.deviceid = dev->id;
      event.sourceid = dev->id;
      event.detail.button = 0;
@@ -2614,7 +2640,7 @@
      if (rc)
          DoEnterLeaveEvents(dev, dev->id, old, win, XINotifyPassiveUngrab);
      return rc;
-@@ -2666,7 +2918,8 @@ ActivateEnterGrab(DeviceIntPtr dev, Wind
+@@ -2666,7 +2918,8 @@
      event.deviceid = dev->id;
      event.sourceid = dev->id;
      event.detail.button = 0;
@@ -2624,7 +2650,7 @@
      if (rc)
          DoEnterLeaveEvents(dev, dev->id, old, win, XINotifyPassiveGrab);
      return rc;
-@@ -3353,7 +3606,7 @@ GrabPtr
+@@ -3353,7 +3606,7 @@
  CheckPassiveGrabsOnWindow(
      WindowPtr pWin,
      DeviceIntPtr device,
@@ -2633,7 +2659,7 @@
      BOOL checkCore,
      BOOL activate)
  {
-@@ -3370,9 +3623,22 @@ CheckPassiveGrabsOnWindow(
+@@ -3370,9 +3623,22 @@
  	return NULL;
      /* Fill out the grab details, but leave the type for later before
       * comparing */
@@ -2657,7 +2683,7 @@
      tempGrab.detail.pMask = NULL;
      tempGrab.modifiersDetail.pMask = NULL;
      tempGrab.next = NULL;
-@@ -3380,6 +3646,9 @@ CheckPassiveGrabsOnWindow(
+@@ -3380,6 +3646,9 @@
      {
  	DeviceIntPtr	gdev;
  	XkbSrvInfoPtr	xkbi = NULL;
@@ -2667,7 +2693,7 @@
  
  	gdev= grab->modifierDevice;
          if (grab->grabtype == GRABTYPE_CORE)
-@@ -3405,16 +3674,15 @@ CheckPassiveGrabsOnWindow(
+@@ -3405,16 +3674,15 @@
          tempGrab.modifiersDetail.exact = xkbi ? xkbi->state.grab_mods : 0;
  
          /* Check for XI2 and XI grabs first */
@@ -2686,7 +2712,7 @@
                  (GrabMatchesSecond(&tempGrab, grab, FALSE)))
                  match = XI_MATCH;
          }
-@@ -3423,125 +3691,152 @@ CheckPassiveGrabsOnWindow(
+@@ -3423,125 +3691,152 @@
          if (!match && checkCore)
          {
              tempGrab.grabtype = GRABTYPE_CORE;
@@ -2934,7 +2960,7 @@
      }
      return NULL;
  #undef CORE_MATCH
-@@ -3580,8 +3875,13 @@ CheckDeviceGrabs(DeviceIntPtr device, De
+@@ -3580,8 +3875,13 @@
  {
      int i;
      WindowPtr pWin = NULL;
@@ -2949,7 +2975,7 @@
  
      if (event->type != ET_ButtonPress &&
          event->type != ET_KeyPress)
-@@ -3609,7 +3909,8 @@ CheckDeviceGrabs(DeviceIntPtr device, De
+@@ -3609,7 +3909,8 @@
  	for (; i < focus->traceGood; i++)
  	{
  	    pWin = focus->trace[i];
@@ -2959,7 +2985,7 @@
  		return TRUE;
  	}
  
-@@ -3619,11 +3920,54 @@ CheckDeviceGrabs(DeviceIntPtr device, De
+@@ -3619,11 +3920,54 @@
  	    return FALSE;
      }
  
@@ -3017,7 +3043,7 @@
      }
  
      return FALSE;
-@@ -3745,6 +4089,17 @@ DeliverGrabbedEvent(InternalEvent *event
+@@ -3745,6 +4089,17 @@
      grabinfo = &thisDev->deviceGrab;
      grab = grabinfo->grab;
  
@@ -3035,7 +3061,7 @@
      if (grab->ownerEvents)
      {
  	WindowPtr focus;
-@@ -3821,6 +4176,9 @@ DeliverGrabbedEvent(InternalEvent *event
+@@ -3821,6 +4176,9 @@
                  mask = grab->xi2mask[XIAllDevices][evtype/8] |
                      grab->xi2mask[XIAllMasterDevices][evtype/8] |
                      grab->xi2mask[thisDev->id][evtype/8];
@@ -3045,7 +3071,7 @@
                  /* try XI2 event */
                  FixUpEventFromWindow(pSprite, xi2, grab->window, None, TRUE);
                  /* XXX: XACE */
-@@ -4955,7 +5313,7 @@ InitEvents(void)
+@@ -4954,7 +5312,7 @@
  	free(syncEvents.pending);
  	syncEvents.pending = next;
      }
@@ -3054,8 +3080,10 @@
      syncEvents.playingEvents = FALSE;
      syncEvents.time.months = 0;
      syncEvents.time.milliseconds = 0;	/* hardly matters */
---- a/dix/getevents.c
-+++ b/dix/getevents.c
+Index: xorg-server/dix/getevents.c
+===================================================================
+--- xorg-server.orig/dix/getevents.c	2011-04-09 10:23:41.000000000 +0300
++++ xorg-server/dix/getevents.c	2011-04-09 10:42:15.000000000 +0300
 @@ -47,6 +47,7 @@
  #include "eventstr.h"
  #include "eventconvert.h"
@@ -3064,7 +3092,7 @@
  
  #include <X11/extensions/XKBproto.h>
  #include "xkbsrv.h"
-@@ -160,7 +161,7 @@ key_autorepeats(DeviceIntPtr pDev, int k
+@@ -160,7 +161,7 @@
                (1 << (key_code & 7)));
  }
  
@@ -3073,7 +3101,7 @@
  init_event(DeviceIntPtr dev, DeviceEvent* event, Time ms)
  {
      memset(event, 0, sizeof(DeviceEvent));
-@@ -172,6 +173,18 @@ init_event(DeviceIntPtr dev, DeviceEvent
+@@ -172,6 +173,18 @@
  }
  
  static void
@@ -3092,7 +3120,7 @@
  init_raw(DeviceIntPtr dev, RawDeviceEvent *event, Time ms, int type, int detail)
  {
      memset(event, 0, sizeof(RawDeviceEvent));
-@@ -210,7 +223,8 @@ set_valuators(DeviceIntPtr dev, DeviceEv
+@@ -212,7 +225,8 @@
          if (valuator_mask_isset(mask, i))
          {
              SetBit(event->valuators.mask, i);
@@ -3102,7 +3130,7 @@
                  SetBit(event->valuators.mode, i);
              event->valuators.data[i] = valuator_mask_get(mask, i);
              event->valuators.data_frac[i] =
-@@ -1058,23 +1072,14 @@ FreeEventList(EventListPtr list, int num
+@@ -1062,23 +1076,14 @@
  }
  
  static void
@@ -3130,7 +3158,7 @@
  }
  
  /**
-@@ -1116,7 +1121,10 @@ GetPointerEvents(EventList *events, Devi
+@@ -1120,7 +1125,10 @@
      switch (type)
      {
          case MotionNotify:
@@ -3142,7 +3170,7 @@
                  return 0;
              break;
          case ButtonPress:
-@@ -1165,7 +1173,16 @@ GetPointerEvents(EventList *events, Devi
+@@ -1169,7 +1177,16 @@
              }
          }
  
@@ -3160,7 +3188,7 @@
          moveAbsolute(pDev, &x, &y, &mask);
      } else {
          if (flags & POINTER_ACCELERATE) {
-@@ -1286,6 +1303,130 @@ GetProximityEvents(EventList *events, De
+@@ -1290,6 +1307,130 @@
      return num_events;
  }
  
@@ -3291,9 +3319,11 @@
  /**
   * Synthesize a single motion event for the core pointer.
   *
---- a/dix/grabs.c
-+++ b/dix/grabs.c
-@@ -60,6 +60,7 @@ SOFTWARE.
+Index: xorg-server/dix/grabs.c
+===================================================================
+--- xorg-server.orig/dix/grabs.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/dix/grabs.c	2011-04-09 10:42:15.000000000 +0300
+@@ -60,6 +60,7 @@
  #include "dixgrabs.h"
  #include "xace.h"
  #include "exevents.h"
@@ -3301,7 +3331,7 @@
  
  #define BITMASK(i) (((Mask)1) << ((i) & 31))
  #define MASKIDX(i) ((i) >> 5)
-@@ -243,6 +244,25 @@ GrabSupersedesSecond(GrabPtr pFirstGrab,
+@@ -243,6 +244,25 @@
  }
  
  /**
@@ -3327,7 +3357,7 @@
   * Compares two grabs and returns TRUE if the first grab matches the second
   * grab. 
   * 
-@@ -261,6 +281,8 @@ GrabMatchesSecond(GrabPtr pFirstGrab, Gr
+@@ -261,6 +281,8 @@
      unsigned int any_modifier = (pFirstGrab->grabtype == GRABTYPE_XI2) ?
                                  (unsigned int)XIAnyModifier :
                                  (unsigned int)AnyModifier;
@@ -3336,7 +3366,7 @@
  
      if (pFirstGrab->grabtype != pSecondGrab->grabtype)
          return FALSE;
-@@ -288,8 +310,8 @@ GrabMatchesSecond(GrabPtr pFirstGrab, Gr
+@@ -288,8 +310,8 @@
               (pFirstGrab->modifierDevice != pSecondGrab->modifierDevice)))
              return FALSE;
  
@@ -3347,8 +3377,10 @@
  
      if (GrabSupersedesSecond(pFirstGrab, pSecondGrab) ||
  	GrabSupersedesSecond(pSecondGrab, pFirstGrab))
---- a/dix/inpututils.c
-+++ b/dix/inpututils.c
+Index: xorg-server/dix/inpututils.c
+===================================================================
+--- xorg-server.orig/dix/inpututils.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/dix/inpututils.c	2011-04-09 10:42:15.000000000 +0300
 @@ -36,6 +36,7 @@
  #include "xkbsrv.h"
  #include "xkbstr.h"
@@ -3357,7 +3389,7 @@
  
  /* Check if a button map change is okay with the device.
   * Returns -1 for BadValue, as it collides with MappingBusy. */
-@@ -556,3 +557,158 @@ CountBits(const uint8_t *mask, int len)
+@@ -556,3 +557,158 @@
  
      return ret;
  }
@@ -3516,9 +3548,11 @@
 +    ti->client_id = 0;
 +    ti->active = FALSE;
 +}
---- a/dix/window.c
-+++ b/dix/window.c
-@@ -110,6 +110,7 @@ Equipment Corporation.
+Index: xorg-server/dix/window.c
+===================================================================
+--- xorg-server.orig/dix/window.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/dix/window.c	2011-04-09 10:42:43.000000000 +0300
+@@ -110,6 +110,7 @@
  #include "windowstr.h"
  #include "input.h"
  #include "inputstr.h"
@@ -3526,7 +3560,7 @@
  #include "resource.h"
  #include "colormapst.h"
  #include "cursorstr.h"
-@@ -2873,8 +2874,10 @@ UnmapWindow(WindowPtr pWin, Bool fromCon
+@@ -2873,8 +2874,10 @@
  	if (!fromConfigure && pScreen->PostValidateTree)
  	    (*pScreen->PostValidateTree)(pLayerWin->parent, pWin, VTUnmap);
      }
@@ -3538,7 +3572,7 @@
      return Success;
  }
  
-@@ -2957,8 +2960,10 @@ UnmapSubwindows(WindowPtr pWin)
+@@ -2957,8 +2960,10 @@
  	if (anyMarked && pScreen->PostValidateTree)
  	    (*pScreen->PostValidateTree)(pLayerWin->parent, pHead, VTUnmap);
      }
@@ -3550,9 +3584,11 @@
  }
  
  
---- a/hw/xfree86/common/xf86Module.h
-+++ b/hw/xfree86/common/xf86Module.h
-@@ -83,7 +83,7 @@ typedef enum {
+Index: xorg-server/hw/xfree86/common/xf86Module.h
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Module.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Module.h	2011-04-09 10:42:15.000000000 +0300
+@@ -83,7 +83,7 @@
   */
  #define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 4)
  #define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(10, 0)
@@ -3561,9 +3597,11 @@
  #define ABI_EXTENSION_VERSION	SET_ABI_VERSION(5, 0)
  #define ABI_FONT_VERSION	SET_ABI_VERSION(0, 6)
  
---- a/hw/xfree86/common/xf86Xinput.c
-+++ b/hw/xfree86/common/xf86Xinput.c
-@@ -1352,6 +1352,16 @@ xf86InitValuatorAxisStruct(DeviceIntPtr
+Index: xorg-server/hw/xfree86/common/xf86Xinput.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.c	2011-04-09 10:42:46.000000000 +0300
+@@ -1357,6 +1357,16 @@
  			   max_res, mode);
  }
  
@@ -3580,7 +3618,7 @@
  /*
   * Set the valuator values to be in synch with dix/event.c
   * DefineInitialRootWindow().
-@@ -1403,4 +1413,50 @@ xf86EnableDevice(DeviceIntPtr dev)
+@@ -1408,4 +1418,50 @@
      EnableDevice(dev, TRUE);
  }
  
@@ -3631,9 +3669,11 @@
 +}
 +
  /* end of xf86Xinput.c */
---- a/hw/xfree86/common/xf86Xinput.h
-+++ b/hw/xfree86/common/xf86Xinput.h
-@@ -141,6 +141,9 @@ extern _X_EXPORT void xf86PostKeyEventP(
+Index: xorg-server/hw/xfree86/common/xf86Xinput.h
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.h	2011-04-09 10:42:46.000000000 +0300
+@@ -141,6 +141,9 @@
  		       const int *valuators);
  extern _X_EXPORT void xf86PostKeyboardEvent(DeviceIntPtr device, unsigned int key_code,
                             int is_down);
@@ -3643,7 +3683,7 @@
  extern _X_EXPORT InputInfoPtr xf86FirstLocalDevice(void);
  extern _X_EXPORT int xf86ScaleAxis(int Cx, int to_max, int to_min, int from_max, int from_min);
  extern _X_EXPORT void xf86XInputSetScreen(InputInfoPtr pInfo, int screen_number, int x, int y);
-@@ -148,6 +151,8 @@ extern _X_EXPORT void xf86ProcessCommonO
+@@ -148,6 +151,8 @@
  extern _X_EXPORT void xf86InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, Atom label, int minval,
  				int maxval, int resolution, int min_res,
  				int max_res, int mode);
@@ -3652,9 +3692,11 @@
  extern _X_EXPORT void xf86InitValuatorDefaults(DeviceIntPtr dev, int axnum);
  extern _X_EXPORT void xf86AddEnabledDevice(InputInfoPtr pInfo);
  extern _X_EXPORT void xf86RemoveEnabledDevice(InputInfoPtr pInfo);
---- a/include/dix.h
-+++ b/include/dix.h
-@@ -375,7 +375,7 @@ extern void ReleaseActiveGrabs(
+Index: xorg-server/include/dix.h
+===================================================================
+--- xorg-server.orig/include/dix.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/dix.h	2011-04-09 10:42:15.000000000 +0300
+@@ -375,7 +375,7 @@
  extern GrabPtr CheckPassiveGrabsOnWindow(
      WindowPtr /* pWin */,
      DeviceIntPtr /* device */,
@@ -3663,7 +3705,7 @@
      BOOL /* checkCore */,
      BOOL /* activate */);
  
-@@ -515,6 +515,11 @@ extern Bool IsInterferingGrab(
+@@ -515,6 +515,11 @@
          DeviceIntPtr /* dev */,
          xEvent* /* events */);
  
@@ -3675,7 +3717,7 @@
  #ifdef PANORAMIX
  extern _X_EXPORT void ReinitializeRootWindow(WindowPtr win, int xoff, int yoff);
  #endif
-@@ -526,6 +531,8 @@ ScreenRestructured (ScreenPtr pScreen);
+@@ -526,6 +531,8 @@
  
  extern _X_EXPORT int ffs(int i);
  
@@ -3684,7 +3726,7 @@
  
  /*
   *  ServerGrabCallback stuff
-@@ -569,6 +576,7 @@ extern Bool DevHasCursor(DeviceIntPtr pD
+@@ -569,6 +576,7 @@
  extern Bool _X_EXPORT IsPointerDevice( DeviceIntPtr dev);
  extern Bool _X_EXPORT IsKeyboardDevice(DeviceIntPtr dev);
  extern Bool IsPointerEvent(InternalEvent *event);
@@ -3692,8 +3734,10 @@
  extern _X_EXPORT Bool IsMaster(DeviceIntPtr dev);
  
  extern _X_HIDDEN void CopyKeyClass(DeviceIntPtr device, DeviceIntPtr master);
---- a/include/events.h
-+++ b/include/events.h
+Index: xorg-server/include/events.h
+===================================================================
+--- xorg-server.orig/include/events.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/events.h	2011-04-09 10:42:46.000000000 +0300
 @@ -26,6 +26,7 @@
  #define EVENTS_H
  typedef struct _DeviceEvent DeviceEvent;
@@ -3702,9 +3746,11 @@
  #if XFreeXDGA
  typedef struct _DGAEvent DGAEvent;
  #endif
---- a/include/eventstr.h
-+++ b/include/eventstr.h
-@@ -65,6 +65,11 @@ enum EventType {
+Index: xorg-server/include/eventstr.h
+===================================================================
+--- xorg-server.orig/include/eventstr.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/eventstr.h	2011-04-09 10:42:43.000000000 +0300
+@@ -65,6 +65,11 @@
      ET_RawButtonRelease,
      ET_RawMotion,
      ET_XQuartz,
@@ -3716,7 +3762,7 @@
      ET_Internal = 0xFF /* First byte */
  };
  
-@@ -90,6 +95,7 @@ struct _DeviceEvent
+@@ -90,6 +95,7 @@
      union {
          uint32_t button;  /**< Button number */
          uint32_t key;     /**< Key code */
@@ -3724,7 +3770,7 @@
      } detail;
      int16_t root_x;       /**< Pos relative to root window in integral data */
      float root_x_frac;    /**< Pos relative to root window in frac part */
-@@ -117,8 +123,28 @@ struct _DeviceEvent
+@@ -117,8 +123,28 @@
      Window      root; /**< Root window of the event */
      int corestate;    /**< Core key/button state BEFORE the event */
      int key_repeat;   /**< Internally-generated key repeat event */
@@ -3753,7 +3799,7 @@
  
  /* Flags used in DeviceChangedEvent to signal if the slave has changed */
  #define DEVCHANGE_SLAVE_SWITCH 0x2
-@@ -234,6 +260,7 @@ union _InternalEvent {
+@@ -234,6 +260,7 @@
          } any;
          DeviceEvent device_event;
          DeviceChangedEvent changed_event;
@@ -3761,9 +3807,11 @@
  #if XFreeXDGA
          DGAEvent dga_event;
  #endif
---- a/include/exevents.h
-+++ b/include/exevents.h
-@@ -51,6 +51,14 @@ extern _X_EXPORT void InitValuatorAxisSt
+Index: xorg-server/include/exevents.h
+===================================================================
+--- xorg-server.orig/include/exevents.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/exevents.h	2011-04-09 10:42:15.000000000 +0300
+@@ -51,6 +51,14 @@
  	int                    /* max_res */,
  	int                    /* mode */);
  
@@ -3778,7 +3826,7 @@
  /* Input device properties */
  extern _X_EXPORT void XIDeleteAllDeviceProperties(
          DeviceIntPtr            /* device */
-@@ -199,6 +207,14 @@ GrabWindow(
+@@ -199,6 +207,14 @@
  	GrabMask*              /* eventMask */);
  
  extern int
@@ -3793,7 +3841,7 @@
  SelectForWindow(
  	DeviceIntPtr           /* dev */,
  	WindowPtr              /* pWin */,
-@@ -222,6 +238,10 @@ InputClientGone(
+@@ -222,6 +238,10 @@
  	WindowPtr              /* pWin */,
  	XID                    /* id */);
  
@@ -3804,7 +3852,7 @@
  extern int
  SendEvent (
  	ClientPtr              /* client */,
-@@ -309,4 +329,14 @@ XISetEventMask(DeviceIntPtr dev, WindowP
+@@ -309,4 +329,14 @@
  extern int
  XICheckInvalidMaskBits(ClientPtr client, unsigned char *mask, int len);
  
@@ -3819,9 +3867,11 @@
 +ReleaseButton(DeviceIntPtr device, int button);
 +
  #endif /* EXEVENTS_H */
---- a/include/input.h
-+++ b/include/input.h
-@@ -104,6 +104,8 @@ typedef struct _InputClients *InputClien
+Index: xorg-server/include/input.h
+===================================================================
+--- xorg-server.orig/include/input.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/input.h	2011-04-09 10:42:15.000000000 +0300
+@@ -104,6 +104,8 @@
  typedef struct _DeviceIntRec *DeviceIntPtr;
  typedef struct _ClassesRec *ClassesPtr;
  typedef struct _SpriteRec *SpritePtr;
@@ -3830,7 +3880,7 @@
  typedef union _GrabMask GrabMask;
  
  typedef struct _EventList {
-@@ -314,6 +316,12 @@ extern _X_EXPORT Bool InitAbsoluteClassD
+@@ -314,6 +316,12 @@
  extern _X_EXPORT Bool InitFocusClassDeviceStruct(
      DeviceIntPtr /*device*/);
  
@@ -3843,7 +3893,7 @@
  typedef void (*BellProcPtr)(
      int /*percent*/,
      DeviceIntPtr /*device*/,
-@@ -463,6 +471,22 @@ extern int GetKeyboardValuatorEvents(
+@@ -463,6 +471,22 @@
      int key_code,
      const ValuatorMask *mask);
  
@@ -3866,7 +3916,7 @@
  extern int GetProximityEvents(
      EventListPtr events,
      DeviceIntPtr pDev,
-@@ -525,6 +549,18 @@ extern void SendDevicePresenceEvent(int
+@@ -525,6 +549,18 @@
  extern _X_EXPORT InputAttributes *DuplicateInputAttributes(InputAttributes *attrs);
  extern _X_EXPORT void FreeInputAttributes(InputAttributes *attrs);
  
@@ -3885,9 +3935,11 @@
  /* misc event helpers */
  extern Mask GetEventMask(DeviceIntPtr dev, xEvent* ev, InputClientsPtr clients);
  extern Mask GetEventFilter(DeviceIntPtr dev, xEvent *event);
---- a/include/inputstr.h
-+++ b/include/inputstr.h
-@@ -49,6 +49,8 @@ SOFTWARE.
+Index: xorg-server/include/inputstr.h
+===================================================================
+--- xorg-server.orig/include/inputstr.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/inputstr.h	2011-04-09 10:42:15.000000000 +0300
+@@ -49,6 +49,8 @@
  #ifndef INPUTSTRUCT_H
  #define INPUTSTRUCT_H
  
@@ -3896,7 +3948,7 @@
  #include <pixman.h>
  #include "input.h"
  #include "window.h"
-@@ -71,7 +73,7 @@ extern _X_EXPORT int CountBits(const uin
+@@ -71,7 +73,7 @@
   * events to the protocol, the server will not support these events until
   * this number here is bumped.
   */
@@ -3905,7 +3957,7 @@
  #define XI2MASKSIZE     ((XI2LASTEVENT + 7)/8) /* no of bits for masks */
  
  /**
-@@ -244,6 +246,9 @@ typedef struct _SpriteRec {
+@@ -244,6 +246,9 @@
  
  } SpriteRec;
  
@@ -3915,7 +3967,7 @@
  typedef struct _KeyClassRec {
      int			sourceid;
      CARD8		down[DOWN_LENGTH];
-@@ -254,11 +259,11 @@ typedef struct _KeyClassRec {
+@@ -254,11 +259,11 @@
  
  typedef struct _AxisInfo {
      int		resolution;
@@ -3929,7 +3981,7 @@
      CARD8	mode;
  } AxisInfo, *AxisInfoPtr;
  
-@@ -284,6 +289,75 @@ typedef struct _ValuatorClassRec {
+@@ -284,6 +289,75 @@
      ValuatorAccelerationRec	accelScheme;
  } ValuatorClassRec, *ValuatorClassPtr;
  
@@ -4005,7 +4057,7 @@
  typedef struct _ButtonClassRec {
      int			sourceid;
      CARD8		numButtons;
-@@ -388,6 +462,7 @@ typedef struct _LedFeedbackClassRec {
+@@ -388,6 +462,7 @@
  typedef struct _ClassesRec {
      KeyClassPtr		key;
      ValuatorClassPtr	valuator;
@@ -4013,7 +4065,7 @@
      ButtonClassPtr	button;
      FocusClassPtr	focus;
      ProximityClassPtr	proximity;
-@@ -512,6 +587,7 @@ typedef struct _DeviceIntRec {
+@@ -512,6 +587,7 @@
      int			id;
      KeyClassPtr		key;
      ValuatorClassPtr	valuator;
@@ -4021,7 +4073,7 @@
      ButtonClassPtr	button;
      FocusClassPtr	focus;
      ProximityClassPtr	proximity;
-@@ -533,6 +609,8 @@ typedef struct _DeviceIntRec {
+@@ -533,6 +609,8 @@
          DeviceIntPtr        master;     /* master device */
          DeviceIntPtr        lastSlave;  /* last slave device used */
      } u;
@@ -4030,7 +4082,7 @@
  
      /* last valuator values recorded, not posted to client;
       * for slave devices, valuators is in device coordinates
-@@ -592,7 +670,7 @@ typedef struct _QdEvent {
+@@ -592,7 +670,7 @@
   */
  typedef struct _EventSyncInfo {
      QdEventPtr          pending, /**<  list of queued events */
@@ -4039,8 +4091,10 @@
      /** The device to replay events for. Only set in AllowEvents(), in which
       * case it is set to the device specified in the request. */
      DeviceIntPtr        replayDev;      /* kludgy rock to put flag for */
---- a/include/protocol-versions.h
-+++ b/include/protocol-versions.h
+Index: xorg-server/include/protocol-versions.h
+===================================================================
+--- xorg-server.orig/include/protocol-versions.h	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/include/protocol-versions.h	2011-04-09 10:42:43.000000000 +0300
 @@ -131,7 +131,7 @@
  
  /* X Input */
@@ -4050,9 +4104,11 @@
  
  /* XKB */
  #define SERVER_XKB_MAJOR_VERSION		1
---- a/mi/mieq.c
-+++ b/mi/mieq.c
-@@ -269,8 +269,15 @@ ChangeDeviceID(DeviceIntPtr dev, Interna
+Index: xorg-server/mi/mieq.c
+===================================================================
+--- xorg-server.orig/mi/mieq.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/mi/mieq.c	2011-04-09 10:42:43.000000000 +0300
+@@ -269,8 +269,15 @@
          case ET_ProximityOut:
          case ET_Hierarchy:
          case ET_DeviceChanged:
@@ -4068,7 +4124,7 @@
  #if XFreeXDGA
          case ET_DGAEvent:
              break;
-@@ -419,7 +426,7 @@ mieqProcessDeviceEvent(DeviceIntPtr dev,
+@@ -419,7 +426,7 @@
  
          /* Check for the SD's master in case the device got detached
           * during event processing */
@@ -4077,9 +4133,11 @@
              master->public.processInputProc(&mevent, master);
      }
  }
---- a/test/input.c
-+++ b/test/input.c
-@@ -278,6 +278,11 @@ static void dix_event_to_core_conversion
+Index: xorg-server/test/input.c
+===================================================================
+--- xorg-server.orig/test/input.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/test/input.c	2011-04-09 10:42:15.000000000 +0300
+@@ -278,6 +278,11 @@
      dix_event_to_core_fail(ET_ProximityOut + 1, BadImplementation);
      dix_event_to_core_fail(ET_ProximityIn, BadMatch);
      dix_event_to_core_fail(ET_ProximityOut, BadMatch);
@@ -4091,7 +4149,7 @@
  
      dix_event_to_core(ET_KeyPress);
      dix_event_to_core(ET_KeyRelease);
-@@ -423,6 +428,32 @@ static void dix_event_to_xi1_conversion(
+@@ -423,6 +428,32 @@
  }
  
  
@@ -4124,7 +4182,7 @@
  static void xi2_struct_sizes(void)
  {
  #define compare(req) \
-@@ -812,6 +843,38 @@ static void dix_grab_matching(void)
+@@ -812,6 +843,38 @@
      g_assert(rc == TRUE);
      rc = GrabMatchesSecond(&b, &a, FALSE);
      g_assert(rc == TRUE);
@@ -4163,7 +4221,7 @@
  }
  
  static void test_bits_to_byte(int i)
-@@ -1199,6 +1262,101 @@ static void include_bit_test_macros(void
+@@ -1199,6 +1262,101 @@
      }
  }
  
@@ -4265,7 +4323,7 @@
  int main(int argc, char** argv)
  {
      g_test_init(&argc, &argv,NULL);
-@@ -1209,6 +1367,7 @@ int main(int argc, char** argv)
+@@ -1209,6 +1367,7 @@
      g_test_add_func("/dix/input/init-valuators", dix_init_valuators);
      g_test_add_func("/dix/input/event-core-conversion", dix_event_to_core_conversion);
      g_test_add_func("/dix/input/event-xi1-conversion", dix_event_to_xi1_conversion);
@@ -4273,7 +4331,7 @@
      g_test_add_func("/dix/input/check-grab-values", dix_check_grab_values);
      g_test_add_func("/dix/input/xi2-struct-sizes", xi2_struct_sizes);
      g_test_add_func("/dix/input/grab_matching", dix_grab_matching);
-@@ -1216,7 +1375,9 @@ int main(int argc, char** argv)
+@@ -1216,7 +1375,9 @@
      g_test_add_func("/include/byte_padding_macros", include_byte_padding_macros);
      g_test_add_func("/include/bit_test_macros", include_bit_test_macros);
      g_test_add_func("/Xi/xiproperty/register-unregister", xi_unregister_handlers);
@@ -4284,9 +4342,11 @@
  
      return g_test_run();
  }
---- a/test/xi2/protocol-eventconvert.c
-+++ b/test/xi2/protocol-eventconvert.c
-@@ -149,6 +149,59 @@ static void test_XIRawEvent(RawDeviceEve
+Index: xorg-server/test/xi2/protocol-eventconvert.c
+===================================================================
+--- xorg-server.orig/test/xi2/protocol-eventconvert.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/test/xi2/protocol-eventconvert.c	2011-04-09 10:42:15.000000000 +0300
+@@ -149,6 +149,59 @@
      free(swapped);
  }
  
@@ -4346,7 +4406,7 @@
  static void test_convert_XIFocusEvent(void)
  {
      xEvent *out;
-@@ -272,7 +325,7 @@ static void test_values_XIDeviceEvent(De
+@@ -272,7 +325,7 @@
      int buttons, valuators;
      int i;
      unsigned char *ptr;
@@ -4355,7 +4415,7 @@
      FP3232 *values;
  
      if (swap) {
-@@ -311,9 +364,16 @@ static void test_values_XIDeviceEvent(De
+@@ -311,9 +364,16 @@
      g_assert(out->sourceid == in->sourceid);
  
      switch (in->type) {
@@ -4372,7 +4432,7 @@
          default:
              flagmask = 0;
              break;
-@@ -636,6 +696,49 @@ static void test_convert_XIDeviceEvent(v
+@@ -636,6 +696,49 @@
      }
  }
  
@@ -4422,7 +4482,7 @@
  static void test_values_XIDeviceChangedEvent(DeviceChangedEvent *in,
                                               xXIDeviceChangedEvent *out,
                                               BOOL swap)
-@@ -912,6 +1015,8 @@ int main(int argc, char** argv)
+@@ -912,6 +1015,8 @@
      g_test_add_func("/xi2/eventconvert/XIFocusEvent", test_convert_XIFocusEvent);
      g_test_add_func("/xi2/eventconvert/XIDeviceEvent", test_convert_XIDeviceEvent);
      g_test_add_func("/xi2/eventconvert/XIDeviceChangedEvent", test_convert_XIDeviceChangedEvent);
@@ -4431,9 +4491,11 @@
  
      return g_test_run();
  }
---- a/test/xi2/protocol-xiselectevents.c
-+++ b/test/xi2/protocol-xiselectevents.c
-@@ -159,9 +159,33 @@ static void request_XISelectEvents_masks
+Index: xorg-server/test/xi2/protocol-xiselectevents.c
+===================================================================
+--- xorg-server.orig/test/xi2/protocol-xiselectevents.c	2011-04-06 18:25:23.000000000 +0300
++++ xorg-server/test/xi2/protocol-xiselectevents.c	2011-04-09 10:42:15.000000000 +0300
+@@ -159,9 +159,33 @@
          memset(bits, 0, mask->mask_len * 4);
          for (j = 0; j <= XI2LASTEVENT; j++)
          {
@@ -4467,7 +4529,7 @@
          }
  
          /* Test 2:
-@@ -175,7 +199,23 @@ static void request_XISelectEvents_masks
+@@ -175,7 +199,23 @@
  
          for (j = 0; j <= XI2LASTEVENT; j++)
          {
@@ -4491,7 +4553,7 @@
              request_XISelectEvent(req, Success);
          }
  
-@@ -189,7 +229,23 @@ static void request_XISelectEvents_masks
+@@ -189,7 +229,23 @@
  
          for (j = XI2LASTEVENT + 1; j < mask->mask_len * 4; j++)
          {
@@ -4515,7 +4577,7 @@
              request_XISelectEvent(req, BadValue);
              ClearBit(bits, j);
          }
-@@ -202,7 +258,23 @@ static void request_XISelectEvents_masks
+@@ -202,7 +258,23 @@
          memset(bits, 0, mask->mask_len * 4);
          for (j = 0; j <= XI2LASTEVENT; j++)
          {

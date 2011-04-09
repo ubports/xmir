@@ -1,7 +1,9 @@
 === modified file 'randr/randr.c'
---- a/randr/randr.c	2009-12-19 01:44:12 +0000
-+++ b/randr/randr.c	2010-02-02 16:28:26 +0000
-@@ -234,7 +234,7 @@
+Index: xorg-server/randr/randr.c
+===================================================================
+--- xorg-server.orig/randr/randr.c	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/randr/randr.c	2011-04-09 10:38:10.000000000 +0300
+@@ -235,7 +235,7 @@
      /*
       * Calling function best set these function vectors
       */
@@ -10,4 +12,3 @@
      pScrPriv->maxWidth = pScrPriv->minWidth = pScreen->width;
      pScrPriv->maxHeight = pScrPriv->minHeight = pScreen->height;
      
-
