@@ -1,8 +1,8 @@
-diff --git a/Makefile.am b/Makefile.am
-index 62c8d95..77b2ffb 100644
---- a/Makefile.am
-+++ b/Makefile.am
-@@ -17,6 +17,10 @@ if RECORD
+Index: xorg-server/Makefile.am
+===================================================================
+--- xorg-server.orig/Makefile.am	2011-04-06 18:25:22.000000000 +0300
++++ xorg-server/Makefile.am	2011-04-09 10:42:15.000000000 +0300
+@@ -17,6 +17,10 @@
  RECORD_DIR=record
  endif
  
@@ -13,7 +13,7 @@ index 62c8d95..77b2ffb 100644
  SUBDIRS = \
  	doc \
  	include \
-@@ -37,6 +41,7 @@ SUBDIRS = \
+@@ -37,6 +41,7 @@
  	$(COMPOSITE_DIR) \
  	$(GLX_DIR) \
  	exa \
@@ -21,11 +21,11 @@ index 62c8d95..77b2ffb 100644
  	config \
  	hw \
  	test
-diff --git a/configure.ac b/configure.ac
-index 5e22ddf..d913468 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -592,6 +592,8 @@ AC_ARG_ENABLE(visibility,     AC_HELP_STRING([--enable-visibility], [Enable symb
+Index: xorg-server/configure.ac
+===================================================================
+--- xorg-server.orig/configure.ac	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/configure.ac	2011-04-09 10:42:15.000000000 +0300
+@@ -596,6 +596,8 @@
  AC_ARG_ENABLE(pc98,     	AC_HELP_STRING([--enable-pc98], [Enable PC98 support in Xorg (default: auto)]),
  				[SUPPORT_PC98=$enableval],
  				[SUPPORT_PC98=auto])
@@ -34,7 +34,7 @@ index 5e22ddf..d913468 100644
  
  dnl GLX build options
  AC_ARG_ENABLE(aiglx,          AS_HELP_STRING([--enable-aiglx], [Build accelerated indirect GLX (default: enabled)]),
-@@ -1349,6 +1351,13 @@ MIEXT_SYNC_INC='-I$(top_srcdir)/miext/sync'
+@@ -1366,6 +1368,13 @@
  MIEXT_SYNC_LIB='$(top_builddir)/miext/sync/libsync.la'
  CORE_INCS='-I$(top_srcdir)/include -I$(top_builddir)/include'
  
@@ -47,8 +47,8 @@ index 5e22ddf..d913468 100644
 +
  # SHA1 hashing
  AC_ARG_WITH([sha1],
-             [AS_HELP_STRING([--with-sha1=libc|libmd|libgcrypt|libcrypto|libsha1|CommonCrypto],
-@@ -1486,7 +1495,7 @@ AC_EGREP_CPP([I_AM_SVR4],[
+             [AS_HELP_STRING([--with-sha1=libc|libmd|libgcrypt|libcrypto|libsha1|CommonCrypto|nettle],
+@@ -1513,7 +1522,7 @@
  AC_DEFINE([SVR4],1,[Define to 1 on systems derived from System V Release 4])
  AC_MSG_RESULT([yes])], AC_MSG_RESULT([no]))
  
@@ -57,7 +57,7 @@ index 5e22ddf..d913468 100644
  
  dnl ---------------------------------------------------------------------------
  dnl DDX section.
-@@ -1499,7 +1508,7 @@ AC_MSG_RESULT([$XVFB])
+@@ -1526,7 +1535,7 @@
  AM_CONDITIONAL(XVFB, [test "x$XVFB" = xyes])
  
  if test "x$XVFB" = xyes; then
@@ -66,7 +66,7 @@ index 5e22ddf..d913468 100644
  	XVFB_SYS_LIBS="$XVFBMODULES_LIBS $GLX_SYS_LIBS"
  	AC_SUBST([XVFB_LIBS])
  	AC_SUBST([XVFB_SYS_LIBS])
-@@ -1520,7 +1529,7 @@ if test "x$XNEST" = xyes; then
+@@ -1547,7 +1556,7 @@
  	if test "x$have_xnest" = xno; then
  		AC_MSG_ERROR([Xnest build explicitly requested, but required modules not found.])
  	fi
@@ -75,7 +75,7 @@ index 5e22ddf..d913468 100644
  	XNEST_SYS_LIBS="$XNESTMODULES_LIBS $GLX_SYS_LIBS"
  	AC_SUBST([XNEST_LIBS])
  	AC_SUBST([XNEST_SYS_LIBS])
-@@ -1548,7 +1557,7 @@ if test "x$XORG" = xyes; then
+@@ -1575,7 +1584,7 @@
  	XORG_OSINCS='-I$(top_srcdir)/hw/xfree86/os-support -I$(top_srcdir)/hw/xfree86/os-support/bus -I$(top_srcdir)/os'
  	XORG_INCS="$XORG_DDXINCS $XORG_OSINCS"
  	XORG_CFLAGS="$XORGSERVER_CFLAGS -DHAVE_XORG_CONFIG_H"
@@ -84,7 +84,7 @@ index 5e22ddf..d913468 100644
  
  	dnl ==================================================================
  	dnl symbol visibility
-@@ -1883,7 +1892,7 @@ if test "x$XWIN" = xyes; then
+@@ -1911,7 +1920,7 @@
  			XWIN_SYS_LIBS=-lwinsock2
  			;;
  	esac
@@ -93,7 +93,7 @@ index 5e22ddf..d913468 100644
  	XWIN_SYS_LIBS="$XWIN_SYS_LIBS $XWINMODULES_LIBS"
  	AC_SUBST(XWIN_LIBS)
  	AC_SUBST(XWIN_SERVER_NAME)
-@@ -1913,7 +1922,7 @@ if test "x$XQUARTZ" = xyes; then
+@@ -1941,7 +1950,7 @@
  	AC_DEFINE(XQUARTZ,1,[Have Quartz])
  	AC_DEFINE(ROOTLESS,1,[Build Rootless code])
  
@@ -102,7 +102,7 @@ index 5e22ddf..d913468 100644
  	AC_SUBST([DARWIN_LIBS])
  
  	AC_CHECK_LIB([Xplugin],[xp_init],[:])
-@@ -1974,7 +1983,7 @@ if test "x$DMX" = xyes; then
+@@ -2002,7 +2011,7 @@
  	fi
  	DMX_INCLUDES="$XEXT_INC $RENDER_INC $RECORD_INC"
  	XDMX_CFLAGS="$DMXMODULES_CFLAGS"
@@ -111,7 +111,7 @@ index 5e22ddf..d913468 100644
  	XDMX_SYS_LIBS="$DMXMODULES_LIBS"
  	AC_SUBST([XDMX_CFLAGS])
  	AC_SUBST([XDMX_LIBS])
-@@ -2085,7 +2094,7 @@ if test "$KDRIVE" = yes; then
+@@ -2113,7 +2122,7 @@
      
      KDRIVE_CFLAGS="$XSERVER_CFLAGS -DHAVE_KDRIVE_CONFIG_H $TSLIB_CFLAGS"
  
@@ -120,7 +120,7 @@ index 5e22ddf..d913468 100644
      KDRIVE_LIB='$(top_builddir)/hw/kdrive/src/libkdrive.la'
      case $host_os in
  	*linux*)
-@@ -2199,6 +2208,7 @@ Xext/Makefile
+@@ -2229,6 +2238,7 @@
  Xi/Makefile
  xfixes/Makefile
  exa/Makefile
@@ -128,11 +128,11 @@ index 5e22ddf..d913468 100644
  hw/Makefile
  hw/xfree86/Makefile
  hw/xfree86/common/Makefile
-diff --git a/dix/events.c b/dix/events.c
-index 43803ab..5b778a1 100644
---- a/dix/events.c
-+++ b/dix/events.c
-@@ -5468,6 +5468,9 @@ DeleteWindowFromAnyEvents(WindowPtr pWin, Bool freeResources)
+Index: xorg-server/dix/events.c
+===================================================================
+--- xorg-server.orig/dix/events.c	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/dix/events.c	2011-04-09 10:42:15.000000000 +0300
+@@ -5799,6 +5799,9 @@
  	    FreeResource(oc->resource, RT_NONE);
  	while ( (passive = wPassiveGrabs(pWin)) )
  	    FreeResource(passive->resource, RT_NONE);
@@ -142,11 +142,11 @@ index 43803ab..5b778a1 100644
       }
  
      DeleteWindowFromAnyExtEvents(pWin, freeResources);
-diff --git a/dix/window.c b/dix/window.c
-index d05f76d..cc2c64f 100644
---- a/dix/window.c
-+++ b/dix/window.c
-@@ -404,6 +404,9 @@ CreateRootWindow(ScreenPtr pScreen)
+Index: xorg-server/dix/window.c
+===================================================================
+--- xorg-server.orig/dix/window.c	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/dix/window.c	2011-04-09 10:42:15.000000000 +0300
+@@ -404,6 +404,9 @@
      pWin->optional->deviceCursors = NULL;
      pWin->optional->colormap = pScreen->defColormap;
      pWin->optional->visual = pScreen->rootVisual;
@@ -156,7 +156,7 @@ index d05f76d..cc2c64f 100644
  
      pWin->nextSib = NullWindow;
  
-@@ -3413,6 +3416,10 @@ CheckWindowOptionalNeed (WindowPtr w)
+@@ -3413,6 +3416,10 @@
              pNode = pNode->next;
          }
      }
@@ -167,7 +167,7 @@ index d05f76d..cc2c64f 100644
  
      parentOptional = FindWindowWithOptional(w)->optional;
      if (optional->visual != parentOptional->visual)
-@@ -3456,6 +3463,9 @@ MakeWindowOptional (WindowPtr pWin)
+@@ -3456,6 +3463,9 @@
      optional->inputShape = NULL;
      optional->inputMasks = NULL;
      optional->deviceCursors = NULL;
@@ -177,11 +177,10 @@ index d05f76d..cc2c64f 100644
  
      parentOptional = FindWindowWithOptional(pWin)->optional;
      optional->visual = parentOptional->visual;
-diff --git a/gesture/Makefile.am b/gesture/Makefile.am
-new file mode 100644
-index 0000000..ab2543b
---- /dev/null
-+++ b/gesture/Makefile.am
+Index: xorg-server/gesture/Makefile.am
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/gesture/Makefile.am	2011-04-09 10:42:15.000000000 +0300
 @@ -0,0 +1,10 @@
 +noinst_LTLIBRARIES = libgesture.la
 +
@@ -193,11 +192,10 @@ index 0000000..ab2543b
 +	gesture.h
 +
 +sdk_HEADERS = gesture.h
-diff --git a/gesture/gesture.c b/gesture/gesture.c
-new file mode 100644
-index 0000000..9d908f7
---- /dev/null
-+++ b/gesture/gesture.c
+Index: xorg-server/gesture/gesture.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/gesture/gesture.c	2011-04-09 10:42:15.000000000 +0300
 @@ -0,0 +1,430 @@
 +/*
 + * Copyright © 2010 Canonical, Ltd.
@@ -629,11 +627,10 @@ index 0000000..9d908f7
 +    while ((gestureMasks = wGestureMasks(pWin)) != 0)
 +        FreeResource(gestureMasks->clients->resource, RT_NONE);
 +}
-diff --git a/gesture/gesture.h b/gesture/gesture.h
-new file mode 100644
-index 0000000..3458b4e
---- /dev/null
-+++ b/gesture/gesture.h
+Index: xorg-server/gesture/gesture.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/gesture/gesture.h	2011-04-09 10:42:15.000000000 +0300
 @@ -0,0 +1,78 @@
 +/*
 + * Copyright © 2010 Canonical, Ltd.
@@ -713,11 +710,10 @@ index 0000000..3458b4e
 +extern void DeleteWindowFromGestureEvents(WindowPtr pWin);
 +
 +#endif /* _GESTURE_H_ */
-diff --git a/gesture/gestureint.h b/gesture/gestureint.h
-new file mode 100644
-index 0000000..a16ada1
---- /dev/null
-+++ b/gesture/gestureint.h
+Index: xorg-server/gesture/gestureint.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/gesture/gestureint.h	2011-04-09 10:42:15.000000000 +0300
 @@ -0,0 +1,49 @@
 +/*
 + * Copyright © 2010 Canonical, Ltd.
@@ -768,11 +764,10 @@ index 0000000..a16ada1
 +extern void SRepGestureGetSelectedEvents(ClientPtr client, int len, GestureGetSelectedEventsReply *rep);
 +
 +#endif /* _GESTUREINT_H_ */
-diff --git a/gesture/gestureproto.h b/gesture/gestureproto.h
-new file mode 100644
-index 0000000..a60dcb8
---- /dev/null
-+++ b/gesture/gestureproto.h
+Index: xorg-server/gesture/gestureproto.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/gesture/gestureproto.h	2011-04-09 10:42:15.000000000 +0300
 @@ -0,0 +1,132 @@
 +/*
 + * Copyright © 2010 Canonical, Ltd.
@@ -906,11 +901,10 @@ index 0000000..a60dcb8
 +#undef Time
 +
 +#endif /* _GESTUREPROTO_H_ */
-diff --git a/gesture/init.c b/gesture/init.c
-new file mode 100644
-index 0000000..e3d7959
---- /dev/null
-+++ b/gesture/init.c
+Index: xorg-server/gesture/init.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/gesture/init.c	2011-04-09 10:42:15.000000000 +0300
 @@ -0,0 +1,280 @@
 +/************************************************************
 +
@@ -1192,10 +1186,10 @@ index 0000000..e3d7959
 +    }
 +}
 +
-diff --git a/hw/xfree86/common/xf86Xinput.c b/hw/xfree86/common/xf86Xinput.c
-index adef044..3167656 100644
---- a/hw/xfree86/common/xf86Xinput.c
-+++ b/hw/xfree86/common/xf86Xinput.c
+Index: xorg-server/hw/xfree86/common/xf86Xinput.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.c	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.c	2011-04-09 10:42:15.000000000 +0300
 @@ -99,6 +99,15 @@
  		return;								\
  	}
@@ -1212,7 +1206,7 @@ index adef044..3167656 100644
  EventListPtr xf86Events = NULL;
  
  static int
-@@ -966,6 +975,40 @@ DeleteInputDeviceRequest(DeviceIntPtr pDev)
+@@ -971,6 +980,40 @@
   */
  
  void
@@ -1253,10 +1247,10 @@ index adef044..3167656 100644
  xf86PostMotionEvent(DeviceIntPtr	device,
                      int			is_absolute,
                      int			first_valuator,
-diff --git a/include/dix-config.h.in b/include/dix-config.h.in
-index 5622766..ab82016 100644
---- a/include/dix-config.h.in
-+++ b/include/dix-config.h.in
+Index: xorg-server/include/dix-config.h.in
+===================================================================
+--- xorg-server.orig/include/dix-config.h.in	2011-04-09 10:38:10.000000000 +0300
++++ xorg-server/include/dix-config.h.in	2011-04-09 10:42:15.000000000 +0300
 @@ -30,6 +30,9 @@
  /* Support Damage extension */
  #undef DAMAGE
@@ -1267,11 +1261,11 @@ index 5622766..ab82016 100644
  /* Build for darwin with Quartz support */
  #undef DARWIN_WITH_QUARTZ
  
-diff --git a/include/eventstr.h b/include/eventstr.h
-index cf02efe..8ab7ea7 100644
---- a/include/eventstr.h
-+++ b/include/eventstr.h
-@@ -70,6 +70,7 @@ enum EventType {
+Index: xorg-server/include/eventstr.h
+===================================================================
+--- xorg-server.orig/include/eventstr.h	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/include/eventstr.h	2011-04-09 10:42:15.000000000 +0300
+@@ -70,6 +70,7 @@
      ET_TouchMotion,
      ET_TouchMotionUnowned,
      ET_TouchOwnership,
@@ -1279,7 +1273,7 @@ index cf02efe..8ab7ea7 100644
      ET_Internal = 0xFF /* First byte */
  };
  
-@@ -77,6 +78,9 @@ enum EventType {
+@@ -77,6 +78,9 @@
                            FatalError("Wrong event type %d.\n", \
                                       ((InternalEvent*)(ev))->any.header);
  
@@ -1289,7 +1283,7 @@ index cf02efe..8ab7ea7 100644
  /**
   * Used for ALL input device events internal in the server until
   * copied into the matching protocol event.
-@@ -120,6 +124,16 @@ struct _DeviceEvent
+@@ -120,6 +124,16 @@
          uint8_t locked;  /**< XKB locked group */
          uint8_t effective;/**< XKB effective group */
      } group;
@@ -1306,10 +1300,10 @@ index cf02efe..8ab7ea7 100644
      Window      root; /**< Root window of the event */
      int corestate;    /**< Core key/button state BEFORE the event */
      int key_repeat;   /**< Internally-generated key repeat event */
-diff --git a/include/protocol-versions.h b/include/protocol-versions.h
-index 42b7d0e..ea5d702 100644
---- a/include/protocol-versions.h
-+++ b/include/protocol-versions.h
+Index: xorg-server/include/protocol-versions.h
+===================================================================
+--- xorg-server.orig/include/protocol-versions.h	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/include/protocol-versions.h	2011-04-09 10:42:15.000000000 +0300
 @@ -145,4 +145,8 @@
  #define SERVER_XVMC_MAJOR_VERSION		1
  #define SERVER_XVMC_MINOR_VERSION		1
@@ -1319,11 +1313,11 @@ index 42b7d0e..ea5d702 100644
 +#define SERVER_GESTURE_MINOR_VERSION		5
 +
  #endif
-diff --git a/include/windowstr.h b/include/windowstr.h
-index 4a7a0f4..4192ade 100644
---- a/include/windowstr.h
-+++ b/include/windowstr.h
-@@ -48,6 +48,10 @@ SOFTWARE.
+Index: xorg-server/include/windowstr.h
+===================================================================
+--- xorg-server.orig/include/windowstr.h	2011-04-06 18:25:22.000000000 +0300
++++ xorg-server/include/windowstr.h	2011-04-09 10:42:15.000000000 +0300
+@@ -48,6 +48,10 @@
  #ifndef WINDOWSTRUCT_H
  #define WINDOWSTRUCT_H
  
@@ -1334,7 +1328,7 @@ index 4a7a0f4..4192ade 100644
  #include "window.h"
  #include "pixmapstr.h"
  #include "regionstr.h"
-@@ -60,6 +64,10 @@ SOFTWARE.
+@@ -60,6 +64,10 @@
  #include <X11/Xprotostr.h>
  #include "opaque.h"
  
@@ -1345,7 +1339,7 @@ index 4a7a0f4..4192ade 100644
  #define GuaranteeNothing	0
  #define GuaranteeVisBack	1
  
-@@ -94,6 +102,9 @@ typedef struct _WindowOpt {
+@@ -94,6 +102,9 @@
      RegionPtr		inputShape;	   /* default: NULL */
      struct _OtherInputMasks *inputMasks;   /* default: NULL */
      DevCursorList       deviceCursors;     /* default: NULL */
@@ -1355,7 +1349,7 @@ index 4a7a0f4..4192ade 100644
  } WindowOptRec, *WindowOptPtr;
  
  #define BackgroundPixel	    2L
-@@ -202,6 +213,9 @@ extern _X_EXPORT Mask	DontPropagateMasks[];
+@@ -202,6 +213,9 @@
  #define wInputShape(w)          wUseDefault(w, inputShape, NULL)
  #define wClient(w)		(clients[CLIENT_ID((w)->drawable.id)])
  #define wBorderWidth(w)		((int) (w)->borderWidth)
@@ -1365,11 +1359,11 @@ index 4a7a0f4..4192ade 100644
  
  /* true when w needs a border drawn. */
  
-diff --git a/mi/mieq.c b/mi/mieq.c
-index 3a5d4e0..427c49b 100644
---- a/mi/mieq.c
-+++ b/mi/mieq.c
-@@ -58,6 +58,8 @@ in this Software without prior written authorization from The Open Group.
+Index: xorg-server/mi/mieq.c
+===================================================================
+--- xorg-server.orig/mi/mieq.c	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/mi/mieq.c	2011-04-09 10:42:15.000000000 +0300
+@@ -58,6 +58,8 @@
  # include <X11/extensions/dpmsconst.h>
  #endif
  
@@ -1378,7 +1372,7 @@ index 3a5d4e0..427c49b 100644
  #define QUEUE_SIZE  512
  
  #define EnqueueScreen(dev) dev->spriteInfo->sprite->pEnqueueScreen
-@@ -383,6 +385,39 @@ mieqProcessDeviceEvent(DeviceIntPtr dev,
+@@ -383,6 +385,39 @@
  
      CHECKEVENT(event);
  
@@ -1418,11 +1412,11 @@ index 3a5d4e0..427c49b 100644
      /* Custom event handler */
      handler = miEventQueue.handlers[event->any.type];
  
-diff --git a/mi/miinitext.c b/mi/miinitext.c
-index 4499f37..2ccb6cb 100644
---- a/mi/miinitext.c
-+++ b/mi/miinitext.c
-@@ -152,6 +152,9 @@ extern Bool noSELinuxExtension;
+Index: xorg-server/mi/miinitext.c
+===================================================================
+--- xorg-server.orig/mi/miinitext.c	2011-04-06 18:25:22.000000000 +0300
++++ xorg-server/mi/miinitext.c	2011-04-09 10:42:15.000000000 +0300
+@@ -152,6 +152,9 @@
  #ifdef XV
  extern Bool noXvExtension;
  #endif
@@ -1432,7 +1426,7 @@ index 4499f37..2ccb6cb 100644
  extern Bool noGEExtension;
  
  #ifndef XFree86LOADER
-@@ -263,6 +266,9 @@ extern void DamageExtensionInit(INITARGS);
+@@ -263,6 +266,9 @@
  extern void CompositeExtensionInit(INITARGS);
  #endif
  extern void GEExtensionInit(INITARGS);
@@ -1442,7 +1436,7 @@ index 4499f37..2ccb6cb 100644
  
  /* The following is only a small first step towards run-time
   * configurable extensions.
-@@ -334,6 +340,9 @@ static ExtensionToggle ExtensionToggleList[] =
+@@ -334,6 +340,9 @@
  #ifdef XV
      { "XVideo", &noXvExtension },
  #endif
@@ -1452,7 +1446,7 @@ index 4499f37..2ccb6cb 100644
      { NULL, NULL }
  };
  
-@@ -470,6 +479,9 @@ InitExtensions(int argc, char *argv[])
+@@ -470,6 +479,9 @@
  	GlxPushProvider(&__glXDRISWRastProvider);
      if (!noGlxExtension) GlxExtensionInit();
  #endif
@@ -1462,7 +1456,7 @@ index 4499f37..2ccb6cb 100644
  }
  
  #else /* XFree86LOADER */
-@@ -511,6 +523,9 @@ static ExtensionModule staticExtensions[] = {
+@@ -511,6 +523,9 @@
  #ifdef DAMAGE
      { DamageExtensionInit, "DAMAGE", &noDamageExtension, NULL },
  #endif
@@ -1472,11 +1466,11 @@ index 4499f37..2ccb6cb 100644
      { NULL, NULL, NULL, NULL, NULL }
  };
      
-diff --git a/os/utils.c b/os/utils.c
-index 18fd911..8937f8e 100644
---- a/os/utils.c
-+++ b/os/utils.c
-@@ -185,6 +185,9 @@ Bool noXvExtension = FALSE;
+Index: xorg-server/os/utils.c
+===================================================================
+--- xorg-server.orig/os/utils.c	2011-04-09 10:38:10.000000000 +0300
++++ xorg-server/os/utils.c	2011-04-09 10:42:15.000000000 +0300
+@@ -185,6 +185,9 @@
  #ifdef DRI2
  Bool noDRI2Extension = FALSE;
  #endif

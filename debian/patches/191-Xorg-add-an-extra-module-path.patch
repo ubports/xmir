@@ -8,9 +8,11 @@ module path will be searched first in the extra module path and then in
 the default module path. This should simplify the alternatives system
 used on Mandriva's fglrx package.
 ---
---- a/configure.ac
-+++ b/configure.ac
-@@ -492,6 +492,10 @@ AC_ARG_WITH(module-dir,      AS_HELP_STR
+Index: xorg-server/configure.ac
+===================================================================
+--- xorg-server.orig/configure.ac	2011-04-09 10:38:10.000000000 +0300
++++ xorg-server/configure.ac	2011-04-09 10:42:59.000000000 +0300
+@@ -489,6 +489,10 @@
  				  [Directory where modules are installed (default: $libdir/xorg/modules)]),
  				[ moduledir="$withval" ],
  				[ moduledir="${libdir}/xorg/modules" ])
@@ -21,7 +23,7 @@ used on Mandriva's fglrx package.
  AC_ARG_WITH(log-dir,         AS_HELP_STRING([--with-log-dir=DIR],
  				  [Directory where log files are kept (default: $localstatedir/log)]),
  				[ logdir="$withval" ],
-@@ -1805,6 +1809,7 @@ if test "x$XORG" = xyes; then
+@@ -1815,6 +1819,7 @@
  	AC_DEFINE_DIR(XF86CONFIGFILE, XF86CONFIGFILE, [Name of configuration file])
  	AC_DEFINE_DIR(__XCONFIGDIR__, XF86CONFIGDIR, [Name of configuration directory])
  	AC_DEFINE_DIR(DEFAULT_MODULE_PATH, moduledir, [Default module search path])
@@ -29,9 +31,11 @@ used on Mandriva's fglrx package.
  	AC_DEFINE_DIR(DEFAULT_LIBRARY_PATH, libdir, [Default library install path])
  	AC_DEFINE_DIR(DEFAULT_LOGPREFIX, LOGPREFIX, [Default log location])
  	AC_DEFINE_UNQUOTED(__VENDORDWEBSUPPORT__, ["$VENDOR_WEB"], [Vendor web address for support])
---- a/hw/xfree86/common/xf86Config.c
-+++ b/hw/xfree86/common/xf86Config.c
-@@ -653,11 +653,21 @@ configFiles(XF86ConfFilesPtr fileconf)
+Index: xorg-server/hw/xfree86/common/xf86Config.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Config.c	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Config.c	2011-04-09 10:38:10.000000000 +0300
+@@ -628,11 +628,21 @@
    
    /* ModulePath */
  
@@ -55,9 +59,11 @@ used on Mandriva's fglrx package.
    }
  
    xf86Msg(xf86ModPathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
---- a/hw/xfree86/common/xf86Globals.c
-+++ b/hw/xfree86/common/xf86Globals.c
-@@ -145,6 +145,7 @@ xf86InfoRec xf86Info = {
+Index: xorg-server/hw/xfree86/common/xf86Globals.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Globals.c	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Globals.c	2011-04-09 10:38:10.000000000 +0300
+@@ -139,6 +139,7 @@
  const char *xf86ConfigFile = NULL;
  const char *xf86ConfigDir = NULL;
  const char *xf86ModulePath = DEFAULT_MODULE_PATH;
@@ -65,9 +71,11 @@ used on Mandriva's fglrx package.
  MessageType xf86ModPathFrom = X_DEFAULT;
  const char *xf86LogFile = DEFAULT_LOGPREFIX;
  MessageType xf86LogFileFrom = X_DEFAULT;
---- a/hw/xfree86/common/xf86Priv.h
-+++ b/hw/xfree86/common/xf86Priv.h
-@@ -78,6 +78,7 @@ extern _X_EXPORT  struct pci_slot_match 
+Index: xorg-server/hw/xfree86/common/xf86Priv.h
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Priv.h	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Priv.h	2011-04-09 10:38:10.000000000 +0300
+@@ -75,6 +75,7 @@
  
  extern _X_EXPORT  xf86InfoRec xf86Info;
  extern _X_EXPORT  const char *xf86ModulePath;
@@ -75,8 +83,10 @@ used on Mandriva's fglrx package.
  extern _X_EXPORT  MessageType xf86ModPathFrom;
  extern _X_EXPORT  const char *xf86LogFile;
  extern _X_EXPORT  MessageType xf86LogFileFrom;
---- a/include/xorg-config.h.in
-+++ b/include/xorg-config.h.in
+Index: xorg-server/include/xorg-config.h.in
+===================================================================
+--- xorg-server.orig/include/xorg-config.h.in	2011-04-09 10:36:56.000000000 +0300
++++ xorg-server/include/xorg-config.h.in	2011-04-09 10:38:10.000000000 +0300
 @@ -42,6 +42,9 @@
  /* Path to loadable modules. */
  #undef DEFAULT_MODULE_PATH

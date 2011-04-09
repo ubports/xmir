@@ -10,11 +10,11 @@ Origin: http://patchwork.freedesktop.org/patch/242/
 Bug: https://bugs.freedesktop.org/show_bug.cgi?id=27134
 Bug-Ubuntu: https://launchpad.net/bugs/519049
 
-diff --git a/Xext/security.c b/Xext/security.c
-index af8d205..e81e560 100644
---- a/Xext/security.c
-+++ b/Xext/security.c
-@@ -279,10 +279,10 @@ SecurityComputeAuthorizationTimeout(
+Index: xorg-server/Xext/security.c
+===================================================================
+--- xorg-server.orig/Xext/security.c	2011-04-09 10:36:57.000000000 +0300
++++ xorg-server/Xext/security.c	2011-04-09 10:38:10.000000000 +0300
+@@ -271,10 +271,10 @@
      /* maxSecs is the number of full seconds that can be expressed in
       * 32 bits worth of milliseconds
       */
@@ -27,7 +27,7 @@ index af8d205..e81e560 100644
  	pAuth->secondsRemaining = seconds - maxSecs;
  	return maxSecs * MILLI_PER_SECOND;
      }
-@@ -320,8 +320,6 @@ SecurityAuthorizationExpired(
+@@ -312,8 +312,6 @@
  {
      SecurityAuthorizationPtr pAuth = (SecurityAuthorizationPtr)pval;
  

@@ -29,12 +29,9 @@
 208_switch_on_release.diff
 209_add_legacy_bgnone_option.patch
 210_pixman_null_ptr_check.patch
-213_xichangehierarchy-check-oom.patch
 214_glx_dri_searchdirs.patch
 215_glx_drawable_refcounting.diff
 217_revert_bgnonevisitwindow.patch
-218_getValuatorEvents_cleanup.patch
-219_xi1_handle_noncontinuous_valuator_data.patch
 500_xi2.1.patch
 501_xf86CoordinatesToWindow.patch
 502_gestures-extension.patch

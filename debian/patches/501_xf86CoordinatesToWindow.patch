@@ -1,8 +1,8 @@
-diff --git a/dix/events.c b/dix/events.c
-index 8c590f0..43803ab 100644
---- a/dix/events.c
-+++ b/dix/events.c
-@@ -5837,3 +5837,47 @@ IsInterferingGrab(ClientPtr client, DeviceIntPtr dev, xEvent* event)
+Index: xorg-server/dix/events.c
+===================================================================
+--- xorg-server.orig/dix/events.c	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/dix/events.c	2011-04-09 10:42:43.000000000 +0300
+@@ -6168,3 +6168,47 @@
      return FALSE;
  }
  
@@ -50,11 +50,11 @@ index 8c590f0..43803ab 100644
 +    return ret;
 +}
 +
-diff --git a/hw/xfree86/common/xf86Xinput.c b/hw/xfree86/common/xf86Xinput.c
-index 9b21c31..adef044 100644
---- a/hw/xfree86/common/xf86Xinput.c
-+++ b/hw/xfree86/common/xf86Xinput.c
-@@ -1441,4 +1441,10 @@ xf86PostTouchEvent(DeviceIntPtr dev, uint32_t touchid, uint16_t type,
+Index: xorg-server/hw/xfree86/common/xf86Xinput.c
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.c	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.c	2011-04-09 10:42:43.000000000 +0300
+@@ -1464,4 +1464,10 @@
          mieqEnqueue(dev, (InternalEvent *)((xf86Events + i)->event));
  }
  
@@ -65,21 +65,21 @@ index 9b21c31..adef044 100644
 +}
 +
  /* end of xf86Xinput.c */
-diff --git a/hw/xfree86/common/xf86Xinput.h b/hw/xfree86/common/xf86Xinput.h
-index f1afb09..b6254c6 100644
---- a/hw/xfree86/common/xf86Xinput.h
-+++ b/hw/xfree86/common/xf86Xinput.h
-@@ -184,4 +184,6 @@ extern _X_EXPORT void xf86VIDrvMsgVerb(InputInfoPtr dev,
+Index: xorg-server/hw/xfree86/common/xf86Xinput.h
+===================================================================
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.h	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.h	2011-04-09 10:42:15.000000000 +0300
+@@ -184,4 +184,6 @@
  /* xf86Option.c */
  extern _X_EXPORT void xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts);
  
 +extern _X_EXPORT WindowPtr xf86CoordinatesToWindow(int x, int y, int screen);
 +
  #endif /* _xf86Xinput_h */
-diff --git a/include/events.h b/include/events.h
-index 222cc3d..8b87cb6 100644
---- a/include/events.h
-+++ b/include/events.h
+Index: xorg-server/include/events.h
+===================================================================
+--- xorg-server.orig/include/events.h	2011-04-09 10:42:15.000000000 +0300
++++ xorg-server/include/events.h	2011-04-09 10:42:15.000000000 +0300
 @@ -24,6 +24,7 @@
  
  #ifndef EVENTS_H
@@ -88,7 +88,7 @@ index 222cc3d..8b87cb6 100644
  typedef struct _DeviceEvent DeviceEvent;
  typedef struct _DeviceChangedEvent DeviceChangedEvent;
  typedef struct _TouchOwnershipEvent TouchOwnershipEvent;
-@@ -36,4 +37,6 @@ typedef struct _XQuartzEvent XQuartzEvent;
+@@ -36,4 +37,6 @@
  #endif
  typedef union _InternalEvent InternalEvent;
  
