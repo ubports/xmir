@@ -32,7 +32,6 @@
 214_glx_dri_searchdirs.patch
 215_glx_drawable_refcounting.diff
 217_revert_bgnonevisitwindow.patch
-218_revert-release-all-buttons.diff
 500_xi2.1.patch
 501_xf86CoordinatesToWindow.patch
 502_gestures-extension.patch
