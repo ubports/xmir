@@ -1,3 +1,10 @@
+xorg-server (2:1.10.1-1ubuntu2) UNRELEASED; urgency=low
+
+  * Fix masked transformed valuator handling (LP: #774938)
+    - Added debian/patches/503_fix_masked_transformed_valuators.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 29 Apr 2011 11:43:59 -0400
+
 xorg-server (2:1.10.1-1ubuntu1) natty; urgency=low
 
   * Merge from Debian experimental (LP: #757972)
