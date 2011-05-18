@@ -1,3 +1,10 @@
+xorg-server (2:1.10.1-1ubuntu3) UNRELEASED; urgency=low
+
+  * Add 218_randr-check-rotated-virtual-size-limits-correctly.diff
+    - Fix rotation with nvidia driver. (LP: #740933)
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 18 May 2011 22:05:18 +0300
+
 xorg-server (2:1.10.1-1ubuntu2) oneiric; urgency=low
 
   * Fix masked transformed valuator handling (LP: #774938)
