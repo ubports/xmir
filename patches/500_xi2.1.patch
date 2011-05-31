@@ -94,7 +94,7 @@ Index: xorg-server/Xi/exevents.c
  /**
   * @return the device matching the deviceid of the device set in the event, or
   * NULL if the event is not an XInput event.
-@@ -725,6 +767,46 @@
+@@ -722,6 +764,46 @@
      XISendDeviceChangedEvent(slave, device, dce);
  }
  
@@ -141,7 +141,7 @@ Index: xorg-server/Xi/exevents.c
  /**
   * Update the device state according to the data in the event.
   *
-@@ -732,8 +814,6 @@
+@@ -729,8 +811,6 @@
   *   DEFAULT ... process as normal
   *   DONT_PROCESS ... return immediately from caller
   */
@@ -150,7 +150,7 @@ Index: xorg-server/Xi/exevents.c
  int
  UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
  {
-@@ -857,34 +937,9 @@
+@@ -854,34 +934,9 @@
  
          if (!button_is_down(device, key, BUTTON_PROCESSED))
              return DONT_PROCESS;
@@ -186,7 +186,7 @@ Index: xorg-server/Xi/exevents.c
  
          /* Add state and motionMask to the filter for this event */
          mask = DevicePointerMotionMask | b->state | b->motionMask;
-@@ -926,6 +981,955 @@
+@@ -923,6 +978,955 @@
  }
  
  /**
@@ -1142,7 +1142,7 @@ Index: xorg-server/Xi/exevents.c
   * Main device event processing function.
   * Called from when processing the events from the event queue.
   *
-@@ -954,6 +1958,33 @@
+@@ -951,6 +1955,33 @@
      {
          ProcessRawEvent(&ev->raw_event, device);
          return;
@@ -1176,7 +1176,7 @@ Index: xorg-server/Xi/exevents.c
      }
  
      if (IsPointerDevice(device))
-@@ -1152,6 +2183,50 @@
+@@ -1149,6 +2180,50 @@
          dev->proximity->in_proximity = FALSE;
  }
  
@@ -1227,7 +1227,7 @@ Index: xorg-server/Xi/exevents.c
  static void
  FixDeviceStateNotify(DeviceIntPtr dev, deviceStateNotify * ev, KeyClassPtr k,
  		     ButtonClassPtr b, ValuatorClassPtr v, int first)
-@@ -1562,6 +2637,38 @@
+@@ -1559,6 +2634,38 @@
      return AddPassiveGrabToList(client, grab);
  }
  
@@ -1266,7 +1266,7 @@ Index: xorg-server/Xi/exevents.c
  int
  SelectForWindow(DeviceIntPtr dev, WindowPtr pWin, ClientPtr client,
  		Mask mask, Mask exclusivemasks)
-@@ -1699,10 +2806,65 @@
+@@ -1696,10 +2803,65 @@
      }
  }
  
@@ -1332,7 +1332,7 @@ Index: xorg-server/Xi/exevents.c
  
      if (!wOtherInputMasks(pWin))
  	return Success;
-@@ -1738,6 +2900,54 @@
+@@ -1735,6 +2897,54 @@
      FatalError("client not on device event list");
  }
  
@@ -1600,7 +1600,7 @@ Index: xorg-server/Xi/xipassivegrab.c
 ===================================================================
 --- xorg-server.orig/Xi/xipassivegrab.c	2011-04-06 18:25:23.000000000 +0300
 +++ xorg-server/Xi/xipassivegrab.c	2011-04-09 10:42:15.000000000 +0300
-@@ -105,19 +105,30 @@
+@@ -110,19 +110,30 @@
      if (stuff->grab_type != XIGrabtypeButton &&
          stuff->grab_type != XIGrabtypeKeycode &&
          stuff->grab_type != XIGrabtypeEnter &&
@@ -1633,7 +1633,7 @@ Index: xorg-server/Xi/xipassivegrab.c
      if (XICheckInvalidMaskBits(client, (unsigned char*)&stuff[1],
                                 stuff->mask_len * 4) != Success)
          return BadValue;
-@@ -185,6 +196,9 @@
+@@ -192,6 +203,9 @@
                  status = GrabWindow(client, dev, stuff->grab_type,
                                      &param, &mask);
                  break;
@@ -1893,7 +1893,7 @@ Index: xorg-server/dix/devices.c
      FreeDeviceClass(ButtonClass, (pointer)&classes->button);
      FreeDeviceClass(FocusClass, (pointer)&classes->focus);
      FreeDeviceClass(ProximityClass, (pointer)&classes->proximity);
-@@ -1547,6 +1562,151 @@
+@@ -1574,6 +1589,151 @@
  	   InitPtrFeedbackClassDeviceStruct(dev, controlProc));
  }
  
@@ -2045,8 +2045,8 @@ Index: xorg-server/dix/devices.c
  /*
   * Check if the given buffer contains elements between low (inclusive) and
   * high (inclusive) only.
-@@ -2419,6 +2579,58 @@
-     FreeEventList(eventlist, GetMaximumEventsNum());
+@@ -2406,6 +2566,58 @@
+     }
  }
  
 +static void
@@ -2104,7 +2104,7 @@ Index: xorg-server/dix/devices.c
  /**
   * Attach device 'dev' to device 'master'.
   * Client is set to the client that issued the request, or NULL if it comes
-@@ -2486,6 +2698,12 @@
+@@ -2471,6 +2683,12 @@
          dev->spriteInfo->spriteOwner = FALSE;
  
          RecalculateMasterButtons(master);
@@ -3871,8 +3871,8 @@ Index: xorg-server/include/input.h
 ===================================================================
 --- xorg-server.orig/include/input.h	2011-04-06 18:25:23.000000000 +0300
 +++ xorg-server/include/input.h	2011-04-09 10:42:15.000000000 +0300
-@@ -104,6 +104,8 @@
- typedef struct _DeviceIntRec *DeviceIntPtr;
+@@ -105,6 +105,8 @@
+ typedef struct _ValuatorClassRec *ValuatorClassPtr;
  typedef struct _ClassesRec *ClassesPtr;
  typedef struct _SpriteRec *SpritePtr;
 +typedef struct _TouchClassRec *TouchClassPtr;
@@ -3880,7 +3880,7 @@ Index: xorg-server/include/input.h
  typedef union _GrabMask GrabMask;
  
  typedef struct _EventList {
-@@ -314,6 +316,12 @@
+@@ -319,6 +321,12 @@
  extern _X_EXPORT Bool InitFocusClassDeviceStruct(
      DeviceIntPtr /*device*/);
  
@@ -3893,7 +3893,7 @@ Index: xorg-server/include/input.h
  typedef void (*BellProcPtr)(
      int /*percent*/,
      DeviceIntPtr /*device*/,
-@@ -463,6 +471,22 @@
+@@ -468,6 +476,22 @@
      int key_code,
      const ValuatorMask *mask);
  
@@ -3916,7 +3916,7 @@ Index: xorg-server/include/input.h
  extern int GetProximityEvents(
      EventListPtr events,
      DeviceIntPtr pDev,
-@@ -525,6 +549,18 @@
+@@ -530,6 +554,18 @@
  extern _X_EXPORT InputAttributes *DuplicateInputAttributes(InputAttributes *attrs);
  extern _X_EXPORT void FreeInputAttributes(InputAttributes *attrs);
  
@@ -3983,7 +3983,7 @@ Index: xorg-server/include/inputstr.h
  
 @@ -284,6 +289,75 @@
      ValuatorAccelerationRec	accelScheme;
- } ValuatorClassRec, *ValuatorClassPtr;
+ } ValuatorClassRec;
  
 +typedef enum {
 +    TOUCH_GRAB,
@@ -4221,8 +4221,8 @@ Index: xorg-server/test/input.c
  }
  
  static void test_bits_to_byte(int i)
-@@ -1199,6 +1262,101 @@
-     }
+@@ -1223,6 +1286,101 @@
+     free(v);
  }
  
 +static void touch_create(void)
@@ -4323,7 +4323,7 @@ Index: xorg-server/test/input.c
  int main(int argc, char** argv)
  {
      g_test_init(&argc, &argv,NULL);
-@@ -1209,6 +1367,7 @@
+@@ -1233,6 +1391,7 @@
      g_test_add_func("/dix/input/init-valuators", dix_init_valuators);
      g_test_add_func("/dix/input/event-core-conversion", dix_event_to_core_conversion);
      g_test_add_func("/dix/input/event-xi1-conversion", dix_event_to_xi1_conversion);
@@ -4331,11 +4331,11 @@ Index: xorg-server/test/input.c
      g_test_add_func("/dix/input/check-grab-values", dix_check_grab_values);
      g_test_add_func("/dix/input/xi2-struct-sizes", xi2_struct_sizes);
      g_test_add_func("/dix/input/grab_matching", dix_grab_matching);
-@@ -1216,7 +1375,9 @@
+@@ -1240,7 +1399,10 @@
      g_test_add_func("/include/byte_padding_macros", include_byte_padding_macros);
      g_test_add_func("/include/bit_test_macros", include_bit_test_macros);
      g_test_add_func("/Xi/xiproperty/register-unregister", xi_unregister_handlers);
--
+     g_test_add_func("/dix/input/valuator-alloc", dix_valuator_alloc);
 +    g_test_add_func("/dix/input/touch-create", touch_create);
 +    g_test_add_func("/dix/input/touch-find-point", touch_find_point);
 +    g_test_add_func("/dix/input/touch-finish", touch_finish);
