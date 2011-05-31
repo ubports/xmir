@@ -1,3 +1,86 @@
+xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian unstable, remaining changes:
+     - rules:
+      + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
+      + Enable xcsecurity. (LP #247537)
+      + Add --with-extra-module-dir to support GL alternatives.
+      + Mention Ubuntu support in builderstring rather than package uploader's
+        email address.
+      + Enable multitouch gestures.
+    - control:
+      + Xvfb depends on xauth, x11-xkb-utils, recommends libgl1-mesa-dri.
+        (LP #500102)
+      + Add breaks for incompatible drivers. (LP #614993)
+      + Drop libaudit-dev from build-deps.
+      + Build-depend on newer mesa to pick up DRI search paths variable.
+      + Bump dependency on x11proto-input-dev for Xi 2.1
+      + Drop linux-any specifier to make pbuilder less narky.
+    - local/xvfb-run*: Add correct docs about error codes. (LP #328205)
+    - debian/patches:
+      + 100_rethrow_signals.patch:
+        When aborting, re-raise signals for apport
+      + 105_nvidia_fglrx_autodetect.patch:
+        Load proprietary drivers automatically when installed.
+      + 109_fix-swcursor-crash.patch:
+        Avoid dereferencing null pointer while reloading cursors during
+        resume. (LP #371405)
+      + 111_armel-drv-fallbacks.patch:
+        Add support for armel driver fallbacks.
+      + 121_only_switch_vt_when_active.diff:
+        Add a check to prevent the X server from changing the VT when killing
+        GDM from the console.
+      + 122_xext_fix_card32_overflow_in_xauth.patch:
+        Fix server crash when “xauth generate” is called with large timeout.
+      + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
+        166_nullptr_xinerama_keyrepeat.patch, 167_nullptr_xisbread.patch
+        172_cwgetbackingpicture_nullptr_check.patch:
+        Fix various segfaults in xserver by checking pointers for NULL
+        values before dereferencing them.
+      + 165_man_xorg_conf_no_device_ident.patch
+        Correct man page
+      + 168_glibc_trace_to_stderr.patch:
+        Report abort traces to stderr instead of terminal
+      + 188_default_primary_to_first_busid.patch:
+        Pick the first device and carry on (LP #459512)
+      + 190_cache-xkbcomp_output_for_fast_start_up.patch:
+        Cache keyboard settings.
+      + 191-Xorg-add-an-extra-module-path.patch:
+        Add support for the alternative module path.
+      + 198_nohwaccess.patch:
+        Adds a -nohwaccess argument to make X not access the hardware
+        ports directly.
+      + 200_randr-null.patch:
+        Clarify a pointer initialization.
+      + 206_intel_8xx_default_to_fbdev.patch:
+        Makes 8xx class intel GPUs default to fbdev for stability. (LP #633593)
+      + 208_switch_on_release.diff:
+        Switch keyboard layouts on key-release rather than key-press
+  	(LP #36812)
+      + 209_add_legacy_bgnone_option.patch:
+        Add -nr as a synonym for -background none until all ?DM are updated for
+  	the new option.
+      + 210_pixman_null_ptr_check.patch:
+        Catch NULL pointer access after pixman_image_create_bits() failure
+  	(LP #705078)
+      + 214_glx_dri_searchdirs.patch:
+        Search in same paths as mesa for DRI drivers for AIGLX so we can handle
+        UMS fallback for radeon gracefully.
+      + 217_revert_bgnonevisitwindow.patch:
+        Revert a commit that causes brief graphical corruption. (LP: 726807)
+      + 218_randr-check-rotated-virtual-size-limits-correctly.diff:
+        Fix rotation with nvidia driver. (LP: 740933)
+      + 500_xi2.1.patch,
+        501_xf86CoordinatesToWindow.patch,
+        502_gestures-extension.patch:
+        Add Xi 2.1 and Gesture extension support.
+      + 503_fix_masked_transformed_valuators.patch:
+        Fix masked transformed valuator handling (LP #774938)
+  * Drop patch 215_glx_drawable_refcounting.diff, similar fix included
+    upstream.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 31 May 2011 14:12:19 +0300
+
 xorg-server (2:1.10.2-1) unstable; urgency=low
 
   * New upstream release.
