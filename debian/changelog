@@ -77,6 +77,8 @@ xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
     upstream.
   * Drop patch 121_only_switch_vt_when_active.diff, doesn't seem to
     work anymore.
+  * videoabiver, inputabiver, xserver-xorg-dev.install:
+    Drop changes that are obsolete post-natty.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 31 May 2011 14:12:19 +0300
 
