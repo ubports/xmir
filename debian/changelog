@@ -3,7 +3,6 @@ xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
   * Merge from Debian unstable, remaining changes:
      - rules:
       + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
-      + Enable xcsecurity. (LP #247537)
       + Add --with-extra-module-dir to support GL alternatives.
       + Mention Ubuntu support in builderstring rather than package uploader's
         email address.
