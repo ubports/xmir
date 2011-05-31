@@ -108,6 +108,7 @@ confflags += \
 	     --disable-install-libxf86config \
 	     --enable-mitshm \
 	     --enable-xres \
+	     --disable-xcsecurity \
 	     --disable-xcalibrate \
 	     --disable-tslib \
 	     --enable-dbe \
@@ -136,7 +137,6 @@ confflags_main = \
 	--enable-xdm-auth-1 \
 	--enable-glx \
 	$(dri) \
-	--enable-xcsecurity \
 	--enable-xinerama \
 	--enable-xf86vidmode \
 	--enable-xace \
@@ -164,7 +164,6 @@ confflags_udeb = \
 	--disable-xvmc \
 	--enable-dga \
 	--disable-screensaver \
-	--disable-xcsecurity \
 	--disable-xdmcp \
 	--disable-xdm-auth-1 \
 	--disable-glx \
