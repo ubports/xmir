@@ -11,7 +11,6 @@
 100_rethrow_signals.patch
 105_nvidia_fglrx_autodetect.patch
 111_armel-drv-fallbacks.patch
-121_only_switch_vt_when_active.diff
 122_xext_fix_card32_overflow_in_xauth.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch

@@ -27,9 +27,6 @@ xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
         resume. (LP #371405)
       + 111_armel-drv-fallbacks.patch:
         Add support for armel driver fallbacks.
-      + 121_only_switch_vt_when_active.diff:
-        Add a check to prevent the X server from changing the VT when killing
-        GDM from the console.
       + 122_xext_fix_card32_overflow_in_xauth.patch:
         Fix server crash when “xauth generate” is called with large timeout.
       + 157_check_null_modes.patch, 162_null_crtc_in_rotation.patch,
@@ -78,6 +75,8 @@ xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
         Fix masked transformed valuator handling (LP #774938)
   * Drop patch 215_glx_drawable_refcounting.diff, similar fix included
     upstream.
+  * Drop patch 121_only_switch_vt_when_active.diff, doesn't seem to
+    work anymore.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 31 May 2011 14:12:19 +0300
 
