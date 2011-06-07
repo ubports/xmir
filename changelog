@@ -78,6 +78,8 @@ xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
     work anymore.
   * videoabiver, inputabiver, xserver-xorg-dev.install:
     Drop changes that are obsolete post-natty.
+  * Add 219_fedora-pointer-barrier.diff:
+    Pointer barrier and cursor confinement patch backported to 1.10.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 31 May 2011 14:12:19 +0300
 
