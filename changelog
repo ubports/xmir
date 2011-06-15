@@ -1,5 +1,6 @@
 xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * Merge from Debian unstable, remaining changes:
      - rules:
       + Disable SELinux, libaudit-dev is not in main yet. (LP #406226)
@@ -81,7 +82,11 @@ xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
   * Add 219_fedora-pointer-barrier.diff:
     Pointer barrier and cursor confinement patch backported to 1.10.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 31 May 2011 14:12:19 +0300
+  [ Christopher James Halse Rogers ]
+  * debian/control:
+    Bump mesa-common-dev build-dep to pick up multiarch DRI paths.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 15 Jun 2011 10:51:18 +1000
 
 xorg-server (2:1.10.2-1) unstable; urgency=low
 
