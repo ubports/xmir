@@ -643,3 +643,44 @@ index d005369..6ba276e 100644
 -- 
 1.7.4.4
 
+commit 703baece7ebd128a6742d0523d5b3ebe65126fa5
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Feb 11 12:19:26 2011 +1000
+
+    dix: Add IsFloating(device) wrapper.
+    
+    Simplifies check for floating devices.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Benjamin Tissoires <tissoire@cena.fr>
+
+diff --git a/dix/events.c b/dix/events.c
+index 4826781..f6d92cf 100644
+--- a/dix/events.c
++++ b/dix/events.c
+@@ -328,6 +328,13 @@ IsMaster(DeviceIntPtr dev)
+     return dev->type == MASTER_POINTER || dev->type == MASTER_KEYBOARD;
+ }
+ 
++Bool
++IsFloating(DeviceIntPtr dev)
++{
++    return GetMaster(dev, MASTER_KEYBOARD) == NULL;
++}
++
++
+ /**
+  * Max event opcode.
+  */
+diff --git a/include/dix.h b/include/dix.h
+index 12e4b59..3f99098 100644
+--- a/include/dix.h
++++ b/include/dix.h
+@@ -570,6 +570,7 @@ extern Bool _X_EXPORT IsPointerDevice( DeviceIntPtr dev);
+ extern Bool _X_EXPORT IsKeyboardDevice(DeviceIntPtr dev);
+ extern Bool IsPointerEvent(InternalEvent *event);
+ extern _X_EXPORT Bool IsMaster(DeviceIntPtr dev);
++extern _X_EXPORT Bool IsFloating(DeviceIntPtr dev);
+ 
+ extern _X_HIDDEN void CopyKeyClass(DeviceIntPtr device, DeviceIntPtr master);
+ extern _X_HIDDEN int CorePointerProc(DeviceIntPtr dev, int what);
