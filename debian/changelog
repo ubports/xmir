@@ -1,3 +1,12 @@
+xorg-server (2:1.10.2-2) UNRELEASED; urgency=low
+
+  * Bump libgl1-mesa-dri versioned Recommends to 7.10.2-4, to lower the
+    odds of having a server built against multiarched mesa, installed
+    along a pre-multiarch mesa. The Breaks in mesa packages take care of
+    the other way round already.
+
+ -- Cyril Brulebois <kibi@debian.org>  Thu, 16 Jun 2011 03:39:16 +0200
+
 xorg-server (2:1.10.2-1) unstable; urgency=low
 
   * New upstream release.
