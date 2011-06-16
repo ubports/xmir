@@ -1,4 +1,4 @@
-xorg-server (2:1.10.2-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.10.2-1ubuntu1) oneiric; urgency=low
 
   [ Timo Aaltonen ]
   * Merge from Debian unstable, remaining changes:
