@@ -1,4 +1,4 @@
-xorg-server (2:1.10.2-2) UNRELEASED; urgency=low
+xorg-server (2:1.10.2-2) unstable; urgency=low
 
   * Bump libgl1-mesa-dri versioned Recommends to 7.10.2-4, to lower the
     odds of having a server built against multiarched mesa, installed
@@ -8,7 +8,7 @@ xorg-server (2:1.10.2-2) UNRELEASED; urgency=low
     early, add a Breaks against pre-multiarch libgl1-mesa-dri and
     libgl1-mesa-dri-experimental.
 
- -- Cyril Brulebois <kibi@debian.org>  Thu, 16 Jun 2011 03:39:16 +0200
+ -- Cyril Brulebois <kibi@debian.org>  Fri, 17 Jun 2011 18:09:36 +0200
 
 xorg-server (2:1.10.2-1) unstable; urgency=low
 
