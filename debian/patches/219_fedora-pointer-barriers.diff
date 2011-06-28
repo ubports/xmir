@@ -13,8 +13,7 @@ Subject: [PATCH] CRTC confine and pointer barriers
  randr/randr.c               |    2 +
  randr/randrstr.h            |    4 +
  randr/rrcrtc.c              |  155 ++++++++++++++++
- test/Makefile.am            |    4 +-
- xfixes/cursor.c             |  408 ++++++++++++++++++++++++++++++++++++++++++-
+ xfixes/cursor.c             |  399 ++++++++++++++++++++++++++++++++++++++++++-
  xfixes/xfixes.c             |   24 ++-
  xfixes/xfixes.h             |   17 ++
  xfixes/xfixesint.h          |   16 ++
@@ -412,27 +411,6 @@ index 98206a2..d4d8f2a 100644
 +       }
 +    }
 +}
-diff --git a/test/Makefile.am b/test/Makefile.am
-index 456221e..ccdb859 100644
---- a/test/Makefile.am
-+++ b/test/Makefile.am
-@@ -1,6 +1,6 @@
- if UNITTESTS
- SUBDIRS= . xi2
--check_PROGRAMS = xkb input xtest
-+check_PROGRAMS = xkb input xtest list fixes
- check_LTLIBRARIES = libxservertest.la
- 
- TESTS=$(check_PROGRAMS)
-@@ -16,6 +16,8 @@ endif
- xkb_LDADD=$(TEST_LDADD)
- input_LDADD=$(TEST_LDADD)
- xtest_LDADD=$(TEST_LDADD)
-+list_LDADD=$(TEST_LDADD)
-+fixes_LDADD=$(TEST_LDADD)
- 
- libxservertest_la_LIBADD = \
-             $(XSERVER_LIBS) \
 diff --git a/xfixes/cursor.c b/xfixes/cursor.c
 index fb608f6..5c55c95 100644
 --- a/xfixes/cursor.c
@@ -498,7 +476,7 @@ index fb608f6..5c55c95 100644
      deleteCursorHideCountsForScreen(pScreen);
      ret = (*pScreen->CloseScreen) (index, pScreen);
      free(cs);
-@@ -1029,6 +1045,391 @@ CursorFreeWindow (pointer data, XID id)
+@@ -1029,6 +1045,382 @@ CursorFreeWindow (pointer data, XID id)
      return 1;
  }
  
@@ -553,8 +531,8 @@ index fb608f6..5c55c95 100644
 +
 +/**
 + * Test if the movement vector x1/y1 → x2/y2 is intersecting with the
-+ * barrier. A movement vector with the startpoint or endpoint on the barrier
-+ * itself counts as intersecting.
++ * barrier. A movement vector with the startpoint or endpoint adjacent to
++ * the barrier itself counts as intersecting.
 + *
 + * @param x1 X start coordinate of movement vector
 + * @param y1 Y start coordinate of movement vector
@@ -581,30 +559,20 @@ index fb608f6..5c55c95 100644
 +	    return FALSE;
 +	if (dir & BarrierNegativeX && x1 == (barrier->x1 - 1))
 +	    return FALSE;
-+	/* startpoint on barrier */
++	/* startpoint adjacent to barrier, moving towards -> block */
 +	if (x1 == barrier->x1 && y1 >= barrier->y1 && y1 <= barrier->y2) {
 +	    *distance = 0;
 +	    return TRUE;
 +	}
-+	/* endpoint on barrier */
-+	if (x2 == barrier->x1 && y2 >= barrier->y1 && y2 <= barrier->y2) {
-+	    *distance = abs(x2 - x1);
-+	    return TRUE;
-+        }
 +    } else {
 +	/* handle immediate barrier adjacency, moving away */
 +	if (dir & BarrierPositiveY && y1 == barrier->y1)
 +	    return FALSE;
 +	if (dir & BarrierNegativeY && y1 == (barrier->y1 - 1))
 +	    return FALSE;
-+	/* startpoint on barrier */
++	/* startpoint adjacent to barrier, moving towards -> block */
 +	if (y1 == barrier->y1 && x1 >= barrier->x1 && x1 <= barrier->x2) {
 +	    *distance = 0;
-+	    return TRUE;
-+        }
-+	/* endpoint on barrier */
-+	if (y2 == barrier->y1 && x2 >= barrier->x1 && x2 <= barrier->x2) {
-+	    *distance = abs(y2 - y1);
 +	    return TRUE;
 +        }
 +    }
@@ -682,7 +650,8 @@ index fb608f6..5c55c95 100644
 +void
 +barrier_clamp_to_barrier(struct PointerBarrier *barrier, int dir, int *x, int *y)
 +{
-+    if (barrier_is_vertical(barrier)) {
++    if (barrier_is_vertical(barrier))
++    {
 +	if ((dir & BarrierNegativeX) & ~barrier->directions)
 +	    *x = barrier->x1;
 +	if ((dir & BarrierPositiveX) & ~barrier->directions)
@@ -714,7 +683,7 @@ index fb608f6..5c55c95 100644
 +	 * Given the origin and the movement vector, get the nearest barrier
 +	 * to the origin that is blocking the movement.
 +	 * Clamp to that barrier.
-+	 * Then, check from the clamped position to the original
++	 * Then, check from the clamped intersection to the original
 +	 * destination, again finding the nearest barrier and clamping.
 +	 */
 +	dir = barrier_get_direction(ox, oy, *x, *y);
