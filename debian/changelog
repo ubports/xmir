@@ -2,6 +2,9 @@ xorg-server (2:1.10.2-1ubuntu2) UNRELEASED; urgency=low
 
   * Update the crtc confinement patch with one that should work, with
     further fixes from upstream. (LP: #389519)
+  * Pull changes from server-1.10-branch, last commit being 79ef102c.
+    (LP: #441653)
+    - Update 500_xi2.1.patch to apply.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 27 Jun 2011 19:21:03 +0300
 
