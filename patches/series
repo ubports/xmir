@@ -5,7 +5,6 @@
 07-xfree86-fix-build-with-xv-disabled.diff
 #13_debian_add_xkbpath_env_variable.diff
 15-nouveau.diff
-20-workaround-36986.diff
 
 # Ubuntu patches
 100_rethrow_signals.patch
@@ -31,7 +30,6 @@
 210_pixman_null_ptr_check.patch
 214_glx_dri_searchdirs.patch
 217_revert_bgnonevisitwindow.patch
-218_randr-check-rotated-virtual-size-limits-correctly.diff
 219_fedora-pointer-barriers.diff
 500_xi2.1.patch
 501_xf86CoordinatesToWindow.patch
