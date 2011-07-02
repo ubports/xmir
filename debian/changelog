@@ -1,3 +1,9 @@
+xorg-server (2:1.10.2.902-1) UNRELEASED; urgency=low
+
+  * New upstream release (1.10.3 rc2).
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 02 Jul 2011 11:34:25 +0200
+
 xorg-server (2:1.10.2-2) unstable; urgency=low
 
   * Bump libgl1-mesa-dri versioned Recommends to 7.10.2-4, to lower the

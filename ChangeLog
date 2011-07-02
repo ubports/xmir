@@ -1,3 +1,387 @@
+commit bc3c539e8a2b0b95a19e40258bcb18824d7700cd
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Jul 1 11:34:08 2011 -0700
+
+    configure.ac: Bump version to 1.10.2.902 (1.10.3 RC2)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit 79ef102c3adf7cae8982b05320109d0439e6587c
+Author: Jon TURNEY <jon.turney@dronecode.org.uk>
+Date:   Mon Jun 27 15:06:16 2011 +0100
+
+    Guard use of backtrace() with HAVE_BACKTRACE
+    
+    Guard the use of backtrace() with HAVE_BACKTRACE, since we already
+    have the autoconf machinery for setting that.
+    
+    For the moment, assume dladdr() is available when backtrace() is
+    
+    Signed-off-by: Jon TURNEY <jon.turney@dronecode.org.uk>
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 38d55f06cfbf4b05fee0aef8f97f90e835beaacb)
+
+commit f0ee98584c909b503691d72c01f76602d0a28ba2
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Jun 21 21:14:46 2011 -0700
+
+    XQuartz: Make a call to activateIgnoringOtherApps in our NSApplicationActivatedEventType handler
+    
+    In addition, this change will not call into the X11 activation unless an X11
+    window was active when we deactivated.  We can't rely on the event and current
+    key windows because the key window will be nil until activated, and the event
+    will only reference the window if the window was clicked (whereas it will be
+    nil if we activated via dock or cmd-tab).
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit c8b80a82d97d92d445c1c0af6dba42c9de7c56cd)
+
+commit 1834e82b42a876195d12dda28c80004d37c4fa0c
+Author: Cyril Brulebois <kibi@debian.org>
+Date:   Tue May 24 18:33:11 2011 +0200
+
+    Xext: Fix buggy checks.
+    
+    XvMCScreenKey is defined as XvMCScreenKeyRec's address, so will never be
+    NULL. Use the check proposed by Alan Coopersmith and Jeremy Huddleston
+    instead.
+    
+    Those warnings go away accordingly:
+    |   CC     xvmc.lo
+    | xvmc.c: In function 'ProcXvMCListSubpictureTypes':
+    | xvmc.c:490:22: warning: the comparison will always evaluate as 'false' for the address of 'XvMCScreenKeyRec' will never be NULL [-Waddress]
+    | xvmc.c: In function 'XvMCExtensionInit':
+    | xvmc.c:671:21: warning: the comparison will always evaluate as 'false' for the address of 'XvMCScreenKeyRec' will never be NULL [-Waddress]
+    | xvmc.c: In function 'XvMCFindXvImage':
+    | xvmc.c:749:22: warning: the comparison will always evaluate as 'false' for the address of 'XvMCScreenKeyRec' will never be NULL [-Waddress]
+    
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Cyril Brulebois <kibi@debian.org>
+    (cherry picked from commit 9da5aa09d70e26dd4d2ef878a21317dae7bf24de)
+
+commit 9fab8b475de99848866c07bde962a5f6ed01b987
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Apr 15 14:06:20 2011 +1000
+
+    input: Only release SD buttons for explicit floating/reattachment (#36146)
+    
+    Grabbing an SD device temporary floats the device but we must not release
+    the buttons. Introduced in
+    
+        commit 9d23459415b84606ee4f38bb2d19054c432c8552
+        Author: Peter Hutterer <peter.hutterer@who-t.net>
+        Date:   Fri Feb 25 11:08:19 2011 +1000
+    
+        dix: release all buttons and keys before reattaching a device (#34182)
+    
+    X.Org Bug 36146 <http://bugs.freedesktop.org/show_bug.cgi?id=36146>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit bf2059b07a97e5e579c13c2c9d49707093427dc2)
+    
+    Conflicts:
+    
+    	dix/devices.c
+
+commit 160a412e36fd945119e4c10f5d22682fcd0cc637
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Feb 25 11:08:19 2011 +1000
+
+    dix: release all buttons and keys before reattaching a device (#34182)
+    
+    Testcase:
+      xinput float <keyboard name>
+    
+    results in the keyboard's enter key being repeated as the device is detached
+    while the key is still physically down. To avoid this, release all keys and
+    buttons before reattaching the device.
+    
+    X.Org Bug 34182 <http://bugs.freedesktop.org/show_bug.cgi?id=34182>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Fernando Carrijo <fcarrijo@freedesktop.org>
+    (cherry picked from commit 9d23459415b84606ee4f38bb2d19054c432c8552)
+    (cherry picked from commit 81fbb96c54f78a7cd96433294ee003c7ef6a772a)
+
+commit c9336d13a6b231edf16412706c52318947fcd000
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Jun 17 10:11:15 2011 -0700
+
+    configure.ac: Bump version to 1.10.2.901 (1.10.3 RC1)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit 0abfba08a080747b1a6310c19f3bea74a6460363
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Thu Jun 2 20:04:04 2011 -0700
+
+    XQuartz: GLX: Use _glapi_create_table_from_handle to create out dispatch table
+    
+    This will allow XQuartz built on older systems to pickup capabilities on
+    newer systems and prevent runtime failures when building on newer systems and
+    running on older ones.
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    
+    This commit squashes three cherry-picks:
+    (cherry picked from commit 3fa5d27e46ea8af55dcaaad7a99973c38bd11967)
+    (cherry picked from commit feab04397de2684568dedaaaa8f299cac9f44f8b)
+    (cherry picked from commit 34e2598f0ad247071bd6a4312d9014d6e3b2305a)
+
+commit 830239ae4271a264e3fd4f1151de271f59b4d9fa
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Jun 14 12:51:04 2011 -0700
+
+    glx: Add _glapi_create_table_from_handle
+    
+    _glapi_create_table_from_handle was recently added to mesa to ease creation of
+    a _glapi_table.  This commit brings this API over to xserver for use in
+    XQuartz (next commit).
+    
+    The API was generated with scripts from current mesa followed by various
+    script-foo to remove entries that are not in the server and add those which
+    are still in the server but not in mesa (CullParameterdvEXT and
+    CullParameterfvEXT)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit ecec578e35f91a2cbc5d07bc8d45241af7bb585f)
+
+commit b9e5f94e3ca5f93f228393fd599ef35f8fc71fe1
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Sun Jun 5 21:59:13 2011 -0400
+
+    XQuartz: Add missing include for <pthread.h>
+    
+    BuildFix for Leopard and earlier.
+    
+    https://trac.macports.org/ticket/29717
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit c3df4df40761760b281a21f63336ca955670f7bc)
+
+commit 9551f5041915fa00ca243a279efb55de2ff11a00
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue May 31 14:48:33 2011 +1000
+
+    dix: fix an error message.
+    
+    event type, not device type.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit f94898928dfaf8df648bc3eea7d304826b7ac1b8)
+    
+    Conflicts:
+    
+    	dix/events.c
+
+commit 75f75d12cf69ba9b7f14ddf04338ad2df7315550
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu May 19 14:50:17 2011 +1000
+
+    test: don't test for double alignment on i386. (#36986)
+    
+    i386 is one of the few architectures that doesn't need double alignment.
+    
+    X.Org Bug 36986 <http://bugs.freedesktop.org/show_bug.cgi?id=36986>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 8ef0974874f322e3ce2f3e6be4ab3c7e73a7b380)
+    
+    Conflicts:
+    
+    	test/input.c
+
+commit 2647867c7c8e12fac29b4bd9805efb40d6d87c70
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Sun May 22 13:50:14 2011 -0700
+
+    fbbltone.c: Mark bitmasks as unsigned ints
+    
+    Clears many Sun compiler warnings:
+    "fbbltone.c", line 491: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 491: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 491: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 491: warning: initializer will be sign-extended: -16777216
+    "fbbltone.c", line 491: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 491: warning: initializer will be sign-extended: -1
+    "fbbltone.c", line 495: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 495: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 495: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 495: warning: initializer will be sign-extended: -256
+    "fbbltone.c", line 495: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 495: warning: initializer will be sign-extended: -1
+    "fbbltone.c", line 499: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 499: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 499: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 499: warning: initializer will be sign-extended: -65536
+    "fbbltone.c", line 499: warning: integer overflow detected: op "<<"
+    "fbbltone.c", line 499: warning: initializer will be sign-extended: -1
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 1b2d17748f0154da142e9b421d4f6a46e4e5a18c)
+
+commit caaf263b93b17367a96483dec73573415ead9b14
+Author: Nicolas Kaiser <nikai@nikai.net>
+Date:   Mon Jun 6 16:53:41 2011 +0200
+
+    randr: void function cannot return value
+    
+    Providing an argument to return in a function with void return type
+    is not allowed by the C standard, and makes the Sun compilers unhappy.
+    
+    Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 21eec367d0d9c142458f973062e17add4f693033)
+
+commit fe4af41314a6537b3fcc66955ccb6895639738b1
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Jun 1 10:24:43 2011 +1000
+
+    test: fix memset size for WindowRec (#37801)
+    
+    X.Org Bug 37801 <http://bugs.freedesktop.org/show_bug.cgi?id=37801>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Reviewed-by: Cyril Brulebois <kibi@debian.org>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit d9bda34d0df576d155e1d682d5e2a382b8e1ffda)
+
+commit a4725afa0e77e9fcf6570001dc0de23a7a9ee6cb
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue May 31 13:01:05 2011 -0700
+
+    XQuartz: GLX: Create a new dispatch table rather than modifying the existing one
+    
+    Fixes regression introduced by b0c665ac0fe6840dda581e4d0d0b76c703d62a7b
+    
+    0   X11.bin                       	0x0000000100118293 __glXAquaScreenCreateContext + 684
+    1   X11.bin                       	0x00000001001315b0 DoCreateContext + 163
+    2   X11.bin                       	0x000000010013509f __glXDispatch + 211
+    3   X11.bin                       	0x00000001000c7dad Dispatch + 785
+    4   X11.bin                       	0x00000001000b97e5 dix_main + 1022
+    5   X11.bin                       	0x00000001000122bc server_thread + 50
+    6   libSystem.B.dylib             	0x00007fff836554f6 _pthread_start + 331
+    7   libSystem.B.dylib             	0x00007fff836553a9 thread_start + 13
+    
+    http://lists.apple.com/archives/X11-users/2011/May/msg00045.html
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit 38df706c6b8a339c4267cae7be0881c4362f36da)
+
+commit 6a16c4c268962fd09a52e4e78116aaa3bb1c47d5
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Wed Jun 1 21:42:07 2011 -0700
+
+    "privates.h", line 198: warning: void function cannot return value
+    
+    Providing an argument to return in a function with void return type
+    is not allowed by the C standard, and makes the Sun compilers unhappy.
+    (They actually flag it as an error, unless using a new enough version
+     to be able to downgrade it to a warning with "-features=extensions".)
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Reviewed-by: Cyril Brulebois <kibi@debian.org>
+    (cherry picked from commit bc04065b5ce277f3ac3491ff221a60ef3c7605cf)
+
+commit 5752cc473648bf73f9ca71b7ccffc03b23e9195b
+Author: Marko Macek <Marko.Macek@gmx.net>
+Date:   Sat May 21 13:30:59 2011 +0100
+
+    DIX: Set backgroundState correctly for root window
+    
+    When we change the root window's background to None, and we've run with
+    -wr or -br for a forced solid background, make sure we also change the
+    background state to BackgroundPixel, so we don't try to lookup either
+    pScreen->whitePixel or pScreen->blackPixel as a pixmap.
+    
+    Signed-off-by: Marko Macek <Marko.Macek@gmx.net>
+    Reviewed-by: Walter Harms <wharms@bfs.de>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit c5b72fd350bbdfd1facd0ddd5085f238c4cf252a)
+
+commit 4bfb22e7667c4cd55da5e7a31af29ce5769ecc65
+Author: Aaron Plattner <aplattner@nvidia.com>
+Date:   Mon Apr 18 08:23:48 2011 -0700
+
+    linux: Retry VT ioctls while errno == EINTR
+    
+    When the smart scheduler is enabled, the VT ioctls (particularly
+    VT_WAITACTIVE) can be interrupted by the smart scheduler's SIGALRMs.
+    Previously, this caused the server to immediately continue on to
+    ScreenInit, almost certainly causing a crash or failure because the X
+    server that owned the VT hadn't finished cleaning up.  As of commit
+    7ee965a300c9eddcc1acacf9414cfe3e589222a8, it causes a FatalError
+    instead.
+    
+    Retrying the ioctl as long as it fails with errno == EINTR fixes the
+    problem and allows server regenerations to trigger VT switches that
+    actually succeed.
+    
+    Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Cyril Brulebois <kibi@debian.org>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 88c4622b594a1725d0cee86bc82ad640d241c520)
+
+commit 50b9d3142ff90af2f7fa35b7b1bf9e5a07723dbd
+Author: Aaron Plattner <aplattner@nvidia.com>
+Date:   Tue May 24 16:02:42 2011 -0700
+
+    randr: check rotated virtual size limits correctly
+    
+    Commit d1107918d4626268803b54033a07405122278e7f introduced checks to
+    the RandR path that cause RRSetScreenConfig requests to fail if the
+    size is too large.  Unfortunately, when RandR 1.1 rotation is enabled
+    it compares the rotated screen dimensions to the unrotated limits,
+    which causes 90- and 270-degree rotation to fail unless your screen
+    happens to be square:
+    
+      X Error of failed request:  BadValue (integer parameter out of range for operation)
+        Major opcode of failed request:  153 (RANDR)
+        Minor opcode of failed request:  2 (RRSetScreenConfig)
+        Value in failed request:  0x780
+        Serial number of failed request:  14
+        Current serial number in output stream:  14
+    
+    Fix this by moving the check above the code that swaps the dimensions
+    based on the rotation.
+    
+    Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Tested-by: Robert Hooker <robert.hooker@canonical.com>
+    Tested-by: Kent Baxley <kent.baxley@canonical.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit b6c7b9b2f39e970cedb6bc1e073f901e28cb0fa3)
+
+commit 613e0e9ef74c4542ed458200165adbcdfdf3cd17
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Wed Apr 13 11:51:30 2011 -0700
+
+    Send events that were missing from RRSelectInput
+    
+    The RANDR spec (randrproto.txt) specifies that RRSelectInput will send out
+    events corresponding to the event mask, if there have been changes to
+    CRTCs or outputs.  Only screen events were being generated, however.
+    
+    Fixes http://bugs.freedesktop.org/21760
+    
+    Signed-off-by: Federico Mena Quintero <federico@novell.com>
+    Reviewd-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit b2997431fd426ab318bc5dfd2cd43956d733ebec)
+
 commit d784fd09dc277610d5f4e98d577c4fdcd9215f9c
 Author: Jeremy Huddleston <jeremyhu@apple.com>
 Date:   Sat May 28 16:59:05 2011 -0700
