@@ -1,11 +1,11 @@
-xorg-server (2:1.10.2.902-1) UNRELEASED; urgency=low
+xorg-server (2:1.10.2.902-1) unstable; urgency=low
 
   * New upstream release (1.10.3 rc2):
     - DIX: Set backgroundState correctly for root window (Closes: #632134).
   * Drop 20-workaround-36986.diff, fixed upstream.
   * Bump Standards-Version to 3.9.2 (no changes).
 
- -- Cyril Brulebois <kibi@debian.org>  Sat, 02 Jul 2011 11:34:25 +0200
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 02 Jul 2011 11:58:58 +0200
 
 xorg-server (2:1.10.2-2) unstable; urgency=low
 
