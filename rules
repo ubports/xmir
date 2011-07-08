@@ -29,6 +29,7 @@ endif
 
 CPPFLAGS += -DPRE_RELEASE=0
 
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 DEB_HOST_ARCH      ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
@@ -99,7 +100,7 @@ confflags += \
 	     --disable-debug \
 	     $(config_tests) \
 	     --with-int10=x86emu \
-	     --with-extra-module-dir="/usr/lib/xorg/extra-modules" \
+	     --with-extra-module-dir="/usr/lib/${DEB_HOST_MULTIARCH}/xorg/extra-modules,/usr/lib/xorg/extra-modules" \
 	     --with-os-vendor="$(VENDOR)" \
 	     --with-builderstring="$(SOURCE_NAME) $(SOURCE_VERSION) ($(BUILDER))" \
 	     --with-xkb-path=/usr/share/X11/xkb \
