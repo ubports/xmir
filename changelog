@@ -1,4 +1,4 @@
-xorg-server (2:1.10.2.902-1ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.10.2.902-1ubuntu2) oneiric; urgency=low
 
   [ Bryce Harrington ]
   * rules:  patch needs to depend on stampdir, else it doesn't get created,
