@@ -1,6 +1,7 @@
 xorg-server (2:1.10.3-1) UNRELEASED; urgency=low
 
   * New upstream release (with just a version bump).
+  * Remove the Replaces: xdmx from xdmx-tools, that was before lenny.
 
  -- Cyril Brulebois <kibi@debian.org>  Sat, 09 Jul 2011 12:16:29 +0200
 
