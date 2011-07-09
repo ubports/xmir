@@ -113,6 +113,7 @@ Breaks:
  xserver-xorg-input-wacom (<= 0.10.5+20100415-1),
  libgl1-mesa-dri (<< 7.10.2-4),
  libgl1-mesa-dri-experimental (<< 7.10.2-4),
+ libgl1-mesa-dri-no-multiarch,
 Provides:
  ${videoabi},
  ${inputabi},
