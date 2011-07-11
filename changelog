@@ -1,3 +1,11 @@
+xorg-server (2:1.10.2.902-1ubuntu3) oneiric; urgency=low
+
+  * debian/patches/220_xi21_always_deliver_raw_events.diff:
+    - Backport patch from the mailing list to deliver raw events regardless of
+      grab state.  Bon appétit, DX!
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 11 Jul 2011 10:03:26 +1000
+
 xorg-server (2:1.10.2.902-1ubuntu2) oneiric; urgency=low
 
   [ Bryce Harrington ]
