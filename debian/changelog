@@ -1,3 +1,10 @@
+xorg-server (2:1.10.2.902-1ubuntu4) UNRELEASED; urgency=low
+
+  * Drop i8xx-disablement patch.  2.6.39 and later kernels contain a patch
+    which alledgedly fixes the cache-incoherency problems. (LP: #817814)
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 01 Aug 2011 16:27:52 +1000
+
 xorg-server (2:1.10.2.902-1ubuntu3) oneiric; urgency=low
 
   * debian/patches/220_xi21_always_deliver_raw_events.diff:
