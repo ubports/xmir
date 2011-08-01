@@ -2410,7 +2410,6 @@ int
 AttachDevice(ClientPtr client, DeviceIntPtr dev, DeviceIntPtr master)
 {
     ScreenPtr screen;
-    DeviceIntPtr oldmaster;
     if (!dev || IsMaster(dev))
         return BadDevice;
 
@@ -2429,7 +2428,6 @@ AttachDevice(ClientPtr client, DeviceIntPtr dev, DeviceIntPtr master)
         free(dev->spriteInfo->sprite);
     }
 
-    oldmaster = GetMaster(dev, MASTER_ATTACHED);
     dev->master = master;
 
     /* If device is set to floating, we need to create a sprite for it,
