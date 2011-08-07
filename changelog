@@ -1,4 +1,4 @@
-xorg-server (2:1.10.3-1) UNRELEASED; urgency=medium
+xorg-server (2:1.10.3-1) unstable; urgency=medium
 
   [ Cyril Brulebois ]
   * New upstream release (with just a version bump).
@@ -17,7 +17,7 @@ xorg-server (2:1.10.3-1) UNRELEASED; urgency=medium
       configure.ac and an Xorg issue where it reverts to the default on reset.
       Thanks to Bastian Blank for the report.
 
- -- Cyril Brulebois <kibi@debian.org>  Sat, 09 Jul 2011 12:16:29 +0200
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 07 Aug 2011 19:35:07 +0200
 
 xorg-server (2:1.10.2.902-1) unstable; urgency=low
 
