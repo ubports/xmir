@@ -1,11 +1,21 @@
 xorg-server (2:1.10.3-1) UNRELEASED; urgency=medium
 
+  [ Cyril Brulebois ]
   * New upstream release (with just a version bump).
   * Remove the Replaces: xdmx from xdmx-tools, that was before lenny.
   * Add a Breaks: libgl1-mesa-dri-no-multiarch, to handle upgrades from
     squeeze-backports (without multiarch) to wheezy (with multiarch).
   * Set urgency to “medium” to speed things up. Migration to testing is
     a prerequisite for squeeze backports.
+
+  [ Julien Cristau ]
+  * Merge packaging changes lost from the 1.7 (squeeze) branch:
+    + Add Breaks on drivers abandoned between lenny and squeeze.  This helps
+      apt decide to remove them instead of removing all of X.  Thanks, David
+      Kalnischkies!
+    + Set default xkb rules to evdev on linux, to work around a wrong default in
+      configure.ac and an Xorg issue where it reverts to the default on reset.
+      Thanks to Bastian Blank for the report.
 
  -- Cyril Brulebois <kibi@debian.org>  Sat, 09 Jul 2011 12:16:29 +0200
 
