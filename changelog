@@ -1,7 +1,12 @@
 xorg-server (2:1.10.2.902-1ubuntu4) UNRELEASED; urgency=low
 
+  [ Christopher James Halse Rogers ]
   * Drop i8xx-disablement patch.  2.6.39 and later kernels contain a patch
     which alledgedly fixes the cache-incoherency problems. (LP: #817814)
+
+  [ Ricardo Salveti de Araujo ]
+  * debian/patches/112_armel-pvr-drv.patch:
+    - Include support for the pvr driver available on OMAP 4 (LP: #828494)
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 01 Aug 2011 16:27:52 +1000
 
