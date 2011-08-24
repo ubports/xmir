@@ -187,8 +187,7 @@ confflags_udeb = \
 	$(config_backend_udeb) \
 	$(void)
 
-patch: $(STAMP_DIR)/stampdir
-	>$@
+$(QUILT_STAMPFN): $(STAMP_DIR)/stampdir
 
 $(STAMP_DIR)/autoreconf: $(STAMP_DIR)/stampdir $(QUILT_STAMPFN)
 	dh_testdir
