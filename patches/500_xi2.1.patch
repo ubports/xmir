@@ -1,7 +1,7 @@
 Index: xorg-server/Xi/allowev.c
 ===================================================================
---- xorg-server.orig/Xi/allowev.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/Xi/allowev.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/allowev.c	2011-08-24 12:52:43.965647120 +0300
++++ xorg-server/Xi/allowev.c	2011-08-24 12:56:49.845650625 +0300
 @@ -125,5 +125,24 @@
  	client->errorValue = stuff->mode;
  	return BadValue;
@@ -29,8 +29,8 @@ Index: xorg-server/Xi/allowev.c
  }
 Index: xorg-server/Xi/exevents.c
 ===================================================================
---- xorg-server.orig/Xi/exevents.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/Xi/exevents.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/exevents.c	2011-08-24 12:56:49.835650626 +0300
++++ xorg-server/Xi/exevents.c	2011-08-24 12:56:49.855650623 +0300
 @@ -44,6 +44,31 @@
  
  ********************************************************/
@@ -94,7 +94,7 @@ Index: xorg-server/Xi/exevents.c
  /**
   * @return the device matching the deviceid of the device set in the event, or
   * NULL if the event is not an XInput event.
-@@ -725,6 +767,46 @@
+@@ -722,6 +764,46 @@
      XISendDeviceChangedEvent(slave, device, dce);
  }
  
@@ -141,7 +141,7 @@ Index: xorg-server/Xi/exevents.c
  /**
   * Update the device state according to the data in the event.
   *
-@@ -732,8 +814,6 @@
+@@ -729,8 +811,6 @@
   *   DEFAULT ... process as normal
   *   DONT_PROCESS ... return immediately from caller
   */
@@ -150,7 +150,7 @@ Index: xorg-server/Xi/exevents.c
  int
  UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
  {
-@@ -857,34 +937,9 @@
+@@ -854,34 +934,9 @@
  
          if (!button_is_down(device, key, BUTTON_PROCESSED))
              return DONT_PROCESS;
@@ -186,7 +186,7 @@ Index: xorg-server/Xi/exevents.c
  
          /* Add state and motionMask to the filter for this event */
          mask = DevicePointerMotionMask | b->state | b->motionMask;
-@@ -926,6 +981,955 @@
+@@ -897,6 +952,955 @@
  }
  
  /**
@@ -1142,9 +1142,9 @@ Index: xorg-server/Xi/exevents.c
   * Main device event processing function.
   * Called from when processing the events from the event queue.
   *
-@@ -954,6 +1958,33 @@
+@@ -925,6 +1929,33 @@
      {
-         ProcessRawEvent(&ev->raw_event, device);
+         DeliverRawEvent(&ev->raw_event, device);
          return;
 +    } else if ((!syncEvents.playingEvents && !device->process_touch) &&
 +               (ev->any.type == ET_TouchBegin ||
@@ -1176,7 +1176,7 @@ Index: xorg-server/Xi/exevents.c
      }
  
      if (IsPointerDevice(device))
-@@ -1152,6 +2183,50 @@
+@@ -1123,6 +2154,50 @@
          dev->proximity->in_proximity = FALSE;
  }
  
@@ -1227,7 +1227,7 @@ Index: xorg-server/Xi/exevents.c
  static void
  FixDeviceStateNotify(DeviceIntPtr dev, deviceStateNotify * ev, KeyClassPtr k,
  		     ButtonClassPtr b, ValuatorClassPtr v, int first)
-@@ -1562,6 +2637,38 @@
+@@ -1533,6 +2608,38 @@
      return AddPassiveGrabToList(client, grab);
  }
  
@@ -1266,7 +1266,7 @@ Index: xorg-server/Xi/exevents.c
  int
  SelectForWindow(DeviceIntPtr dev, WindowPtr pWin, ClientPtr client,
  		Mask mask, Mask exclusivemasks)
-@@ -1699,10 +2806,65 @@
+@@ -1670,10 +2777,65 @@
      }
  }
  
@@ -1332,7 +1332,7 @@ Index: xorg-server/Xi/exevents.c
  
      if (!wOtherInputMasks(pWin))
  	return Success;
-@@ -1738,6 +2900,54 @@
+@@ -1709,6 +2871,54 @@
      FatalError("client not on device event list");
  }
  
@@ -1389,8 +1389,8 @@ Index: xorg-server/Xi/exevents.c
  	  xEvent * ev, Mask mask, int count)
 Index: xorg-server/Xi/extinit.c
 ===================================================================
---- xorg-server.orig/Xi/extinit.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/Xi/extinit.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/extinit.c	2011-08-24 12:52:43.985647123 +0300
++++ xorg-server/Xi/extinit.c	2011-08-24 12:56:49.855650623 +0300
 @@ -259,7 +259,8 @@
          ProcXIChangeProperty,                   /* 57 */
          ProcXIDeleteProperty,                   /* 58 */
@@ -1452,8 +1452,8 @@ Index: xorg-server/Xi/extinit.c
          case XI_RawKeyRelease:
 Index: xorg-server/Xi/xiallowev.c
 ===================================================================
---- xorg-server.orig/Xi/xiallowev.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/Xi/xiallowev.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/xiallowev.c	2011-08-24 12:52:44.025647122 +0300
++++ xorg-server/Xi/xiallowev.c	2011-08-24 12:56:49.855650623 +0300
 @@ -35,11 +35,15 @@
  
  #include "inputstr.h"	/* DeviceIntPtr      */
@@ -1586,8 +1586,8 @@ Index: xorg-server/Xi/xiallowev.c
 +}
 Index: xorg-server/Xi/xiallowev.h
 ===================================================================
---- xorg-server.orig/Xi/xiallowev.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/Xi/xiallowev.h	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/xiallowev.h	2011-08-24 12:52:43.975647121 +0300
++++ xorg-server/Xi/xiallowev.h	2011-08-24 12:56:49.855650623 +0300
 @@ -32,5 +32,7 @@
  
  int ProcXIAllowEvents(ClientPtr client);
@@ -1598,9 +1598,9 @@ Index: xorg-server/Xi/xiallowev.h
  #endif /* XIALLOWEV_H */
 Index: xorg-server/Xi/xipassivegrab.c
 ===================================================================
---- xorg-server.orig/Xi/xipassivegrab.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/Xi/xipassivegrab.c	2011-04-09 10:42:15.000000000 +0300
-@@ -105,19 +105,30 @@
+--- xorg-server.orig/Xi/xipassivegrab.c	2011-08-24 12:52:43.995647122 +0300
++++ xorg-server/Xi/xipassivegrab.c	2011-08-24 12:56:49.855650623 +0300
+@@ -110,19 +110,30 @@
      if (stuff->grab_type != XIGrabtypeButton &&
          stuff->grab_type != XIGrabtypeKeycode &&
          stuff->grab_type != XIGrabtypeEnter &&
@@ -1633,7 +1633,7 @@ Index: xorg-server/Xi/xipassivegrab.c
      if (XICheckInvalidMaskBits(client, (unsigned char*)&stuff[1],
                                 stuff->mask_len * 4) != Success)
          return BadValue;
-@@ -185,6 +196,9 @@
+@@ -192,6 +203,9 @@
                  status = GrabWindow(client, dev, stuff->grab_type,
                                      &param, &mask);
                  break;
@@ -1645,8 +1645,8 @@ Index: xorg-server/Xi/xipassivegrab.c
          if (status != GrabSuccess)
 Index: xorg-server/Xi/xiquerydevice.c
 ===================================================================
---- xorg-server.orig/Xi/xiquerydevice.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/Xi/xiquerydevice.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/xiquerydevice.c	2011-08-24 12:52:43.955647122 +0300
++++ xorg-server/Xi/xiquerydevice.c	2011-08-24 12:56:49.855650623 +0300
 @@ -235,6 +235,12 @@
      if (dev->valuator)
          len += sizeof(xXIValuatorInfo) * dev->valuator->numAxes;
@@ -1772,8 +1772,8 @@ Index: xorg-server/Xi/xiquerydevice.c
          any += len * 4;
 Index: xorg-server/Xi/xiquerydevice.h
 ===================================================================
---- xorg-server.orig/Xi/xiquerydevice.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/Xi/xiquerydevice.h	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/xiquerydevice.h	2011-08-24 12:52:44.015647121 +0300
++++ xorg-server/Xi/xiquerydevice.h	2011-08-24 12:56:49.855650623 +0300
 @@ -44,4 +44,7 @@
  int ListKeyInfo(DeviceIntPtr dev, xXIKeyInfo* info);
  int ListValuatorInfo(DeviceIntPtr dev, xXIValuatorInfo* info,
@@ -1784,8 +1784,8 @@ Index: xorg-server/Xi/xiquerydevice.h
  #endif /* QUERYDEV_H */
 Index: xorg-server/Xi/xiselectev.c
 ===================================================================
---- xorg-server.orig/Xi/xiselectev.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/Xi/xiselectev.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/Xi/xiselectev.c	2011-08-24 12:52:44.005647120 +0300
++++ xorg-server/Xi/xiselectev.c	2011-08-24 12:56:49.855650623 +0300
 @@ -152,6 +152,60 @@
              }
          }
@@ -1849,8 +1849,8 @@ Index: xorg-server/Xi/xiselectev.c
              return BadValue;
 Index: xorg-server/configure.ac
 ===================================================================
---- xorg-server.orig/configure.ac	2011-04-09 10:39:42.000000000 +0300
-+++ xorg-server/configure.ac	2011-04-09 10:42:43.000000000 +0300
+--- xorg-server.orig/configure.ac	2011-08-24 12:56:49.795650626 +0300
++++ xorg-server/configure.ac	2011-08-24 12:57:14.755650981 +0300
 @@ -795,7 +795,7 @@
  APPLEWMPROTO="applewmproto >= 1.4"
  
@@ -1862,8 +1862,8 @@ Index: xorg-server/configure.ac
  
 Index: xorg-server/dix/devices.c
 ===================================================================
---- xorg-server.orig/dix/devices.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/dix/devices.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/dix/devices.c	2011-08-24 12:52:43.855647120 +0300
++++ xorg-server/dix/devices.c	2011-08-24 12:56:49.855650623 +0300
 @@ -754,6 +754,20 @@
                  free((*v));
                  break;
@@ -1893,7 +1893,7 @@ Index: xorg-server/dix/devices.c
      FreeDeviceClass(ButtonClass, (pointer)&classes->button);
      FreeDeviceClass(FocusClass, (pointer)&classes->focus);
      FreeDeviceClass(ProximityClass, (pointer)&classes->proximity);
-@@ -1547,6 +1562,151 @@
+@@ -1574,6 +1589,151 @@
  	   InitPtrFeedbackClassDeviceStruct(dev, controlProc));
  }
  
@@ -2045,7 +2045,7 @@ Index: xorg-server/dix/devices.c
  /*
   * Check if the given buffer contains elements between low (inclusive) and
   * high (inclusive) only.
-@@ -2419,6 +2579,58 @@
+@@ -2446,6 +2606,58 @@
      FreeEventList(eventlist, GetMaximumEventsNum());
  }
  
@@ -2104,7 +2104,7 @@ Index: xorg-server/dix/devices.c
  /**
   * Attach device 'dev' to device 'master'.
   * Client is set to the client that issued the request, or NULL if it comes
-@@ -2486,6 +2698,12 @@
+@@ -2511,6 +2723,12 @@
          dev->spriteInfo->spriteOwner = FALSE;
  
          RecalculateMasterButtons(master);
@@ -2119,8 +2119,8 @@ Index: xorg-server/dix/devices.c
      /* XXX: in theory, the MD should change back to its old, original
 Index: xorg-server/dix/eventconvert.c
 ===================================================================
---- xorg-server.orig/dix/eventconvert.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/dix/eventconvert.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/dix/eventconvert.c	2011-08-24 12:52:43.825647118 +0300
++++ xorg-server/dix/eventconvert.c	2011-08-24 12:56:49.855650623 +0300
 @@ -55,6 +55,7 @@
  static int eventToDeviceChanged(DeviceChangedEvent *ev, xEvent **dcce);
  static int eventToDeviceEvent(DeviceEvent *ev, xEvent **xi);
@@ -2217,9 +2217,9 @@ Index: xorg-server/dix/eventconvert.c
      }
 Index: xorg-server/dix/events.c
 ===================================================================
---- xorg-server.orig/dix/events.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/dix/events.c	2011-04-09 10:42:46.000000000 +0300
-@@ -1089,7 +1089,7 @@
+--- xorg-server.orig/dix/events.c	2011-08-24 12:56:49.835650626 +0300
++++ xorg-server/dix/events.c	2011-08-24 12:57:17.885651026 +0300
+@@ -1096,7 +1096,7 @@
  void
  EnqueueEvent(InternalEvent *ev, DeviceIntPtr device)
  {
@@ -2228,7 +2228,7 @@ Index: xorg-server/dix/events.c
      QdEventPtr	qe;
      SpritePtr	pSprite = device->spriteInfo->sprite;
      int		eventlen;
-@@ -1160,8 +1160,10 @@
+@@ -1167,8 +1167,10 @@
      qe->event = (InternalEvent *)(qe + 1);
      memcpy(qe->event, event, eventlen);
      if (tail)
@@ -2241,7 +2241,7 @@ Index: xorg-server/dix/events.c
  }
  
  /**
-@@ -1176,18 +1178,19 @@
+@@ -1183,18 +1185,19 @@
  static void
  PlayReleasedEvents(void)
  {
@@ -2266,7 +2266,7 @@ Index: xorg-server/dix/events.c
  		syncEvents.pendtail = prev;
  	    if (qe->event->any.type == ET_Motion)
  		CheckVirtualMotion(pDev, qe, NullWindow);
-@@ -1219,6 +1222,7 @@
+@@ -1226,6 +1229,7 @@
  
  	    }
  #endif
@@ -2274,7 +2274,7 @@ Index: xorg-server/dix/events.c
  	    (*qe->device->public.processInputProc)(qe->event, qe->device);
  	    free(qe);
  	    for (dev = inputInfo.devices; dev && dev->deviceGrab.sync.frozen; dev = dev->next)
-@@ -1227,10 +1231,14 @@
+@@ -1234,10 +1238,14 @@
  		break;
  	    /* Playing the event may have unfrozen another device. */
  	    /* So to play it safe, restart at the head of the queue */
@@ -2291,7 +2291,7 @@ Index: xorg-server/dix/events.c
      }
  }
  
-@@ -1252,6 +1260,76 @@
+@@ -1259,6 +1267,76 @@
  	dev->public.processInputProc = dev->public.realInputProc;
  }
  
@@ -2368,7 +2368,7 @@ Index: xorg-server/dix/events.c
  /**
   * Unfreeze devices and replay all events to the respective clients.
   *
-@@ -1278,6 +1356,14 @@
+@@ -1285,6 +1363,14 @@
      {
          DeviceEvent* event = replayDev->deviceGrab.sync.event;
  
@@ -2383,7 +2383,7 @@ Index: xorg-server/dix/events.c
  	syncEvents.replayDev = (DeviceIntPtr)NULL;
  
          w = XYToWindow(replayDev->spriteInfo->sprite,
-@@ -1291,6 +1377,7 @@
+@@ -1298,6 +1384,7 @@
                                      NullWindow, replayDev);
          }
      }
@@ -2391,7 +2391,7 @@ Index: xorg-server/dix/events.c
      for (dev = inputInfo.devices; dev; dev = dev->next)
      {
  	if (!dev->deviceGrab.sync.frozen)
-@@ -1510,6 +1597,20 @@
+@@ -1517,6 +1604,20 @@
      if (!wasImplicit && grab->grabtype == GRABTYPE_XI2)
          ReattachToOldMaster(mouse);
  
@@ -2412,7 +2412,7 @@ Index: xorg-server/dix/events.c
      ComputeFreezes();
  }
  
-@@ -1757,6 +1858,25 @@
+@@ -1764,6 +1865,25 @@
  	    client->errorValue = stuff->mode;
  	    return BadValue;
      }
@@ -2438,7 +2438,7 @@ Index: xorg-server/dix/events.c
      return Success;
  }
  
-@@ -2174,7 +2294,7 @@
+@@ -2391,7 +2511,7 @@
  
  static Window FindChildForEvent(SpritePtr pSprite, WindowPtr event)
  {
@@ -2447,7 +2447,7 @@ Index: xorg-server/dix/events.c
      Window child = None;
  
      /* If the search ends up past the root should the child field be
-@@ -2232,7 +2352,8 @@
+@@ -2449,7 +2569,8 @@
              event->evtype == XI_RawMotion ||
              event->evtype == XI_DeviceChanged ||
              event->evtype == XI_HierarchyChanged ||
@@ -2457,7 +2457,7 @@ Index: xorg-server/dix/events.c
              return;
  
          event->root = RootWindow(pSprite)->drawable.id;
-@@ -2369,12 +2490,119 @@
+@@ -2586,12 +2707,119 @@
      xEvent core;
      xEvent *xE = NULL;
      int rc, mask, count = 0;
@@ -2578,7 +2578,7 @@ Index: xorg-server/dix/events.c
          {
              /* XI2 events first */
              if (mask & XI2_MASK)
-@@ -2383,10 +2611,25 @@
+@@ -2600,10 +2828,25 @@
                  rc = EventToXI2(event, &xi2);
                  if (rc == Success)
                  {
@@ -2606,7 +2606,7 @@ Index: xorg-server/dix/events.c
                                                         filter, grab);
                      free(xi2);
                      if (deliveries > 0)
-@@ -2439,6 +2682,14 @@
+@@ -2656,6 +2899,14 @@
                  goto unwind;
              }
          }
@@ -2621,7 +2621,7 @@ Index: xorg-server/dix/events.c
  
          child = pWin->drawable.id;
          pWin = pWin->parent;
-@@ -2591,7 +2842,7 @@
+@@ -2808,7 +3059,7 @@
  	else
  	    pWin = pWin->nextSib;
      }
@@ -2630,7 +2630,7 @@ Index: xorg-server/dix/events.c
  }
  
  /**
-@@ -2629,7 +2880,8 @@
+@@ -2846,7 +3097,8 @@
      event.deviceid = dev->id;
      event.sourceid = dev->id;
      event.detail.button = 0;
@@ -2640,7 +2640,7 @@ Index: xorg-server/dix/events.c
      if (rc)
          DoEnterLeaveEvents(dev, dev->id, old, win, XINotifyPassiveUngrab);
      return rc;
-@@ -2666,7 +2918,8 @@
+@@ -2883,7 +3135,8 @@
      event.deviceid = dev->id;
      event.sourceid = dev->id;
      event.detail.button = 0;
@@ -2650,7 +2650,7 @@ Index: xorg-server/dix/events.c
      if (rc)
          DoEnterLeaveEvents(dev, dev->id, old, win, XINotifyPassiveGrab);
      return rc;
-@@ -3353,7 +3606,7 @@
+@@ -3570,7 +3823,7 @@
  CheckPassiveGrabsOnWindow(
      WindowPtr pWin,
      DeviceIntPtr device,
@@ -2659,7 +2659,7 @@ Index: xorg-server/dix/events.c
      BOOL checkCore,
      BOOL activate)
  {
-@@ -3370,9 +3623,22 @@
+@@ -3587,9 +3840,22 @@
  	return NULL;
      /* Fill out the grab details, but leave the type for later before
       * comparing */
@@ -2683,7 +2683,7 @@ Index: xorg-server/dix/events.c
      tempGrab.detail.pMask = NULL;
      tempGrab.modifiersDetail.pMask = NULL;
      tempGrab.next = NULL;
-@@ -3380,6 +3646,9 @@
+@@ -3597,6 +3863,9 @@
      {
  	DeviceIntPtr	gdev;
  	XkbSrvInfoPtr	xkbi = NULL;
@@ -2693,7 +2693,7 @@ Index: xorg-server/dix/events.c
  
  	gdev= grab->modifierDevice;
          if (grab->grabtype == GRABTYPE_CORE)
-@@ -3405,16 +3674,15 @@
+@@ -3622,16 +3891,15 @@
          tempGrab.modifiersDetail.exact = xkbi ? xkbi->state.grab_mods : 0;
  
          /* Check for XI2 and XI grabs first */
@@ -2712,7 +2712,7 @@ Index: xorg-server/dix/events.c
                  (GrabMatchesSecond(&tempGrab, grab, FALSE)))
                  match = XI_MATCH;
          }
-@@ -3423,125 +3691,152 @@
+@@ -3640,125 +3908,152 @@
          if (!match && checkCore)
          {
              tempGrab.grabtype = GRABTYPE_CORE;
@@ -2960,7 +2960,7 @@ Index: xorg-server/dix/events.c
      }
      return NULL;
  #undef CORE_MATCH
-@@ -3580,8 +3875,13 @@
+@@ -3797,8 +4092,13 @@
  {
      int i;
      WindowPtr pWin = NULL;
@@ -2975,7 +2975,7 @@ Index: xorg-server/dix/events.c
  
      if (event->type != ET_ButtonPress &&
          event->type != ET_KeyPress)
-@@ -3609,7 +3909,8 @@
+@@ -3826,7 +4126,8 @@
  	for (; i < focus->traceGood; i++)
  	{
  	    pWin = focus->trace[i];
@@ -2985,7 +2985,7 @@ Index: xorg-server/dix/events.c
  		return TRUE;
  	}
  
-@@ -3619,11 +3920,54 @@
+@@ -3836,11 +4137,54 @@
  	    return FALSE;
      }
  
@@ -3043,7 +3043,7 @@ Index: xorg-server/dix/events.c
      }
  
      return FALSE;
-@@ -3745,6 +4089,17 @@
+@@ -3962,6 +4306,17 @@
      grabinfo = &thisDev->deviceGrab;
      grab = grabinfo->grab;
  
@@ -3061,7 +3061,7 @@ Index: xorg-server/dix/events.c
      if (grab->ownerEvents)
      {
  	WindowPtr focus;
-@@ -3821,6 +4176,9 @@
+@@ -4038,6 +4393,9 @@
                  mask = grab->xi2mask[XIAllDevices][evtype/8] |
                      grab->xi2mask[XIAllMasterDevices][evtype/8] |
                      grab->xi2mask[thisDev->id][evtype/8];
@@ -3071,7 +3071,7 @@ Index: xorg-server/dix/events.c
                  /* try XI2 event */
                  FixUpEventFromWindow(pSprite, xi2, grab->window, None, TRUE);
                  /* XXX: XACE */
-@@ -4954,7 +5312,7 @@
+@@ -5171,7 +5529,7 @@
  	free(syncEvents.pending);
  	syncEvents.pending = next;
      }
@@ -3082,8 +3082,8 @@ Index: xorg-server/dix/events.c
      syncEvents.time.milliseconds = 0;	/* hardly matters */
 Index: xorg-server/dix/getevents.c
 ===================================================================
---- xorg-server.orig/dix/getevents.c	2011-04-09 10:23:41.000000000 +0300
-+++ xorg-server/dix/getevents.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/dix/getevents.c	2011-08-24 12:56:49.825650624 +0300
++++ xorg-server/dix/getevents.c	2011-08-24 12:57:12.195650944 +0300
 @@ -47,6 +47,7 @@
  #include "eventstr.h"
  #include "eventconvert.h"
@@ -3130,7 +3130,7 @@ Index: xorg-server/dix/getevents.c
                  SetBit(event->valuators.mode, i);
              event->valuators.data[i] = valuator_mask_get(mask, i);
              event->valuators.data_frac[i] =
-@@ -1062,24 +1076,14 @@
+@@ -1067,24 +1081,14 @@
  }
  
  static void
@@ -3159,7 +3159,7 @@ Index: xorg-server/dix/getevents.c
  }
  
  /**
-@@ -1120,7 +1125,10 @@
+@@ -1126,7 +1130,10 @@
      switch (type)
      {
          case MotionNotify:
@@ -3171,7 +3171,7 @@ Index: xorg-server/dix/getevents.c
                  return 0;
              break;
          case ButtonPress:
-@@ -1169,7 +1177,16 @@
+@@ -1178,7 +1185,16 @@
              }
          }
  
@@ -3189,7 +3189,7 @@ Index: xorg-server/dix/getevents.c
          moveAbsolute(pDev, &x, &y, &mask);
      } else {
          if (flags & POINTER_ACCELERATE) {
-@@ -1290,6 +1307,130 @@
+@@ -1301,6 +1317,130 @@
      return num_events;
  }
  
@@ -3322,8 +3322,8 @@ Index: xorg-server/dix/getevents.c
   *
 Index: xorg-server/dix/grabs.c
 ===================================================================
---- xorg-server.orig/dix/grabs.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/dix/grabs.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/dix/grabs.c	2011-08-24 12:52:43.795647119 +0300
++++ xorg-server/dix/grabs.c	2011-08-24 12:56:49.855650623 +0300
 @@ -60,6 +60,7 @@
  #include "dixgrabs.h"
  #include "xace.h"
@@ -3380,8 +3380,8 @@ Index: xorg-server/dix/grabs.c
  	GrabSupersedesSecond(pSecondGrab, pFirstGrab))
 Index: xorg-server/dix/inpututils.c
 ===================================================================
---- xorg-server.orig/dix/inpututils.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/dix/inpututils.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/dix/inpututils.c	2011-08-24 12:52:43.835647119 +0300
++++ xorg-server/dix/inpututils.c	2011-08-24 12:56:49.855650623 +0300
 @@ -36,6 +36,7 @@
  #include "xkbsrv.h"
  #include "xkbstr.h"
@@ -3551,8 +3551,8 @@ Index: xorg-server/dix/inpututils.c
 +}
 Index: xorg-server/dix/window.c
 ===================================================================
---- xorg-server.orig/dix/window.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/dix/window.c	2011-04-09 10:42:43.000000000 +0300
+--- xorg-server.orig/dix/window.c	2011-08-24 12:52:43.845647121 +0300
++++ xorg-server/dix/window.c	2011-08-24 12:57:14.735650978 +0300
 @@ -110,6 +110,7 @@
  #include "windowstr.h"
  #include "input.h"
@@ -3561,7 +3561,7 @@ Index: xorg-server/dix/window.c
  #include "resource.h"
  #include "colormapst.h"
  #include "cursorstr.h"
-@@ -2873,8 +2874,10 @@
+@@ -2875,8 +2876,10 @@
  	if (!fromConfigure && pScreen->PostValidateTree)
  	    (*pScreen->PostValidateTree)(pLayerWin->parent, pWin, VTUnmap);
      }
@@ -3573,7 +3573,7 @@ Index: xorg-server/dix/window.c
      return Success;
  }
  
-@@ -2957,8 +2960,10 @@
+@@ -2959,8 +2962,10 @@
  	if (anyMarked && pScreen->PostValidateTree)
  	    (*pScreen->PostValidateTree)(pLayerWin->parent, pHead, VTUnmap);
      }
@@ -3587,8 +3587,8 @@ Index: xorg-server/dix/window.c
  
 Index: xorg-server/hw/xfree86/common/xf86Module.h
 ===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86Module.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/hw/xfree86/common/xf86Module.h	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/hw/xfree86/common/xf86Module.h	2011-08-24 12:52:43.775647117 +0300
++++ xorg-server/hw/xfree86/common/xf86Module.h	2011-08-24 12:56:49.855650623 +0300
 @@ -83,7 +83,7 @@
   */
  #define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 4)
@@ -3600,9 +3600,9 @@ Index: xorg-server/hw/xfree86/common/xf86Module.h
  
 Index: xorg-server/hw/xfree86/common/xf86Xinput.c
 ===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86Xinput.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/hw/xfree86/common/xf86Xinput.c	2011-04-09 10:42:46.000000000 +0300
-@@ -1357,6 +1357,16 @@
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.c	2011-08-24 12:52:43.755647120 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.c	2011-08-24 12:57:17.855651025 +0300
+@@ -1358,6 +1358,16 @@
  			   max_res, mode);
  }
  
@@ -3619,7 +3619,7 @@ Index: xorg-server/hw/xfree86/common/xf86Xinput.c
  /*
   * Set the valuator values to be in synch with dix/event.c
   * DefineInitialRootWindow().
-@@ -1408,4 +1418,50 @@
+@@ -1409,4 +1419,50 @@
      EnableDevice(dev, TRUE);
  }
  
@@ -3672,8 +3672,8 @@ Index: xorg-server/hw/xfree86/common/xf86Xinput.c
  /* end of xf86Xinput.c */
 Index: xorg-server/hw/xfree86/common/xf86Xinput.h
 ===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86Xinput.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/hw/xfree86/common/xf86Xinput.h	2011-04-09 10:42:46.000000000 +0300
+--- xorg-server.orig/hw/xfree86/common/xf86Xinput.h	2011-08-24 12:52:43.785647118 +0300
++++ xorg-server/hw/xfree86/common/xf86Xinput.h	2011-08-24 12:57:17.875651024 +0300
 @@ -141,6 +141,9 @@
  		       const int *valuators);
  extern _X_EXPORT void xf86PostKeyboardEvent(DeviceIntPtr device, unsigned int key_code,
@@ -3695,8 +3695,8 @@ Index: xorg-server/hw/xfree86/common/xf86Xinput.h
  extern _X_EXPORT void xf86RemoveEnabledDevice(InputInfoPtr pInfo);
 Index: xorg-server/include/dix.h
 ===================================================================
---- xorg-server.orig/include/dix.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/dix.h	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/include/dix.h	2011-08-24 12:56:49.835650626 +0300
++++ xorg-server/include/dix.h	2011-08-24 12:56:49.865650624 +0300
 @@ -375,7 +375,7 @@
  extern GrabPtr CheckPassiveGrabsOnWindow(
      WindowPtr /* pWin */,
@@ -3706,7 +3706,7 @@ Index: xorg-server/include/dix.h
      BOOL /* checkCore */,
      BOOL /* activate */);
  
-@@ -515,6 +515,11 @@
+@@ -520,6 +520,11 @@
          DeviceIntPtr /* dev */,
          xEvent* /* events */);
  
@@ -3718,7 +3718,7 @@ Index: xorg-server/include/dix.h
  #ifdef PANORAMIX
  extern _X_EXPORT void ReinitializeRootWindow(WindowPtr win, int xoff, int yoff);
  #endif
-@@ -526,6 +531,8 @@
+@@ -531,6 +536,8 @@
  
  extern _X_EXPORT int ffs(int i);
  
@@ -3727,18 +3727,18 @@ Index: xorg-server/include/dix.h
  
  /*
   *  ServerGrabCallback stuff
-@@ -569,6 +576,7 @@
+@@ -574,6 +581,7 @@
  extern Bool _X_EXPORT IsPointerDevice( DeviceIntPtr dev);
  extern Bool _X_EXPORT IsKeyboardDevice(DeviceIntPtr dev);
  extern Bool IsPointerEvent(InternalEvent *event);
 +extern Bool IsTouchEvent(InternalEvent *event);
  extern _X_EXPORT Bool IsMaster(DeviceIntPtr dev);
+ extern _X_EXPORT Bool IsFloating(DeviceIntPtr dev);
  
- extern _X_HIDDEN void CopyKeyClass(DeviceIntPtr device, DeviceIntPtr master);
 Index: xorg-server/include/events.h
 ===================================================================
---- xorg-server.orig/include/events.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/events.h	2011-04-09 10:42:46.000000000 +0300
+--- xorg-server.orig/include/events.h	2011-08-24 12:52:43.905647121 +0300
++++ xorg-server/include/events.h	2011-08-24 12:57:17.895651025 +0300
 @@ -26,6 +26,7 @@
  #define EVENTS_H
  typedef struct _DeviceEvent DeviceEvent;
@@ -3749,8 +3749,8 @@ Index: xorg-server/include/events.h
  #endif
 Index: xorg-server/include/eventstr.h
 ===================================================================
---- xorg-server.orig/include/eventstr.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/eventstr.h	2011-04-09 10:42:43.000000000 +0300
+--- xorg-server.orig/include/eventstr.h	2011-08-24 12:52:43.915647119 +0300
++++ xorg-server/include/eventstr.h	2011-08-24 12:57:14.785650979 +0300
 @@ -65,6 +65,11 @@
      ET_RawButtonRelease,
      ET_RawMotion,
@@ -3810,8 +3810,8 @@ Index: xorg-server/include/eventstr.h
  #endif
 Index: xorg-server/include/exevents.h
 ===================================================================
---- xorg-server.orig/include/exevents.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/exevents.h	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/include/exevents.h	2011-08-24 12:52:43.935647121 +0300
++++ xorg-server/include/exevents.h	2011-08-24 12:56:49.865650624 +0300
 @@ -51,6 +51,14 @@
  	int                    /* max_res */,
  	int                    /* mode */);
@@ -3870,10 +3870,10 @@ Index: xorg-server/include/exevents.h
  #endif /* EXEVENTS_H */
 Index: xorg-server/include/input.h
 ===================================================================
---- xorg-server.orig/include/input.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/input.h	2011-04-09 10:42:15.000000000 +0300
-@@ -104,6 +104,8 @@
- typedef struct _DeviceIntRec *DeviceIntPtr;
+--- xorg-server.orig/include/input.h	2011-08-24 12:52:43.895647122 +0300
++++ xorg-server/include/input.h	2011-08-24 12:56:49.865650624 +0300
+@@ -106,6 +106,8 @@
+ typedef struct _ValuatorClassRec *ValuatorClassPtr;
  typedef struct _ClassesRec *ClassesPtr;
  typedef struct _SpriteRec *SpritePtr;
 +typedef struct _TouchClassRec *TouchClassPtr;
@@ -3881,7 +3881,7 @@ Index: xorg-server/include/input.h
  typedef union _GrabMask GrabMask;
  
  typedef struct _EventList {
-@@ -314,6 +316,12 @@
+@@ -320,6 +322,12 @@
  extern _X_EXPORT Bool InitFocusClassDeviceStruct(
      DeviceIntPtr /*device*/);
  
@@ -3894,7 +3894,7 @@ Index: xorg-server/include/input.h
  typedef void (*BellProcPtr)(
      int /*percent*/,
      DeviceIntPtr /*device*/,
-@@ -463,6 +471,22 @@
+@@ -469,6 +477,22 @@
      int key_code,
      const ValuatorMask *mask);
  
@@ -3917,7 +3917,7 @@ Index: xorg-server/include/input.h
  extern int GetProximityEvents(
      EventListPtr events,
      DeviceIntPtr pDev,
-@@ -525,6 +549,18 @@
+@@ -533,6 +557,18 @@
  extern _X_EXPORT InputAttributes *DuplicateInputAttributes(InputAttributes *attrs);
  extern _X_EXPORT void FreeInputAttributes(InputAttributes *attrs);
  
@@ -3938,8 +3938,8 @@ Index: xorg-server/include/input.h
  extern Mask GetEventFilter(DeviceIntPtr dev, xEvent *event);
 Index: xorg-server/include/inputstr.h
 ===================================================================
---- xorg-server.orig/include/inputstr.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/inputstr.h	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/include/inputstr.h	2011-08-24 12:52:43.885647120 +0300
++++ xorg-server/include/inputstr.h	2011-08-24 12:57:12.215650943 +0300
 @@ -49,6 +49,8 @@
  #ifndef INPUTSTRUCT_H
  #define INPUTSTRUCT_H
@@ -3984,7 +3984,7 @@ Index: xorg-server/include/inputstr.h
  
 @@ -284,6 +289,75 @@
      ValuatorAccelerationRec	accelScheme;
- } ValuatorClassRec, *ValuatorClassPtr;
+ } ValuatorClassRec;
  
 +typedef enum {
 +    TOUCH_GRAB,
@@ -4094,8 +4094,8 @@ Index: xorg-server/include/inputstr.h
      DeviceIntPtr        replayDev;      /* kludgy rock to put flag for */
 Index: xorg-server/include/protocol-versions.h
 ===================================================================
---- xorg-server.orig/include/protocol-versions.h	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/include/protocol-versions.h	2011-04-09 10:42:43.000000000 +0300
+--- xorg-server.orig/include/protocol-versions.h	2011-08-24 12:56:49.825650624 +0300
++++ xorg-server/include/protocol-versions.h	2011-08-24 12:57:14.795650980 +0300
 @@ -131,7 +131,7 @@
  
  /* X Input */
@@ -4107,8 +4107,8 @@ Index: xorg-server/include/protocol-versions.h
  #define SERVER_XKB_MAJOR_VERSION		1
 Index: xorg-server/mi/mieq.c
 ===================================================================
---- xorg-server.orig/mi/mieq.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/mi/mieq.c	2011-04-09 10:42:43.000000000 +0300
+--- xorg-server.orig/mi/mieq.c	2011-08-24 12:52:43.945647123 +0300
++++ xorg-server/mi/mieq.c	2011-08-24 12:57:14.815650981 +0300
 @@ -269,8 +269,15 @@
          case ET_ProximityOut:
          case ET_Hierarchy:
@@ -4136,8 +4136,8 @@ Index: xorg-server/mi/mieq.c
  }
 Index: xorg-server/test/input.c
 ===================================================================
---- xorg-server.orig/test/input.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/test/input.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/test/input.c	2011-08-24 12:52:43.725647116 +0300
++++ xorg-server/test/input.c	2011-08-24 12:56:49.865650624 +0300
 @@ -278,6 +278,11 @@
      dix_event_to_core_fail(ET_ProximityOut + 1, BadImplementation);
      dix_event_to_core_fail(ET_ProximityIn, BadMatch);
@@ -4222,8 +4222,8 @@ Index: xorg-server/test/input.c
  }
  
  static void test_bits_to_byte(int i)
-@@ -1199,6 +1262,101 @@
-     }
+@@ -1224,6 +1287,101 @@
+     free(v);
  }
  
 +static void touch_create(void)
@@ -4324,7 +4324,7 @@ Index: xorg-server/test/input.c
  int main(int argc, char** argv)
  {
      g_test_init(&argc, &argv,NULL);
-@@ -1209,6 +1367,7 @@
+@@ -1234,6 +1392,7 @@
      g_test_add_func("/dix/input/init-valuators", dix_init_valuators);
      g_test_add_func("/dix/input/event-core-conversion", dix_event_to_core_conversion);
      g_test_add_func("/dix/input/event-xi1-conversion", dix_event_to_xi1_conversion);
@@ -4332,7 +4332,7 @@ Index: xorg-server/test/input.c
      g_test_add_func("/dix/input/check-grab-values", dix_check_grab_values);
      g_test_add_func("/dix/input/xi2-struct-sizes", xi2_struct_sizes);
      g_test_add_func("/dix/input/grab_matching", dix_grab_matching);
-@@ -1216,6 +1375,9 @@
+@@ -1242,6 +1401,9 @@
      g_test_add_func("/include/bit_test_macros", include_bit_test_macros);
      g_test_add_func("/Xi/xiproperty/register-unregister", xi_unregister_handlers);
      g_test_add_func("/dix/input/valuator-alloc", dix_valuator_alloc);
@@ -4344,8 +4344,8 @@ Index: xorg-server/test/input.c
  }
 Index: xorg-server/test/xi2/protocol-eventconvert.c
 ===================================================================
---- xorg-server.orig/test/xi2/protocol-eventconvert.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/test/xi2/protocol-eventconvert.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/test/xi2/protocol-eventconvert.c	2011-08-24 12:52:43.735647117 +0300
++++ xorg-server/test/xi2/protocol-eventconvert.c	2011-08-24 12:56:49.865650624 +0300
 @@ -149,6 +149,59 @@
      free(swapped);
  }
@@ -4493,8 +4493,8 @@ Index: xorg-server/test/xi2/protocol-eventconvert.c
  }
 Index: xorg-server/test/xi2/protocol-xiselectevents.c
 ===================================================================
---- xorg-server.orig/test/xi2/protocol-xiselectevents.c	2011-04-06 18:25:23.000000000 +0300
-+++ xorg-server/test/xi2/protocol-xiselectevents.c	2011-04-09 10:42:15.000000000 +0300
+--- xorg-server.orig/test/xi2/protocol-xiselectevents.c	2011-08-24 12:52:43.745647118 +0300
++++ xorg-server/test/xi2/protocol-xiselectevents.c	2011-08-24 12:56:49.865650624 +0300
 @@ -159,9 +159,33 @@
          memset(bits, 0, mask->mask_len * 4);
          for (j = 0; j <= XI2LASTEVENT; j++)

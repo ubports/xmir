@@ -1,7 +1,7 @@
 Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
 ===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2011-08-11 01:50:04 +0000
-+++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2011-08-11 01:52:08 +0000
+--- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2011-08-24 12:56:49.565650621 +0300
++++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2011-08-24 12:56:49.575650619 +0300
 @@ -44,6 +44,12 @@
  # include "xf86sbusBus.h"
  #endif

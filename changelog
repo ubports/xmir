@@ -12,6 +12,7 @@ xorg-server (2:1.10.4-1ubuntu1) UNRELEASED; urgency=low
   * Merge from Debian unstable.
   * debian/rules: Modify the patch stampdir creation.
   * Update patch 500_xi2.1.patch to apply.
+  * Refresh patches.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 01 Aug 2011 16:27:52 +1000
 

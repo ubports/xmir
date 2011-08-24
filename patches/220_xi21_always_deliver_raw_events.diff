@@ -1,7 +1,7 @@
 Index: xorg-server/Xi/exevents.c
 ===================================================================
---- xorg-server.orig/Xi/exevents.c	2011-07-08 16:44:23.151303095 +1000
-+++ xorg-server/Xi/exevents.c	2011-07-08 17:32:33.257674174 +1000
+--- xorg-server.orig/Xi/exevents.c	2011-08-24 12:52:44.135647124 +0300
++++ xorg-server/Xi/exevents.c	2011-08-24 12:57:20.855651066 +0300
 @@ -896,32 +896,6 @@
      return DEFAULT;
  }
@@ -46,8 +46,8 @@ Index: xorg-server/Xi/exevents.c
  
 Index: xorg-server/dix/events.c
 ===================================================================
---- xorg-server.orig/dix/events.c	2011-07-08 16:44:49.542287820 +1000
-+++ xorg-server/dix/events.c	2011-07-08 17:33:38.190077010 +1000
+--- xorg-server.orig/dix/events.c	2011-08-24 12:56:49.815650623 +0300
++++ xorg-server/dix/events.c	2011-08-24 12:57:20.635651065 +0300
 @@ -2105,6 +2105,216 @@
      return nondeliveries;
  }
@@ -267,8 +267,8 @@ Index: xorg-server/dix/events.c
     Only works for core events.
 Index: xorg-server/include/dix.h
 ===================================================================
---- xorg-server.orig/include/dix.h	2011-07-08 16:44:49.542287820 +1000
-+++ xorg-server/include/dix.h	2011-07-08 17:32:32.887660484 +1000
+--- xorg-server.orig/include/dix.h	2011-08-24 12:56:49.825650624 +0300
++++ xorg-server/include/dix.h	2011-08-24 12:57:20.695651065 +0300
 @@ -387,6 +387,11 @@
      Mask /* filter */,
      GrabPtr /* grab */);
