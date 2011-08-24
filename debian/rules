@@ -55,6 +55,7 @@ endif
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	build_xfbdev = --enable-xfbdev
 	selinux = --disable-xselinux
+	xkbrules = --with-default-xkb-rules=evdev
 else
 	build_xfbdev = --disable-xfbdev
 	selinux = --disable-xselinux
@@ -105,6 +106,7 @@ confflags += \
 	     --with-builderstring="$(SOURCE_NAME) $(SOURCE_VERSION) ($(BUILDER))" \
 	     --with-xkb-path=/usr/share/X11/xkb \
 	     --with-xkb-output=/var/lib/xkb \
+	     $(xkbrules) \
 	     --disable-devel-docs \
 	     --disable-install-libxf86config \
 	     --enable-mitshm \
