@@ -1,4 +1,4 @@
-xorg-server (2:1.10.2.902-1ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.10.3-1ubuntu1) UNRELEASED; urgency=low
 
   [ Christopher James Halse Rogers ]
   * Drop i8xx-disablement patch.  2.6.39 and later kernels contain a patch
@@ -8,7 +8,31 @@ xorg-server (2:1.10.2.902-1ubuntu4) UNRELEASED; urgency=low
   * debian/patches/112_armel-pvr-drv.patch:
     - Include support for the pvr driver available on OMAP 4 (LP: #828494)
 
+  [ Timo Aaltonen]
+  * Merge from Debian unstable.
+
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 01 Aug 2011 16:27:52 +1000
+
+xorg-server (2:1.10.3-1) unstable; urgency=medium
+
+  [ Cyril Brulebois ]
+  * New upstream release (with just a version bump).
+  * Remove the Replaces: xdmx from xdmx-tools, that was before lenny.
+  * Add a Breaks: libgl1-mesa-dri-no-multiarch, to handle upgrades from
+    squeeze-backports (without multiarch) to wheezy (with multiarch).
+  * Set urgency to “medium” to speed things up. Migration to testing is
+    a prerequisite for squeeze backports.
+
+  [ Julien Cristau ]
+  * Merge packaging changes lost from the 1.7 (squeeze) branch:
+    + Add Breaks on drivers abandoned between lenny and squeeze.  This helps
+      apt decide to remove them instead of removing all of X.  Thanks, David
+      Kalnischkies!
+    + Set default xkb rules to evdev on linux, to work around a wrong default in
+      configure.ac and an Xorg issue where it reverts to the default on reset.
+      Thanks to Bastian Blank for the report.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 07 Aug 2011 19:35:07 +0200
 
 xorg-server (2:1.10.2.902-1ubuntu3) oneiric; urgency=low
 
