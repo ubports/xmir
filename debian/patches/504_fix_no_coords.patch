@@ -1,9 +1,11 @@
 Fix handling of events when the X and Y valuators are not set. This fixes cursor
 warping to (0,0) on Wacom button press events.
 
---- a/dix/getevents.c
-+++ b/dix/getevents.c
-@@ -1177,31 +1177,37 @@ GetPointerEvents(EventList *events, Devi
+Index: xorg-server/dix/getevents.c
+===================================================================
+--- xorg-server.orig/dix/getevents.c	2011-08-24 12:56:49.905650624 +0300
++++ xorg-server/dix/getevents.c	2011-08-24 12:56:49.925650626 +0300
+@@ -1185,31 +1185,37 @@
              }
          }
  
