@@ -8,9 +8,10 @@ xorg-server (2:1.10.4-1ubuntu1) UNRELEASED; urgency=low
   * debian/patches/112_armel-pvr-drv.patch:
     - Include support for the pvr driver available on OMAP 4 (LP: #828494)
 
-  [ Timo Aaltonen]
+  [ Timo Aaltonen ]
   * Merge from Debian unstable.
   * debian/rules: Modify the patch stampdir creation.
+  * Update patch 500_xi2.1.patch to apply.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 01 Aug 2011 16:27:52 +1000
 

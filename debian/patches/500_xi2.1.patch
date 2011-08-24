@@ -3130,7 +3130,7 @@ Index: xorg-server/dix/getevents.c
                  SetBit(event->valuators.mode, i);
              event->valuators.data[i] = valuator_mask_get(mask, i);
              event->valuators.data_frac[i] =
-@@ -1062,23 +1076,14 @@
+@@ -1062,24 +1076,14 @@
  }
  
  static void
@@ -3149,9 +3149,10 @@ Index: xorg-server/dix/getevents.c
  
      pixman_f_transform_point(&dev->transform, &p);
  
--    if (lround(p.v[0]) != dev->last.valuators[0])
+-    if (valuator_mask_isset(mask, 0))
 -        valuator_mask_set(mask, 0, lround(p.v[0]));
--    if (lround(p.v[1]) != dev->last.valuators[1])
+-
+-    if (valuator_mask_isset(mask, 1))
 -        valuator_mask_set(mask, 1, lround(p.v[1]));
 +    *x = lround(p.v[0]);
 +    *y = lround(p.v[1]);
