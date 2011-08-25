@@ -361,7 +361,9 @@ binary-indep: build install check
 
 check:
 	dh_testdir
-	debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -noreset" true
+
+	# Make sure Xvfb at least starts up
+	debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -nolisten tcp -noreset" true
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
