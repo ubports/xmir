@@ -16,6 +16,7 @@ xorg-server (2:1.10.4-1ubuntu2) UNRELEASED; urgency=low
 
   [ Bryce Harrington ]
   * debian/rules: Add check target invoking xvfb-run to test that it works
+  * debian/control: Add build dependency on xauth, required by xvfb-run
 
  -- Bryce Harrington <bryce@ubuntu.com>  Wed, 24 Aug 2011 19:39:26 -0700
 
