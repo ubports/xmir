@@ -351,13 +351,17 @@ endif
 
 
 # Build architecture-independent files here
-binary-indep: build install
+binary-indep: build install check
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-initial
 	dh_install -i --sourcedir=debian/tmp
 	dh_installdocs -i
 	dh_installchangelogs -i ChangeLog
 
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-deb
+
+check:
+	dh_testdir
+	debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -noreset" true
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
