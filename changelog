@@ -19,7 +19,13 @@ xorg-server (2:1.10.4-1ubuntu1) UNRELEASED; urgency=low
   * debian/rules: Add check target invoking xvfb-run to test that it works
   * debian/control: Add build dependency on xauth, required by xvfb-run
 
- -- Bryce Harrington <bryce@ubuntu.com>  Wed, 24 Aug 2011 19:39:26 -0700
+  [ Chase Douglas ]
+  * Add fixes for touch grab handling, courtesy of Carlos Garnacho
+    - 505_Xi_ensure_replayed_touch_events_have_devices.patch
+    - 506_Xi_ensure_touch_events_update_currentTime.patch
+    - 507_dix_Ensure_touch_events_are_delivered_to_next_client.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 07 Sep 2011 09:40:03 -0700
 
 xorg-server (2:1.10.4-1) unstable; urgency=low
 
