@@ -1,0 +1,76 @@
+From 4b97bab5bfaf823c9c71b828bfb263a995c11cb7 Mon Sep 17 00:00:00 2001
+From: Carlos Garnacho <carlosg@gnome.org>
+Date: Mon, 5 Sep 2011 18:35:25 +0200
+Subject: [PATCH 3/6] dix: Ensure touch events are delivered to the next
+ client
+
+ComputeFreezes() would start over in the touch clients stack
+every time it would replay touch events with the PointerEmulated
+flag set. Instead, check the next touch client to forward ownership
+to.
+---
+ dix/events.c |   32 ++++++++++++++++++--------------
+ 1 files changed, 18 insertions(+), 14 deletions(-)
+
+diff --git a/dix/events.c b/dix/events.c
+index cb329e7..5ded834 100644
+--- a/dix/events.c
++++ b/dix/events.c
+@@ -4149,27 +4149,24 @@ CheckDeviceGrabs(DeviceIntPtr device, DeviceEvent *event, WindowPtr ancestor)
+             touch_event = &qe->event->device_event;
+     }
+ 
+-    for (; i < device->spriteInfo->sprite->spriteTraceGood; i++)
++    /* Touch grabs are checked before pointer grabs. When a touch grab
++     * should be checked first, check_grab is TRUE. */
++    if (touch_event)
+     {
+-        pWin = device->spriteInfo->sprite->spriteTrace[i];
+-
+-        if (!pWin->optional)
+-            continue;
++        TouchPointInfoPtr ti = touch_event->touchpoint;
++        TouchClientPtr tc = &ti->clients[ti->owner];
++        GrabPtr grab;
+ 
+-        /* Touch grabs are checked before pointer grabs. When a touch grab
+-         * should be checked first, check_grab is TRUE. */
+-        if (touch_event && touch_event->check_grab)
++        if (ti->owner >= 0 && touch_event->check_grab)
+         {
+-            GrabPtr grab;
++            tc = &ti->clients[ti->owner];
++            pWin = tc->window;
+ 
+             grab = CheckPassiveGrabsOnWindow(pWin, device,
+                                              (InternalEvent *)touch_event,
+                                              FALSE, FALSE);
+             if (grab)
+             {
+-                TouchPointInfoPtr ti = touch_event->touchpoint;
+-                TouchClientPtr tc = &ti->clients[ti->owner];
+-
+                 device->deviceGrab.ActivateGrab(device, grab, currentTime,
+                                                 TRUE);
+                 touch_event->check_grab = FALSE;
+@@ -4178,8 +4175,15 @@ CheckDeviceGrabs(DeviceIntPtr device, DeviceEvent *event, WindowPtr ancestor)
+             }
+         }
+ 
+-        if (touch_event)
+-            touch_event->check_grab = TRUE;
++        touch_event->check_grab = TRUE;
++    }
++
++    for (; i < device->spriteInfo->sprite->spriteTraceGood; i++)
++    {
++        pWin = device->spriteInfo->sprite->spriteTrace[i];
++
++        if (!pWin->optional)
++            continue;
+ 
+         if (pWin->optional &&
+             CheckPassiveGrabsOnWindow(pWin, device, (InternalEvent *)event,
+-- 
+1.7.5.4
+
