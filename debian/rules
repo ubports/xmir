@@ -363,7 +363,8 @@ check:
 	dh_testdir
 
 	# Make sure Xvfb at least starts up
-	debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -nolisten tcp -noreset" true
+	PATH=debian/tmp/main/usr/bin/:/bin:/usr/bin \
+	  debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -nolisten tcp -noreset" true
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
