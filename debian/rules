@@ -267,6 +267,10 @@ endif
 	rm -f debian/tmp/udeb/usr/lib/xorg/modules/libxf8_16bpp.so
 
 	install -m 755 debian/local/xvfb-run debian/tmp/main/usr/bin
+	# Make sure Xvfb at least starts up
+	PATH=debian/tmp/main/usr/bin/:/bin:/usr/bin \
+	  debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -nolisten tcp -noreset" true
+
 	install debian/local/xvfb-run.1 debian/tmp/main/usr/share/man/man1
 ifneq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/tmp/main/usr/share/X11/xorg.conf.d
@@ -361,10 +365,6 @@ binary-indep: build install check
 
 check:
 	dh_testdir
-
-	# Make sure Xvfb at least starts up
-	PATH=debian/tmp/main/usr/bin/:/bin:/usr/bin \
-	  debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -nolisten tcp -noreset" true
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install

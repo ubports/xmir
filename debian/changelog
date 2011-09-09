@@ -15,6 +15,8 @@ xorg-server (2:1.10.4-1ubuntu1) UNRELEASED; urgency=low
   * Update patch 500_xi2.1.patch to apply.
   * Refresh patches.
   * debian/rules: Add PATH for the xvfb-run check, otherwise Xvfb is not found.
+  * debian/rules: Shift the xvfb-run test to be run later, to ensure that the
+    binaries are installed.
 
   [ Bryce Harrington ]
   * debian/rules: Add check target invoking xvfb-run to test that it works
