@@ -1,4 +1,4 @@
-xorg-server (2:1.10.4-1ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.10.4-1ubuntu1) oneiric; urgency=low
 
   [ Christopher James Halse Rogers ]
   * Drop i8xx-disablement patch.  2.6.39 and later kernels contain a patch
@@ -28,7 +28,7 @@ xorg-server (2:1.10.4-1ubuntu1) UNRELEASED; urgency=low
     - 506_Xi_ensure_touch_events_update_currentTime.patch
     - 507_dix_Ensure_touch_events_are_delivered_to_next_client.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 07 Sep 2011 09:40:03 -0700
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 09 Sep 2011 14:13:07 +0300
 
 xorg-server (2:1.10.4-1) unstable; urgency=low
 
