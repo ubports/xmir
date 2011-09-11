@@ -50,7 +50,6 @@
 ** from the server's perspective.
 */
 __GLXcontext *__glXLastContext;
-__GLXcontext *__glXContextList;
 
 /*
 ** X resources.
@@ -65,11 +64,6 @@ xGLXSingleReply __glXReply;
 
 static DevPrivateKeyRec glxClientPrivateKeyRec;
 #define glxClientPrivateKey (&glxClientPrivateKeyRec)
-
-/*
-** Client that called into GLX dispatch.
-*/
-ClientPtr __pGlxClient;
 
 /*
 ** Forward declarations.
@@ -395,7 +389,7 @@ __GLXcontext *__glXForceCurrent(__GLXclientState *cl, GLXContextTag tag,
     ** See if the context tag is legal; it is managed by the extension,
     ** so if it's invalid, we have an implementation error.
     */
-    cx = (__GLXcontext *) __glXLookupContextByTag(cl, tag);
+    cx = __glXLookupContextByTag(cl, tag);
     if (!cx) {
 	cl->client->errorValue = tag;
 	*error = __glXError(GLXBadContextTag);
@@ -424,7 +418,7 @@ __GLXcontext *__glXForceCurrent(__GLXclientState *cl, GLXContextTag tag,
 
     /* Make this context the current one for the GL. */
     if (!cx->isDirect) {
-	if (!(*cx->forceCurrent)(cx)) {
+	if (!(*cx->makeCurrent)(cx)) {
 	    /* Bind failed, and set the error code.  Bummer */
 	    cl->client->errorValue = cx->id;
 	    *error = __glXError(GLXBadContextState);
@@ -544,14 +538,11 @@ static int __glXDispatch(ClientPtr client)
     /*
     ** Use the opcode to index into the procedure table.
     */
-    proc = (__GLXdispatchSingleProcPtr) __glXGetProtocolDecodeFunction(& Single_dispatch_info,
-								       opcode,
-								       client->swapped);
+    proc = __glXGetProtocolDecodeFunction(& Single_dispatch_info, opcode,
+                                          client->swapped);
     if (proc != NULL) {
 	GLboolean rendering = opcode <= X_GLXRenderLarge;
 	__glXleaveServer(rendering);
-
-	__pGlxClient = client;
 
 	retval = (*proc)(cl, (GLbyte *) stuff);
 

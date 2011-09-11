@@ -22,46 +22,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 /*
- * This file manages the OpenGL API dispatch layer.
- * The dispatch table (struct _glapi_table) is basically just a list
- * of function pointers.
- * There are functions to set/get the current dispatch table for the
- * current thread and to manage registration/dispatch of dynamically
- * added extension functions.
+ * This file manages the OpenGL API dispatch layer.  There are functions
+ * to set/get the current dispatch table for the current thread and to
+ * manage registration/dispatch of dynamically added extension functions.
  *
- * It's intended that this file and the other glapi*.[ch] files are
- * flexible enough to be reused in several places:  XFree86, DRI-
- * based libGL.so, and perhaps the SGI SI.
- *
- * NOTE: There are no dependencies on Mesa in this code.
- *
- * Versions (API changes):
- *   2000/02/23  - original version for Mesa 3.3 and XFree86 4.0
- *   2001/01/16  - added dispatch override feature for Mesa 3.5
- *   2002/06/28  - added _glapi_set_warning_func(), Mesa 4.1.
- *   2002/10/01  - _glapi_get_proc_address() will now generate new entrypoints
- *                 itself (using offset ~0).  _glapi_add_entrypoint() can be
- *                 called afterward and it'll fill in the correct dispatch
- *                 offset.  This allows DRI libGL to avoid probing for DRI
- *                 drivers!  No changes to the public glapi interface.
+ * This code was originally general enough to be shared with Mesa, but
+ * they diverged long ago, so this is now just enough support to make
+ * indirect GLX work.
  */
-
-
-
-#ifdef HAVE_DIX_CONFIG_H
 
 #include <dix-config.h>
 #include <X11/Xfuncproto.h>
 #include <os.h>
 #define PUBLIC _X_EXPORT
-
-#else
-
-#include "glheader.h"
-
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -104,11 +78,9 @@ static void init_glapi_relocs(void);
 /*@{*/
 #if defined(GLX_USE_TLS)
 
-PUBLIC TLS struct _glapi_table * _glapi_tls_Dispatch
-    __attribute__((tls_model("initial-exec"))) = NULL;
+PUBLIC TLS struct _glapi_table * _glapi_tls_Dispatch = NULL;
 
-PUBLIC TLS void * _glapi_tls_Context
-    __attribute__((tls_model("initial-exec")));
+PUBLIC TLS void * _glapi_tls_Context;
 
 PUBLIC const struct _glapi_table *_glapi_Dispatch = NULL;
 PUBLIC const void *_glapi_Context = NULL;
@@ -237,9 +209,6 @@ _glapi_get_dispatch(void)
 # endif
 #endif
 
-#if !defined(DISPATCH_FUNCTION_SIZE) && !defined(XFree86Server) && !defined(XGLServer)
-# define NEED_FUNCTION_POINTER
-#endif
 
 /* The code in this file is auto-generated with Python */
 #include "glprocs.h"
@@ -278,46 +247,6 @@ get_static_proc_offset(const char *funcName)
 }
 
 
-#if !defined(XFree86Server) && !defined(XGLServer)
-#ifdef USE_X86_ASM
-
-#if defined( GLX_USE_TLS )
-extern       GLubyte gl_dispatch_functions_start[];
-extern       GLubyte gl_dispatch_functions_end[];
-#else
-extern const GLubyte gl_dispatch_functions_start[];
-#endif
-
-#endif /* USE_X86_ASM */
-
-
-/**
- * Return dispatch function address for the named static (built-in) function.
- * Return NULL if function not found.
- */
-static _glapi_proc
-get_static_proc_address(const char *funcName)
-{
-   const glprocs_table_t * const f = find_entry( funcName );
-   if (f) {
-#if defined(DISPATCH_FUNCTION_SIZE) && defined(GLX_INDIRECT_RENDERING)
-      return (f->Address == NULL)
-	 ? (_glapi_proc) (gl_dispatch_functions_start
-			  + (DISPATCH_FUNCTION_SIZE * f->Offset))
-         : f->Address;
-#elif defined(DISPATCH_FUNCTION_SIZE)
-      return (_glapi_proc) (gl_dispatch_functions_start 
-                            + (DISPATCH_FUNCTION_SIZE * f->Offset));
-#else
-      return f->Address;
-#endif
-   }
-   else {
-      return NULL;
-   }
-}
-
-#endif /* !defined(XFree86Server) && !defined(XGLServer) */
 
 /**********************************************************************
  * Extension function management.

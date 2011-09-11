@@ -34,7 +34,7 @@ libXquartz_la_SOURCES = \
 	quartzKeyboard.c \
 	quartzStartup.c \
 	quartzRandR.c \
-	threadSafety.c
+	console_redirect.c
 
 EXTRA_DIST = \
 	X11Application.h \
@@ -51,4 +51,4 @@ EXTRA_DIST = \
 	quartzRandR.h \
 	sanitizedCarbon.h \
 	sanitizedCocoa.h \
-	threadSafety.h
+	console_redirect.h

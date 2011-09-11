@@ -163,10 +163,10 @@ __glXDRIdrawableWaitGL(__GLXdrawable *drawable)
 
 static void
 __glXdriSwapEvent(ClientPtr client, void *data, int type, CARD64 ust,
-		  CARD64 msc, CARD64 sbc)
+		  CARD64 msc, CARD32 sbc)
 {
     __GLXdrawable *drawable = data;
-    xGLXBufferSwapComplete wire;
+    xGLXBufferSwapComplete2 wire;
 
     if (!(drawable->eventMask & GLX_BUFFER_SWAP_COMPLETE_INTEL_MASK))
 	return;
@@ -192,8 +192,7 @@ __glXdriSwapEvent(ClientPtr client, void *data, int type, CARD64 ust,
     wire.ust_lo = ust & 0xffffffff;
     wire.msc_hi = msc >> 32;
     wire.msc_lo = msc & 0xffffffff;
-    wire.sbc_hi = sbc >> 32;
-    wire.sbc_lo = sbc & 0xffffffff;
+    wire.sbc = sbc;
 
     WriteEventsToClient(client, 1, (xEvent *) &wire);
 }
@@ -222,7 +221,7 @@ __glXDRIdrawableSwapBuffers(ClientPtr client, __GLXdrawable *drawable)
 #endif
 
     if (DRI2SwapBuffers(client, drawable->pDraw, 0, 0, 0, &unused,
-			__glXdriSwapEvent, drawable->pDraw) != Success)
+			__glXdriSwapEvent, drawable) != Success)
 	return FALSE;
 
     return TRUE;
@@ -282,19 +281,6 @@ __glXDRIcontextCopy(__GLXcontext *baseDst, __GLXcontext *baseSrc,
 
     return (*screen->core->copyContext)(dst->driContext,
 					src->driContext, mask);
-}
-
-static int
-__glXDRIcontextForceCurrent(__GLXcontext *baseContext)
-{
-    __GLXDRIcontext *context = (__GLXDRIcontext *) baseContext;
-    __GLXDRIdrawable *draw = (__GLXDRIdrawable *) baseContext->drawPriv;
-    __GLXDRIdrawable *read = (__GLXDRIdrawable *) baseContext->readPriv;
-    __GLXDRIscreen *screen = (__GLXDRIscreen *) context->base.pGlxScreen;
-
-    return (*screen->core->bindContext)(context->driContext,
-					draw->driDrawable,
-					read->driDrawable);
 }
 
 static Bool
@@ -412,7 +398,6 @@ __glXDRIscreenCreateContext(__GLXscreen *baseScreen,
     context->base.makeCurrent       = __glXDRIcontextMakeCurrent;
     context->base.loseCurrent       = __glXDRIcontextLoseCurrent;
     context->base.copy              = __glXDRIcontextCopy;
-    context->base.forceCurrent      = __glXDRIcontextForceCurrent;
     context->base.textureFromPixmap = &__glXDRItextureFromPixmap;
     context->base.wait              = __glXDRIcontextWait;
 
@@ -600,8 +585,6 @@ static const __DRIextension *loader_extensions[] = {
     NULL
 };
 
-static const char dri_driver_path[] = DRI_DRIVER_PATH;
-
 static Bool
 glxDRIEnterVT (int index, int flags)
 {
@@ -703,12 +686,9 @@ __glXDRIscreenProbe(ScreenPtr pScreen)
 {
     const char *driverName, *deviceName;
     __GLXDRIscreen *screen;
-    char filename[128];
     size_t buffer_size;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    const __DRIextension **extensions;
     const __DRIconfig **driConfigs;
-    int i;
 
     screen = calloc(1, sizeof *screen);
     if (screen == NULL)
@@ -730,40 +710,12 @@ __glXDRIscreenProbe(ScreenPtr pScreen)
 
     __glXInitExtensionEnableBits(screen->glx_enable_bits);
 
-    snprintf(filename, sizeof filename,
-	     "%s/%s_dri.so", dri_driver_path, driverName);
-
-    screen->driver = dlopen(filename, RTLD_LAZY | RTLD_LOCAL);
+    screen->driver = glxProbeDriver(driverName, (void **)&screen->core, __DRI_CORE, 1,
+				    (void **)&screen->dri2, __DRI_DRI2, 1);
     if (screen->driver == NULL) {
-	LogMessage(X_ERROR, "AIGLX error: dlopen of %s failed (%s)\n",
-		   filename, dlerror());
         goto handle_error;
     }
-
-    extensions = dlsym(screen->driver, __DRI_DRIVER_EXTENSIONS);
-    if (extensions == NULL) {
-	LogMessage(X_ERROR, "AIGLX error: %s exports no extensions (%s)\n",
-		   driverName, dlerror());
-	goto handle_error;
-    }
     
-    for (i = 0; extensions[i]; i++) {
-        if (strcmp(extensions[i]->name, __DRI_CORE) == 0 &&
-	    extensions[i]->version >= 1) {
-		screen->core = (const __DRIcoreExtension *) extensions[i];
-	}
-        if (strcmp(extensions[i]->name, __DRI_DRI2) == 0 &&
-	    extensions[i]->version >= 1) {
-		screen->dri2 = (const __DRIdri2Extension *) extensions[i];
-	}
-    }
-
-    if (screen->core == NULL || screen->dri2 == NULL) {
-	LogMessage(X_ERROR, "AIGLX error: %s exports no DRI extension\n",
-		   driverName);
-	goto handle_error;
-    }
-
     screen->driScreen =
 	(*screen->dri2->createNewScreen)(pScreen->myNum,
 					 screen->fd,
@@ -817,7 +769,7 @@ __glXDRIscreenProbe(ScreenPtr pScreen)
     pScrn->LeaveVT = glxDRILeaveVT;
 
     LogMessage(X_INFO,
-	       "AIGLX: Loaded and initialized %s\n", filename);
+	       "AIGLX: Loaded and initialized %s\n", driverName);
 
     return &screen->base;
 

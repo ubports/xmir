@@ -84,7 +84,6 @@ SOFTWARE.
 #include "closedev.h"
 #include "devbell.h"
 #include "getbmap.h"
-#include "getbmap.h"
 #include "getdctl.h"
 #include "getfctl.h"
 #include "getfocus.h"
@@ -92,7 +91,6 @@ SOFTWARE.
 #include "getmmap.h"
 #include "getprop.h"
 #include "getselev.h"
-#include "getvers.h"
 #include "getvers.h"
 #include "grabdev.h"
 #include "grabdevb.h"
@@ -359,7 +357,7 @@ int ChangeDeviceNotify;
 int DevicePresenceNotify;
 int DevicePropertyNotify;
 
-int RT_INPUTCLIENT;
+RESTYPE RT_INPUTCLIENT;
 
 /*****************************************************************
  *

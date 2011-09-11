@@ -77,6 +77,7 @@ SOFTWARE.
 #include "xiquerydevice.h" /* For List*Info */
 #include "eventconvert.h"
 #include "eventstr.h"
+#include "inpututils.h"
 
 #include <X11/extensions/XKBproto.h>
 #include "xkbsrv.h"
@@ -623,30 +624,6 @@ DeepCopyPointerClasses(DeviceIntPtr from, DeviceIntPtr to)
         classes->proximity = to->proximity;
         to->proximity      = NULL;
     }
-
-    if (from->absolute)
-    {
-        if (!to->absolute)
-        {
-            classes = to->unused_classes;
-            to->absolute = classes->absolute;
-            if (!to->absolute)
-            {
-                to->absolute = calloc(1, sizeof(AbsoluteClassRec));
-                if (!to->absolute)
-                    FatalError("[Xi] no memory for class shift.\n");
-            } else
-                classes->absolute = NULL;
-        }
-        memcpy(to->absolute, from->absolute, sizeof(AbsoluteClassRec));
-        to->absolute->sourceid = from->id;
-    } else if (to->absolute)
-    {
-        ClassesPtr classes;
-        classes = to->unused_classes;
-        classes->absolute = to->absolute;
-        to->absolute      = NULL;
-    }
 }
 
 /**
@@ -707,10 +684,13 @@ ChangeMasterDeviceClasses(DeviceIntPtr device, DeviceChangedEvent *dce)
     if (rc != Success)
         return; /* Device has disappeared */
 
-    if (!slave->u.master)
+    if (IsMaster(slave))
+        return;
+
+    if (IsFloating(slave))
         return; /* set floating since the event */
 
-    if (slave->u.master->id != dce->masterid)
+    if (GetMaster(slave, MASTER_ATTACHED)->id != dce->masterid)
         return; /* not our slave anymore, don't care */
 
     /* FIXME: we probably need to send a DCE for the new slave now */
@@ -863,7 +843,7 @@ UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
              * event being delivered through the slave first
              */
             for (sd = inputInfo.devices; sd; sd = sd->next) {
-                if (IsMaster(sd) || sd->u.master != device)
+                if (IsMaster(sd) || GetMaster(sd, MASTER_POINTER) != device)
                     continue;
                 if (!sd->button)
                     continue;
@@ -896,32 +876,6 @@ UpdateDeviceState(DeviceIntPtr device, DeviceEvent* event)
     return DEFAULT;
 }
 
-static void
-ProcessRawEvent(RawDeviceEvent *ev, DeviceIntPtr device)
-{
-    GrabPtr grab = device->deviceGrab.grab;
-
-    if (grab)
-        DeliverGrabbedEvent((InternalEvent*)ev, device, FALSE);
-    else { /* deliver to all root windows */
-        xEvent *xi;
-        int i;
-
-        i = EventToXI2((InternalEvent*)ev, (xEvent**)&xi);
-        if (i != Success)
-        {
-            ErrorF("[Xi] %s: XI2 conversion failed in ProcessRawEvent (%d)\n",
-                    device->name, i);
-            return;
-        }
-
-        for (i = 0; i < screenInfo.numScreens; i++)
-            DeliverEventsToWindow(device, screenInfo.screens[i]->root, xi, 1,
-                                  GetEventFilter(device, xi), NULL);
-        free(xi);
-    }
-}
-
 /**
  * Main device event processing function.
  * Called from when processing the events from the event queue.
@@ -941,7 +895,7 @@ ProcessOtherEvent(InternalEvent *ev, DeviceIntPtr device)
     DeviceIntPtr mouse = NULL, kbd = NULL;
     DeviceEvent *event = &ev->device_event;
 
-    CHECKEVENT(ev);
+    verify_internal_event(ev);
 
     if (ev->any.type == ET_RawKeyPress ||
         ev->any.type == ET_RawKeyRelease ||
@@ -949,7 +903,7 @@ ProcessOtherEvent(InternalEvent *ev, DeviceIntPtr device)
         ev->any.type == ET_RawButtonRelease ||
         ev->any.type == ET_RawMotion)
     {
-        ProcessRawEvent(&ev->raw_event, device);
+        DeliverRawEvent(&ev->raw_event, device);
         return;
     }
 
@@ -1003,7 +957,7 @@ ProcessOtherEvent(InternalEvent *ev, DeviceIntPtr device)
     b = device->button;
     k = device->key;
 
-    if (IsMaster(device) || !device->u.master)
+    if (IsMaster(device) || IsFloating(device))
         CheckMotion(event, device);
 
     switch (event->type)
@@ -1044,10 +998,8 @@ ProcessOtherEvent(InternalEvent *ev, DeviceIntPtr device)
     switch(event->type)
     {
         case ET_KeyPress:
-            if (!grab && CheckDeviceGrabs(device, event, 0)) {
-                device->deviceGrab.activatingKey = key;
+            if (!grab && CheckDeviceGrabs(device, event, 0))
                 return;
-            }
             break;
         case ET_KeyRelease:
             if (grab && device->deviceGrab.fromPassiveGrab &&
@@ -1211,6 +1163,108 @@ FixDeviceValuator(DeviceIntPtr dev, deviceValuator * ev, ValuatorClassPtr v,
     first += ev->num_valuators;
 }
 
+static void
+DeliverStateNotifyEvent(DeviceIntPtr dev, WindowPtr win)
+{
+    int evcount = 1;
+    deviceStateNotify *ev, *sev;
+    deviceKeyStateNotify *kev;
+    deviceButtonStateNotify *bev;
+
+    KeyClassPtr k;
+    ButtonClassPtr b;
+    ValuatorClassPtr v;
+    int nval = 0, nkeys = 0, nbuttons = 0, first = 0;
+
+    if (!(wOtherInputMasks(win)) ||
+        !(wOtherInputMasks(win)->inputEvents[dev->id] & DeviceStateNotifyMask))
+        return;
+
+    if ((b = dev->button) != NULL) {
+        nbuttons = b->numButtons;
+        if (nbuttons > 32)
+            evcount++;
+    }
+    if ((k = dev->key) != NULL) {
+        nkeys = k->xkbInfo->desc->max_key_code -
+            k->xkbInfo->desc->min_key_code;
+        if (nkeys > 32)
+            evcount++;
+        if (nbuttons > 0) {
+            evcount++;
+        }
+    }
+    if ((v = dev->valuator) != NULL) {
+        nval = v->numAxes;
+
+        if (nval > 3)
+            evcount++;
+        if (nval > 6) {
+            if (!(k && b))
+                evcount++;
+            if (nval > 9)
+                evcount += ((nval - 7) / 3);
+        }
+    }
+
+    sev = ev = (deviceStateNotify *) malloc(evcount * sizeof(xEvent));
+    FixDeviceStateNotify(dev, ev, NULL, NULL, NULL, first);
+
+    if (b != NULL) {
+        FixDeviceStateNotify(dev, ev++, NULL, b, v, first);
+        first += 3;
+        nval -= 3;
+        if (nbuttons > 32) {
+            (ev - 1)->deviceid |= MORE_EVENTS;
+            bev = (deviceButtonStateNotify *) ev++;
+            bev->type = DeviceButtonStateNotify;
+            bev->deviceid = dev->id;
+            memcpy((char*)&bev->buttons[4], (char*)&b->down[4], DOWN_LENGTH - 4);
+        }
+        if (nval > 0) {
+            (ev - 1)->deviceid |= MORE_EVENTS;
+            FixDeviceValuator(dev, (deviceValuator *) ev++, v, first);
+            first += 3;
+            nval -= 3;
+        }
+    }
+
+    if (k != NULL) {
+        FixDeviceStateNotify(dev, ev++, k, NULL, v, first);
+        first += 3;
+        nval -= 3;
+        if (nkeys > 32) {
+            (ev - 1)->deviceid |= MORE_EVENTS;
+            kev = (deviceKeyStateNotify *) ev++;
+            kev->type = DeviceKeyStateNotify;
+            kev->deviceid = dev->id;
+            memmove((char *)&kev->keys[0], (char *)&k->down[4], 28);
+        }
+        if (nval > 0) {
+            (ev - 1)->deviceid |= MORE_EVENTS;
+            FixDeviceValuator(dev, (deviceValuator *) ev++, v, first);
+            first += 3;
+            nval -= 3;
+        }
+    }
+
+    while (nval > 0) {
+        FixDeviceStateNotify(dev, ev++, NULL, NULL, v, first);
+        first += 3;
+        nval -= 3;
+        if (nval > 0) {
+            (ev - 1)->deviceid |= MORE_EVENTS;
+            FixDeviceValuator(dev, (deviceValuator *) ev++, v, first);
+            first += 3;
+            nval -= 3;
+        }
+    }
+
+    DeliverEventsToWindow(dev, win, (xEvent *) sev, evcount,
+                          DeviceStateNotifyMask, NullGrab);
+    free(sev);
+}
+
 void
 DeviceFocusEvent(DeviceIntPtr dev, int type, int mode, int detail,
 		 WindowPtr pWin)
@@ -1220,7 +1274,7 @@ DeviceFocusEvent(DeviceIntPtr dev, int type, int mode, int detail,
     DeviceIntPtr mouse;
     int btlen, len, i;
 
-    mouse = (IsMaster(dev) || dev->u.master) ? GetMaster(dev, MASTER_POINTER) : dev;
+    mouse = IsFloating(dev) ? dev : GetMaster(dev, MASTER_POINTER);
 
     /* XI 2 event */
     btlen = (mouse->button) ? bits_to_bytes(mouse->button->numButtons) : 0;
@@ -1277,104 +1331,8 @@ DeviceFocusEvent(DeviceIntPtr dev, int type, int mode, int detail,
     DeliverEventsToWindow(dev, pWin, (xEvent *) & event, 1,
 				DeviceFocusChangeMask, NullGrab);
 
-    if ((event.type == DeviceFocusIn) &&
-	(wOtherInputMasks(pWin)) &&
-	(wOtherInputMasks(pWin)->inputEvents[dev->id] & DeviceStateNotifyMask))
-    {
-	int evcount = 1;
-	deviceStateNotify *ev, *sev;
-	deviceKeyStateNotify *kev;
-	deviceButtonStateNotify *bev;
-
-	KeyClassPtr k;
-	ButtonClassPtr b;
-	ValuatorClassPtr v;
-	int nval = 0, nkeys = 0, nbuttons = 0, first = 0;
-
-	if ((b = dev->button) != NULL) {
-	    nbuttons = b->numButtons;
-	    if (nbuttons > 32)
-		evcount++;
-	}
-	if ((k = dev->key) != NULL) {
-	    nkeys = k->xkbInfo->desc->max_key_code -
-                    k->xkbInfo->desc->min_key_code;
-	    if (nkeys > 32)
-		evcount++;
-	    if (nbuttons > 0) {
-		evcount++;
-	    }
-	}
-	if ((v = dev->valuator) != NULL) {
-	    nval = v->numAxes;
-
-	    if (nval > 3)
-		evcount++;
-	    if (nval > 6) {
-		if (!(k && b))
-		    evcount++;
-		if (nval > 9)
-		    evcount += ((nval - 7) / 3);
-	    }
-	}
-
-	sev = ev = (deviceStateNotify *) malloc(evcount * sizeof(xEvent));
-	FixDeviceStateNotify(dev, ev, NULL, NULL, NULL, first);
-
-	if (b != NULL) {
-	    FixDeviceStateNotify(dev, ev++, NULL, b, v, first);
-	    first += 3;
-	    nval -= 3;
-	    if (nbuttons > 32) {
-		(ev - 1)->deviceid |= MORE_EVENTS;
-		bev = (deviceButtonStateNotify *) ev++;
-		bev->type = DeviceButtonStateNotify;
-		bev->deviceid = dev->id;
-		memcpy((char*)&bev->buttons[4], (char*)&b->down[4], DOWN_LENGTH - 4);
-	    }
-	    if (nval > 0) {
-		(ev - 1)->deviceid |= MORE_EVENTS;
-		FixDeviceValuator(dev, (deviceValuator *) ev++, v, first);
-		first += 3;
-		nval -= 3;
-	    }
-	}
-
-	if (k != NULL) {
-	    FixDeviceStateNotify(dev, ev++, k, NULL, v, first);
-	    first += 3;
-	    nval -= 3;
-	    if (nkeys > 32) {
-		(ev - 1)->deviceid |= MORE_EVENTS;
-		kev = (deviceKeyStateNotify *) ev++;
-		kev->type = DeviceKeyStateNotify;
-		kev->deviceid = dev->id;
-		memmove((char *)&kev->keys[0], (char *)&k->down[4], 28);
-	    }
-	    if (nval > 0) {
-		(ev - 1)->deviceid |= MORE_EVENTS;
-		FixDeviceValuator(dev, (deviceValuator *) ev++, v, first);
-		first += 3;
-		nval -= 3;
-	    }
-	}
-
-	while (nval > 0) {
-	    FixDeviceStateNotify(dev, ev++, NULL, NULL, v, first);
-	    first += 3;
-	    nval -= 3;
-	    if (nval > 0) {
-		(ev - 1)->deviceid |= MORE_EVENTS;
-		FixDeviceValuator(dev, (deviceValuator *) ev++, v, first);
-		first += 3;
-		nval -= 3;
-	    }
-	}
-
-	DeliverEventsToWindow(dev, pWin, (xEvent *) sev, evcount,
-				    DeviceStateNotifyMask, NullGrab);
-	free(sev);
-    }
+    if (event.type == DeviceFocusIn)
+        DeliverStateNotifyEvent(dev, pWin);
 }
 
 int

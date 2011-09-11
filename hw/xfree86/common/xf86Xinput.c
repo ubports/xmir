@@ -99,8 +99,6 @@
 		return;								\
 	}
 
-EventListPtr xf86Events = NULL;
-
 static int
 xf86InputDevicePostInit(DeviceIntPtr dev);
 
@@ -329,8 +327,8 @@ xf86ActivateDevice(InputInfoPtr pInfo)
     dev->config_info = xf86SetStrOption(pInfo->options, "config_info", NULL);
 
     if (serverGeneration == 1)
-        xf86Msg(X_INFO, "XINPUT: Adding extended input device \"%s\" (type: %s)\n",
-                pInfo->name, pInfo->type_name);
+        xf86Msg(X_INFO, "XINPUT: Adding extended input device \"%s\" (type: %s, id %d)\n",
+                pInfo->name, pInfo->type_name, dev->id);
 
     return dev;
 }
@@ -405,10 +403,10 @@ ChangeDeviceControl (ClientPtr client, DeviceIntPtr dev, xDeviceCtl *control)
   if (!pInfo->control_proc) {
       switch (control->control) {
       case DEVICE_CORE:
-          return BadMatch;
-      case DEVICE_RESOLUTION:
       case DEVICE_ABS_CALIB:
       case DEVICE_ABS_AREA:
+          return BadMatch;
+      case DEVICE_RESOLUTION:
       case DEVICE_ENABLE:
         return Success;
       default:
@@ -470,6 +468,20 @@ match_path_pattern(const char *attr, const char *pattern)
 #else
 #define match_path_pattern match_substring
 #endif
+
+/*
+ * If no Layout section is found, xf86ServerLayout.id becomes "(implicit)"
+ * It is convenient that "" in patterns means "no explicit layout"
+ */
+static int
+match_string_implicit(const char *attr, const char *pattern)
+{
+    if (strlen(pattern)) {
+        return strcmp(attr, pattern);
+    } else {
+        return strcmp(attr,"(implicit)");
+    }
+}
 
 /*
  * Match an attribute against a list of NULL terminated arrays of patterns.
@@ -563,6 +575,13 @@ InputClassMatches(const XF86ConfInputClassPtr iclass, const InputInfoPtr idev,
             }
         }
         if (!match)
+            return FALSE;
+    }
+
+    /* MatchLayout string */
+    if (!list_is_empty(&iclass->match_layout)) {
+        if (!MatchAttrToken(xf86ConfigLayout.id,
+                            &iclass->match_layout, match_string_implicit))
             return FALSE;
     }
 
@@ -1013,8 +1032,6 @@ xf86PostMotionEventM(DeviceIntPtr	device,
                      int		is_absolute,
                      const ValuatorMask	*mask)
 {
-    int i = 0, nevents = 0;
-    DeviceEvent *event;
     int flags = 0;
 
     if (valuator_mask_num_valuators(mask) > 0)
@@ -1052,12 +1069,7 @@ xf86PostMotionEventM(DeviceIntPtr	device,
         }
 #endif
 
-    nevents = GetPointerEvents(xf86Events, device, MotionNotify, 0, flags, mask);
-
-    for (i = 0; i < nevents; i++) {
-        event = (DeviceEvent*)((xf86Events + i)->event);
-        mieqEnqueue(device, (InternalEvent*)((xf86Events + i)->event));
-    }
+    QueuePointerEvents(device, MotionNotify, 0, flags, mask);
 }
 
 void
@@ -1102,13 +1114,7 @@ xf86PostProximityEventM(DeviceIntPtr	device,
                         int		is_in,
                         const ValuatorMask *mask)
 {
-    int i, nevents;
-
-    nevents = GetProximityEvents(xf86Events, device,
-                                 is_in ? ProximityIn : ProximityOut, mask);
-    for (i = 0; i < nevents; i++)
-        mieqEnqueue(device, (InternalEvent*)((xf86Events + i)->event));
-
+    QueueProximityEvents(device, is_in ? ProximityIn : ProximityOut, mask);
 }
 
 void
@@ -1160,7 +1166,6 @@ xf86PostButtonEventM(DeviceIntPtr	device,
                      int		is_down,
                      const ValuatorMask	*mask)
 {
-    int i = 0, nevents = 0;
     int flags = 0;
 
     if (valuator_mask_num_valuators(mask) > 0)
@@ -1180,13 +1185,9 @@ xf86PostButtonEventM(DeviceIntPtr	device,
     }
 #endif
 
-    nevents = GetPointerEvents(xf86Events, device,
-                               is_down ? ButtonPress : ButtonRelease, button,
-                               flags, mask);
-
-    for (i = 0; i < nevents; i++)
-        mieqEnqueue(device, (InternalEvent*)((xf86Events + i)->event));
-
+    QueuePointerEvents(device,
+                       is_down ? ButtonPress : ButtonRelease, button,
+                       flags, mask);
 }
 
 void
@@ -1238,8 +1239,6 @@ xf86PostKeyEventM(DeviceIntPtr	device,
                   int		is_absolute,
                   const ValuatorMask *mask)
 {
-    int i = 0, nevents = 0;
-
 #if XFreeXDGA
     DeviceIntPtr pointer;
 
@@ -1253,19 +1252,9 @@ xf86PostKeyEventM(DeviceIntPtr	device,
     }
 #endif
 
-    if (is_absolute) {
-        nevents = GetKeyboardValuatorEvents(xf86Events, device,
-                                            is_down ? KeyPress : KeyRelease,
-                                            key_code, mask);
-    }
-    else {
-        nevents = GetKeyboardEvents(xf86Events, device,
-                                    is_down ? KeyPress : KeyRelease,
-                                    key_code);
-    }
-
-    for (i = 0; i < nevents; i++)
-        mieqEnqueue(device, (InternalEvent*)((xf86Events + i)->event));
+    QueueKeyboardEvents(device,
+                        is_down ? KeyPress : KeyRelease,
+                        key_code, mask);
 }
 
 void

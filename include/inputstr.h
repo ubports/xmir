@@ -266,6 +266,7 @@ typedef struct _ValuatorAccelerationRec {
     int                         number;
     PointerAccelSchemeProc      AccelSchemeProc;
     void                       *accelData; /* at disposal of AccelScheme */
+    PointerAccelSchemeInitProc  AccelInitProc;
     DeviceCallbackProc          AccelCleanupProc;
 } ValuatorAccelerationRec, *ValuatorAccelerationPtr;
 
@@ -315,27 +316,6 @@ typedef struct _ProximityClassRec {
     int		sourceid;
     char	in_proximity;
 } ProximityClassRec, *ProximityClassPtr;
-
-typedef struct _AbsoluteClassRec {
-    int         sourceid;
-    /* Calibration. */
-    int         min_x;
-    int         max_x;
-    int         min_y;
-    int         max_y;
-    int         flip_x;
-    int         flip_y;
-    int		rotation;
-    int         button_threshold;
-
-    /* Area. */
-    int         offset_x;
-    int         offset_y;
-    int         width;
-    int         height;
-    int         screen;
-    XID		following;
-} AbsoluteClassRec, *AbsoluteClassPtr;
 
 typedef struct _KbdFeedbackClassRec *KbdFeedbackPtr;
 typedef struct _PtrFeedbackClassRec *PtrFeedbackPtr;
@@ -391,7 +371,6 @@ typedef struct _ClassesRec {
     ButtonClassPtr	button;
     FocusClassPtr	focus;
     ProximityClassPtr	proximity;
-    AbsoluteClassPtr    absolute;
     KbdFeedbackPtr	kbdfeed;
     PtrFeedbackPtr	ptrfeed;
     IntegerFeedbackPtr	intfeed;
@@ -493,6 +472,7 @@ typedef struct _SpriteInfoRec {
 #define MASTER_POINTER          1
 #define MASTER_KEYBOARD         2
 #define SLAVE                   3
+#define MASTER_ATTACHED         4  /* special type for GetMaster */
 
 typedef struct _DeviceIntRec {
     DeviceRec	public;
@@ -515,7 +495,6 @@ typedef struct _DeviceIntRec {
     ButtonClassPtr	button;
     FocusClassPtr	focus;
     ProximityClassPtr	proximity;
-    AbsoluteClassPtr    absolute;
     KbdFeedbackPtr	kbdfeed;
     PtrFeedbackPtr	ptrfeed;
     IntegerFeedbackPtr	intfeed;
@@ -529,10 +508,8 @@ typedef struct _DeviceIntRec {
     PrivateRec		*devPrivates;
     DeviceUnwrapProc    unwrapProc;
     SpriteInfoPtr       spriteInfo;
-    union {
-        DeviceIntPtr        master;     /* master device */
-        DeviceIntPtr        lastSlave;  /* last slave device used */
-    } u;
+    DeviceIntPtr        master;     /* master device */
+    DeviceIntPtr        lastSlave;  /* last slave device used */
 
     /* last valuator values recorded, not posted to client;
      * for slave devices, valuators is in device coordinates
@@ -611,5 +588,15 @@ typedef struct _EventSyncInfo {
 } EventSyncInfoRec, *EventSyncInfoPtr;
 
 extern EventSyncInfoRec syncEvents;
+
+/**
+ * Given a sprite, returns the window at the bottom of the trace (i.e. the
+ * furthest window from the root).
+ */
+static inline WindowPtr DeepestSpriteWin(SpritePtr sprite)
+{
+    assert(sprite->spriteTraceGood > 0);
+    return sprite->spriteTrace[sprite->spriteTraceGood - 1];
+}
 
 #endif /* INPUTSTRUCT_H */

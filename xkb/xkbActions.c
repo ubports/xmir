@@ -1351,16 +1351,16 @@ static void
 InjectPointerKeyEvents(DeviceIntPtr dev, int type, int button, int flags, ValuatorMask *mask)
 {
     ScreenPtr           pScreen;
-    EventListPtr        events;
+    InternalEvent*      events;
     int                 nevents, i;
     DeviceIntPtr        ptr, mpointer, lastSlave = NULL;
     Bool                saveWait;
 
     if (IsMaster(dev)) {
         mpointer = GetMaster(dev, MASTER_POINTER);
-        lastSlave = mpointer->u.lastSlave;
+        lastSlave = mpointer->lastSlave;
         ptr = GetXTestDevice(mpointer);
-    } else if (!dev->u.master)
+    } else if (IsFloating(dev))
         ptr = dev;
     else
         return;
@@ -1377,7 +1377,7 @@ InjectPointerKeyEvents(DeviceIntPtr dev, int type, int button, int flags, Valuat
     OsReleaseSignals();
 
     for (i = 0; i < nevents; i++)
-        mieqProcessDeviceEvent(ptr, (InternalEvent*)events[i].event, NULL);
+        mieqProcessDeviceEvent(ptr, &events[i], NULL);
 
     FreeEventList(events, GetMaximumEventsNum());
 
@@ -1390,7 +1390,7 @@ XkbFakePointerMotion(DeviceIntPtr dev, unsigned flags,int x,int y)
     int                 gpe_flags = 0;
 
     /* ignore attached SDs */
-    if (!IsMaster(dev) && GetMaster(dev, MASTER_POINTER) != NULL)
+    if (!IsMaster(dev) && !IsFloating(dev))
         return;
 
     if (flags & XkbSA_MoveAbsoluteX || flags & XkbSA_MoveAbsoluteY)
@@ -1420,7 +1420,7 @@ XkbFakeDeviceButton(DeviceIntPtr dev,Bool press,int button)
     if (IsMaster(dev)) {
         DeviceIntPtr mpointer = GetMaster(dev, MASTER_POINTER);
         ptr = GetXTestDevice(mpointer);
-    } else if (!dev->u.master)
+    } else if (IsFloating(dev))
         ptr = dev;
     else
         return;

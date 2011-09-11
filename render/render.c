@@ -239,7 +239,7 @@ RenderClientCallback (CallbackListPtr	*list,
 }
 
 #ifdef PANORAMIX
-unsigned long	XRT_PICTURE;
+RESTYPE	XRT_PICTURE;
 #endif
 
 void
@@ -1705,11 +1705,17 @@ ProcRenderCreateCursor (ClientPtr client)
 			 GetColor(twocolor[1], 0),
 			 &pCursor, client, stuff->cid);
     if (rc != Success)
-	return rc;
-    if (!AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor))
-	return BadAlloc;
+	goto bail;
+    if (!AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor)) {
+	rc = BadAlloc;
+	goto bail;
+    }
 
     return Success;
+bail:
+    free(srcbits);
+    free(mskbits);
+    return rc;
 }
 
 static int
@@ -2689,7 +2695,7 @@ PanoramiXRenderCreatePicture (ClientPtr client)
     if(!(newPict = (PanoramiXRes *) malloc(sizeof(PanoramiXRes))))
 	return BadAlloc;
     newPict->type = XRT_PICTURE;
-    newPict->info[0].id = stuff->pid;
+    panoramix_setup_ids(newPict, client, stuff->pid);
     
     if (refDraw->type == XRT_WINDOW &&
 	stuff->drawable == screenInfo.screens[0]->root->drawable.id)
@@ -2698,9 +2704,6 @@ PanoramiXRenderCreatePicture (ClientPtr client)
     }
     else
 	newPict->u.pict.root = FALSE;
-
-    for(j = 1; j < PanoramiXNumScreens; j++)
-	newPict->info[j].id = FakeClientID(client->index);
     
     FOR_NSCREENS_BACKWARD(j) {
 	stuff->pid = newPict->info[j].id;
@@ -3224,11 +3227,8 @@ PanoramiXRenderCreateSolidFill (ClientPtr client)
 	return BadAlloc;
 
     newPict->type = XRT_PICTURE;
-    newPict->info[0].id = stuff->pid;
+    panoramix_setup_ids(newPict, client, stuff->pid);
     newPict->u.pict.root = FALSE;
-
-    for(j = 1; j < PanoramiXNumScreens; j++)
-	newPict->info[j].id = FakeClientID(client->index);
 	
     FOR_NSCREENS_BACKWARD(j) {
 	stuff->pid = newPict->info[j].id;
@@ -3257,11 +3257,8 @@ PanoramiXRenderCreateLinearGradient (ClientPtr client)
 	return BadAlloc;
 
     newPict->type = XRT_PICTURE;
-    newPict->info[0].id = stuff->pid;
+    panoramix_setup_ids(newPict, client, stuff->pid);
     newPict->u.pict.root = FALSE;
-
-    for(j = 1; j < PanoramiXNumScreens; j++)
-	newPict->info[j].id = FakeClientID(client->index);
 
     FOR_NSCREENS_BACKWARD(j) {
 	stuff->pid = newPict->info[j].id;
@@ -3290,11 +3287,8 @@ PanoramiXRenderCreateRadialGradient (ClientPtr client)
 	return BadAlloc;
 
     newPict->type = XRT_PICTURE;
-    newPict->info[0].id = stuff->pid;
+    panoramix_setup_ids(newPict, client, stuff->pid);
     newPict->u.pict.root = FALSE;
-
-    for(j = 1; j < PanoramiXNumScreens; j++)
-	newPict->info[j].id = FakeClientID(client->index);
 
     FOR_NSCREENS_BACKWARD(j) {
 	stuff->pid = newPict->info[j].id;
@@ -3323,11 +3317,8 @@ PanoramiXRenderCreateConicalGradient (ClientPtr client)
 	return BadAlloc;
 
     newPict->type = XRT_PICTURE;
-    newPict->info[0].id = stuff->pid;
+    panoramix_setup_ids(newPict, client, stuff->pid);
     newPict->u.pict.root = FALSE;
-
-    for(j = 1; j < PanoramiXNumScreens; j++)
-	newPict->info[j].id = FakeClientID(client->index);
 
     FOR_NSCREENS_BACKWARD(j) {
 	stuff->pid = newPict->info[j].id;

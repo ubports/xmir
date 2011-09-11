@@ -36,6 +36,7 @@
 #include "xkbsrv.h"
 #include "xkbstr.h"
 #include "inpututils.h"
+#include "eventstr.h"
 
 /* Check if a button map change is okay with the device.
  * Returns -1 for BadValue, as it collides with MappingBusy. */
@@ -268,15 +269,15 @@ change_modmap(ClientPtr client, DeviceIntPtr dev, KeyCode *modkeymap,
     /* Change any attached masters/slaves. */
     if (IsMaster(dev)) {
         for (tmp = inputInfo.devices; tmp; tmp = tmp->next) {
-            if (!IsMaster(tmp) && tmp->u.master == dev)
+            if (!IsMaster(tmp) && GetMaster(tmp, MASTER_KEYBOARD) == dev)
                 if (check_modmap_change_slave(client, dev, tmp, modmap))
                     do_modmap_change(client, tmp, modmap);
         }
     }
-    else if (dev->u.master && dev->u.master->u.lastSlave == dev) {
+    else if (!IsFloating(dev) && GetMaster(dev, MASTER_KEYBOARD)->lastSlave == dev) {
         /* If this fails, expect the results to be weird. */
-        if (check_modmap_change(client, dev->u.master, modmap))
-            do_modmap_change(client, dev->u.master, modmap);
+        if (check_modmap_change(client, dev->master, modmap))
+            do_modmap_change(client, dev->master, modmap);
     }
 
     return Success;
@@ -555,4 +556,31 @@ CountBits(const uint8_t *mask, int len)
             ret++;
 
     return ret;
+}
+
+/**
+ * Verifies sanity of the event. If the event is not an internal event,
+ * memdumps the first 32 bytes of event to the log, a backtrace, then kill
+ * the server.
+ */
+void verify_internal_event(const InternalEvent *ev)
+{
+    if (ev && ev->any.header != ET_Internal)
+    {
+        int i;
+        unsigned char *data = (unsigned char*)ev;
+
+        ErrorF("dix: invalid event type %d\n", ev->any.header);
+
+        for (i = 0; i < sizeof(xEvent); i++, data++)
+        {
+            ErrorF("%02hhx ", *data);
+
+            if ((i % 8) == 7)
+                ErrorF("\n");
+        }
+
+        xorg_backtrace();
+        FatalError("Wrong event type %d. Aborting server\n", ev->any.header);
+    }
 }

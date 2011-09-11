@@ -116,7 +116,9 @@ void XISendDeviceHierarchyEvent(int flags[MAXDEVICES])
 
     ev->length = bytes_to_int32(ev->num_info * sizeof(xXIHierarchyInfo));
 
+    memset(&dummyDev, 0, sizeof(dummyDev));
     dummyDev.id = XIAllDevices;
+    dummyDev.type = SLAVE;
     SendEventToAllWindows(&dummyDev, (XI_HierarchyChangedMask >> 8), (xEvent*)ev, 1);
     free(ev);
 }
@@ -284,12 +286,12 @@ remove_master(ClientPtr client, xXIRemoveMasterInfo *r,
         for (attached = inputInfo.devices; attached; attached = attached->next)
         {
             if (!IsMaster(attached)) {
-                if (attached->u.master == ptr)
+                if (GetMaster(attached, MASTER_ATTACHED) == ptr)
                 {
                     AttachDevice(client, attached, newptr);
                     flags[attached->id] |= XISlaveAttached;
                 }
-                if (attached->u.master == keybd)
+                if (GetMaster(attached, MASTER_ATTACHED) == keybd)
                 {
                     AttachDevice(client, attached, newkeybd);
                     flags[attached->id] |= XISlaveAttached;

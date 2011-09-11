@@ -585,7 +585,6 @@ DRIWindowExposures(WindowPtr pWin, RegionPtr prgn, RegionPtr bsreg)
 
     (*pScreen->WindowExposures)(pWin, prgn, bsreg);
 
-    pDRIPriv->wrap.WindowExposures = pScreen->WindowExposures;
     pScreen->WindowExposures = DRIWindowExposures;
 }
 
@@ -610,7 +609,6 @@ DRICopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     (*pScreen->CopyWindow)(pWin, ptOldOrg, prgnSrc);
 
     /* rewrap */
-    pDRIPriv->wrap.CopyWindow = pScreen->CopyWindow;
     pScreen->CopyWindow = DRICopyWindow;
 }
 
@@ -628,7 +626,6 @@ DRIValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
     returnValue = (*pScreen->ValidateTree)(pParent, pChild, kind);
 
     /* rewrap */
-    pDRIPriv->wrap.ValidateTree = pScreen->ValidateTree;
     pScreen->ValidateTree = DRIValidateTree;
 
     return returnValue;
@@ -655,7 +652,6 @@ DRIPostValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
         (*pScreen->PostValidateTree)(pParent, pChild, kind);
 
         /* rewrap */
-        pDRIPriv->wrap.PostValidateTree = pScreen->PostValidateTree;
         pScreen->PostValidateTree = DRIPostValidateTree;
     }
 }
@@ -676,7 +672,6 @@ DRIClipNotify(WindowPtr pWin, int dx, int dy)
 
         (*pScreen->ClipNotify)(pWin, dx, dy);
 
-        pDRIPriv->wrap.ClipNotify = pScreen->ClipNotify;
         pScreen->ClipNotify = DRIClipNotify;
     }
 }

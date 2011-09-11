@@ -58,12 +58,8 @@ typedef long long GLint64EXT;
 #include "visualConfigs.h"
 #include "dri.h"
 
-// Write debugging output, or not
-#ifdef GLAQUA_DEBUG
-#define GLAQUA_DEBUG_MSG ErrorF
-#else
-#define GLAQUA_DEBUG_MSG(a, ...)
-#endif
+#include "darwin.h"
+#define GLAQUA_DEBUG_MSG(msg, args...) ASL_LOG(ASL_LEVEL_DEBUG, "GLXAqua", msg, ##args)
 
 __GLXprovider * GlxGetDRISWrastProvider (void);
 
@@ -78,7 +74,6 @@ static __GLXdrawable * __glXAquaScreenCreateDrawable(ClientPtr client, __GLXscre
 static void __glXAquaContextDestroy(__GLXcontext *baseContext);
 static int __glXAquaContextMakeCurrent(__GLXcontext *baseContext);
 static int __glXAquaContextLoseCurrent(__GLXcontext *baseContext);
-static int __glXAquaContextForceCurrent(__GLXcontext *baseContext);
 static int __glXAquaContextCopy(__GLXcontext *baseDst, __GLXcontext *baseSrc, unsigned long mask);
 
 static CGLPixelFormatObj makeFormat(__GLXconfig *conf);
@@ -148,7 +143,6 @@ __glXAquaScreenCreateContext(__GLXscreen *screen,
     context->base.makeCurrent    = __glXAquaContextMakeCurrent;
     context->base.loseCurrent    = __glXAquaContextLoseCurrent;
     context->base.copy           = __glXAquaContextCopy;
-    context->base.forceCurrent   = __glXAquaContextForceCurrent;
     /*FIXME verify that the context->base is fully initialized. */
     
     context->pixelFormat = makeFormat(conf);
@@ -375,19 +369,6 @@ static int __glXAquaContextCopy(__GLXcontext *baseDst, __GLXcontext *baseSrc, un
     return gl_err == 0;
 }
 
-static int __glXAquaContextForceCurrent(__GLXcontext *baseContext)
-{
-    CGLError gl_err;
-    __GLXAquaContext *context = (__GLXAquaContext *) baseContext;
-    GLAQUA_DEBUG_MSG("glAquaForceCurrent (ctx %p)\n", context->ctx);
-
-    gl_err = CGLSetCurrentContext(context->ctx);
-    if (gl_err != 0)
-        ErrorF("CGLSetCurrentContext error: %s\n", CGLErrorString(gl_err));
-
-    return gl_err == 0;
-}
-
 /* Drawing surface notification callbacks */
 static GLboolean __glXAquaDrawableSwapBuffers(ClientPtr client, __GLXdrawable *base) {
     CGLError err;
@@ -537,7 +518,7 @@ static void __glXAquaDrawableDestroy(__GLXdrawable *base) {
      */
     __GLXAquaDrawable *glxPriv = (__GLXAquaDrawable *)base;
 
-    GLAQUA_DEBUG_MSG(__func__);
+    GLAQUA_DEBUG_MSG("TRACE");
     
     /* It doesn't work to call DRIDestroySurface here, the drawable's
        already gone.. But dri.c notices the window destruction and

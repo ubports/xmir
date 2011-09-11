@@ -1,3 +1,51 @@
+xorg-server (2:1.11.0-1) UNRELEASED; urgency=low
+
+  [ Julien Cristau ]
+  * Make xvfb, xnest, xserver-xephyr and xserver-xfbdev provide the xserver
+    virtual package again.
+
+  [ Cyril Brulebois ]
+  * New upstream release:
+    - Fix assertion failure when calling dixSetPrivate (Closes: #632549).
+      Thanks, Mohammed Sameer!
+    - Fix memcpy abuse in the fb layer (Closes: #626682).
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 01 Aug 2011 01:18:39 +0200
+
+xorg-server (2:1.10.99.901+git20110731-1) experimental; urgency=low
+
+  [ Cyril Brulebois ]
+  * New upstream release candidate.
+  * Bump serverminver, as well as input and video ABI.
+  * Adapt 15-nouveau.diff to cope with the glxdricommon-ification of
+    GLX probing. Nouveau users might still see an error (EE) mentioning
+    the fallback to software rendering.
+  * Bump pixman build-dep/dep to 0.21.8.
+  * Bump xutils-dev build-dep for new macros.
+  * Drop libglib2.0-dev build-dep, no longer needed for unit tests.
+  * Bump x11proto-fixes-dev build-dep for pointer barriers support.
+
+  [ Julien Cristau ]
+  * Update to git HEAD.
+    + DIX: Set backgroundState correctly for root window (Closes: #632134)
+  * Bump xproto, dri2proto and glproto build-dependencies.
+  * Merge packaging changes from the 1.10.x branch:
+    + Bump libgl1-mesa-dri versioned Recommends to 7.10.2-4, to lower the
+      odds of having a server built against multiarched mesa, installed
+      along a pre-multiarch mesa. The Breaks in mesa packages take care of
+      the other way round already.
+    + And since the server's binNMU managed to migrate to testing way too
+      early, add a Breaks against pre-multiarch libgl1-mesa-dri and
+      libgl1-mesa-dri-experimental.
+    + Bump Standards-Version to 3.9.2 (no changes).
+    + Add Breaks on drivers abandoned between lenny and squeeze.  This helps
+      apt decide to remove them instead of removing all of X.  Thanks, David
+      Kalnischkies!
+  * Drop obsolete 20-workaround-36986.diff.
+  * Fix patch stamp dependency.
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 31 Jul 2011 22:15:07 +0200
+
 xorg-server (2:1.10.4-1ubuntu1) oneiric; urgency=low
 
   [ Christopher James Halse Rogers ]
@@ -406,9 +454,8 @@ xorg-server (2:1.10.0-0ubuntu1) natty; urgency=low
   * debian/videoabiver:
     - Bump to 10 for XRandR 1.4 revert.
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 11 Mar 2011 10:29:37 +1100
-
  -- Cyril Brulebois <kibi@debian.org>  Wed, 30 Mar 2011 02:22:56 +0200
+
 
 xorg-server (2:1.9.99.903-1) experimental; urgency=low
 

@@ -140,16 +140,13 @@ extern _X_EXPORT pmWait (*xf86PMConfirmEventToOs)(int fd,pmEvent event);
 
 /* xf86Helper.c */
 extern _X_EXPORT void xf86LogInit(void);
-extern _X_EXPORT void xf86CloseLog(void);
+extern _X_EXPORT void xf86CloseLog(enum ExitCode error);
 
 /* xf86Init.c */
 extern _X_EXPORT Bool xf86LoadModules(char **list, pointer *optlist);
 extern _X_EXPORT int xf86SetVerbosity(int verb);
 extern _X_EXPORT int xf86SetLogVerbosity(int verb);
 extern _X_EXPORT Bool xf86CallDriverProbe( struct _DriverRec * drv, Bool detect_only );
-
-/* xf86Xinput.c */
-extern _X_EXPORT EventList *xf86Events;
 
 #endif /* _NO_XF86_PROTOTYPES */
 

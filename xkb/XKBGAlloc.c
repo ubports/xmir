@@ -435,6 +435,57 @@ XkbFreeGeometry(XkbGeometryPtr geom,unsigned which,Bool freeMap)
 
 /***====================================================================***/
 
+/**
+ * Resize and clear an XKB geometry item array. The array size may
+ * grow or shrink unlike in _XkbGeomAlloc.
+ *
+ * @param buffer[in,out]  buffer to reallocate and clear
+ * @param szItems[in]     currently allocated item count for "buffer"
+ * @param nrItems[in]     required item count for "buffer"
+ * @param itemSize[in]    size of a single item in "buffer"
+ * @param clearance[in]   items to clear after reallocation
+ *
+ * @see _XkbGeomAlloc
+ *
+ * @return TRUE if reallocation succeeded. Otherwise FALSE is returned
+ *         and contents of "buffer" aren't touched.
+ */
+Bool
+XkbGeomRealloc(void **buffer, int szItems, int nrItems,
+               int itemSize, XkbGeomClearance clearance)
+{
+    void *items;
+    int clearBegin;
+    /* Check validity of arguments. */
+    if (!buffer)
+        return FALSE;
+    items = *buffer;
+    if (!((items && (szItems > 0)) || (!items && !szItems)))
+        return FALSE;
+    /* Check if there is need to resize. */
+    if (nrItems != szItems)
+        if (!(items = realloc(items, nrItems * itemSize)))
+            return FALSE;
+    /* Clear specified items to zero. */
+    switch (clearance)
+    {
+    case XKB_GEOM_CLEAR_EXCESS:
+        clearBegin = szItems;
+        break;
+    case XKB_GEOM_CLEAR_ALL:
+        clearBegin = 0;
+        break;
+    case XKB_GEOM_CLEAR_NONE:
+    default:
+        clearBegin = nrItems;
+        break;
+    }
+    if (items && (clearBegin < nrItems))
+        memset((char *)items + (clearBegin * itemSize), 0, (nrItems - clearBegin) * itemSize);
+    *buffer = items;
+    return TRUE;
+}
+
 static Status
 _XkbGeomAlloc(	void **		old,
 		unsigned short *	num,
@@ -451,18 +502,15 @@ _XkbGeomAlloc(	void **		old,
 	return Success;
 
     *total= (*num)+num_new;
-    if ((*old)!=NULL)
-	 (*old)= realloc((*old),(*total)*sz_elem);
-    else (*old)= calloc((*total),sz_elem);
-    if ((*old)==NULL) {
+
+    if (!XkbGeomRealloc(old, *num, *total, sz_elem, XKB_GEOM_CLEAR_EXCESS))
+    {
+	free(*old);
+	(*old)= NULL;
 	*total= *num= 0;
 	return BadAlloc;
     }
 
-    if (*num>0) {
-	char *tmp= (char *)(*old);
-	memset(&tmp[sz_elem*(*num)], 0, (num_new*sz_elem));
-    }
     return Success;
 }
 
@@ -647,9 +695,7 @@ register XkbPropertyPtr prop;
     for (i=0,prop=geom->properties;i<geom->num_properties;i++,prop++) {
 	if ((prop->name)&&(strcmp(name,prop->name)==0)) {
 	    free(prop->value);
-	    prop->value= malloc(strlen(value)+1);
-	    if (prop->value)
-		strcpy(prop->value,value);
+	    prop->value= strdup(value);
 	    return prop;
 	}    
     }
@@ -658,17 +704,15 @@ register XkbPropertyPtr prop;
 	return NULL;
     }
     prop= &geom->properties[geom->num_properties];
-    prop->name= malloc(strlen(name)+1);
+    prop->name= strdup(name);
     if (!prop->name)
 	return NULL;
-    strcpy(prop->name,name);
-    prop->value= malloc(strlen(value)+1);
+    prop->value= strdup(value);
     if (!prop->value) {
 	free(prop->name);
 	prop->name= NULL;
 	return NULL;
     }
-    strcpy(prop->value,value);
     geom->num_properties++;
     return prop;
 }
@@ -720,10 +764,9 @@ register XkbColorPtr color;
     }
     color= &geom->colors[geom->num_colors];
     color->pixel= pixel;
-    color->spec= malloc(strlen(spec)+1);
+    color->spec= strdup(spec);
     if (!color->spec)
 	return NULL;
-    strcpy(color->spec,spec);
     geom->num_colors++;
     return color;
 }

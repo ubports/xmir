@@ -89,7 +89,7 @@ fbPadPixmap (PixmapPtr pPixmap)
     int	    w;
     int     stride;
     int     bpp;
-    int     xOff, yOff;
+    _X_UNUSED int xOff, yOff;
 
     fbGetDrawable (&pPixmap->drawable, bits, stride, bpp, xOff, yOff);
 
@@ -163,7 +163,7 @@ fbCanEvenStipple (PixmapPtr pStipple, int bpp)
     FbBits  *bits;
     int	    stride;
     int	    stip_bpp;
-    int	    stipXoff, stipYoff;
+    _X_UNUSED int stipXoff, stipYoff;
     int	    h;
 
     /* can't even stipple 24bpp drawables */
@@ -206,7 +206,6 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	miComputeCompositeClip (pGC, pDrawable);
     }
     
-#ifdef FB_24_32BIT    
     if (pPriv->bpp != pDrawable->bitsPerPixel)
     {
 	changes |= GCStipple|GCForeground|GCBackground|GCPlaneMask;
@@ -240,7 +239,6 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	    }
 	}
     }
-#endif
     if (changes & GCTile)
     {
 	if (!pGC->tileIsPixel && 

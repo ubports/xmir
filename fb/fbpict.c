@@ -54,9 +54,9 @@ fbComposite (CARD8      op,
     int msk_xoff, msk_yoff;
     int dst_xoff, dst_yoff;
     
-    miCompositeSourceValidate (pSrc, xSrc - xDst, ySrc - yDst, width, height);
+    miCompositeSourceValidate (pSrc);
     if (pMask)
-	miCompositeSourceValidate (pMask, xMask - xDst, yMask - yDst, width, height);
+	miCompositeSourceValidate (pMask);
     
     src = image_from_pict (pSrc, FALSE, &src_xoff, &src_yoff);
     mask = image_from_pict (pMask, FALSE, &msk_xoff, &msk_yoff);
@@ -160,7 +160,7 @@ create_bits_picture (PicturePtr pict,
     fbGetPixmapBitsData(pixmap, bits, stride, bpp);
 
     image = pixman_image_create_bits (
-	pict->format,
+	(pixman_format_code_t)pict->format,
 	pixmap->drawable.width, pixmap->drawable.height,
 	(uint32_t *)bits, stride * sizeof (FbStride));
     
@@ -364,8 +364,10 @@ fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->Glyphs = miGlyphs;
     ps->CompositeRects = miCompositeRects;
     ps->RasterizeTrapezoid = fbRasterizeTrapezoid;
+    ps->Trapezoids = fbTrapezoids;
     ps->AddTraps = fbAddTraps;
     ps->AddTriangles = fbAddTriangles;
+    ps->Triangles = fbTriangles;
 
     return TRUE;
 }

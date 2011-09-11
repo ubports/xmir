@@ -1,4 +1,4 @@
-if AIGLX
+if AIGLX_DRI_LOADER
 GLXDRI_LIBRARY = libglxdri.la
 endif
 
@@ -11,7 +11,6 @@ AM_CFLAGS = \
 	@XLIB_CFLAGS@ \
 	@LIBDRM_CFLAGS@ \
 	@DRIPROTO_CFLAGS@ \
-	-DXFree86Server \
 	@GLX_DEFINES@ \
 	@GLX_ARCH_DEFINES@
 
@@ -49,9 +48,7 @@ glapi_sources =					\
 	glthread.c				\
 	glthread.h
 
-libglxdri_la_SOURCES = \
-        extension_string.c \
-        extension_string.h
+libglxdri_la_SOURCES =
 
 if DRI
 libglxdri_la_SOURCES += glxdri.c
@@ -66,6 +63,8 @@ libglxdri_la_LIBADD = $(DLOPEN_LIBS)
 libglx_la_SOURCES = \
 	$(indirect_sources) \
 	$(glapi_sources) \
+	extension_string.c \
+	extension_string.h \
 	indirect_util.c \
 	indirect_util.h \
 	indirect_program.c \

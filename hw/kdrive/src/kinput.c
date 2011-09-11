@@ -1,6 +1,6 @@
 /*
- * Copyright © 1999 Keith Packard
- * Copyright © 2006 Nokia Corporation
+ * Copyright Â© 1999 Keith Packard
+ * Copyright Â© 2006 Nokia Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -65,8 +65,6 @@ static struct KdConfigDevice *kdConfigPointers    = NULL;
 
 static KdKeyboardDriver *kdKeyboardDrivers = NULL;
 static KdPointerDriver  *kdPointerDrivers  = NULL;
-
-static EventListPtr     kdEvents = NULL;
 
 static Bool		kdInputEnabled;
 static Bool		kdOffScreen;
@@ -477,7 +475,6 @@ KdPointerProc(DeviceIntPtr pDevice, int onoff)
         free(axes_labels);
 
         if (pi->inputClass == KD_TOUCHSCREEN) {
-            InitAbsoluteClassDeviceStruct(pDevice);
             xiclass = AtomFromName(XI_TOUCHSCREEN);
         }
         else {
@@ -1308,6 +1305,12 @@ KdInitInput (void)
     mieqInit();
 }
 
+void
+KdCloseInput (void)
+{
+    mieqFini();
+}
+
 /*
  * Middle button emulation state machine
  *
@@ -1794,7 +1797,7 @@ void
 KdReleaseAllKeys (void)
 {
 #if 0
-    int	key, nEvents, i;
+    int	key;
     KdKeyboardInfo *ki;
 
     KdBlockSigio ();
@@ -1804,10 +1807,7 @@ KdReleaseAllKeys (void)
              key++) {
             if (key_is_down(ki->dixdev, key, KEY_POSTED | KEY_PROCESSED)) {
                 KdHandleKeyboardEvent(ki, KeyRelease, key);
-                GetEventList(&kdEvents);
-                nEvents = GetKeyboardEvents(kdEvents, ki->dixdev, KeyRelease, key);
-                for (i = 0; i < nEvents; i++)
-                    KdQueueEvent (ki->dixdev, (kdEvents + i)->event);
+                QueueGetKeyboardEvents(ki->dixdev, KeyRelease, key, NULL);
             }
         }
     }
@@ -1843,7 +1843,7 @@ KdEnqueueKeyboardEvent(KdKeyboardInfo   *ki,
     unsigned char key_code;
     KeyClassPtr	keyc = NULL;
     KeybdCtrl *ctrl = NULL;
-    int type, nEvents, i;
+    int type;
 
     if (!ki || !ki->dixdev || !ki->dixdev->kbdfeed || !ki->dixdev->key)
 	return;
@@ -1863,11 +1863,7 @@ KdEnqueueKeyboardEvent(KdKeyboardInfo   *ki,
 	else
 	    type = KeyPress;
 
-        GetEventList(&kdEvents);
-
-        nEvents = GetKeyboardEvents(kdEvents, ki->dixdev, type, key_code);
-        for (i = 0; i < nEvents; i++)
-            KdQueueEvent(ki->dixdev, (InternalEvent *)((kdEvents + i)->event));
+        QueueKeyboardEvents(ki->dixdev, type, key_code, NULL);
     }
     else {
         ErrorF("driver %s wanted to post scancode %d outside of [%d, %d]!\n",
@@ -1966,7 +1962,6 @@ void
 _KdEnqueuePointerEvent (KdPointerInfo *pi, int type, int x, int y, int z,
                         int b, int absrel, Bool force)
 {
-    int nEvents = 0, i = 0;
     int valuators[3] = { x, y, z };
     ValuatorMask mask;
 
@@ -1976,10 +1971,7 @@ _KdEnqueuePointerEvent (KdPointerInfo *pi, int type, int x, int y, int z,
 
     valuator_mask_set_range(&mask, 0, 3, valuators);
 
-    GetEventList(&kdEvents);
-    nEvents = GetPointerEvents(kdEvents, pi->dixdev, type, b, absrel, &mask);
-    for (i = 0; i < nEvents; i++)
-        KdQueueEvent(pi->dixdev, (InternalEvent *)((kdEvents + i)->event));
+    QueuePointerEvents(pi->dixdev, type, b, absrel, &mask);
 }
 
 void
@@ -2173,7 +2165,6 @@ void
 ProcessInputEvents (void)
 {
     mieqProcessInputEvents();
-    miPointerUpdateSprite(inputInfo.pointer);
     if (kdSwitchPending)
 	KdProcessSwitch ();
     KdCheckLock ();
@@ -2204,8 +2195,6 @@ ChangeDeviceControl(register ClientPtr client, DeviceIntPtr pDev,
 
     case DEVICE_ABS_CALIB:
     case DEVICE_ABS_AREA:
-        return Success;
-
     case DEVICE_CORE:
         return BadMatch;
     case DEVICE_ENABLE:

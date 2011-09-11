@@ -31,7 +31,6 @@
 #include "xf86.h"
 #include "os.h"
 #include "globals.h"
-#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86DDC.h"
 #include "mipointer.h"
@@ -584,10 +583,12 @@ xf86RandR12SetConfig (ScreenPtr		pScreen,
     ScrnInfoPtr		scrp = XF86SCRNINFO(pScreen);
     XF86RandRInfoPtr	randrp = XF86RANDRINFO(pScreen);
     DisplayModePtr	mode;
-    int			px, py;
+    int			pos[MAXDEVICES][2];
     Bool		useVirtual = FALSE;
     int			maxX = 0, maxY = 0;
     Rotation		oldRotation = randrp->rotation;
+    DeviceIntPtr	dev;
+    Bool		view_adjusted = FALSE;
 
     randrp->rotation = rotation;
 
@@ -597,7 +598,14 @@ xf86RandR12SetConfig (ScreenPtr		pScreen,
 	randrp->virtualY = scrp->virtualY;
     }
 
-    miPointerGetPosition (inputInfo.pointer, &px, &py);
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+    {
+	if (!IsMaster(dev) && !IsFloating(dev))
+		continue;
+
+	miPointerGetPosition(dev, &pos[dev->id][0], &pos[dev->id][1]);
+    }
+
     for (mode = scrp->modes; ; mode = mode->next)
     {
 	if (randrp->maxX == 0 || randrp->maxY == 0)
@@ -643,15 +651,28 @@ xf86RandR12SetConfig (ScreenPtr		pScreen,
 
     /*
      * Move the cursor back where it belongs; SwitchMode repositions it
+     * FIXME: duplicated code, see modes/xf86RandR12.c
      */
-    if (pScreen == miPointerGetScreen(inputInfo.pointer))
+    for (dev = inputInfo.devices; dev; dev = dev->next)
     {
-        px = (px >= pScreen->width ? (pScreen->width - 1) : px);
-        py = (py >= pScreen->height ? (pScreen->height - 1) : py);
+	if (!IsMaster(dev) && !IsFloating(dev))
+		continue;
 
-	xf86SetViewport(pScreen, px, py);
+	if (pScreen == miPointerGetScreen(dev)) {
+	    int px = pos[dev->id][0];
+	    int py = pos[dev->id][1];
 
-	(*pScreen->SetCursorPosition) (inputInfo.pointer, pScreen, px, py, FALSE);
+	    px = (px >= pScreen->width ? (pScreen->width - 1) : px);
+	    py = (py >= pScreen->height ? (pScreen->height - 1) : py);
+
+	    /* Setting the viewpoint makes only sense on one device */
+	    if (!view_adjusted && IsMaster(dev)) {
+		xf86SetViewport(pScreen, px, py);
+		view_adjusted = TRUE;
+	    }
+
+	    (*pScreen->SetCursorPosition) (dev, pScreen, px, py, FALSE);
+	}
     }
 
     return TRUE;
@@ -1733,6 +1754,7 @@ xf86RandR12EnterVT (int screen_index, int flags)
     XF86RandRInfoPtr randrp  = XF86RANDRINFO(pScreen);
     rrScrPrivPtr     rp = rrGetScrPriv(pScreen);
     Bool	     ret;
+    int              i;
 
     if (randrp->orig_EnterVT) {
 	pScrn->EnterVT = randrp->orig_EnterVT;
@@ -1744,7 +1766,6 @@ xf86RandR12EnterVT (int screen_index, int flags)
     }
 
     /* reload gamma */
-    int i;
     for (i = 0; i < rp->numCrtcs; i++)
 	xf86RandR12CrtcSetGamma(pScreen, rp->crtcs[i]);
 

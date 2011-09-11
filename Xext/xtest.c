@@ -52,6 +52,7 @@
 #include "mipointer.h"
 #include "xserver-properties.h"
 #include "exevents.h"
+#include "eventstr.h"
 #include "inpututils.h"
 
 #include "modinit.h"
@@ -61,7 +62,7 @@ extern int DeviceValuator;
 /* XTest events are sent during request processing and may be interruped by
  * a SIGIO. We need a separate event list to avoid events overwriting each
  * other's memory */
-static EventListPtr xtest_evlist;
+static InternalEvent* xtest_evlist;
 
 /**
  * xtestpointer
@@ -423,12 +424,12 @@ ProcXTestFakeInput(ClientPtr client)
             break;
         case KeyPress:
         case KeyRelease:
-            nevents = GetKeyboardEvents(xtest_evlist, dev, type, ev->u.u.detail);
+            nevents = GetKeyboardEvents(xtest_evlist, dev, type, ev->u.u.detail, NULL);
             break;
     }
 
     for (i = 0; i < nevents; i++)
-        mieqProcessDeviceEvent(dev, (InternalEvent*)(xtest_evlist+i)->event, NULL);
+        mieqProcessDeviceEvent(dev, &xtest_evlist[i], NULL);
 
     if (need_ptr_update)
         miPointerUpdateSprite(dev);
@@ -678,12 +679,19 @@ GetXTestDevice(DeviceIntPtr master)
     return NULL;
 }
 
+static void
+XTestExtensionTearDown(ExtensionEntry *e)
+{
+    FreeEventList(xtest_evlist, GetMaximumEventsNum());
+    xtest_evlist = NULL;
+}
+
 void
 XTestExtensionInit(INITARGS)
 {
     AddExtension(XTestExtensionName, 0, 0,
             ProcXTestDispatch, SProcXTestDispatch,
-            NULL, StandardMinorOpcode);
+            XTestExtensionTearDown, StandardMinorOpcode);
 
     xtest_evlist = InitEventList(GetMaximumEventsNum());
 }

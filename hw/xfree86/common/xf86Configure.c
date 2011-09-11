@@ -39,6 +39,7 @@
 #include "xf86Bus.h"
 #include "xf86Sbus.h"
 #endif
+#include "misc.h"
 
 typedef struct _DevToConfig {
     GDevRec GDev;
@@ -62,6 +63,9 @@ static char *DFLT_MOUSE_PROTO = "auto";
 #elif defined(linux)
 static char DFLT_MOUSE_DEV[] = "/dev/input/mice";
 static char DFLT_MOUSE_PROTO[] = "auto";
+#elif defined(WSCONS_SUPPORT)
+static char *DFLT_MOUSE_DEV = "/dev/wsmouse";
+static char *DFLT_MOUSE_PROTO = "wsmouse";
 #else
 static char *DFLT_MOUSE_DEV = "/dev/mouse";
 static char *DFLT_MOUSE_PROTO = "auto";
@@ -153,16 +157,6 @@ configureInputSection (void)
     /* Crude mechanism to auto-detect mouse (os dependent) */
     { 
 	int fd;
-#ifdef WSCONS_SUPPORT
-	fd = open("/dev/wsmouse", 0);
-	if (fd >= 0) {
-	    DFLT_MOUSE_DEV = "/dev/wsmouse";
-	    DFLT_MOUSE_PROTO = "wsmouse";
-	    close(fd);
-	} else {
-	    ErrorF("cannot open /dev/wsmouse\n");
-	}
-#endif
 
 	fd = open(DFLT_MOUSE_DEV, 0);
 	if (fd != -1) {
@@ -514,10 +508,6 @@ configureDDCMonitorSection (int screennum)
     return ptr;
 }
 
-#if !defined(PATH_MAX)
-# define PATH_MAX 1024
-#endif
-
 void
 DoConfigure(void)
 {
@@ -759,7 +749,7 @@ DoConfigure(void)
 
 bail:
     OsCleanup(TRUE);
-    AbortDDX();
+    AbortDDX(EXIT_ERR_CONFIGURE);
     fflush(stderr);
     exit(0);
 }
