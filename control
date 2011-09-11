@@ -19,13 +19,13 @@ Build-Depends:
  automake,
  libtool,
  xauth,
- xutils-dev (>= 1:7.5+4),
+ xutils-dev (>= 1:7.6+4),
  xfonts-utils (>= 1:7.5+1),
  x11proto-bigreqs-dev (>= 1:1.1.0),
  x11proto-composite-dev (>= 1:0.4),
- x11proto-core-dev (>= 7.0.17),
+ x11proto-core-dev (>= 7.0.22),
  x11proto-damage-dev (>= 1.1),
- x11proto-fixes-dev (>= 1:4.1),
+ x11proto-fixes-dev (>= 1:5.0),
  x11proto-kb-dev (>= 1.0.3),
  x11proto-xinerama-dev,
  x11proto-randr-dev (>= 1.2.99.3),
@@ -42,11 +42,11 @@ Build-Depends:
  xtrans-dev (>= 1.2.2),
  libxau-dev (>= 1:1.0.5-2),
  x11proto-input-dev (>= 2.0.1-1ubuntu1),
- x11proto-dri2-dev (>= 2.3),
+ x11proto-dri2-dev (>= 2.6),
  libxdmcp-dev (>= 1:0.99.1),
  libxfont-dev (>= 1:1.4.2),
  libxkbfile-dev (>= 1:0.99.1),
- libpixman-1-dev (>= 0.15.20),
+ libpixman-1-dev (>= 0.21.8),
  libpciaccess-dev (>= 0.11.0-2),
  libgcrypt-dev,
  nettle-dev,
@@ -56,7 +56,7 @@ Build-Depends:
  libselinux1-dev (>= 2.0.80),
  x11proto-xf86dri-dev (>= 2.1.0),
  libdrm-dev (>= 2.4.3) [!hurd-i386],
- x11proto-gl-dev (>= 1.4.10),
+ x11proto-gl-dev (>= 1.4.14),
  mesa-common-dev (>= 7.10.3-0ubuntu1),
  libgl1-mesa-dev (>= 7.8),
  libxmuu-dev (>= 1:0.99.1),
@@ -76,7 +76,6 @@ Build-Depends:
  libxv-dev,
  libxinerama-dev,
 # unit tests
- libglib2.0-dev,
  xkb-data,
  x11-xkb-utils,
 Standards-Version: 3.9.2
@@ -121,7 +120,6 @@ Breaks:
  xserver-xorg-video-vga (<= 1:4.1.0-8),
  libgl1-mesa-dri (<< 7.10.2-4),
  libgl1-mesa-dri-experimental (<< 7.10.2-4),
- libgl1-mesa-dri-no-multiarch,
 Provides:
  ${videoabi},
  ${inputabi},
@@ -159,8 +157,8 @@ Description: Xorg X server - core server
 Package: xserver-xorg-dev
 Architecture: any
 Depends:
- libpixman-1-dev (>= 0.15.20),
- x11proto-core-dev (>= 7.0.17),
+ libpixman-1-dev (>= 0.21.8),
+ x11proto-core-dev (>= 7.0.22),
  x11proto-input-dev (>= 2.0.1-1ubuntu1),
  x11proto-xext-dev (>= 7.1.99),
  x11proto-video-dev,
@@ -231,6 +229,7 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
 Recommends: libgl1-mesa-dri (>= 7.1~rc1)
+Provides: xserver
 Description: Nested X server
  Xnest is a nested X server that simply relays all its requests to another
  X server, where it runs as a client.  This means that it appears as another
@@ -253,6 +252,7 @@ Depends:
  xauth,
  x11-xkb-utils
 Recommends: libgl1-mesa-dri
+Provides: xserver
 Description: Virtual Framebuffer 'fake' X server
  Xvfb provides an X server that can run on machines with no display hardware
  and no physical input devices. It emulates a dumb framebuffer using virtual
@@ -281,6 +281,7 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
 Recommends: libgl1-mesa-dri (>= 7.1~rc1)
+Provides: xserver
 Description: nested X server
  Xephyr is an X server that can be run inside another X server,
  much like Xnest. It is based on the kdrive X server, and as a
@@ -298,6 +299,7 @@ Depends:
  xserver-common (>= ${source:Version}),
  ${shlibs:Depends},
  ${misc:Depends},
+Provides: xserver
 Description: Linux framebuffer device tiny X server
  xserver-xfbdev is a Linux framebuffer device tiny X server based on the
  kdrive X server.
