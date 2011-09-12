@@ -3,6 +3,9 @@ xorg-server (2:1.11.0-1ubuntu1~prep1) oneiric; urgency=low
   * Merge from Debian experimental.  Remaining Ubuntu changes
     - Fill in later
   * Drop all XI2.1 multitouch patches, pending Chase's rework.
+  * 217_revert_bgnonevisitwindow.patch:
+  * 219_fedora-pointer-barriers.diff:
+    - Drop; included in the new upstream release.
 
  -- Christopher James Halse Rogers <chris@cooperteam.net>  Sat, 10 Sep 2011 21:26:49 -0700
 
