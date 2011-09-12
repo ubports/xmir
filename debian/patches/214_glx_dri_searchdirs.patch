@@ -1,294 +1,94 @@
-Index: xorg-server/glx/glxdri.c
+Index: xorg-server/glx/glxdricommon.h
 ===================================================================
---- xorg-server.orig/glx/glxdri.c	2011-08-24 12:56:49.535650619 +0300
-+++ xorg-server/glx/glxdri.c	2011-08-24 12:56:49.795650626 +0300
-@@ -858,8 +858,6 @@
+--- xorg-server.orig/glx/glxdricommon.h	2011-09-11 18:41:08.000000000 -0500
++++ xorg-server/glx/glxdricommon.h	2011-09-11 18:41:43.381346390 -0500
+@@ -39,7 +39,7 @@
+ extern const __DRIsystemTimeExtension systemTimeExtension;
  
+ void *
+-glxProbeDriver(const char *name,
++glxProbeDriver(const char *name, void **cookie,
+ 	       void **coreExt, const char *coreName, int coreVersion,
+ 	       void **renderExt, const char *renderName, int renderVersion);
  
- 
--static const char dri_driver_path[] = DRI_DRIVER_PATH;
--
- static Bool
- glxDRIEnterVT (int index, int flags)
- {
-@@ -971,13 +969,11 @@
-     drm_handle_t  hFB;
-     int        junk;
-     __GLXDRIscreen *screen;
--    char filename[128];
-     Bool isCapable;
-     size_t buffer_size;
-     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-     const __DRIconfig **driConfigs;
--    const __DRIextension **extensions;
--    int i;
-+    void *cookie = NULL;
-     int from = X_ERROR;
- 
-     if (!xf86LoaderCheckSymbol("DRIQueryDirectRenderingCapable") ||
-@@ -1053,43 +1049,15 @@
- 	goto handle_error;
-     }
- 
--    snprintf(filename, sizeof filename, "%s/%s_dri.so",
--             dri_driver_path, driverName);
--
--    screen->driver = dlopen(filename, RTLD_LAZY | RTLD_LOCAL);
--    if (screen->driver == NULL) {
--	if (!strcmp(driverName, "nouveau"))
--	    from = X_INFO;
--	LogMessage(from, "AIGLX error: dlopen of %s failed (%s)\n",
--		   filename, dlerror());
--        goto handle_error;
--    }
--
--    extensions = dlsym(screen->driver, __DRI_DRIVER_EXTENSIONS);
--    if (extensions == NULL) {
--	LogMessage(X_ERROR, "AIGLX error: %s exports no extensions (%s)\n",
--		   driverName, dlerror());
--	goto handle_error;
--    }
--    
--    for (i = 0; extensions[i]; i++) {
--	if (strcmp(extensions[i]->name, __DRI_CORE) == 0 &&
--	    extensions[i]->version >= __DRI_CORE_VERSION) {
--		screen->core = (__DRIcoreExtension *) extensions[i];
--	}
--
--	if (strcmp(extensions[i]->name, __DRI_LEGACY) == 0 &&
--	    extensions[i]->version >= __DRI_LEGACY_VERSION) {
--		screen->legacy = (__DRIlegacyExtension *) extensions[i];
--	}
--    }
--
--    if (screen->core == NULL || screen->legacy == NULL) {
--	LogMessage(X_ERROR,
--		   "AIGLX error: %s does not export required DRI extension\n",
--		   driverName);
--	goto handle_error;
--    }
-+    from = strncmp(driverName, "nouveau", sizeof "nouveau") ? X_ERROR : X_INFO;
-+    screen->driver = glxProbeDriver(driverName, &cookie,
-+				    (void **)&screen->core,
-+				    __DRI_CORE, __DRI_CORE_VERSION,
-+				    (void **)&screen->legacy,
-+				    __DRI_LEGACY, __DRI_LEGACY_VERSION);
-+     if (screen->driver == NULL) {
-+         goto handle_error;
-+     }
- 
-     /*
-      * Get device-specific info.  pDevPriv will point to a struct
-@@ -1100,7 +1068,7 @@
-     if (!DRIGetDeviceInfo(pScreen, &hFB, &junk,
- 			  &framebuffer.size, &framebuffer.stride,
- 			  &framebuffer.dev_priv_size, &framebuffer.dev_priv)) {
--	LogMessage(X_ERROR, "AIGLX error: XF86DRIGetDeviceInfo failed\n");
-+	LogMessage(from, "AIGLX error: XF86DRIGetDeviceInfo failed\n");
- 	goto handle_error;
-     }
- 
-@@ -1111,7 +1079,7 @@
-     status = drmMap(fd, hFB, framebuffer.size, 
- 		    (drmAddressPtr)&framebuffer.base);
-     if (status != 0) {
--	LogMessage(X_ERROR, "AIGLX error: drmMap of framebuffer failed (%s)\n",
-+	LogMessage(from, "AIGLX error: drmMap of framebuffer failed (%s)\n",
- 		   strerror(-status));
- 	goto handle_error;
-     }
-@@ -1121,7 +1089,7 @@
-      */
-     status = drmMap(fd, hSAREA, SAREA_MAX, &pSAREA);
-     if (status != 0) {
--	LogMessage(X_ERROR, "AIGLX error: drmMap of SAREA failed (%s)\n",
-+	LogMessage(from, "AIGLX error: drmMap of SAREA failed (%s)\n",
- 		   strerror(-status));
- 	goto handle_error;
-     }
-@@ -1139,7 +1107,7 @@
- 					   screen);
- 
-     if (screen->driScreen == NULL) {
--	LogMessage(X_ERROR,
-+	LogMessage(from,
- 		   "AIGLX error: Calling driver entry point failed\n");
- 	goto handle_error;
-     }
-@@ -1175,7 +1143,7 @@
-     pScrn->LeaveVT = glxDRILeaveVT;
- 
-     LogMessage(X_INFO,
--	       "AIGLX: Loaded and initialized %s\n", filename);
-+	       "AIGLX: Loaded and initialized %s\n", driverName);
- 
-     return &screen->base;
- 
-Index: xorg-server/glx/glxdri2.c
+Index: xorg-server/glx/glxdriswrast.c
 ===================================================================
---- xorg-server.orig/glx/glxdri2.c	2011-08-24 12:56:49.535650619 +0300
-+++ xorg-server/glx/glxdri2.c	2011-08-24 12:56:49.795650626 +0300
-@@ -600,8 +600,6 @@
-     NULL
- };
- 
--static const char dri_driver_path[] = DRI_DRIVER_PATH;
--
- static Bool
- glxDRIEnterVT (int index, int flags)
- {
-@@ -702,14 +700,11 @@
- __glXDRIscreenProbe(ScreenPtr pScreen)
- {
-     const char *driverName, *deviceName;
-+    void *cookie = NULL;
+--- xorg-server.orig/glx/glxdriswrast.c	2011-09-11 18:41:08.000000000 -0500
++++ xorg-server/glx/glxdriswrast.c	2011-09-11 18:41:43.381346390 -0500
+@@ -427,6 +427,7 @@
+     const char *driverName = "swrast";
      __GLXDRIscreen *screen;
--    char filename[128];
-     size_t buffer_size;
-     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
--    const __DRIextension **extensions;
      const __DRIconfig **driConfigs;
--    int i;
--    int from = X_ERROR;
++    void *cookie = NULL;
  
      screen = calloc(1, sizeof *screen);
      if (screen == NULL)
-@@ -731,54 +726,24 @@
+@@ -438,7 +439,7 @@
+     screen->base.swapInterval   = NULL;
+     screen->base.pScreen       = pScreen;
  
-     __glXInitExtensionEnableBits(screen->glx_enable_bits);
+-    screen->driver = glxProbeDriver(driverName,
++    screen->driver = glxProbeDriver(driverName, &cookie,
+ 				    (void **)&screen->core,
+ 				    __DRI_CORE, __DRI_CORE_VERSION,
+ 				    (void **)&screen->swrast,
+Index: xorg-server/configure.ac
+===================================================================
+--- xorg-server.orig/configure.ac	2011-09-11 18:41:08.000000000 -0500
++++ xorg-server/configure.ac	2011-09-11 18:41:43.381346390 -0500
+@@ -1260,7 +1260,12 @@
+ AC_DEFINE_DIR(SERVER_MISC_CONFIG_PATH, SERVERCONFIG, [Server miscellaneous config path])
+ AC_DEFINE_DIR(BASE_FONT_PATH, FONTROOTDIR, [Default base font path])
+ dridriverdir=`$PKG_CONFIG --variable=dridriverdir dri`
+-AC_DEFINE_DIR(DRI_DRIVER_PATH, dridriverdir, [Default DRI driver path])
++drisearchdirs=`$PKG_CONFIG --variable=drisearchdirs dri`
++if test -n "$drisearchdirs" ; then
++   	AC_DEFINE_DIR(DRI_DRIVER_PATH, drisearchdirs, [Default DRI search dirs])
++else
++	AC_DEFINE_DIR(DRI_DRIVER_PATH, dridriverdir, [Default DRI driver path])
++fi
+ AC_DEFINE_UNQUOTED(XVENDORNAME, ["$VENDOR_NAME"], [Vendor name])
+ AC_DEFINE_UNQUOTED(XVENDORNAMESHORT, ["$VENDOR_NAME_SHORT"], [Short vendor name])
+ AC_DEFINE_UNQUOTED(XORG_DATE, ["$RELEASE_DATE"], [Vendor release])
+Index: xorg-server/glx/glxdricommon.c
+===================================================================
+--- xorg-server.orig/glx/glxdricommon.c	2011-09-11 18:41:08.000000000 -0500
++++ xorg-server/glx/glxdricommon.c	2011-09-11 18:46:45.296354364 -0500
+@@ -209,7 +209,7 @@
+ static const char dri_driver_path[] = DRI_DRIVER_PATH;
  
--    snprintf(filename, sizeof filename,
--	     "%s/%s_dri.so", dri_driver_path, driverName);
+ void *
+-glxProbeDriver(const char *driverName,
++glxProbeDriver(const char *driverName, void **cookie,
+ 	       void **coreExt, const char *coreName, int coreVersion,
+ 	       void **renderExt, const char *renderName, int renderVersion)
+ {
+@@ -218,49 +218,60 @@
+     char filename[PATH_MAX];
+     const __DRIextension **extensions;
+     int from = X_ERROR;
 -
--    screen->driver = dlopen(filename, RTLD_LAZY | RTLD_LOCAL);
--    if (screen->driver == NULL) {
--	if (!strcmp(driverName, "nouveau"))
--	    from = X_INFO;
--	LogMessage(from, "AIGLX error: dlopen of %s failed (%s)\n",
+-    snprintf(filename, sizeof filename, "%s/%s_dri.so",
+-             dri_driver_path, driverName);
+-
+-    driver = dlopen(filename, RTLD_LAZY | RTLD_LOCAL);
+-    if (driver == NULL) {
+-	LogMessage(X_ERROR, "AIGLX error: dlopen of %s failed (%s)\n",
 -		   filename, dlerror());
--        goto handle_error;
+-	goto cleanup_failure;
 -    }
 -
--    extensions = dlsym(screen->driver, __DRI_DRIVER_EXTENSIONS);
+-    extensions = dlsym(driver, __DRI_DRIVER_EXTENSIONS);
 -    if (extensions == NULL) {
 -	LogMessage(X_ERROR, "AIGLX error: %s exports no extensions (%s)\n",
 -		   driverName, dlerror());
--	goto handle_error;
+-	goto cleanup_failure;
 -    }
-+    do {
-+	screen->driver = glxProbeDriver(driverName, &cookie,
-+					(void **)&screen->core, __DRI_CORE, 1,
-+					(void **)&screen->dri2, __DRI_DRI2, 1);
-+	if (screen->driver == NULL)
-+	    goto handle_error;
-     
+-
 -    for (i = 0; extensions[i]; i++) {
--        if (strcmp(extensions[i]->name, __DRI_CORE) == 0 &&
--	    extensions[i]->version >= 1) {
--		screen->core = (const __DRIcoreExtension *) extensions[i];
--	}
--        if (strcmp(extensions[i]->name, __DRI_DRI2) == 0 &&
--	    extensions[i]->version >= 1) {
--		screen->dri2 = (const __DRIdri2Extension *) extensions[i];
-+	screen->driScreen =
-+	    (*screen->dri2->createNewScreen)(pScreen->myNum,
-+					     screen->fd,
-+					     loader_extensions,
-+					     &driConfigs,
-+					     screen);
-+	if (screen->driScreen == NULL) {
-+	    LogMessage(X_INFO,
-+		       "AIGLX: Calling driver entry point failed\n");
- 	}
--    }
--
--    if (screen->core == NULL || screen->dri2 == NULL) {
--	LogMessage(X_ERROR, "AIGLX error: %s exports no DRI extension\n",
--		   driverName);
--	goto handle_error;
--    }
--
--    screen->driScreen =
--	(*screen->dri2->createNewScreen)(pScreen->myNum,
--					 screen->fd,
--					 loader_extensions,
--					 &driConfigs,
--					 screen);
--
--    if (screen->driScreen == NULL) {
--	LogMessage(X_ERROR,
--		   "AIGLX error: Calling driver entry point failed\n");
--	goto handle_error;
--    }
-+    } while (screen->driScreen == NULL);
- 
-     initializeExtensions(screen);
- 
-@@ -820,7 +785,7 @@
-     pScrn->LeaveVT = glxDRILeaveVT;
- 
-     LogMessage(X_INFO,
--	       "AIGLX: Loaded and initialized %s\n", filename);
-+	       "AIGLX: Loaded and initialized %s\n", driverName);
- 
-     return &screen->base;
- 
-@@ -830,7 +795,8 @@
- 
-     free(screen);
- 
--    LogMessage(from, "AIGLX: reverting to software rendering\n");
-+    LogMessage(strncmp(driverName, "nouveau", sizeof "nouveau") ? X_ERROR : X_INFO,
-+	       "AIGLX: reverting to software rendering\n");
- 
-     return NULL;
- }
-Index: xorg-server/glx/glxdricommon.c
-===================================================================
---- xorg-server.orig/glx/glxdricommon.c	2011-08-24 12:52:44.495647129 +0300
-+++ xorg-server/glx/glxdricommon.c	2011-08-24 12:56:49.795650626 +0300
-@@ -29,6 +29,7 @@
- 
- #include <stdint.h>
- #include <errno.h>
-+#include <dlfcn.h>
- #include <sys/time.h>
- #include <GL/gl.h>
- #include <GL/glxtokens.h>
-@@ -39,6 +40,17 @@
- #include "glxscreens.h"
- #include "glxdricommon.h"
- 
-+#ifndef PATH_MAX
-+#include <sys/param.h>
-+#ifndef PATH_MAX
-+#ifdef MAXPATHLEN
-+#define PATH_MAX MAXPATHLEN
-+#else
-+#define PATH_MAX 1024
-+#endif
-+#endif
-+#endif 
-+
- static int
- getUST(int64_t *ust)
- {
-@@ -204,3 +216,70 @@
- 
-     return head.next;
- }
-+
-+static const char dri_driver_path[] = DRI_DRIVER_PATH;
-+
-+void *
-+glxProbeDriver(const char *driverName, void **cookie,
-+	       void **coreExt, const char *coreName, int coreVersion,
-+	       void **renderExt, const char *renderName, int renderVersion)
-+{
-+    int i;
-+    void *driver;
-+    char filename[PATH_MAX];
-+    const __DRIextension **extensions;
+-	if (strcmp(extensions[i]->name, coreName) == 0 &&
+-	    extensions[i]->version >= coreVersion) {
+-		*coreExt = (void *)extensions[i];
 +    char *driDriverPath;
 +    const char *pathStart = *cookie ? (const char*)*cookie : dri_driver_path;
 +    const char *pathEnd = strchr(pathStart, ':');
@@ -309,8 +109,11 @@ Index: xorg-server/glx/glxdricommon.c
 +	    LogMessage(X_INFO, "AIGLX: dlopen of %s failed (%s)\n",
 +		       filename, dlerror());
 +	    continue;
-+	}
-+
+ 	}
+ 
+-	if (strcmp(extensions[i]->name, renderName) == 0 &&
+-	    extensions[i]->version >= renderVersion) {
+-		*renderExt = (void *)extensions[i];
 +	extensions = dlsym(driver, __DRI_DRIVER_EXTENSIONS);
 +	if (extensions == NULL) {
 +	    LogMessage(X_INFO, "AIGLX: %s exports no extensions (%s)\n",
@@ -329,10 +132,20 @@ Index: xorg-server/glx/glxdricommon.c
 +		extensions[i]->version >= renderVersion) {
 +		    *renderExt = (void *)extensions[i];
 +	    }
-+	}
-+
+ 	}
+-    }
+ 
+-    if (*coreExt == NULL || *renderExt == NULL) {
+-	if (!strcmp(driverName, "nouveau"))
+-	    from = X_INFO;
+-	LogMessage(from,
+-		   "AIGLX error: %s does not export required DRI extension\n",
+-		   driverName);
+-	goto cleanup_failure;
 +	if (*coreExt == NULL || *renderExt == NULL) {
-+	    LogMessage(X_INFO,
++	    if (!strcmp(driverName, "nouveau"))
++		from = X_INFO;
++	    LogMessage(from,
 +		       "AIGLX: %s does not export required DRI extension\n",
 +		       driverName);
 +	    *coreExt = *renderExt = NULL;
@@ -340,117 +153,88 @@ Index: xorg-server/glx/glxdricommon.c
 +	    continue;
 +	}
 +	return driver;
-+    }
-+    *coreExt = *renderExt = NULL;
-+    return NULL;
-+}
-Index: xorg-server/glx/glxdricommon.h
-===================================================================
---- xorg-server.orig/glx/glxdricommon.h	2011-08-24 12:52:44.475647127 +0300
-+++ xorg-server/glx/glxdricommon.h	2011-08-24 12:56:49.795650626 +0300
-@@ -38,4 +38,9 @@
- 
- extern const __DRIsystemTimeExtension systemTimeExtension;
- 
-+void *
-+glxProbeDriver(const char *name, void **cookie,
-+	       void **coreExt, const char *coreName, int coreVersion,
-+	       void **renderExt, const char *renderName, int renderVersion);
-+
- #endif
-Index: xorg-server/glx/glxdriswrast.c
-===================================================================
---- xorg-server.orig/glx/glxdriswrast.c	2011-08-24 12:52:44.465647129 +0300
-+++ xorg-server/glx/glxdriswrast.c	2011-08-24 12:56:49.795650626 +0300
-@@ -435,17 +435,13 @@
      }
- }
- 
--static const char dri_driver_path[] = DRI_DRIVER_PATH;
+-    return driver;
 -
- static __GLXscreen *
- __glXDRIscreenProbe(ScreenPtr pScreen)
- {
-     const char *driverName = "swrast";
-+    void *cookie = NULL;
-     __GLXDRIscreen *screen;
--    char filename[128];
--    const __DRIextension **extensions;
+-cleanup_failure:
+-    if (driver)
+-	dlclose(driver);
+     *coreExt = *renderExt = NULL;
+     return NULL;
+ }
+Index: xorg-server/glx/glxdri.c
+===================================================================
+--- xorg-server.orig/glx/glxdri.c	2011-09-11 18:41:08.000000000 -0500
++++ xorg-server/glx/glxdri.c	2011-09-11 18:41:43.381346390 -0500
+@@ -968,6 +968,7 @@
+     size_t buffer_size;
+     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
      const __DRIconfig **driConfigs;
--    int i;
++    void *cookie = NULL;
+ 
+     if (!xf86LoaderCheckSymbol("DRIQueryDirectRenderingCapable") ||
+ 	!DRIQueryDirectRenderingCapable(pScreen, &isCapable) ||
+@@ -1042,7 +1043,7 @@
+ 	goto handle_error;
+     }
+ 
+-    screen->driver = glxProbeDriver(driverName,
++    screen->driver = glxProbeDriver(driverName, &cookie,
+ 				    (void **)&screen->core,
+ 				    __DRI_CORE, __DRI_CORE_VERSION,
+ 				    (void **)&screen->legacy,
+Index: xorg-server/glx/glxdri2.c
+===================================================================
+--- xorg-server.orig/glx/glxdri2.c	2011-09-11 18:41:08.000000000 -0500
++++ xorg-server/glx/glxdri2.c	2011-09-11 18:41:43.381346390 -0500
+@@ -689,6 +689,7 @@
+     size_t buffer_size;
+     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+     const __DRIconfig **driConfigs;
++    void *cookie = NULL;
  
      screen = calloc(1, sizeof *screen);
      if (screen == NULL)
-@@ -457,40 +453,15 @@
-     screen->base.swapInterval   = NULL;
-     screen->base.pScreen       = pScreen;
+@@ -710,24 +711,24 @@
  
--    snprintf(filename, sizeof filename,
--	     "%s/%s_dri.so", dri_driver_path, driverName);
+     __glXInitExtensionEnableBits(screen->glx_enable_bits);
+ 
+-    screen->driver = glxProbeDriver(driverName, (void **)&screen->core, __DRI_CORE, 1,
+-				    (void **)&screen->dri2, __DRI_DRI2, 1);
+-    if (screen->driver == NULL) {
+-        goto handle_error;
+-    }
+-    
+-    screen->driScreen =
+-	(*screen->dri2->createNewScreen)(pScreen->myNum,
+-					 screen->fd,
+-					 loader_extensions,
+-					 &driConfigs,
+-					 screen);
 -
--    screen->driver = dlopen(filename, RTLD_LAZY | RTLD_LOCAL);
-+    screen->driver = glxProbeDriver(driverName, &cookie,
-+				    (void **)&screen->core,
-+				    __DRI_CORE, __DRI_CORE_VERSION,
-+				    (void **)&screen->swrast,
-+				    __DRI_SWRAST, __DRI_SWRAST_VERSION);
-     if (screen->driver == NULL) {
--	LogMessage(X_ERROR, "AIGLX error: dlopen of %s failed (%s)\n",
--		   filename, dlerror());
-         goto handle_error;
-     }
- 
--    extensions = dlsym(screen->driver, __DRI_DRIVER_EXTENSIONS);
--    if (extensions == NULL) {
--	LogMessage(X_ERROR, "AIGLX error: %s exports no extensions (%s)\n",
--		   driverName, dlerror());
+-    if (screen->driScreen == NULL) {
+-	LogMessage(X_ERROR,
+-		   "AIGLX error: Calling driver entry point failed\n");
 -	goto handle_error;
 -    }
--
--    for (i = 0; extensions[i]; i++) {
--        if (strcmp(extensions[i]->name, __DRI_CORE) == 0 &&
--	    extensions[i]->version >= __DRI_CORE_VERSION) {
--		screen->core = (const __DRIcoreExtension *) extensions[i];
--	}
--        if (strcmp(extensions[i]->name, __DRI_SWRAST) == 0 &&
--	    extensions[i]->version >= __DRI_SWRAST_VERSION) {
--		screen->swrast = (const __DRIswrastExtension *) extensions[i];
--	}
--    }
--
--    if (screen->core == NULL || screen->swrast == NULL) {
--	LogMessage(X_ERROR, "AIGLX error: %s exports no DRI extension\n",
--		   driverName);
--	goto handle_error;
--    }
--
-     screen->driScreen =
- 	(*screen->swrast->createNewScreen)(pScreen->myNum,
- 					   loader_extensions,
-@@ -516,7 +487,7 @@
-     screen->base.GLXminor = 4;
++    do {
++	screen->driver = glxProbeDriver(driverName, &cookie,
++					(void **)&screen->core, __DRI_CORE, 1,
++					(void **)&screen->dri2, __DRI_DRI2, 1);
++	if (screen->driver == NULL)
++	    goto handle_error;
++
++	screen->driScreen =
++	    (*screen->dri2->createNewScreen)(pScreen->myNum,
++					     screen->fd,
++					     loader_extensions,
++					     &driConfigs,
++					     screen);
++	if (screen->driScreen == NULL) {
++	    LogMessage(X_INFO,
++		       "AIGLX: Calling driver entry point failed\n");
++	}
++    } while (screen->driScreen == NULL);
  
-     LogMessage(X_INFO,
--	       "AIGLX: Loaded and initialized %s\n", filename);
-+	       "AIGLX: Loaded and initialized %s\n", driverName);
+     initializeExtensions(screen);
  
-     return &screen->base;
- 
-Index: xorg-server/configure.ac
-===================================================================
---- xorg-server.orig/configure.ac	2011-08-24 12:56:49.715650621 +0300
-+++ xorg-server/configure.ac	2011-08-24 12:57:20.685651066 +0300
-@@ -1260,7 +1260,12 @@
- AC_DEFINE_DIR(SERVER_MISC_CONFIG_PATH, SERVERCONFIG, [Server miscellaneous config path])
- AC_DEFINE_DIR(BASE_FONT_PATH, FONTROOTDIR, [Default base font path])
- dridriverdir=`$PKG_CONFIG --variable=dridriverdir dri`
--AC_DEFINE_DIR(DRI_DRIVER_PATH, dridriverdir, [Default DRI driver path])
-+drisearchdirs=`$PKG_CONFIG --variable=drisearchdirs dri`
-+if test -n "$drisearchdirs" ; then
-+   	AC_DEFINE_DIR(DRI_DRIVER_PATH, drisearchdirs, [Default DRI search dirs])
-+else
-+	AC_DEFINE_DIR(DRI_DRIVER_PATH, dridriverdir, [Default DRI driver path])
-+fi
- AC_DEFINE_UNQUOTED(XVENDORNAME, ["$VENDOR_NAME"], [Vendor name])
- AC_DEFINE_UNQUOTED(XVENDORNAMESHORT, ["$VENDOR_NAME_SHORT"], [Short vendor name])
- AC_DEFINE_UNQUOTED(XORG_DATE, ["$RELEASE_DATE"], [Vendor release])
