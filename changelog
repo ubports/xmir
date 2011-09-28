@@ -1,9 +1,9 @@
-xorg-server (2:1.10.4-1ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.10.4-1ubuntu4) oneiric; urgency=low
 
   * Send touch ownership event for subsequent touch grabs (LP: #861906)
     - Added 507_touch_grab_reject_send_ownership.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 28 Sep 2011 15:54:36 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 28 Sep 2011 15:57:59 -0700
 
 xorg-server (2:1.10.4-1ubuntu3) oneiric; urgency=low
 
