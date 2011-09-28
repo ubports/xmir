@@ -1,3 +1,11 @@
+xorg-server (2:1.10.4-1ubuntu3) UNRELEASED; urgency=low
+
+  * Fix touch ownership processing for subsequent touch grabs (LP: #861896)
+    - Remove regressing patch
+      507_dix_Ensure_touch_events_are_delivered_to_next_client.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 28 Sep 2011 15:48:09 -0700
+
 xorg-server (2:1.10.4-1ubuntu2) oneiric; urgency=low
 
   * debian/patches/221_fix_SendEvent_flag_mask.diff:
