@@ -39,3 +39,4 @@
 504_fix_no_coords.patch
 505_Xi_ensure_replayed_touch_events_have_devices.patch
 506_Xi_ensure_touch_events_update_currentTime.patch
+507_touch_grab_reject_send_ownership.patch
