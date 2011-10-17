@@ -601,4 +601,6 @@ extern _X_EXPORT int valuator_mask_get(const ValuatorMask *mask, int valnum);
 extern _X_EXPORT double valuator_mask_get_double(const ValuatorMask *mask,
                                                  int valnum);
 
+extern _X_HIDDEN Bool point_on_screen(ScreenPtr pScreen, int x, int y);
+
 #endif /* INPUT_H */
