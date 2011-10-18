@@ -430,7 +430,8 @@ extern _X_EXPORT void FreeEventList(InternalEvent *list, int num_events);
 extern void CreateClassesChangedEvent(InternalEvent *event,
                                       DeviceIntPtr master,
                                       DeviceIntPtr slave,
-                                      int type);
+                                      int flags);
+
 extern InternalEvent * UpdateFromMaster(
     InternalEvent *events,
     DeviceIntPtr pDev,
