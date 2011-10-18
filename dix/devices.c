@@ -2364,7 +2364,7 @@ RecalculateMasterButtons(DeviceIntPtr slave)
             event.keys.max_keycode = master->key->xkbInfo->desc->max_key_code;
         }
 
-        XISendDeviceChangedEvent(master, master, &event);
+        XISendDeviceChangedEvent(master, &event);
     }
 }
 
