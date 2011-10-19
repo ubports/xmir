@@ -1,3 +1,16 @@
+xorg-server (2:1.10.4-1ubuntu4.1) oneiric-security; urgency=low
+
+  * SECURITY UPDATE: file existence disclosure
+    - debian/patches/508_CVE-2011-4028.patch: open lockfile with O_NOFOLLOW
+      in os/utils.c.
+    - CVE-2011-4028
+  * SECURITY UPDATE: privilege escalation via file permission change
+    - debian/patches/509_CVE-2011-4029.patch: use fchmod to prevent race
+      in os/utils.c.
+    - CVE-2011-4029
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Thu, 13 Oct 2011 10:55:35 -0400
+
 xorg-server (2:1.10.4-1ubuntu4) oneiric; urgency=low
 
   * Send touch ownership event for subsequent touch grabs (LP: #861906)
