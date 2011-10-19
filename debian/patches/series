@@ -42,3 +42,4 @@
 507_touch_grab_reject_send_ownership.patch
 508_CVE-2011-4028.patch
 509_CVE-2011-4029.patch
+510_fix_touchpad_touch_event_removal.patch
