@@ -1,3 +1,10 @@
+xorg-server (2:1.10.4-1ubuntu4.2) oneiric-proposed; urgency=low
+
+  * Fix crash on accepting a touch grab from an indirect device (LP: #877825)
+    - Added 510_fix_touchpad_touch_event_removal.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 18 Oct 2011 17:33:31 -0700
+
 xorg-server (2:1.10.4-1ubuntu4.1) oneiric-security; urgency=low
 
   * SECURITY UPDATE: file existence disclosure
