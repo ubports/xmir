@@ -600,6 +600,10 @@ extern _X_EXPORT void valuator_mask_copy(ValuatorMask *dest,
 extern _X_EXPORT int valuator_mask_get(const ValuatorMask *mask, int valnum);
 extern _X_EXPORT double valuator_mask_get_double(const ValuatorMask *mask,
                                                  int valnum);
+extern _X_EXPORT Bool valuator_mask_fetch(const ValuatorMask *mask,
+                                          int valnum, int *val);
+extern _X_EXPORT Bool valuator_mask_fetch_double(const ValuatorMask *mask,
+                                                 int valnum, double *val);
 
 extern _X_HIDDEN Bool point_on_screen(ScreenPtr pScreen, int x, int y);
 
