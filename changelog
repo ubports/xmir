@@ -1,10 +1,10 @@
-xorg-server (2:1.10.4-1ubuntu4.3) UNRELEASED; urgency=low
+xorg-server (2:1.10.4-1ubuntu5) precise; urgency=low
 
   * debian/patches/511_Update_border_clip_in_compAllocPixmap.patch:
     patch from upstream to fix window border traces left behind when
     switching windows in metacity.  LP: #759203.
 
- -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 21 Oct 2011 23:03:10 -0700
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 21 Oct 2011 23:04:54 -0700
 
 xorg-server (2:1.10.4-1ubuntu4.2) oneiric-proposed; urgency=low
 
