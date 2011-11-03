@@ -663,6 +663,30 @@ point_on_screen(ScreenPtr pScreen, int x, int y)
            y >= pScreen->y && y < pScreen->y + pScreen->height;
 }
 
+/**
+ * Update desktop dimensions on the screenInfo struct.
+ */
+void
+update_desktop_dimensions(void)
+{
+    int i;
+    int x1 = INT_MAX, y1 = INT_MAX; /* top-left */
+    int x2 = INT_MIN, y2 = INT_MIN; /* bottom-right */
+
+    for (i = 0; i < screenInfo.numScreens; i++) {
+        ScreenPtr screen = screenInfo.screens[i];
+        x1 = min(x1, screen->x);
+        y1 = min(y1, screen->y);
+        x2 = max(x2, screen->x + screen->width);
+        y2 = max(y2, screen->y + screen->height);
+    }
+
+    screenInfo.x = x1;
+    screenInfo.y = y1;
+    screenInfo.width = x2 - x1;
+    screenInfo.height = y2 - y1;
+}
+
 
 /* FP1616/FP3232 conversion functions.
  * Fixed point types are encoded as signed integral and unsigned frac. So any

@@ -607,5 +607,6 @@ extern _X_EXPORT Bool valuator_mask_fetch_double(const ValuatorMask *mask,
                                                  int valnum, double *val);
 
 extern _X_HIDDEN Bool point_on_screen(ScreenPtr pScreen, int x, int y);
+extern _X_HIDDEN void update_desktop_dimensions(void);
 
 #endif /* INPUT_H */
