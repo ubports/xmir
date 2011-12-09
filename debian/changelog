@@ -1,3 +1,12 @@
+xorg-server (2:1.10.4-1ubuntu6) precise; urgency=low
+
+  * control: Move input & video virtual package Breaks as Conflicts,
+    because some of the old drivers were demoted to universe which might
+    not be available on upgrade. Add Conflicts on -nv and -v4l as well,
+    since they are gone from the archive. (LP: #902077)
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 09 Dec 2011 12:46:55 +0200
+
 xorg-server (2:1.10.4-1ubuntu5) precise; urgency=low
 
   * debian/patches/511_Update_border_clip_in_compAllocPixmap.patch:
