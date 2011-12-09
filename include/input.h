@@ -208,6 +208,7 @@ typedef struct _InputOption {
     char                *value;
     struct _InputOption *next;
 } InputOption;
+typedef struct _XI2Mask XI2Mask;
 
 typedef struct _InputAttributes {
     char                *product;
