@@ -1,3 +1,201 @@
+commit 0ca8869e4537412f25bfd5610aba5e604952608c
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Dec 9 12:58:30 2011 -0800
+
+    configure.ac: 1.11.2.902 (1.11.3 RC2)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit e76c397eb90291b048e0b2102111008e3d2e469e
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Mon Nov 28 16:37:59 2011 +0000
+
+    kdrive: drop screen crossing code.
+    
+    The only kdrive server we probably care about anymore is Xephyr,
+    and this screen enable/disable code totally breaks it in multi-screen mode.
+    
+    When you are in one screen the other stops updating.
+    
+    Fixes https://bugzilla.redhat.com/show_bug.cgi?id=757457
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 98c4a888a4428789386c7c47cecc81933b5999ba)
+
+commit db418ff7501d960c8de813a37b8bb37b1ba22175
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Oct 20 10:48:26 2011 +0100
+
+    hal: free tmp_val in one missing case
+    
+    Pointed out by coverity scan.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 8d3731a811e33e263920dd7c8ec63d02968cb56e)
+
+commit 6b11b18ab683e1f38e5b27066b35947b96956e5f
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Oct 20 11:00:43 2011 +0100
+
+    xv: test correct number of requests. (v2)
+    
+    Pointed out by coverity.
+    
+    v2: fix swapped as well, as pointed out by Alan
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit 41229392b790f30a0f0ef1f4ed95647c5bca4001)
+
+commit df16b789aaf5fe7025e5661117477a5f6f9129ee
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 19 16:57:13 2011 +0100
+
+    xaa: avoid possible freed pointer reuse in epilogue
+    
+    If the pGCPriv->flags == 2, then we try to assign the freed pGCPriv->XAAOps
+    avoid this by clearing the flags in to be destroyed pGCPriv.
+    
+    Reported by coverity.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 1049139499d9132a20cd6d4d156fe9da9cddb6c2)
+
+commit befa8a3b836e8b5781491aff4e659ae856beb494
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 19 16:22:31 2011 +0100
+
+    Xi: avoid overrun of callback array.
+    
+    This code had an off-by-one and would allow writing one past the end of
+    the callbacks array.
+    
+    Pointed out by coverity.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 682c09a2cedd234b005334cc01247d859dd7f26a)
+
+commit b22783f483d440a005ff76d5c7894e2cf2a95dcb
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 19 16:21:26 2011 +0100
+
+    xext: don't free uninitialised pointer when malloc fails. (v2)
+    
+    Initialise the pAttr->values to values so if the values allocation
+    fails it just ends up as free(NULL).
+    
+    Pointed out by coverity.
+    
+    v2: use Alan's suggestion.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit b62dc4fcbcffd10de16650bee284702c8608bb60)
+
+commit 083599c5597276289af9adaf8a8571cbe743c3fd
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Thu Apr 28 13:34:28 2011 +1000
+
+    fbdevhw: iterate over all modes that match a mode. (v3)
+    
+    So on RHEL5 anaconda sets an xorg.conf with a fixed 800x600 mode in it,
+    we run radeonfb and fbdev since ati won't work in userspace due to domain
+    issues in the older codebase.
+    
+    On certain pseries blades the built-in KVM can't accept an 800x600-43 mode,
+    it requires the 800x600-60 mode, so we have to have the kernel radeonfb
+    driver reject the 800x600-43 mode when it sees it. However then fbdev
+    doesn't try any of the other 800x600 modes in the modelist, and we end up
+    getting a default 640x480 mode we don't want.
+    
+    This patch changes the mode validation loop to continue on with the other modes
+    that match to find one that works.
+    
+    v2: move code around to avoid extra loop, after comment from Jamey.
+    v3: move loop setup back into loop as per Jeremy's review.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 22605effd188436629a0dbc688666549473741e4)
+
+commit 05a890df0ade7c4958a2a13ed0c6471e4658a098
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Thu Dec 1 23:45:42 2011 -0800
+
+    LoaderOpen returns either a valid pointer or NULL, so don't check for < 0
+    
+    Fixes Sun cc warning that was recently elevated to error by the
+    stricter default CFLAGS changes to xorg-macros:
+    
+    "loadmod.c", line 914: improper pointer/integer combination: op "<"
+    
+    Should have been changed when commit ab7f057ce9df4e905b12 changed the
+    LoaderOpen return type from int to void *.
+    
+    Changes log message when file is found but dlopen() fails from:
+     (EE) LoadModule: Module dbe does not have a dbeModuleData data object.
+     (EE) Failed to load module "dbe" (invalid module, 0)
+    to:
+     (EE) Failed to load module "dbe" (loader failed, 7)
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit e4dcf580f007d6adcf5b0c639865d7aaab1a319d)
+
+commit f4944108421d6ae4c728290baa43291f55ebaa67
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Wed Nov 23 00:30:02 2011 -0800
+
+    Limit the number of screens Xvfb will attempt to allocate memory for
+    
+    Commit f9e3a2955d2ca7 removing the MAXSCREEN limit left the screen
+    number too unlimited, and allowed any positive int for a screen number:
+    
+    Xvfb :1 -screen 2147483647 1024x1024x8
+    
+    Fatal server error:
+    Not enough memory for screen 2147483647
+    
+    Found by Parfait 0.3.7:
+    Error: Integer overflow (CWE 190)
+       Integer parameter of memory allocation function realloc() may overflow due to multiplication with constant value 1112
+            at line 293 of hw/vfb/InitOutput.c in function 'ddxProcessArgument'.
+    
+    Since the X11 connection setup only has a CARD8 for number of SCREENS,
+    limit to 255 screens, which is also low enough to avoid overflow on the
+    sizeof(*vfbScreens) * (screenNum + 1) calculation for realloc.
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit feebf6746374aa04b12e9e3e51313a3a82c03530)
+
+commit bed7d7f31ed48cbf0931ca77fdac135e514a2a44
+Author: Rui Matos <tiagomatos@gmail.com>
+Date:   Tue Nov 1 21:32:36 2011 +0000
+
+    randr: Make the RRConstrainCursorHarder logic the same as miPointerSetPosition
+    
+    The constraining logic in RRConstrainCursorHarder allows the cursor to reach
+    crtc positions of x = width and y = height while the constraining code in
+    miPointerSetPosition only allows it to reach x = width - 1 and y = height - 1
+    for the analogous screen case.
+    
+    This patch makes the former's logic equivalent to the latter's which allows
+    applications to benefit from Fitts's law. E.g. a maximized application
+    adjacent to a crtc border wouldn't get pointer events if the user moved the
+    pointer all the way until it's contained.
+    
+    Signed-off-by: Rui Matos <tiagomatos@gmail.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 9cc44b955b27de33348d6a20bebc9704930ee18e)
+
 commit 4689c84a07f87d35492feeae2bc59642c31b6eb3
 Author: Jeremy Huddleston <jeremyhu@apple.com>
 Date:   Mon Nov 28 00:07:29 2011 -0800
