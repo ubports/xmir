@@ -1,8 +1,9 @@
-xorg-server (2:1.11.2.902-1) UNRELEASED; urgency=low
+xorg-server (2:1.11.2.902-1) unstable; urgency=low
 
+  [ Julien Cristau ]
   * New upstream release candidate (1.11.3 RC2)
 
- -- Julien Cristau <jcristau@debian.org>  Sat, 10 Dec 2011 16:42:42 +0100
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 10 Dec 2011 22:36:42 +0100
 
 xorg-server (2:1.11.2.901-1) unstable; urgency=low
 
