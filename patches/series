@@ -26,5 +26,4 @@
 #201_report-real-dpi.patch
 208_switch_on_release.diff
 209_add_legacy_bgnone_option.patch
-210_pixman_null_ptr_check.patch
 214_glx_dri_searchdirs.patch

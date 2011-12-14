@@ -1,8 +1,8 @@
 Index: xorg-server/xkb/xkbActions.c
 ===================================================================
---- xorg-server.orig/xkb/xkbActions.c	2011-08-24 12:52:44.685647133 +0300
-+++ xorg-server/xkb/xkbActions.c	2011-08-24 12:56:49.755650624 +0300
-@@ -328,24 +328,83 @@
+--- xorg-server.orig/xkb/xkbActions.c	2011-12-14 15:15:20.000000000 -0800
++++ xorg-server/xkb/xkbActions.c	2011-12-14 15:26:43.372680253 -0800
+@@ -328,24 +328,83 @@ _XkbFilterLatchState(	XkbSrvInfoPtr	xkbi
      return 1;
  }
  
@@ -87,13 +87,13 @@ Index: xorg-server/xkb/xkbActions.c
  	filter->keycode = keycode;
  	filter->active = 1;
  	filter->filterOthers = 0;
- 	filter->priv = 0;
+ 	filter->priv = xkbi->state.locked_mods&pAction->mods.mask;
 -	filter->filter = _XkbFilterLockState;
 +	filter->filter = _XkbFilterLockMods;
  	filter->upAction = *pAction;
- 	xkbi->state.locked_mods^= pAction->mods.mask;
- 	xkbi->setMods = pAction->mods.mask;
-@@ -1115,9 +1174,12 @@
+ 	if (!(filter->upAction.mods.flags&XkbSA_LockNoLock))
+ 	    xkbi->state.locked_mods|= pAction->mods.mask;
+@@ -1118,9 +1177,12 @@ xkbDeviceInfoPtr xkbPrivPtr = XKBDEVICEI
  		    sendEvent=_XkbFilterLatchState(xkbi,filter,key,&act);
  		    break;
  		case XkbSA_LockMods:
