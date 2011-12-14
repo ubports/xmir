@@ -297,7 +297,7 @@ xf86CheckPercentOption(pointer optlist, const char *name, double deflt)
     return LookupPercentOption(optlist, name, deflt, FALSE);
 }
 /*
- * addNewOption() has the required property of replacing the option value
+ * xf86AddNewOption() has the required property of replacing the option value
  * if the option is already present.
  */
 pointer

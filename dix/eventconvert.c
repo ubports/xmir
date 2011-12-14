@@ -43,10 +43,13 @@
 #include "inputstr.h"
 #include "misc.h"
 #include "eventstr.h"
+#include "exevents.h"
 #include "exglobals.h"
 #include "eventconvert.h"
+#include "inpututils.h"
 #include "xiquerydevice.h"
 #include "xkbsrv.h"
+#include "inpututils.h"
 
 
 static int countValuators(DeviceEvent *ev, int *first);
@@ -482,6 +485,40 @@ appendValuatorInfo(DeviceChangedEvent *dce, xXIValuatorInfo *info, int axisnumbe
 }
 
 static int
+appendScrollInfo(DeviceChangedEvent *dce, xXIScrollInfo *info, int axisnumber)
+{
+    if (dce->valuators[axisnumber].scroll.type == SCROLL_TYPE_NONE)
+        return 0;
+
+    info->type = XIScrollClass;
+    info->length = sizeof(xXIScrollInfo)/4;
+    info->number = axisnumber;
+    switch(dce->valuators[axisnumber].scroll.type)
+    {
+        case SCROLL_TYPE_VERTICAL:
+            info->scroll_type = XIScrollTypeVertical;
+            break;
+        case SCROLL_TYPE_HORIZONTAL:
+            info->scroll_type = XIScrollTypeHorizontal;
+            break;
+        default:
+            ErrorF("[Xi] Unknown scroll type %d. This is a bug.\n", dce->valuators[axisnumber].scroll.type);
+            break;
+    }
+    info->increment = double_to_fp3232(dce->valuators[axisnumber].scroll.increment);
+    info->sourceid = dce->sourceid;
+
+    info->flags = 0;
+
+    if (dce->valuators[axisnumber].scroll.flags & SCROLL_FLAG_DONT_EMULATE)
+        info->flags |= XIScrollFlagNoEmulation;
+    if (dce->valuators[axisnumber].scroll.flags & SCROLL_FLAG_PREFERRED)
+        info->flags |= XIScrollFlagPreferred;
+
+    return info->length * 4;
+}
+
+static int
 eventToDeviceChanged(DeviceChangedEvent *dce, xEvent **xi)
 {
     xXIDeviceChangedEvent *dcce;
@@ -496,7 +533,15 @@ eventToDeviceChanged(DeviceChangedEvent *dce, xEvent **xi)
         len += pad_to_int32(bits_to_bytes(dce->buttons.num_buttons));
     }
     if (dce->num_valuators)
+    {
+        int i;
+
         len += sizeof(xXIValuatorInfo) * dce->num_valuators;
+
+        for (i = 0; i < dce->num_valuators; i++)
+            if (dce->valuators[i].scroll.type != SCROLL_TYPE_NONE)
+                len += sizeof(xXIScrollInfo);
+    }
 
     nkeys = (dce->keys.max_keycode > 0) ?
                 dce->keys.max_keycode - dce->keys.min_keycode + 1 : 0;
@@ -543,6 +588,15 @@ eventToDeviceChanged(DeviceChangedEvent *dce, xEvent **xi)
         dcce->num_classes += dce->num_valuators;
         for (i = 0; i < dce->num_valuators; i++)
             ptr += appendValuatorInfo(dce, (xXIValuatorInfo*)ptr, i);
+
+        for (i = 0; i < dce->num_valuators; i++)
+        {
+            if (dce->valuators[i].scroll.type != SCROLL_TYPE_NONE)
+            {
+                dcce->num_classes++;
+                ptr += appendScrollInfo(dce, (xXIScrollInfo*)ptr, i);
+            }
+        }
     }
 
     *xi = (xEvent*)dcce;
@@ -593,7 +647,7 @@ eventToDeviceEvent(DeviceEvent *ev, xEvent **xi)
     xde = (xXIDeviceEvent*)*xi;
     xde->type           = GenericEvent;
     xde->extension      = IReqCode;
-    xde->evtype         = GetXI2Type((InternalEvent*)ev);
+    xde->evtype         = GetXI2Type(ev->type);
     xde->time           = ev->time;
     xde->length         = bytes_to_int32(len - sizeof(xEvent));
     xde->detail         = ev->detail.button;
@@ -605,6 +659,7 @@ eventToDeviceEvent(DeviceEvent *ev, xEvent **xi)
     xde->root_x         = FP1616(ev->root_x, ev->root_x_frac);
     xde->root_y         = FP1616(ev->root_y, ev->root_y_frac);
 
+    xde->flags          = ev->flags;
     if (ev->key_repeat)
         xde->flags      |= XIKeyRepeat;
 
@@ -632,8 +687,7 @@ eventToDeviceEvent(DeviceEvent *ev, xEvent **xi)
         if (BitIsOn(ev->valuators.mask, i))
         {
             SetBit(ptr, i);
-            axisval->integral = ev->valuators.data[i];
-            axisval->frac = ev->valuators.data_frac[i];
+            *axisval = double_to_fp3232(ev->valuators.data[i]);
             axisval++;
         }
     }
@@ -648,7 +702,7 @@ eventToRawEvent(RawDeviceEvent *ev, xEvent **xi)
     int vallen, nvals;
     int i, len = sizeof(xXIRawEvent);
     char *ptr;
-    FP3232 *axisval;
+    FP3232 *axisval, *axisval_raw;
 
     nvals = count_bits(ev->valuators.mask, sizeof(ev->valuators.mask));
     len += nvals * sizeof(FP3232) * 2; /* 8 byte per valuator, once
@@ -660,25 +714,27 @@ eventToRawEvent(RawDeviceEvent *ev, xEvent **xi)
     raw = (xXIRawEvent*)*xi;
     raw->type           = GenericEvent;
     raw->extension      = IReqCode;
-    raw->evtype         = GetXI2Type((InternalEvent*)ev);
+    raw->evtype         = GetXI2Type(ev->type);
     raw->time           = ev->time;
     raw->length         = bytes_to_int32(len - sizeof(xEvent));
     raw->detail         = ev->detail.button;
     raw->deviceid       = ev->deviceid;
+    raw->sourceid       = ev->sourceid;
     raw->valuators_len  = vallen;
+    raw->flags          = ev->flags;
 
     ptr = (char*)&raw[1];
     axisval = (FP3232*)(ptr + raw->valuators_len * 4);
+    axisval_raw = axisval + nvals;
     for (i = 0; i < sizeof(ev->valuators.mask) * 8; i++)
     {
         if (BitIsOn(ev->valuators.mask, i))
         {
             SetBit(ptr, i);
-            axisval->integral = ev->valuators.data[i];
-            axisval->frac = ev->valuators.data_frac[i];
-            (axisval + nvals)->integral = ev->valuators.data_raw[i];
-            (axisval + nvals)->frac = ev->valuators.data_raw_frac[i];
+            *axisval =  double_to_fp3232(ev->valuators.data[i]);
+            *axisval_raw = double_to_fp3232(ev->valuators.data_raw[i]);
             axisval++;
+            axisval_raw++;
         }
     }
 
@@ -690,10 +746,10 @@ eventToRawEvent(RawDeviceEvent *ev, xEvent **xi)
  * equivalent exists.
  */
 int
-GetCoreType(InternalEvent *event)
+GetCoreType(enum EventType type)
 {
     int coretype = 0;
-    switch(event->any.type)
+    switch(type)
     {
         case ET_Motion:         coretype = MotionNotify;  break;
         case ET_ButtonPress:    coretype = ButtonPress;   break;
@@ -711,10 +767,10 @@ GetCoreType(InternalEvent *event)
  * equivalent exists.
  */
 int
-GetXIType(InternalEvent *event)
+GetXIType(enum EventType type)
 {
     int xitype = 0;
-    switch(event->any.type)
+    switch(type)
     {
         case ET_Motion:         xitype = DeviceMotionNotify;  break;
         case ET_ButtonPress:    xitype = DeviceButtonPress;   break;
@@ -734,11 +790,11 @@ GetXIType(InternalEvent *event)
  * equivalent exists.
  */
 int
-GetXI2Type(InternalEvent *event)
+GetXI2Type(enum EventType type)
 {
     int xi2type = 0;
 
-    switch(event->any.type)
+    switch(type)
     {
         case ET_Motion:         xi2type = XI_Motion;           break;
         case ET_ButtonPress:    xi2type = XI_ButtonPress;      break;

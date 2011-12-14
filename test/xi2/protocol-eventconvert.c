@@ -30,6 +30,7 @@
 #include "eventstr.h"
 #include "eventconvert.h"
 #include "exevents.h"
+#include "inpututils.h"
 #include <X11/extensions/XI2proto.h>
 
 static void test_values_XIRawEvent(RawDeviceEvent *in, xXIRawEvent *out,
@@ -41,6 +42,7 @@ static void test_values_XIRawEvent(RawDeviceEvent *in, xXIRawEvent *out,
     int nvals = 0;
     int bits_set;
     int len;
+    uint32_t flagmask = 0;
 
     if (swap)
     {
@@ -53,17 +55,28 @@ static void test_values_XIRawEvent(RawDeviceEvent *in, xXIRawEvent *out,
         swapl(&out->time, n);
         swapl(&out->detail, n);
         swaps(&out->valuators_len, n);
+        swapl(&out->flags, n);
     }
 
 
     assert(out->type == GenericEvent);
     assert(out->extension == 0); /* IReqCode defaults to 0 */
-    assert(out->evtype == GetXI2Type((InternalEvent*)in));
+    assert(out->evtype == GetXI2Type(in->type));
     assert(out->time == in->time);
     assert(out->detail == in->detail.button);
     assert(out->deviceid == in->deviceid);
     assert(out->valuators_len >= bytes_to_int32(bits_to_bytes(sizeof(in->valuators.mask))));
-    assert(out->flags == 0); /* FIXME: we don't set the flags yet */
+
+    switch (in->type) {
+    case ET_RawMotion:
+    case ET_RawButtonPress:
+    case ET_RawButtonRelease:
+        flagmask = XIPointerEmulated;
+        break;
+    default:
+        flagmask = 0;
+    }
+    assert((out->flags & ~flagmask) == 0);
 
     ptr = (unsigned char*)&out[1];
     bits_set = 0;
@@ -94,8 +107,7 @@ static void test_values_XIRawEvent(RawDeviceEvent *in, xXIRawEvent *out,
             value = (FP3232*)(((unsigned char*)&out[1]) + out->valuators_len * 4);
             value += nvals;
 
-            vi.integral = in->valuators.data[i];
-            vi.frac = in->valuators.data_frac[i];
+            vi = double_to_fp3232(in->valuators.data[i]);
 
             vo.integral = value->integral;
             vo.frac = value->frac;
@@ -111,8 +123,7 @@ static void test_values_XIRawEvent(RawDeviceEvent *in, xXIRawEvent *out,
 
             raw_value = value + bits_set;
 
-            vi.integral = in->valuators.data_raw[i];
-            vi.frac = in->valuators.data_raw_frac[i];
+            vi = double_to_fp3232(in->valuators.data_raw[i]);
 
             vo.integral = raw_value->integral;
             vo.frac = raw_value->frac;
@@ -251,10 +262,8 @@ static void test_convert_XIRawEvent(void)
     {
         XISetMask(in.valuators.mask, i);
 
-        in.valuators.data[i] = i;
-        in.valuators.data_raw[i] = i + 10;
-        in.valuators.data_frac[i] = i + 20;
-        in.valuators.data_raw_frac[i] = i + 30;
+        in.valuators.data[i] = i + (i * 0.0010);
+        in.valuators.data_raw[i] = (i + 10) + (i * 0.0030);
         test_XIRawEvent(&in);
         XIClearMask(in.valuators.mask, i);
     }
@@ -302,7 +311,7 @@ static void test_values_XIDeviceEvent(DeviceEvent *in, xXIDeviceEvent *out,
     }
 
     assert(out->extension == 0); /* IReqCode defaults to 0 */
-    assert(out->evtype == GetXI2Type((InternalEvent*)in));
+    assert(out->evtype == GetXI2Type(in->type));
     assert(out->time == in->time);
     assert(out->detail == in->detail.button);
     assert(out->length >= 12);
@@ -311,6 +320,11 @@ static void test_values_XIDeviceEvent(DeviceEvent *in, xXIDeviceEvent *out,
     assert(out->sourceid == in->sourceid);
 
     switch (in->type) {
+        case ET_ButtonPress:
+        case ET_Motion:
+        case ET_ButtonRelease:
+            flagmask = XIPointerEmulated;
+            break;
         case ET_KeyPress:
             flagmask = XIKeyRepeat;
             break;
@@ -381,9 +395,7 @@ static void test_values_XIDeviceEvent(DeviceEvent *in, xXIDeviceEvent *out,
             {
                 FP3232 vi, vo;
 
-                vi.integral = in->valuators.data[i];
-                vi.frac = in->valuators.data_frac[i];
-
+                vi = double_to_fp3232(in->valuators.data[i]);
                 vo = *values;
 
                 if (swap)
@@ -625,8 +637,7 @@ static void test_convert_XIDeviceEvent(void)
     {
         XISetMask(in.valuators.mask, i);
 
-        in.valuators.data[i] = i;
-        in.valuators.data_frac[i] = i + 20;
+        in.valuators.data[i] = i + (i * 0.0020);
         test_XIDeviceEvent(&in);
         XIClearMask(in.valuators.mask, i);
     }
@@ -660,7 +671,7 @@ static void test_values_XIDeviceChangedEvent(DeviceChangedEvent *in,
 
     assert(out->type == GenericEvent);
     assert(out->extension == 0); /* IReqCode defaults to 0 */
-    assert(out->evtype == GetXI2Type((InternalEvent*)in));
+    assert(out->evtype == GetXI2Type(in->type));
     assert(out->time == in->time);
     assert(out->deviceid == in->deviceid);
     assert(out->sourceid == in->sourceid);
@@ -748,6 +759,26 @@ static void test_values_XIDeviceChangedEvent(DeviceChangedEvent *in,
 
                 }
                 break;
+            case XIScrollClass:
+                {
+                    xXIScrollInfo *s = (xXIScrollInfo*)any;
+                    assert(s->length ==
+                             bytes_to_int32(sizeof(xXIScrollInfo)));
+
+                    assert(s->sourceid == in->sourceid);
+                    assert(s->number < in->num_valuators);
+                    switch(s->type)
+                    {
+                        case XIScrollTypeVertical:
+                            assert(in->valuators[s->number].scroll.type == SCROLL_TYPE_VERTICAL);
+                            break;
+                        case XIScrollTypeHorizontal:
+                            assert(in->valuators[s->number].scroll.type == SCROLL_TYPE_HORIZONTAL);
+                            break;
+                    }
+                    if (s->flags & XIScrollFlagPreferred)
+                        assert(in->valuators[s->number].scroll.flags & SCROLL_FLAG_PREFERRED);
+                }
             default:
                 printf("Invalid class type.\n\n");
                 assert(1);

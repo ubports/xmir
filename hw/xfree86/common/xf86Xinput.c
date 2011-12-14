@@ -266,6 +266,34 @@ ApplyAccelerationSettings(DeviceIntPtr dev){
     }
 }
 
+static void
+ApplyTransformationMatrix(DeviceIntPtr dev)
+{
+    InputInfoPtr pInfo = (InputInfoPtr)dev->public.devicePrivate;
+    char *str;
+    int rc;
+    float matrix[9] = {0};
+
+    if (!dev->valuator)
+        return;
+
+    str = xf86SetStrOption(pInfo->options, "TransformationMatrix", NULL);
+    if (!str)
+        return;
+
+    rc = sscanf(str, "%f %f %f %f %f %f %f %f %f", &matrix[0], &matrix[1], &matrix[2],
+                &matrix[3], &matrix[4], &matrix[5], &matrix[6], &matrix[7], &matrix[8]);
+    if (rc != 9) {
+        xf86Msg(X_ERROR, "%s: invalid format for transformation matrix. Ignoring configuration.\n",
+                pInfo->name);
+        return;
+    }
+
+    XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_TRANSFORM),
+                           XIGetKnownProperty(XATOM_FLOAT), 32,
+                           PropModeReplace, 9, matrix, FALSE);
+}
+
 /***********************************************************************
  *
  * xf86ProcessCommonOptions --
@@ -746,7 +774,7 @@ xf86DeleteInput(InputInfoPtr pInp, int flags)
 }
 
 /*
- * Apply backend-specific initialization. Invoked after ActiveteDevice(),
+ * Apply backend-specific initialization. Invoked after ActivateDevice(),
  * i.e. after the driver successfully completed DEVICE_INIT and the device
  * is advertised.
  * @param dev the device
@@ -755,6 +783,7 @@ xf86DeleteInput(InputInfoPtr pInp, int flags)
 static int
 xf86InputDevicePostInit(DeviceIntPtr dev) {
     ApplyAccelerationSettings(dev);
+    ApplyTransformationMatrix(dev);
     return Success;
 }
 
@@ -1243,7 +1272,7 @@ xf86PostKeyEventM(DeviceIntPtr	device,
     DeviceIntPtr pointer;
 
     /* Some pointers send key events, paired device is wrong then. */
-    pointer = IsPointerDevice(device) ? device : GetPairedDevice(device);
+    pointer = GetMaster(device, POINTER_OR_FLOAT);
     if (miPointerGetScreen(pointer)) {
         int index = miPointerGetScreen(pointer)->myNum;
 
@@ -1317,38 +1346,19 @@ xf86ScaleAxis(int	Cx,
     return X;
 }
 
-/*
- * This function checks the given screen against the current screen and
- * makes changes if appropriate. It should be called from an XInput driver's
- * ReadInput function before any events are posted, if the device is screen
- * specific like a touch screen.
- */
-void
-xf86XInputSetScreen(InputInfoPtr	pInfo,
-		    int			screen_number,
-		    int			x,
-		    int			y)
-{
-    if (miPointerGetScreen(pInfo->dev) !=
-          screenInfo.screens[screen_number]) {
-	miPointerSetScreen(pInfo->dev, screen_number, x, y);
-    }
-}
-
-
-void
+Bool
 xf86InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, Atom label, int minval, int maxval,
 			   int resolution, int min_res, int max_res, int mode)
 {
     if (!dev || !dev->valuator)
-        return;
+        return FALSE;
 
-    InitValuatorAxisStruct(dev, axnum, label, minval, maxval, resolution, min_res,
-			   max_res, mode);
+    return InitValuatorAxisStruct(dev, axnum, label, minval, maxval, resolution, min_res,
+				  max_res, mode);
 }
 
 /*
- * Set the valuator values to be in synch with dix/event.c
+ * Set the valuator values to be in sync with dix/event.c
  * DefineInitialRootWindow().
  */
 void

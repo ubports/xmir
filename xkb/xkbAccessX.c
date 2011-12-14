@@ -37,6 +37,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XIproto.h>
 #include "inputstr.h"
 #include "eventstr.h"
+#include "inpututils.h"
 #include <xkbsrv.h>
 #if !defined(WIN32)
 #include <sys/time.h>
@@ -124,15 +125,11 @@ AccessXKeyboardEvent(DeviceIntPtr	keybd,
 				 Bool		isRepeat)
 {
     DeviceEvent event;
-    memset(&event, 0, sizeof(DeviceEvent));
-    event.header = ET_Internal;
+
+    init_device_event(&event, keybd, GetTimeInMillis());
     event.type = type;
     event.detail.key = keyCode;
-    event.time = GetTimeInMillis();
-    event.length = sizeof(DeviceEvent);
     event.key_repeat = isRepeat;
-    event.sourceid = keybd->id;
-    event.deviceid = keybd->id;
 
     if (xkbDebugFlags&0x8) {
 	DebugF("[xkb] AXKE: Key %d %s\n", keyCode,

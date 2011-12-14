@@ -3910,6 +3910,8 @@ AddScreen(
 	return -1;
     }
 
+    update_desktop_dimensions();
+
     dixRegisterPrivateKey(&cursorScreenDevPriv[i], PRIVATE_CURSOR, 0);
 
     return i;

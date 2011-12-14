@@ -37,10 +37,26 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *              Interface available to drivers                 *
  ***************************************************************/
 
+/**
+ * Scroll flags for ::SetScrollValuator.
+ */
+enum ScrollFlags {
+    SCROLL_FLAG_NONE            = 0,
+    /**
+     * Do not emulate legacy button events for valuator events on this axis.
+     */
+    SCROLL_FLAG_DONT_EMULATE    = (1 << 1),
+    /**
+     * This axis is the preferred axis for valuator emulation for this axis'
+     * scroll type.
+     */
+    SCROLL_FLAG_PREFERRED       = (1 << 2)
+};
+
 extern _X_EXPORT int InitProximityClassDeviceStruct(
 	DeviceIntPtr           /* dev */);
 
-extern _X_EXPORT void InitValuatorAxisStruct(
+extern _X_EXPORT Bool InitValuatorAxisStruct(
 	DeviceIntPtr           /* dev */,
 	int                    /* axnum */,
 	Atom                   /* label */,
@@ -50,6 +66,13 @@ extern _X_EXPORT void InitValuatorAxisStruct(
 	int                    /* min_res */,
 	int                    /* max_res */,
 	int                    /* mode */);
+
+extern _X_EXPORT Bool SetScrollValuator(
+	DeviceIntPtr           /* dev */,
+	int                    /* axnum */,
+	enum ScrollType        /* type */,
+	double                 /* increment */,
+	int                    /* flags */);
 
 /* Input device properties */
 extern _X_EXPORT void XIDeleteAllDeviceProperties(
@@ -103,7 +126,7 @@ extern _X_EXPORT void XIUnregisterPropertyHandler(
 );
 
 extern _X_EXPORT Atom XIGetKnownProperty(
-        char*                 name
+        const char*           name
 );
 
 extern _X_EXPORT DeviceIntPtr XIGetDevice(xEvent *ev);
@@ -136,7 +159,7 @@ typedef struct _XIClientRec {
 
 
 typedef struct _GrabParameters {
-    int                 grabtype;               /* GRABTYPE_CORE, etc. */
+    int                 grabtype;               /* CORE, etc. */
     unsigned int        ownerEvents;
     unsigned int        this_device_mode;
     unsigned int        other_devices_mode;
@@ -177,7 +200,7 @@ GrabButton(
 	DeviceIntPtr           /* modifier_device */,
 	int                    /* button */,
         GrabParameters*        /* param */,
-        GrabType               /* grabtype */,
+        enum InputLevel        /* grabtype */,
 	GrabMask*              /* eventMask */);
 
 extern int
@@ -187,7 +210,7 @@ GrabKey(
 	DeviceIntPtr           /* modifier_device */,
 	int                    /* key */,
         GrabParameters*        /* param */,
-        GrabType               /* grabtype */,
+        enum InputLevel        /* grabtype */,
 	GrabMask*              /* eventMask */);
 
 extern int
@@ -299,8 +322,7 @@ extern int
 XIShouldNotify(ClientPtr client, DeviceIntPtr dev);
 
 extern void
-XISendDeviceChangedEvent(DeviceIntPtr device, DeviceIntPtr master,
-                         DeviceChangedEvent *dce);
+XISendDeviceChangedEvent(DeviceIntPtr device, DeviceChangedEvent *dce);
 
 extern int
 XISetEventMask(DeviceIntPtr dev, WindowPtr win, ClientPtr client,

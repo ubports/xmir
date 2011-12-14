@@ -339,6 +339,7 @@ extern _X_EXPORT void NoticeEventTime(InternalEvent *ev);
 extern void EnqueueEvent(
     InternalEvent * /* ev */,
     DeviceIntPtr  /* device */);
+extern void PlayReleasedEvents(void);
 
 extern void ActivatePointerGrab(
     DeviceIntPtr /* mouse */,
@@ -398,6 +399,11 @@ extern int DeliverDeviceEvents(
     GrabPtr /* grab */,
     WindowPtr /* stopAt */,
     DeviceIntPtr /* dev */);
+
+extern int DeliverOneGrabbedEvent(
+    InternalEvent* /* event*/,
+    DeviceIntPtr /* dev */,
+    enum InputLevel /* level */);
 
 extern void InitializeSprite(
     DeviceIntPtr /* pDev */,
@@ -571,8 +577,8 @@ typedef struct {
 
 extern int XItoCoreType(int xi_type);
 extern Bool DevHasCursor(DeviceIntPtr pDev);
-extern Bool _X_EXPORT IsPointerDevice( DeviceIntPtr dev);
-extern Bool _X_EXPORT IsKeyboardDevice(DeviceIntPtr dev);
+extern _X_EXPORT Bool IsPointerDevice(DeviceIntPtr dev);
+extern _X_EXPORT Bool IsKeyboardDevice(DeviceIntPtr dev);
 extern Bool IsPointerEvent(InternalEvent *event);
 extern _X_EXPORT Bool IsMaster(DeviceIntPtr dev);
 extern _X_EXPORT Bool IsFloating(DeviceIntPtr dev);

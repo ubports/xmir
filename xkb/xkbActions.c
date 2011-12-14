@@ -344,15 +344,18 @@ _XkbFilterLockState(	XkbSrvInfoPtr	xkbi,
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 0;
-	filter->priv = 0;
+	filter->priv = xkbi->state.locked_mods&pAction->mods.mask;
 	filter->filter = _XkbFilterLockState;
 	filter->upAction = *pAction;
-	xkbi->state.locked_mods^= pAction->mods.mask;
+	if (!(filter->upAction.mods.flags&XkbSA_LockNoLock))
+	    xkbi->state.locked_mods|= pAction->mods.mask;
 	xkbi->setMods = pAction->mods.mask;
     }
     else if (filter->keycode==keycode) {
 	filter->active = 0;
 	xkbi->clearMods = filter->upAction.mods.mask;
+	if (!(filter->upAction.mods.flags&XkbSA_LockNoUnlock))
+	    xkbi->state.locked_mods&= ~filter->priv;
     }
     return 1;
 }
@@ -1200,7 +1203,7 @@ xkbDeviceInfoPtr xkbPrivPtr = XKBDEVICEINFO(dev);
 	if (keyEvent)
             tmpdev = dev;
         else
-            tmpdev = GetPairedDevice(dev);
+            tmpdev = GetMaster(dev, POINTER_OR_FLOAT);
 
         UNWRAP_PROCESS_INPUT_PROC(tmpdev,xkbPrivPtr, backupproc);
         dev->public.processInputProc((InternalEvent*)event, tmpdev);

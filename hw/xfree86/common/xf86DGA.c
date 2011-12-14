@@ -1016,7 +1016,7 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, DGAEvent *event, DeviceIntPtr keybd)
 {
     KeyClassPtr	    keyc = keybd->key;
     DGAScreenPtr    pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
-    DeviceIntPtr    pointer = GetPairedDevice(keybd);
+    DeviceIntPtr    pointer = GetMaster(keybd, POINTER_OR_FLOAT);
     DeviceEvent     ev;
 
     memset(&ev, 0, sizeof(ev));
@@ -1037,7 +1037,7 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, DGAEvent *event, DeviceIntPtr keybd)
     if (pScreenPriv->client)
     {
         dgaEvent de;
-        de.u.u.type = *XDGAEventBase + GetCoreType((InternalEvent*)&ev);
+        de.u.u.type = *XDGAEventBase + GetCoreType(ev.type);
         de.u.u.detail = event->detail;
         de.u.event.time = event->time;
         de.u.event.dx = event->dx;
@@ -1091,7 +1091,7 @@ DGAProcessPointerEvent (ScreenPtr pScreen, DGAEvent *event, DeviceIntPtr mouse)
         dgaEvent        de;
         int		coreEquiv;
 
-        coreEquiv = GetCoreType((InternalEvent*)&ev);
+        coreEquiv = GetCoreType(ev.type);
 
         de.u.u.type = *XDGAEventBase + coreEquiv;
         de.u.u.detail = event->detail;

@@ -129,7 +129,7 @@ static void reply_XIQueryDevice_data(ClientPtr client, int len, char *data, void
                 dev = devices.mouse;
                 assert(info->use == XISlavePointer);
                 assert(info->attachment == devices.vcp->id);
-                assert(info->num_classes == 3); /* 2 axes + button */
+                assert(info->num_classes == 7); /* 4 axes + button + 2 scroll*/
                 break;
             case 5:  /* keyboard */
                 dev = devices.kbd;
@@ -185,11 +185,50 @@ static void reply_XIQueryDevice_data(ClientPtr client, int len, char *data, void
                         }
                         break;
                     }
-                case 2: /* VCP and mouse have the same properties */
                 case 4:
                     {
                         assert(any->type == XIButtonClass ||
-                                any->type == XIValuatorClass);
+                               any->type == XIValuatorClass ||
+                               any->type == XIScrollClass);
+
+                        if (any->type == XIScrollClass)
+                        {
+                            xXIScrollInfo *si = (xXIScrollInfo*)any;
+
+                            if (client->swapped)
+                            {
+                                char n;
+
+                                swaps(&si->number, n);
+                                swaps(&si->scroll_type, n);
+                                swapl(&si->increment.integral, n);
+                                swapl(&si->increment.frac, n);
+                            }
+                            assert(si->length == 6);
+                            assert(si->number == 2 || si->number == 3);
+                            if (si->number == 2) {
+                                assert(si->scroll_type == XIScrollTypeVertical);
+                                assert(!si->flags);
+                            }
+                            if (si->number == 3) {
+                                assert(si->scroll_type == XIScrollTypeHorizontal);
+                                assert(si->flags & XIScrollFlagPreferred);
+                                assert(!(si->flags & ~XIScrollFlagPreferred));
+                            }
+
+                            assert(si->increment.integral == si->number);
+                            /* protocol-common.c sets up increments of 2.4 and 3.5 */
+                            assert(si->increment.frac > 0.3  * (1ULL << 32));
+                            assert(si->increment.frac < 0.6  * (1ULL << 32));
+                        }
+
+                    }
+                    /* fall through */
+                case 2: /* VCP and mouse have the same properties except for scroll */
+                    {
+                        if (info->deviceid == 2 ) /* VCP */
+                            assert(any->type == XIButtonClass ||
+                                   any->type == XIValuatorClass);
 
                         if (any->type == XIButtonClass)
                         {
@@ -219,8 +258,10 @@ static void reply_XIQueryDevice_data(ClientPtr client, int len, char *data, void
                             }
 
                             assert(vi->length == 11);
-                            assert(vi->number == 0 ||
-                                     vi->number == 1);
+                            assert(vi->number >= 0 && vi->number < 4);
+                            if (info->deviceid == 2) /* VCP */
+                                assert(vi->number < 2);
+
                             assert(vi->mode == XIModeRelative);
                             /* device was set up as relative, so standard
                              * values here. */

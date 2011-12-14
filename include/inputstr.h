@@ -57,7 +57,7 @@ SOFTWARE.
 #include "geext.h"
 #include "privates.h"
 
-#define BitIsOn(ptr, bit) (!!(((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7))))
+#define BitIsOn(ptr, bit) (!!(((const BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7))))
 #define SetBit(ptr, bit)  (((BYTE *) (ptr))[(bit)>>3] |= (1 << ((bit) & 7)))
 #define ClearBit(ptr, bit) (((BYTE *)(ptr))[(bit)>>3] &= ~(1 << ((bit) & 7)))
 extern _X_EXPORT int CountBits(const uint8_t *mask, int len);
@@ -72,7 +72,17 @@ extern _X_EXPORT int CountBits(const uint8_t *mask, int len);
  * this number here is bumped.
  */
 #define XI2LASTEVENT    17 /* XI_RawMotion */
-#define XI2MASKSIZE     ((XI2LASTEVENT + 7)/8) /* no of bits for masks */
+#define XI2MASKSIZE     ((XI2LASTEVENT >> 3) + 1) /* no of bytes for masks */
+
+/**
+ * Scroll types for ::SetScrollValuator and the scroll type in the
+ * ::ScrollInfoPtr.
+ */
+enum ScrollType {
+    SCROLL_TYPE_NONE = 0,           /**< Not a scrolling valuator */
+    SCROLL_TYPE_VERTICAL = 8,
+    SCROLL_TYPE_HORIZONTAL = 9,
+};
 
 /**
  * This struct stores the core event mask for each client except the client
@@ -108,7 +118,7 @@ typedef struct _InputClients {
     XID			resource; /**< id for putting into resource manager */
     Mask		mask[EMASKSIZE]; /**< Actual XI event mask, deviceid is index */
     /** XI2 event masks. One per device, each bit is a mask of (1 << type) */
-    unsigned char       xi2mask[EMASKSIZE][XI2MASKSIZE];
+    struct _XI2Mask     *xi2mask;
 } InputClients;
 
 /**
@@ -138,7 +148,7 @@ typedef struct _OtherInputMasks {
     /** The clients that selected for events */
     InputClientsPtr	inputClients;
     /* XI2 event masks. One per device, each bit is a mask of (1 << type) */
-    unsigned char       xi2mask[EMASKSIZE][XI2MASKSIZE];
+    struct _XI2Mask     *xi2mask;
 } OtherInputMasks;
 
 /*
@@ -157,16 +167,10 @@ typedef struct _DetailRec {		/* Grab details may be bit masks */
     Mask                *pMask;
 } DetailRec;
 
-typedef enum {
-    GRABTYPE_CORE,
-    GRABTYPE_XI,
-    GRABTYPE_XI2
-} GrabType;
-
 union _GrabMask {
     Mask core;
     Mask xi;
-    char xi2mask[EMASKSIZE][XI2MASKSIZE];
+    struct _XI2Mask *xi2mask;
 };
 
 /**
@@ -190,7 +194,7 @@ typedef struct _GrabRec {
     unsigned		ownerEvents:1;
     unsigned		keyboardMode:1;
     unsigned		pointerMode:1;
-    GrabType		grabtype;
+    enum InputLevel	grabtype;
     CARD8		type;		/* event type */
     DetailRec		modifiersDetail;
     DeviceIntPtr	modifierDevice;
@@ -200,7 +204,7 @@ typedef struct _GrabRec {
     Mask		eventMask;
     Mask                deviceMask;     
     /* XI2 event masks. One per device, each bit is a mask of (1 << type) */
-    unsigned char       xi2mask[EMASKSIZE][XI2MASKSIZE];
+    struct _XI2Mask *xi2mask;
 } GrabRec;
 
 /**
@@ -252,6 +256,12 @@ typedef struct _KeyClassRec {
     struct _XkbSrvInfo *xkbInfo;
 } KeyClassRec, *KeyClassPtr;
 
+typedef struct _ScrollInfo {
+    enum ScrollType	type;
+    double		increment;
+    int			flags;
+} ScrollInfo, *ScrollInfoPtr;
+
 typedef struct _AxisInfo {
     int		resolution;
     int		min_resolution;
@@ -260,6 +270,7 @@ typedef struct _AxisInfo {
     int		max_value;
     Atom	label;
     CARD8	mode;
+    ScrollInfo  scroll;
 } AxisInfo, *AxisInfoPtr;
 
 typedef struct _ValuatorAccelerationRec {
@@ -283,6 +294,8 @@ typedef struct _ValuatorClassRec {
     unsigned short	  numAxes;
     double		  *axisVal; /* always absolute, but device-coord system */
     ValuatorAccelerationRec	accelScheme;
+    int                   h_scroll_axis; /* horiz smooth-scrolling axis */
+    int                   v_scroll_axis; /* vert smooth-scrolling axis */
 } ValuatorClassRec;
 
 typedef struct _ButtonClassRec {
@@ -432,7 +445,7 @@ typedef struct _GrabInfoRec {
     TimeStamp	    grabTime;
     Bool            fromPassiveGrab;    /* true if from passive grab */
     Bool            implicitGrab;       /* implicit from ButtonPress */
-    GrabRec         activeGrab;
+    GrabPtr         activeGrab;
     GrabPtr         grab;
     CARD8           activatingKey;
     void	    (*ActivateGrab) (
@@ -472,7 +485,10 @@ typedef struct _SpriteInfoRec {
 #define MASTER_POINTER          1
 #define MASTER_KEYBOARD         2
 #define SLAVE                   3
-#define MASTER_ATTACHED         4  /* special type for GetMaster */
+/* special types for GetMaster */
+#define MASTER_ATTACHED         4       /* Master for this device */
+#define KEYBOARD_OR_FLOAT       5       /* Keyboard master for this device or this device if floating */
+#define POINTER_OR_FLOAT        6       /* Pointer master for this device or this device if floating */
 
 typedef struct _DeviceIntRec {
     DeviceRec	public;
@@ -512,16 +528,17 @@ typedef struct _DeviceIntRec {
     DeviceIntPtr        lastSlave;  /* last slave device used */
 
     /* last valuator values recorded, not posted to client;
-     * for slave devices, valuators is in device coordinates
-     * for master devices, valuators is in screen coordinates
+     * for slave devices, valuators is in device coordinates, mapped to the
+     * desktop
+     * for master devices, valuators is in desktop coordinates.
      * see dix/getevents.c
      * remainder supports acceleration
      */
     struct {
-        int             valuators[MAX_VALUATORS];
-        float           remainder[MAX_VALUATORS];
+        double          valuators[MAX_VALUATORS];
         int             numValuators;
         DeviceIntPtr    slave;
+        ValuatorMask    *scroll;
     } last;
 
     /* Input device property handling. */
@@ -552,7 +569,7 @@ extern _X_EXPORT InputInfo inputInfo;
 /* for keeping the events for devices grabbed synchronously */
 typedef struct _QdEvent *QdEventPtr;
 typedef struct _QdEvent {
-    QdEventPtr		next;
+    struct list		next;
     DeviceIntPtr	device;
     ScreenPtr		pScreen;	/* what screen the pointer was on */
     unsigned long	months;		/* milliseconds is in the event */
@@ -568,8 +585,8 @@ typedef struct _QdEvent {
  * replayed and processed as if they would come from the device directly.
  */
 typedef struct _EventSyncInfo {
-    QdEventPtr          pending, /**<  list of queued events */
-                        *pendtail; /**< last event in list */
+    struct list         pending;
+
     /** The device to replay events for. Only set in AllowEvents(), in which
      * case it is set to the device specified in the request. */
     DeviceIntPtr        replayDev;      /* kludgy rock to put flag for */
@@ -598,5 +615,11 @@ static inline WindowPtr DeepestSpriteWin(SpritePtr sprite)
     assert(sprite->spriteTraceGood > 0);
     return sprite->spriteTrace[sprite->spriteTraceGood - 1];
 }
+
+struct _XI2Mask {
+    unsigned char **masks;      /* event mask in masks[deviceid][event type byte] */
+    size_t nmasks;              /* number of masks */
+    size_t mask_size;           /* size of each mask in bytes */
+};
 
 #endif /* INPUTSTRUCT_H */

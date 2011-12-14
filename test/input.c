@@ -40,6 +40,7 @@
 #include "dixgrabs.h"
 #include "eventstr.h"
 #include "inpututils.h"
+#include "mi.h"
 #include "assert.h"
 
 /**
@@ -52,6 +53,7 @@ static void dix_init_valuators(void)
 {
     DeviceIntRec dev;
     ValuatorClassPtr val;
+    AxisInfoPtr axis;
     const int num_axes = 2;
     int i;
     Atom atoms[MAX_VALUATORS] = { 0 };
@@ -78,6 +80,62 @@ static void dix_init_valuators(void)
     }
 
     assert(dev.last.numValuators == num_axes);
+
+    /* invalid increment */
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_VERTICAL, 0.0, SCROLL_FLAG_NONE) == FALSE);
+    /* invalid type */
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_VERTICAL - 1, 1.0, SCROLL_FLAG_NONE) == FALSE);
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_HORIZONTAL + 1, 1.0, SCROLL_FLAG_NONE) == FALSE);
+    /* invalid axisnum */
+    assert(SetScrollValuator(&dev, 2, SCROLL_TYPE_HORIZONTAL, 1.0, SCROLL_FLAG_NONE) == FALSE);
+
+    /* valid */
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_VERTICAL, 3.0, SCROLL_FLAG_NONE) == TRUE);
+    axis = &dev.valuator->axes[0];
+    assert(axis->scroll.increment == 3.0);
+    assert(axis->scroll.type == SCROLL_TYPE_VERTICAL);
+    assert(axis->scroll.flags == 0);
+
+    /* valid */
+    assert(SetScrollValuator(&dev, 1, SCROLL_TYPE_HORIZONTAL, 2.0, SCROLL_FLAG_NONE) == TRUE);
+    axis = &dev.valuator->axes[1];
+    assert(axis->scroll.increment == 2.0);
+    assert(axis->scroll.type == SCROLL_TYPE_HORIZONTAL);
+    assert(axis->scroll.flags == 0);
+
+    /* can add another non-preffered axis */
+    assert(SetScrollValuator(&dev, 1, SCROLL_TYPE_VERTICAL, 5.0, SCROLL_FLAG_NONE) == TRUE);
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_HORIZONTAL, 5.0, SCROLL_FLAG_NONE) == TRUE);
+
+    /* can overwrite with Preferred */
+    assert(SetScrollValuator(&dev, 1, SCROLL_TYPE_VERTICAL, 5.5, SCROLL_FLAG_PREFERRED) == TRUE);
+    axis = &dev.valuator->axes[1];
+    assert(axis->scroll.increment == 5.5);
+    assert(axis->scroll.type == SCROLL_TYPE_VERTICAL);
+    assert(axis->scroll.flags == SCROLL_FLAG_PREFERRED);
+
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_HORIZONTAL, 8.8, SCROLL_FLAG_PREFERRED) == TRUE);
+    axis = &dev.valuator->axes[0];
+    assert(axis->scroll.increment == 8.8);
+    assert(axis->scroll.type == SCROLL_TYPE_HORIZONTAL);
+    assert(axis->scroll.flags == SCROLL_FLAG_PREFERRED);
+
+    /* can overwrite as none */
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_NONE, 5.0,
+                SCROLL_FLAG_NONE) == TRUE);
+    axis = &dev.valuator->axes[0];
+    assert(axis->scroll.type == SCROLL_TYPE_NONE);
+
+    /* can overwrite axis with new settings */
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_VERTICAL, 5.0, SCROLL_FLAG_NONE) == TRUE);
+    axis = &dev.valuator->axes[0];
+    assert(axis->scroll.type == SCROLL_TYPE_VERTICAL);
+    assert(axis->scroll.increment == 5.0);
+    assert(axis->scroll.flags == SCROLL_FLAG_NONE);
+    assert(SetScrollValuator(&dev, 0, SCROLL_TYPE_VERTICAL, 3.0, SCROLL_FLAG_NONE) == TRUE);
+    assert(axis->scroll.type == SCROLL_TYPE_VERTICAL);
+    assert(axis->scroll.increment == 3.0);
+    assert(axis->scroll.flags == SCROLL_FLAG_NONE);
 }
 
 /* just check the known success cases, and that error cases set the client's
@@ -90,7 +148,7 @@ static void dix_check_grab_values(void)
 
     memset(&client, 0, sizeof(client));
 
-    param.grabtype = GRABTYPE_CORE;
+    param.grabtype = CORE;
     param.this_device_mode = GrabModeSync;
     param.other_devices_mode = GrabModeSync;
     param.modifiers = AnyModifier;
@@ -473,22 +531,22 @@ static void dix_grab_matching(void)
     memset(&b, 0, sizeof(b));
 
     /* different grabtypes must fail */
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = CORE;
+    b.grabtype = XI2;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI;
+    b.grabtype = XI2;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = XI;
+    b.grabtype = CORE;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
@@ -510,8 +568,8 @@ static void dix_grab_matching(void)
 
     inputInfo.all_devices = &xi_all_devices;
     inputInfo.all_master_devices = &xi_all_master_devices;
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.device = &dev1;
     b.device = &dev2;
 
@@ -540,8 +598,8 @@ static void dix_grab_matching(void)
     assert(rc == FALSE);
 
     /* ignoreDevice FALSE must fail for different devices for CORE and XI */
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     a.device = &dev1;
     b.device = &dev2;
     a.modifierDevice = &dev1;
@@ -549,8 +607,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     a.device = &dev1;
     b.device = &dev2;
     a.modifierDevice = &dev1;
@@ -560,8 +618,8 @@ static void dix_grab_matching(void)
 
     /* ignoreDevice FALSE must fail for different modifier devices for CORE
      * and XI */
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     a.device = &dev1;
     b.device = &dev1;
     a.modifierDevice = &dev1;
@@ -569,8 +627,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     a.device = &dev1;
     b.device = &dev1;
     a.modifierDevice = &dev1;
@@ -579,8 +637,8 @@ static void dix_grab_matching(void)
     assert(rc == FALSE);
 
     /* different event type must fail */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.device = &dev1;
     b.device = &dev1;
     a.modifierDevice = &dev1;
@@ -592,8 +650,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&a, &b, TRUE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     a.device = &dev1;
     b.device = &dev1;
     a.modifierDevice = &dev1;
@@ -605,8 +663,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&a, &b, TRUE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     a.device = &dev1;
     b.device = &dev1;
     a.modifierDevice = &dev1;
@@ -619,8 +677,8 @@ static void dix_grab_matching(void)
     assert(rc == FALSE);
 
     /* different modifiers must fail */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.device = &dev1;
     b.device = &dev1;
     a.modifierDevice = &dev1;
@@ -634,23 +692,23 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
     /* AnyModifier must fail for XI2 */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.modifiersDetail.exact = AnyModifier;
     b.modifiersDetail.exact = 1;
     rc = GrabMatchesSecond(&a, &b, FALSE);
@@ -659,8 +717,8 @@ static void dix_grab_matching(void)
     assert(rc == FALSE);
 
     /* XIAnyModifier must fail for CORE and XI */
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     a.modifiersDetail.exact = XIAnyModifier;
     b.modifiersDetail.exact = 1;
     rc = GrabMatchesSecond(&a, &b, FALSE);
@@ -668,8 +726,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     a.modifiersDetail.exact = XIAnyModifier;
     b.modifiersDetail.exact = 1;
     rc = GrabMatchesSecond(&a, &b, FALSE);
@@ -678,8 +736,8 @@ static void dix_grab_matching(void)
     assert(rc == FALSE);
 
     /* different detail must fail */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.detail.exact = 1;
     b.detail.exact = 2;
     a.modifiersDetail.exact = 1;
@@ -689,23 +747,23 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
     /* detail of AnyModifier must fail */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.detail.exact = AnyModifier;
     b.detail.exact = 1;
     a.modifiersDetail.exact = 1;
@@ -715,23 +773,23 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
     /* detail of XIAnyModifier must fail */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.detail.exact = XIAnyModifier;
     b.detail.exact = 1;
     a.modifiersDetail.exact = 1;
@@ -741,23 +799,23 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     rc = GrabMatchesSecond(&a, &b, FALSE);
     assert(rc == FALSE);
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == FALSE);
 
     /* XIAnyModifier or AnyModifer must succeed */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.detail.exact = 1;
     b.detail.exact = 1;
     a.modifiersDetail.exact = XIAnyModifier;
@@ -767,8 +825,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == TRUE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     a.detail.exact = 1;
     b.detail.exact = 1;
     a.modifiersDetail.exact = AnyModifier;
@@ -778,8 +836,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == TRUE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     a.detail.exact = 1;
     b.detail.exact = 1;
     a.modifiersDetail.exact = AnyModifier;
@@ -790,8 +848,8 @@ static void dix_grab_matching(void)
     assert(rc == TRUE);
 
     /* AnyKey or XIAnyKeycode must succeed */
-    a.grabtype = GRABTYPE_XI2;
-    b.grabtype = GRABTYPE_XI2;
+    a.grabtype = XI2;
+    b.grabtype = XI2;
     a.detail.exact = XIAnyKeycode;
     b.detail.exact = 1;
     a.modifiersDetail.exact = 1;
@@ -801,8 +859,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == TRUE);
 
-    a.grabtype = GRABTYPE_CORE;
-    b.grabtype = GRABTYPE_CORE;
+    a.grabtype = CORE;
+    b.grabtype = CORE;
     a.detail.exact = AnyKey;
     b.detail.exact = 1;
     a.modifiersDetail.exact = 1;
@@ -812,8 +870,8 @@ static void dix_grab_matching(void)
     rc = GrabMatchesSecond(&b, &a, FALSE);
     assert(rc == TRUE);
 
-    a.grabtype = GRABTYPE_XI;
-    b.grabtype = GRABTYPE_XI;
+    a.grabtype = XI;
+    b.grabtype = XI;
     a.detail.exact = AnyKey;
     b.detail.exact = 1;
     a.modifiersDetail.exact = 1;
@@ -1089,12 +1147,16 @@ static void dix_input_valuator_masks(void)
 {
     ValuatorMask *mask = NULL, *copy;
     int nvaluators = MAX_VALUATORS;
-    int valuators[nvaluators];
+    double valuators[nvaluators];
+    int val_ranged[nvaluators];
     int i;
     int first_val, num_vals;
 
     for (i = 0; i < nvaluators; i++)
-        valuators[i] = i;
+    {
+        valuators[i] = i + 0.5;
+        val_ranged[i] = i;
+    }
 
     mask = valuator_mask_new(nvaluators);
     assert(mask != NULL);
@@ -1104,9 +1166,10 @@ static void dix_input_valuator_masks(void)
     for (i = 0; i < nvaluators; i++)
     {
         assert(!valuator_mask_isset(mask, i));
-        valuator_mask_set(mask, i, valuators[i]);
+        valuator_mask_set_double(mask, i, valuators[i]);
         assert(valuator_mask_isset(mask, i));
-        assert(valuator_mask_get(mask, i) == valuators[i]);
+        assert(valuator_mask_get(mask, i) == trunc(valuators[i]));
+        assert(valuator_mask_get_double(mask, i) == valuators[i]);
         assert(valuator_mask_size(mask) == i + 1);
         assert(valuator_mask_num_valuators(mask) == i + 1);
     }
@@ -1132,17 +1195,24 @@ static void dix_input_valuator_masks(void)
     first_val = 5;
     num_vals = 6;
 
-    valuator_mask_set_range(mask, first_val, num_vals, valuators);
+    valuator_mask_set_range(mask, first_val, num_vals, val_ranged);
     assert(valuator_mask_size(mask) == first_val + num_vals);
     assert(valuator_mask_num_valuators(mask) == num_vals);
     for (i = 0; i < nvaluators; i++)
     {
+        double val;
         if (i < first_val || i >= first_val + num_vals)
+        {
             assert(!valuator_mask_isset(mask, i));
-        else
+            assert(!valuator_mask_fetch_double(mask, i, &val));
+        } else
         {
             assert(valuator_mask_isset(mask, i));
-            assert(valuator_mask_get(mask, i) == valuators[i - first_val]);
+            assert(valuator_mask_get(mask, i) == val_ranged[i - first_val]);
+            assert(valuator_mask_get_double(mask, i) ==
+                    val_ranged[i - first_val]);
+            assert(valuator_mask_fetch_double(mask, i, &val));
+            assert(val_ranged[i - first_val] == val);
         }
     }
 
@@ -1154,8 +1224,18 @@ static void dix_input_valuator_masks(void)
 
     for (i = 0; i < nvaluators; i++)
     {
+        double a, b;
         assert(valuator_mask_isset(mask, i) == valuator_mask_isset(copy, i));
+
+        if (!valuator_mask_isset(mask, i))
+            continue;
+
         assert(valuator_mask_get(mask, i) == valuator_mask_get(copy, i));
+        assert(valuator_mask_get_double(mask, i) ==
+                valuator_mask_get_double(copy, i));
+        assert(valuator_mask_fetch_double(mask, i, &a));
+        assert(valuator_mask_fetch_double(copy, i, &b));
+        assert(a == b);
     }
 
     valuator_mask_free(&mask);
@@ -1234,8 +1314,348 @@ static void dix_valuator_alloc(void)
     free(v);
 }
 
+static void dix_get_master(void)
+{
+    DeviceIntRec vcp, vck;
+    DeviceIntRec ptr, kbd;
+    DeviceIntRec floating;
+    SpriteInfoRec vcp_sprite, vck_sprite;
+    SpriteInfoRec ptr_sprite, kbd_sprite;
+    SpriteInfoRec floating_sprite;
+
+    memset(&vcp, 0, sizeof(vcp));
+    memset(&vck, 0, sizeof(vck));
+    memset(&ptr, 0, sizeof(ptr));
+    memset(&kbd, 0, sizeof(kbd));
+    memset(&floating, 0, sizeof(floating));
+
+    memset(&vcp_sprite, 0, sizeof(vcp_sprite));
+    memset(&vck_sprite, 0, sizeof(vck_sprite));
+    memset(&ptr_sprite, 0, sizeof(ptr_sprite));
+    memset(&kbd_sprite, 0, sizeof(kbd_sprite));
+    memset(&floating_sprite, 0, sizeof(floating_sprite));
+
+    vcp.type = MASTER_POINTER;
+    vck.type = MASTER_KEYBOARD;
+    ptr.type = SLAVE;
+    kbd.type = SLAVE;
+    floating.type = SLAVE;
+
+    vcp.spriteInfo = &vcp_sprite;
+    vck.spriteInfo = &vck_sprite;
+    ptr.spriteInfo = &ptr_sprite;
+    kbd.spriteInfo = &kbd_sprite;
+    floating.spriteInfo = &floating_sprite;
+
+    vcp_sprite.paired = &vck;
+    vck_sprite.paired = &vcp;
+    ptr_sprite.paired = &vcp;
+    kbd_sprite.paired = &vck;
+    floating_sprite.paired = &floating;
+
+    vcp_sprite.spriteOwner = TRUE;
+    floating_sprite.spriteOwner = TRUE;
+
+    ptr.master = &vcp;
+    kbd.master = &vck;
+
+    assert(GetPairedDevice(&vcp) == &vck);
+    assert(GetPairedDevice(&vck) == &vcp);
+    assert(GetMaster(&ptr, MASTER_POINTER) == &vcp);
+    assert(GetMaster(&ptr, MASTER_KEYBOARD) == &vck);
+    assert(GetMaster(&kbd, MASTER_POINTER) == &vcp);
+    assert(GetMaster(&kbd, MASTER_KEYBOARD) == &vck);
+    assert(GetMaster(&ptr, MASTER_ATTACHED) == &vcp);
+    assert(GetMaster(&kbd, MASTER_ATTACHED) == &vck);
+
+    assert(GetPairedDevice(&floating) == &floating);
+    assert(GetMaster(&floating, MASTER_POINTER) == NULL);
+    assert(GetMaster(&floating, MASTER_KEYBOARD) == NULL);
+    assert(GetMaster(&floating, MASTER_ATTACHED) == NULL);
+
+    assert(GetMaster(&vcp, POINTER_OR_FLOAT) == &vcp);
+    assert(GetMaster(&vck, POINTER_OR_FLOAT) == &vcp);
+    assert(GetMaster(&ptr, POINTER_OR_FLOAT) == &vcp);
+    assert(GetMaster(&kbd, POINTER_OR_FLOAT) == &vcp);
+
+    assert(GetMaster(&vcp, KEYBOARD_OR_FLOAT) == &vck);
+    assert(GetMaster(&vck, KEYBOARD_OR_FLOAT) == &vck);
+    assert(GetMaster(&ptr, KEYBOARD_OR_FLOAT) == &vck);
+    assert(GetMaster(&kbd, KEYBOARD_OR_FLOAT) == &vck);
+
+    assert(GetMaster(&floating, KEYBOARD_OR_FLOAT) == &floating);
+    assert(GetMaster(&floating, POINTER_OR_FLOAT) == &floating);
+}
+
+
+static void
+_test_double_fp16_values(double orig_d)
+{
+    FP1616 first_fp16, final_fp16;
+    double final_d;
+
+    if (orig_d > 0x7FFF) {
+        printf("Test out of range\n");
+        assert(0);
+    }
+
+    first_fp16 = double_to_fp1616(orig_d);
+    final_d = fp1616_to_double(first_fp16);
+    final_fp16 = double_to_fp1616(final_d);
+
+    /* {
+     *    char first_fp16_s[64];
+     *    char final_fp16_s[64];
+     *    snprintf(first_fp16_s, sizeof(first_fp16_s), "%d + %u * 2^-16", (first_fp16 & 0xffff0000) >> 16, first_fp16 & 0xffff);
+     *    snprintf(final_fp16_s, sizeof(final_fp16_s), "%d + %u * 2^-16", (final_fp16 & 0xffff0000) >> 16, final_fp16 & 0xffff);
+     *
+     *    printf("FP16: original double: %f first fp16: %s, re-encoded double: %f, final fp16: %s\n", orig_d, first_fp16_s, final_d, final_fp16_s);
+     * }
+     */
+
+    /* since we lose precision, we only do rough range testing */
+    assert(final_d > orig_d - 0.1);
+    assert(final_d < orig_d + 0.1);
+
+    assert(memcmp(&first_fp16, &final_fp16, sizeof(FP1616)) == 0);
+
+    if (orig_d > 0)
+        _test_double_fp16_values(-orig_d);
+}
+
+static void
+_test_double_fp32_values(double orig_d)
+{
+    FP3232 first_fp32, final_fp32;
+    double final_d;
+
+    if (orig_d > 0x7FFFFFFF) {
+        printf("Test out of range\n");
+        assert(0);
+    }
+
+    first_fp32 = double_to_fp3232(orig_d);
+    final_d = fp3232_to_double(first_fp32);
+    final_fp32 = double_to_fp3232(final_d);
+
+    /* {
+     *     char first_fp32_s[64];
+     *     char final_fp32_s[64];
+     *     snprintf(first_fp32_s, sizeof(first_fp32_s), "%d + %u * 2^-32", first_fp32.integral, first_fp32.frac);
+     *     snprintf(final_fp32_s, sizeof(final_fp32_s), "%d + %u * 2^-32", first_fp32.integral, final_fp32.frac);
+     *
+     *     printf("FP32: original double: %f first fp32: %s, re-encoded double: %f, final fp32: %s\n", orig_d, first_fp32_s, final_d, final_fp32_s);
+     * }
+     */
+
+    /* since we lose precision, we only do rough range testing */
+    assert(final_d > orig_d - 0.1);
+    assert(final_d < orig_d + 0.1);
+
+    assert(memcmp(&first_fp32, &final_fp32, sizeof(FP3232)) == 0);
+
+    if (orig_d > 0)
+        _test_double_fp32_values(-orig_d);
+}
+
+static void
+dix_double_fp_conversion(void)
+{
+    uint32_t i;
+    printf("Testing double to FP1616/FP3232 conversions\n");
+
+    _test_double_fp16_values(0);
+    for (i = 1; i < 0x7FFF; i <<= 1) {
+        double val;
+
+        val = i;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        /* and some pseudo-random floating points */
+        val = i - 0.00382;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.00382;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.05234;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.12342;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.27583;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.50535;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.72342;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+
+        val = i + 0.80408;
+        _test_double_fp16_values(val);
+        _test_double_fp32_values(val);
+    }
+
+    for (i = 0x7FFFF; i < 0x7FFFFFFF; i <<= 1) {
+        _test_double_fp32_values(i);
+        /* and a few more random floating points, obtained
+         * by faceplanting into the numpad repeatedly */
+        _test_double_fp32_values(i + 0.010177);
+        _test_double_fp32_values(i + 0.213841);
+        _test_double_fp32_values(i + 0.348720);
+        _test_double_fp32_values(i + 0.472020);
+        _test_double_fp32_values(i + 0.572020);
+        _test_double_fp32_values(i + 0.892929);
+    }
+}
+
+/* The mieq test verifies that events added to the queue come out in the same
+ * order that they went in.
+ */
+static uint32_t mieq_test_event_last_processed;
+
+static void
+mieq_test_event_handler(int screenNum, InternalEvent *ie, DeviceIntPtr dev) {
+    RawDeviceEvent *e = (RawDeviceEvent *)ie;
+
+    assert(e->type == ET_RawMotion);
+    assert(e->flags > mieq_test_event_last_processed);
+    mieq_test_event_last_processed = e->flags;
+}
+
+static void _mieq_test_generate_events(uint32_t start, uint32_t count) {
+    count += start;
+    while (start < count) {
+        RawDeviceEvent e = {0};
+        e.header = ET_Internal;
+        e.type = ET_RawMotion;
+        e.length = sizeof(e);
+        e.time = GetTimeInMillis();
+        e.flags = start;
+
+        mieqEnqueue(NULL, (InternalEvent*)&e);
+
+        start++;
+    }
+}
+
+#define mieq_test_generate_events(c) { _mieq_test_generate_events(next, c); next += c; }
+
+static void
+mieq_test(void) {
+    uint32_t next = 1;
+
+    mieq_test_event_last_processed = 0;
+    mieqInit();
+    mieqSetHandler(ET_RawMotion, mieq_test_event_handler);
+
+    /* Enough to fit the buffer but trigger a grow */
+    mieq_test_generate_events(180);
+
+    /* We should resize to 512 now */
+    mieqProcessInputEvents();
+
+    /* Some should now get dropped */
+    mieq_test_generate_events(500);
+
+    /* Tell us how many got dropped, 1024 now */
+    mieqProcessInputEvents();
+
+    /* Now make it 2048 */
+    mieq_test_generate_events(900);
+    mieqProcessInputEvents();
+
+    /* Now make it 4096 (max) */
+    mieq_test_generate_events(1950);
+    mieqProcessInputEvents();
+
+    /* Now overflow one last time with the maximal queue and reach the verbosity limit */
+    mieq_test_generate_events(10000);
+    mieqProcessInputEvents();
+
+    mieqFini();
+}
+
+/* Simple check that we're replaying events in-order */
+static void
+process_input_proc(InternalEvent *ev, DeviceIntPtr device)
+{
+    static int last_evtype = -1;
+
+    if (ev->any.header == 0xac)
+        last_evtype = -1;
+
+    assert(ev->any.type == ++last_evtype);
+}
+
+static void
+dix_enqueue_events(void) {
+#define NEVENTS 5
+    DeviceIntRec dev;
+    InternalEvent ev[NEVENTS];
+    SpriteInfoRec spriteInfo;
+    SpriteRec sprite;
+    QdEventPtr qe;
+    int i;
+
+    memset(&dev, 0, sizeof(dev));
+    dev.public.processInputProc = process_input_proc;
+
+    memset(&spriteInfo, 0, sizeof(spriteInfo));
+    memset(&sprite, 0, sizeof(sprite));
+    dev.spriteInfo = &spriteInfo;
+    spriteInfo.sprite = &sprite;
+
+    InitEvents();
+    assert(list_is_empty(&syncEvents.pending));
+
+    /* this way PlayReleasedEvents really runs through all events in the
+     * queue */
+    inputInfo.devices = &dev;
+
+    /* to reset process_input_proc */
+    ev[0].any.header = 0xac;
+
+    for (i = 0; i < NEVENTS; i++)
+    {
+        ev[i].any.length = sizeof(*ev);
+        ev[i].any.type = i;
+        EnqueueEvent(&ev[i], &dev);
+        assert(!list_is_empty(&syncEvents.pending));
+        qe = list_last_entry(&syncEvents.pending, QdEventRec, next);
+        assert(memcmp(qe->event, &ev[i], ev[i].any.length) == 0);
+        qe = list_first_entry(&syncEvents.pending, QdEventRec, next);
+        assert(memcmp(qe->event, &ev[0], ev[i].any.length) == 0);
+    }
+
+    /* calls process_input_proc */
+    dev.deviceGrab.sync.frozen = 1;
+    PlayReleasedEvents();
+    assert(!list_is_empty(&syncEvents.pending));
+
+
+    dev.deviceGrab.sync.frozen = 0;
+    PlayReleasedEvents();
+    assert(list_is_empty(&syncEvents.pending));
+
+    inputInfo.devices = NULL;
+}
+
+
 int main(int argc, char** argv)
 {
+    dix_enqueue_events();
+    dix_double_fp_conversion();
     dix_input_valuator_masks();
     dix_input_attributes();
     dix_init_valuators();
@@ -1249,6 +1669,8 @@ int main(int argc, char** argv)
     include_bit_test_macros();
     xi_unregister_handlers();
     dix_valuator_alloc();
+    dix_get_master();
+    mieq_test();
 
     return 0;
 }

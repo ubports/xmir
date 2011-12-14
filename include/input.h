@@ -56,6 +56,8 @@ SOFTWARE.
 #include "window.h"     /* for WindowPtr */
 #include "xkbrules.h"
 #include "events.h"
+#include "list.h"
+#include <X11/extensions/XI2.h>
 
 #define DEVICE_INIT	0
 #define DEVICE_ON	1
@@ -67,6 +69,7 @@ SOFTWARE.
 #define POINTER_ACCELERATE	(1 << 3)
 #define POINTER_SCREEN		(1 << 4)	/* Data in screen coordinates */
 #define POINTER_NORAW		(1 << 5)	/* Don't generate RawEvents */
+#define POINTER_EMULATED	(1 << 6)	/* Event was emulated from another event */
 
 /*int constants for pointer acceleration schemes*/
 #define PtrAccelNoOp            0
@@ -98,6 +101,12 @@ SOFTWARE.
 #ifndef RevertToFollowKeyboard
 #define RevertToFollowKeyboard	3
 #endif
+
+enum InputLevel {
+    CORE,
+    XI,
+    XI2,
+};
 
 typedef unsigned long Leds;
 typedef struct _OtherClients *OtherClientsPtr;
@@ -207,6 +216,7 @@ typedef struct _InputOption {
     char                *value;
     struct _InputOption *next;
 } InputOption;
+typedef struct _XI2Mask XI2Mask;
 
 typedef struct _InputAttributes {
     char                *product;
@@ -429,7 +439,8 @@ extern _X_EXPORT void FreeEventList(InternalEvent *list, int num_events);
 extern void CreateClassesChangedEvent(InternalEvent *event,
                                       DeviceIntPtr master,
                                       DeviceIntPtr slave,
-                                      int type);
+                                      int flags);
+
 extern InternalEvent * UpdateFromMaster(
     InternalEvent *events,
     DeviceIntPtr pDev,
@@ -536,15 +547,17 @@ extern _X_EXPORT void FreeInputAttributes(InputAttributes *attrs);
 /* misc event helpers */
 extern Mask GetEventMask(DeviceIntPtr dev, xEvent* ev, InputClientsPtr clients);
 extern Mask GetEventFilter(DeviceIntPtr dev, xEvent *event);
-extern Mask GetWindowXI2Mask(DeviceIntPtr dev, WindowPtr win, xEvent* ev);
+extern Bool WindowXI2MaskIsset(DeviceIntPtr dev, WindowPtr win, xEvent* ev);
+extern int GetXI2MaskByte(XI2Mask *mask, DeviceIntPtr dev, int event_type);
 void FixUpEventFromWindow(SpritePtr pSprite,
                           xEvent *xE,
                           WindowPtr pWin,
                           Window child,
                           Bool calcChild);
 extern WindowPtr XYToWindow(SpritePtr pSprite, int x, int y);
-extern int EventIsDeliverable(DeviceIntPtr dev, InternalEvent* event,
-                              WindowPtr win);
+extern int EventIsDeliverable(DeviceIntPtr dev, int evtype, WindowPtr win);
+extern Bool ActivatePassiveGrab(DeviceIntPtr dev, GrabPtr grab,
+                                InternalEvent *ev);
 /**
  * Masks specifying the type of event to deliver for an InternalEvent; used
  * by EventIsDeliverable.
@@ -556,6 +569,13 @@ extern int EventIsDeliverable(DeviceIntPtr dev, InternalEvent* event,
 #define EVENT_DONT_PROPAGATE_MASK     (1 << 2) /**< DontPropagate mask set */
 #define EVENT_XI2_MASK                (1 << 3) /**< XI2 mask set on window */
 /* @} */
+
+enum EventDeliveryState {
+    EVENT_DELIVERED,     /**< Event has been delivered to a client  */
+    EVENT_NOT_DELIVERED, /**< Event was not delivered to any client */
+    EVENT_SKIP,          /**< Event can be discarded by the caller  */
+    EVENT_REJECTED,      /**< Event was rejected for delivery to the client */
+};
 
 /* Implemented by the DDX. */
 extern _X_EXPORT int NewInputDeviceRequest(
@@ -586,6 +606,9 @@ extern _X_EXPORT void valuator_mask_set_range(ValuatorMask *mask,
 extern _X_EXPORT void valuator_mask_set(ValuatorMask *mask,
                                         int valuator,
                                         int data);
+extern _X_EXPORT void valuator_mask_set_double(ValuatorMask *mask,
+                                               int valuator,
+                                               double data);
 extern _X_EXPORT void valuator_mask_zero(ValuatorMask *mask);
 extern _X_EXPORT int valuator_mask_size(const ValuatorMask *mask);
 extern _X_EXPORT int valuator_mask_isset(const ValuatorMask *mask, int bit);
@@ -594,5 +617,14 @@ extern _X_EXPORT int valuator_mask_num_valuators(const ValuatorMask *mask);
 extern _X_EXPORT void valuator_mask_copy(ValuatorMask *dest,
                                          const ValuatorMask *src);
 extern _X_EXPORT int valuator_mask_get(const ValuatorMask *mask, int valnum);
+extern _X_EXPORT double valuator_mask_get_double(const ValuatorMask *mask,
+                                                 int valnum);
+extern _X_EXPORT Bool valuator_mask_fetch(const ValuatorMask *mask,
+                                          int valnum, int *val);
+extern _X_EXPORT Bool valuator_mask_fetch_double(const ValuatorMask *mask,
+                                                 int valnum, double *val);
+
+extern _X_HIDDEN Bool point_on_screen(ScreenPtr pScreen, int x, int y);
+extern _X_HIDDEN void update_desktop_dimensions(void);
 
 #endif /* INPUT_H */
