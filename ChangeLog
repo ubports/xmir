@@ -1,3 +1,951 @@
+commit 0ca8869e4537412f25bfd5610aba5e604952608c
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Dec 9 12:58:30 2011 -0800
+
+    configure.ac: 1.11.2.902 (1.11.3 RC2)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit e76c397eb90291b048e0b2102111008e3d2e469e
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Mon Nov 28 16:37:59 2011 +0000
+
+    kdrive: drop screen crossing code.
+    
+    The only kdrive server we probably care about anymore is Xephyr,
+    and this screen enable/disable code totally breaks it in multi-screen mode.
+    
+    When you are in one screen the other stops updating.
+    
+    Fixes https://bugzilla.redhat.com/show_bug.cgi?id=757457
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 98c4a888a4428789386c7c47cecc81933b5999ba)
+
+commit db418ff7501d960c8de813a37b8bb37b1ba22175
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Oct 20 10:48:26 2011 +0100
+
+    hal: free tmp_val in one missing case
+    
+    Pointed out by coverity scan.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 8d3731a811e33e263920dd7c8ec63d02968cb56e)
+
+commit 6b11b18ab683e1f38e5b27066b35947b96956e5f
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Oct 20 11:00:43 2011 +0100
+
+    xv: test correct number of requests. (v2)
+    
+    Pointed out by coverity.
+    
+    v2: fix swapped as well, as pointed out by Alan
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit 41229392b790f30a0f0ef1f4ed95647c5bca4001)
+
+commit df16b789aaf5fe7025e5661117477a5f6f9129ee
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 19 16:57:13 2011 +0100
+
+    xaa: avoid possible freed pointer reuse in epilogue
+    
+    If the pGCPriv->flags == 2, then we try to assign the freed pGCPriv->XAAOps
+    avoid this by clearing the flags in to be destroyed pGCPriv.
+    
+    Reported by coverity.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 1049139499d9132a20cd6d4d156fe9da9cddb6c2)
+
+commit befa8a3b836e8b5781491aff4e659ae856beb494
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 19 16:22:31 2011 +0100
+
+    Xi: avoid overrun of callback array.
+    
+    This code had an off-by-one and would allow writing one past the end of
+    the callbacks array.
+    
+    Pointed out by coverity.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 682c09a2cedd234b005334cc01247d859dd7f26a)
+
+commit b22783f483d440a005ff76d5c7894e2cf2a95dcb
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 19 16:21:26 2011 +0100
+
+    xext: don't free uninitialised pointer when malloc fails. (v2)
+    
+    Initialise the pAttr->values to values so if the values allocation
+    fails it just ends up as free(NULL).
+    
+    Pointed out by coverity.
+    
+    v2: use Alan's suggestion.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit b62dc4fcbcffd10de16650bee284702c8608bb60)
+
+commit 083599c5597276289af9adaf8a8571cbe743c3fd
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Thu Apr 28 13:34:28 2011 +1000
+
+    fbdevhw: iterate over all modes that match a mode. (v3)
+    
+    So on RHEL5 anaconda sets an xorg.conf with a fixed 800x600 mode in it,
+    we run radeonfb and fbdev since ati won't work in userspace due to domain
+    issues in the older codebase.
+    
+    On certain pseries blades the built-in KVM can't accept an 800x600-43 mode,
+    it requires the 800x600-60 mode, so we have to have the kernel radeonfb
+    driver reject the 800x600-43 mode when it sees it. However then fbdev
+    doesn't try any of the other 800x600 modes in the modelist, and we end up
+    getting a default 640x480 mode we don't want.
+    
+    This patch changes the mode validation loop to continue on with the other modes
+    that match to find one that works.
+    
+    v2: move code around to avoid extra loop, after comment from Jamey.
+    v3: move loop setup back into loop as per Jeremy's review.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 22605effd188436629a0dbc688666549473741e4)
+
+commit 05a890df0ade7c4958a2a13ed0c6471e4658a098
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Thu Dec 1 23:45:42 2011 -0800
+
+    LoaderOpen returns either a valid pointer or NULL, so don't check for < 0
+    
+    Fixes Sun cc warning that was recently elevated to error by the
+    stricter default CFLAGS changes to xorg-macros:
+    
+    "loadmod.c", line 914: improper pointer/integer combination: op "<"
+    
+    Should have been changed when commit ab7f057ce9df4e905b12 changed the
+    LoaderOpen return type from int to void *.
+    
+    Changes log message when file is found but dlopen() fails from:
+     (EE) LoadModule: Module dbe does not have a dbeModuleData data object.
+     (EE) Failed to load module "dbe" (invalid module, 0)
+    to:
+     (EE) Failed to load module "dbe" (loader failed, 7)
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit e4dcf580f007d6adcf5b0c639865d7aaab1a319d)
+
+commit f4944108421d6ae4c728290baa43291f55ebaa67
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Wed Nov 23 00:30:02 2011 -0800
+
+    Limit the number of screens Xvfb will attempt to allocate memory for
+    
+    Commit f9e3a2955d2ca7 removing the MAXSCREEN limit left the screen
+    number too unlimited, and allowed any positive int for a screen number:
+    
+    Xvfb :1 -screen 2147483647 1024x1024x8
+    
+    Fatal server error:
+    Not enough memory for screen 2147483647
+    
+    Found by Parfait 0.3.7:
+    Error: Integer overflow (CWE 190)
+       Integer parameter of memory allocation function realloc() may overflow due to multiplication with constant value 1112
+            at line 293 of hw/vfb/InitOutput.c in function 'ddxProcessArgument'.
+    
+    Since the X11 connection setup only has a CARD8 for number of SCREENS,
+    limit to 255 screens, which is also low enough to avoid overflow on the
+    sizeof(*vfbScreens) * (screenNum + 1) calculation for realloc.
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit feebf6746374aa04b12e9e3e51313a3a82c03530)
+
+commit bed7d7f31ed48cbf0931ca77fdac135e514a2a44
+Author: Rui Matos <tiagomatos@gmail.com>
+Date:   Tue Nov 1 21:32:36 2011 +0000
+
+    randr: Make the RRConstrainCursorHarder logic the same as miPointerSetPosition
+    
+    The constraining logic in RRConstrainCursorHarder allows the cursor to reach
+    crtc positions of x = width and y = height while the constraining code in
+    miPointerSetPosition only allows it to reach x = width - 1 and y = height - 1
+    for the analogous screen case.
+    
+    This patch makes the former's logic equivalent to the latter's which allows
+    applications to benefit from Fitts's law. E.g. a maximized application
+    adjacent to a crtc border wouldn't get pointer events if the user moved the
+    pointer all the way until it's contained.
+    
+    Signed-off-by: Rui Matos <tiagomatos@gmail.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 9cc44b955b27de33348d6a20bebc9704930ee18e)
+
+commit 4689c84a07f87d35492feeae2bc59642c31b6eb3
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Mon Nov 28 00:07:29 2011 -0800
+
+    configure.ac: 1.11.2.901 (1.11.3 RC1)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit e2661ddbc5d1b2edb1ab514a761f8c0b66e69736
+Author: Derek Buitenhuis <derek.buitenhuis@gmail.com>
+Date:   Sun Nov 6 12:20:51 2011 -0500
+
+    Fix vesa's VBE PanelID interpretation
+    
+    xserver's VESA driver's VBE (Vesa BIOS Extensions) code
+    includes a PanelID probe, which can get a monitor's native
+    resolution. From this, using CVT formulas, it derives
+    horizontal sync rate and a vertical refresh rate ranges.
+    
+    It however, only derives the upper bounds of the ranges, and
+    the lower bounds cannot de derived. By default, they are set
+    to hardcoded constants which represent the lowest supported
+    resolution: 640x480. The constants in vbe.c however, were
+    not actually derived from forulas, but carried over from
+    other code from the bad old days, and are not relevant
+    to flat panel displays. This caused, for example, EEEPC701's
+    panel, with a native resolution of 800x480, to end up with
+    a upper bound of the horizontal sync rate that was lower
+    than the hardcoded lower bound, which of course broke things.
+    
+    These numbers have been rederived using both my own CVT tool
+    based on xf86CVTMode(), and using the provided 'cvt' tool
+    that comes with xserver.
+    
+    Signed-off-by: Derek Buitenhuis <derek.buitenhuis@gmail.com>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit f0d50cc6651dce3a8a3cd3fb84210aa92b139763)
+
+commit 2e3406fc6737539210e29ac0b2821848e6d1f069
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Mon Nov 7 22:14:30 2011 +0000
+
+    dmx: Build fix for -Werror=implicit-function-declaration
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit f405dfffe7d5db81d398615a80acbeba7e014ada)
+
+commit b440fc9c1bb10f8c227120e6d9e58101108d71bb
+Author: dtakahashi42 <dtakahashi42@gmail.com>
+Date:   Fri Nov 18 11:30:22 2011 -0800
+
+    rootless: Fix a server crash when choosing a color with the gimp color wheel
+    
+    https://trac.macports.org/ticket/30927
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 328074890eeb111950e984c6f618311983600b20)
+
+commit 40c1287f36517f0afd62306e306f6a68120d9a59
+Author: Ross Burton <ross@linux.intel.com>
+Date:   Wed Sep 28 11:46:02 2011 +0100
+
+    edid: Add quirk for Acer Aspire One 110
+    
+    At least one revision of the AAO reports a 190x110mm maximum size but a
+    451x113mm mode.
+    
+    X.Org Bug 41141 <https://bugs.freedesktop.org/show_bug.cgi?id=41141>
+    
+    Signed-off-by: Ross Burton <ross@linux.intel.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 58864146fbdf1820d04825838691e84784ef91bc)
+
+commit 7972e2dade58158bb98f5b7dc5f873b9fb3446de
+Author: Chris Wilson <chris@chris-wilson.co.uk>
+Date:   Thu Aug 25 16:04:04 2011 +0100
+
+    dri2: Register the DRI2DrawableType after server regeneration
+    
+    The Resource database is reset upon regeneration and so the dri2 module
+    needs to re-register its RESTYPE for the drawable or else it will
+    clobber the next unsuspecting user of the database. Fortunately, DRI2 is
+    loaded late in the initialisation sequence and was last up until
+    xf86-video-intel started using the Resource database to track
+    outstanding swaps...
+    
+    Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Tested-by: Paulo Zanoni <paulo.r.zanoni@intel.com>
+    (cherry picked from commit 34b0e4eee911f8b09a3682a7f1b4c8598ef48b8d)
+
+commit 73beaf9033d9a44e7a7c654f296624c7265eeb6d
+Author: Chris Wilson <chris@chris-wilson.co.uk>
+Date:   Mon Jan 24 11:17:03 2011 +0000
+
+    DRI2: Avoid a NULL pointer dereference
+    
+    Bugzilla:  https://bugs.freedesktop.org/show_bug.cgi?id=41211
+    
+    Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit bfa1a0dd190ed88020d60eba3bb04681c8e83a68)
+
+commit 6105fcaa3592cb6d0d5f22d9b850986d0bc4d241
+Author: Chris Wilson <chris@chris-wilson.co.uk>
+Date:   Mon Jan 24 11:17:03 2011 +0000
+
+    VidMode: prevent crash with no modes
+    
+    Bugzilla:  https://bugs.freedesktop.org/show_bug.cgi?id=17431
+    
+    Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit eeb21a133b982f71de739baf62e53c8a68f5d495)
+
+commit d113b2911573f3685dc644c6fdd1979aa880b99f
+Author: Rami Ylimäki <rami.ylimaki@vincit.fi>
+Date:   Tue Oct 4 12:25:26 2011 +0300
+
+    record: Prevent out of bounds access when recording a reply.
+    
+    Any pad bytes in replies are written to the client from a zeroed
+    array. However, record extension tries to incorrectly access the pad
+    bytes from the end of reply data.
+    
+    Signed-off-by: Rami Ylimäki <rami.ylimaki@vincit.fi>
+    Reviewed-by: Erkki Seppälä <erkki.seppala@vincit.fi>
+    (cherry picked from commit c1bb8f43b9290c2b18a9f0ac59773ff8f1eb974f)
+
+commit 4dc5b6ea9f4932070c37b7c5393d468d00803712
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Nov 1 14:59:15 2011 -0700
+
+    xfree86: Fix powerpc build with -Werror=int-to-pointer-cast -Werror=pointer-to-int-cast
+    
+    memType is a uint64_t on powerpc. Using memType only really makes
+    sense for *physical* addresses, which can be 64-bit for 32-bit
+    systems running on 64-bit hardware.
+    
+    However, unmapVidMem() only deals with *virtual* addresses, which
+    are guaranteed to fit into an uintptr_t.
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Mark Kettenis <kettenis@openbsd.org>
+    (cherry picked from commit eb3377ffb8a7baa26c9831e56ed782d48b28fa71)
+
+commit a1925f08790083a5c00f9f4ba766cbb8749240f3
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Apr 15 13:32:10 2011 +1000
+
+    include: export GetProximityEvents and QueueProximityEvents
+    
+    This is mainly needed for consistency with GetPointerEvents and friend.
+    No-one seems to actually need this function from outside the usual DDXs.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit fc16917ad6f0d2722bfb5c5eeca955dd3bc4125a)
+
+commit a6a21f84bbdd4e3c6218f7b4c04a2d947a784f9f
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Nov 3 08:58:58 2011 +1000
+
+    dix: Don't let a driver without a ProximityClassRec post events
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 11840595a1be9f2df7390bcc708cc176e60d3ef2)
+
+commit 2f2d871ccdfb256831ae487c5916054a3d29d126
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Oct 27 11:03:39 2011 +1000
+
+    Xi: allow passive keygrabs on the XIAll(Master)Devices fake devices
+    
+    They don't have a KeyClassRec, but we must still allow passive grabs on
+    them.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Tested-by: Bastien Nocera <hadess@hadess.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 22715e465b415b3351b83b8279a4f44157f63199)
+
+commit 34bb83b9df20ff63dbb147ed661f39efb8bae8e4
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Oct 24 12:00:32 2011 +1000
+
+    dix: block signals when closing all devices
+    
+    When closing down all devices, we manually unset master for all attached
+    devices, but the device's sprite info still points to the master's sprite
+    info. This leaves us a window where the master is freed already but the
+    device isn't yet. A signal during that window causes dereference of the
+    already freed spriteInfo in mieqEnqueue's EnqueueScreen macro.
+    
+    Simply block signals when removing all devices. It's not like we're really
+    worrying about high-responsive input at this stage.
+    
+    https://bugzilla.redhat.com/show_bug.cgi?id=737031
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Julien Cristau <jcristau@debian.org>
+    (cherry picked from commit d7c44a7c9760449bef263413ad3b20f19b1dc95a)
+
+commit 97f2ae60fc0cc755abd8b88df826fcb1a20464fe
+Author: Christopher Yeleighton <giecrilj@stegny.2a.pl>
+Date:   Mon Oct 24 18:47:06 2011 -0700
+
+    Bug 38420: Xvfb crashes in miInitVisuals() when started with depth=2
+    
+    https://bugs.freedesktop.org/show_bug.cgi?id=38420
+    
+    Exit with fatal error message, not segfault.
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 7d50211ab57a35910d79fc3f67ae89aff91fa995)
+
+commit 89626304ea1ad316c5b7145a40f09377148cff21
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Oct 20 14:43:01 2011 +0100
+
+    xf86Crtc: handle no outputs with no modes harder.
+    
+    If you started an X server with no connected outputs, we pick a default
+    1024x768 mode, however if you then ran an xvidmode using app against that
+    server it would segfault the server due to not finding any valid modes.
+    
+    This was due to the no output mode set code, only adding the modes to the
+    scrn->modes once, when something called randr 1.2 xf86SetScrnInfoModes would
+    get called and remove all the modes and we'd end up with 0.
+    
+    This change fixes xf86SetScrnInfoModes to always report a scrn mode of at
+    least 1024x768, and pushes the initial configuration to just call it instead
+    of setting up the mode itself.
+    
+    Fixes: https://bugzilla.redhat.com/show_bug.cgi?id=746926
+    
+    I've seen other bugs like this on other distros so it might also actually fix them.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 17416e88dcfcc584fe5f87580d5d2b719b3521c3)
+
+commit c68a84e73d1ebb2f75cdc4c3d8576a15b31ab3f7
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Nov 4 10:24:08 2011 -0700
+
+    configure.ac: Bump to 1.11.2
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit 2d6760f591a4138b2f4a32220e6a5aa855c123ca
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Thu Nov 3 15:01:35 2011 -0700
+
+    Revert "dix: don't XWarpPointer through the last slave anymore (#38313)"
+    
+    This reverts commit bbe6a69da398dba93679c23c3c50f9916cb562ca.
+    
+    This commit caused a regression.
+    
+    See: http://xquartz.macosforge.org/trac/ticket/517#comment:10
+
+commit 0bffe6b38cdf6b21d9ec9b0abf0092d4d4eaef86
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Oct 28 18:32:28 2011 -0700
+
+    configure.ac: Bump to 1.11.1.902 (1.11.2 RC2)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit a1d638da0d12c82c944bfecb996903210879f426
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Oct 25 23:53:43 2011 -0700
+
+    XWin: windowswm: Correct byte swapping in event notifications
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jon TURNEY <jon.turney@dronecode.org.uk>
+    (cherry picked from commit 286fa9bf9b4ffb0f9dbd3f1cae46ddcb27ee9318)
+
+commit 0715469f1cb150261b51867df75892d26916ea05
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Oct 25 23:49:33 2011 -0700
+
+    XQuartz: appledri: Correct byte swapping in event notifications
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit dc054fefc586c5b404fe0f949dbd456e5267c647)
+
+commit bc2600466eea2af2d6a81fe1592d908565995cb2
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Oct 25 23:48:16 2011 -0700
+
+    XQuartz: applewm: Correct byte swapping in event notifications
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit d5fee2b638fabeb8bec31a24e57d5c2a232d0893)
+
+commit 7be5492bcfab540676d6f849b85ad3db64a5ada0
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Oct 21 10:27:16 2011 -0700
+
+    XQuartz: appledri: Allow byte swapped requests
+    
+    Even though it's only valid when local, it is possible for a local
+    client and the server to not match endianness, such as when running
+    a ppc application under Rosetta.
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 1c8bda798b4480bab0f0da6f531e4770c7a1f771)
+
+commit 0ad049706d2fa8ff2758c42bdd412fb62bb1e86a
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Thu Oct 20 22:34:44 2011 -0700
+
+    XQuartz: appledri: Fix byte swapping in replies
+    
+    Even though it's only valid when local, it is possible for a local
+    client and the server to not match endianness, such as when running
+    a ppc application under Rosetta.
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit 14205ade0c750191bf43fba8bd55c65dba912cf4)
+    
+    Conflicts:
+    
+    	hw/xquartz/xpr/appledri.c
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit 3b931c92764fc4e6417f1f38a67114b8c7442fc2
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Thu Oct 20 22:23:07 2011 -0700
+
+    XQuartz: appledri: Set the correct reply length for XAppleDRICreatePixmap
+    
+    http://xquartz.macosforge.org/trac/ticket/508
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit 2ba0ac202ad64eb4a555715980ba538de19c9fd7)
+
+commit f22a41416b9795c778deeae6406cd33d18f13fa3
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Sun Oct 16 02:12:38 2011 -0700
+
+    Xnest: Match the host's keymap
+    
+    This was a regression.
+    
+    Introduced by: 08363c5830bdea34012dcd954b45ccfdc79a3a7e and
+                   32db27a7f867b503c2840ca7b815e96d10be9210
+    Masked by: 1e69fd4a60147287b31e53bfc61543fb17bb82c8
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit 83fef4235db86343477b4ec9858c6ba35e1aa7d9)
+
+commit 82445286d56fdac36f21ec5eed436646bda768dd
+Author: Tomáš Trnka <tomastrnka@gmx.com>
+Date:   Tue Oct 11 09:11:18 2011 +0200
+
+    Fix drain_console unregistration
+    
+    Bug introduced by 9dca441670d261a9a9fb6108960ed48f3d58fb7f
+    xfree86: add a hook to replace the new console handler.
+    
+    console_handler was not being set, making the server eat up CPU spinning
+    in WaitForSomething selecting consoleFd over and over again, every time
+    trying to unregister drain_console without success due to
+    console_handler being NULL.
+    
+    Let's just fix the unregistration in xf86SetConsoleHandler() and use that.
+    
+    But wait, there could be a catch: If some driver replaced the handler using
+    xf86SetConsoleHandler(), the unregistration in xf86CloseConsole will unregister
+    that one. I don't understand Xorg well enough to know whether this poses a
+    problem (could mess up driver deinit somehow or something like that). As it is,
+    xf86SetConsoleHandler() doesn't offer any way to prevent this (i.e. check which
+    handler is currently registered).
+    
+    I had been using it for two days on my machine that previously hit 100% CPU
+    several times a day. That has now gone away without any new problems appearing.
+    
+    Signed-off-by: Tomas Trnka <tomastrnka@gmx.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 323869f3298cbbfe864af9404a8aed1bf7995d79)
+
+commit c8c5ed998aac2c91dbec1f86af3395e08ddab373
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Thu Oct 13 12:01:10 2011 -0700
+
+    crtc: match full preferred modes if possible when choosing an initial config
+    
+    It's fairly common to have multiple, identical monitors plugged in.  In
+    that case, it's preferable to run the monitor's preferred mode on each
+    output, rather than just matching the width & height and end up with
+    different timings or refresh rates.
+    
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 3e145d3d67b472cb5d74cb8078b614160c4722b7)
+
+commit d780c6f6301ed2263b21ac7d327a1b2e8d3e76df
+Author: Ville Syrjala <syrjala@sci.fi>
+Date:   Sun Oct 9 01:11:04 2011 +0300
+
+    composite: Update borderClip in compAllocPixmap()
+    
+    Previously the parent constrained borderClip was copied over
+    when compRedirectWindow() is called. That is insufficient eg. in
+    case the window was already redirected, but not yet realized. So
+    copy the borderClip over in compAllocPixmap() instead.
+    
+    Example:
+    Window 1 is below an automatically redirect window 2. Window 2 is
+    unmapped and moved outside the extents of window 1. Window 2 is
+    then mapped again, and MarkOverlappedWindows() uses the up to
+    date borderSize of window 2 to mark windows, which leaves
+    window 1 unmarked. Then exposures are calculated using the stale
+    borderClip of window 2, which causes the window below window 2,
+    to be exposed through an apparent hole in window 1.
+    
+    Fixes: https://bugs.freedesktop.org/show_bug.cgi?id=22566
+    
+    Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit a5266dcb3a60587e1877f90c18552baf60b597a0)
+
+commit 12f65819ffb04103f170ecd7e281348de618fc4c
+Author: Matthieu Herrb <matthieu.herrb@laas.fr>
+Date:   Mon Oct 17 22:27:35 2011 +0200
+
+    Fix CVE-2011-4029: File permission change vulnerability.
+    
+    Use fchmod() to change permissions of the lock file instead
+    of chmod(), thus avoid the race that can be exploited to set
+    a symbolic link to any file or directory in the system.
+    
+    Signed-off-by: Matthieu Herrb <matthieu.herrb@laas.fr>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit b67581cf825940fdf52bf2e0af4330e695d724a4)
+
+commit f80d23357874db19bc124dee70239fb182977883
+Author: Matthieu Herrb <matthieu.herrb@laas.fr>
+Date:   Mon Oct 17 22:26:12 2011 +0200
+
+    Fix CVE-2011-4028: File disclosure vulnerability.
+    
+    use O_NOFOLLOW to open the existing lock file, so symbolic links
+    aren't followed, thus avoid revealing if it point to an existing
+    file.
+    
+    Signed-off-by: Matthieu Herrb <matthieu.herrb@laas.fr>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit 6ba44b91e37622ef8c146d8f2ac92d708a18ed34)
+
+commit 374be44d13bc8f04a2413b6d5b2006e73d5a8f53
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Oct 14 16:29:54 2011 -0700
+
+    configure.ac: Bump to 1.11.1.901 (1.11.2 RC1)
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit bbe6a69da398dba93679c23c3c50f9916cb562ca
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Jul 29 16:33:54 2011 +1000
+
+    dix: don't XWarpPointer through the last slave anymore (#38313)
+    
+    This line was introduced pre-1.6 to fix Bug 19297. The effect of warping
+    through the VCP then was that if a device had custom valuator ranges, the
+    warp position would be wrong. The better device for this effect is the the
+    XTest device.
+    
+    This fixes a server crash where the lastSlave is a pointer device without
+    valuators (Bug 38313#0).
+    
+    And while we're at it, make sure the Xinerama code-path does the same.
+    
+    X.Org Bug 38313 <http://bugs.freedesktop.org/show_bug.cgi?id=38313>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 2bfb802839688ecf328119c4c6979390fc60348d)
+
+commit 2e28ff155ffc30707d42d885d5f6fc891bc82252
+Author: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Date:   Tue Aug 9 11:00:34 2011 +0900
+
+    Disable check of double-aligned in test/input.c on Renesas SH
+    
+    Renesas SH is not aligned at size of double.
+    When structure has double value, It is aligned in 4byte (long).
+    
+    Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit b29ce0726d55ec41cfbce0814e21b0217ef64efe)
+
+commit 79ac611d3121801c34f111c91b5ace5769719695
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 14:12:41 2011 +1000
+
+    dix: don't use the pointer as modifier device in UngrabKey.
+    
+    Modifier device is always the keyboard.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 8c5a4d6fbecf79f2dc4f2d836d741203b2d5e856)
+
+commit 843737b4f979fed3a6d74cdfc7047ce5ca886639
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Jul 28 15:56:08 2011 +1000
+
+    dix: ignore devices when adding passive core grabs to list (#39545)
+    
+    Passive core grabs are mostly device-independent. In an MPX scenario, they
+    may change to reflect whichever master pair activated the grab last. For
+    adding new grabs to the list, ignore the device for core grabs to return
+    failures when trying to set the same grab combo twice on a window.
+    
+    X.Org Bug 39545 <http://bugs.freedesktop.org/show_bug.cgi?id=39545>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 09496996accfdaf7bc01097a25db400912004d97)
+
+commit cb9c1d6d6cb25f55b1e4ac382e5af72a044e06aa
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Jul 28 15:43:10 2011 +1000
+
+    dix: avoid using the VCP as modifier device
+    
+    Core grabs may change device when they're activated to reflect the master
+    they apply to. If the device is a keyboard, modifierDevice is erroneously
+    set to the Virtual Core Pointer.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 80c37048539daa1d257d127d66502bde45c97c85)
+
+commit ef5c31430c891cf44148ea31058ed4cfb9bec21a
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Jul 20 16:21:28 2011 +1000
+
+    config: fix a log message
+    
+    PRODUCT was taken from the parent, hence ppath.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit e684e816acb617b4dc66a68e2b0ba8f80399170a)
+
+commit ec8ee3a9f76cc94d6fa4e7245c1a8fb68a42783c
+Author: Peter Harris <pharris@opentext.com>
+Date:   Fri Sep 2 18:45:16 2011 -0400
+
+    xkb: add missing swaps for xkbGetDeviceInfoReply
+    
+    Caught during review of e095369bf.
+    
+    Signed-off-by: Peter Harris <pharris@opentext.com>
+    Reviewed-by-by: Matt Turner <mattst88@gmail.com>
+    Signed-off-by: Matt Turner <mattst88@gmail.com>
+    (cherry picked from commit c90903b4f7a826ae6826a8dd0a901c8362500e46)
+    
+    Conflicts:
+    
+    	xkb/xkb.c
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+
+commit 603ad6608a0dbe2fb1bdc4bcd8b4117f2b0bc8b2
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Oct 4 21:40:03 2011 -0700
+
+    XQuartz: pbproxy: Add missing AM_OBJCFLAGS
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit fae7ed62ad476114bd37b566202cf6b6546c0a1f)
+
+commit 65469f5ea98074ab27ce0a2d482157b9d5c2cbc7
+Author: vdb@picaros.org <vdb@picaros.org>
+Date:   Sat Sep 17 18:55:47 2011 +0200
+
+    Fix a rare memory leak
+    
+    Signed-off-by: Servaas Vandenberghe <vdb@picaros.org>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit e4cddf509e1729e8ff40354275b65455111ad2bd)
+
+commit bec15eb73a17fb47963ff6b747ea504f7dc05deb
+Author: Kirill Elagin <kirelagin@gmail.com>
+Date:   Tue Oct 4 23:02:20 2011 +0400
+
+    Fix server crash due to invalid images
+    
+    See https://bugs.freedesktop.org/show_bug.cgi?id=39383
+    
+    Signed-off-by: Kirill Elagin <kirelagin@gmail.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 53611213396479abfdce0f7752681572e0d26d78)
+
+commit b45e22675364915c32560c26404cf30d77ab68aa
+Author: Alan Hourihane <alanh@vmware.com>
+Date:   Tue Oct 4 19:42:46 2011 -0700
+
+    dixfonts: Don't overwrite local c variable until new_closure is safely initialized.
+    
+    Signed-off-by: Alan Hourihane <alanh@vmware.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 7a33c5b934382b5554f41ab1502514e91c9bc52e)
+
+commit e9ae33316012ffe9acfeeb7303ab3392c2ca2a2b
+Author: Sam Spilsbury <sam.spilsbury@canonical.com>
+Date:   Wed Sep 14 09:58:34 2011 +0800
+
+    Remove the SendEvent bit (0x80) before doing range checks on event type.
+    
+    Some extension libraries may set this bit before converting the event to
+    wire protocol and as such range checking the event will cause an invalid
+    BadValue error to result. As the documentation suggests the the bit
+    should be "forced on", remove it before doing range checks and continue
+    to force it on in the server.
+    
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 2d2dce558d24eeea0eb011ec9ebaa6c5c2273c39)
+
+commit 347f5610ca023fb31485aa19c20607af8bf9c834
+Author: Carlos Garnacho <carlosg@gnome.org>
+Date:   Wed Aug 31 00:46:52 2011 +0200
+
+    Xi: Fix passive XI2 ungrabs on XIAll[Master]Devices
+    
+    The corresponding DeviceIntPtr wasn't being gotten properly,
+    resulting in BadDevice from dixLookupDevice().
+    
+    Signed-off-by: Carlos Garnacho <carlosg@gnome.org>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit f52d5cd374563544dafe29587411f345e31bbdf8)
+
+commit 7b74bb67528033bf2d2a1714a801c38e7822642e
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Sep 20 20:39:06 2011 -0700
+
+    XQuartz: Use set_front_process rather than X11ApplicationSetFrontProcess since we're already in the AppKit thread
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 38e9e28ba2fbffee52ad9889ef6d4e94c7af3e10)
+
+commit bd6ea85209e5ab80375d4ec9994d10a89fd1374a
+Author: Jamey Sharp <jamey@minilop.net>
+Date:   Tue Sep 14 18:35:21 2010 -0700
+
+    Fix pixmap double-frees on error paths.
+    
+    If AddResource fails, it will automatically free the object that was
+    passed to it by calling the appropriate deleteFunc; and of course
+    FreeResource also calls the deleteFunc. In both cases it's wrong to call
+    the destroy hook manually.
+    
+    Commit by Jamey Sharp and Josh Triplett.
+    
+    Signed-off-by: Jamey Sharp <jamey@minilop.net>
+    Signed-off-by: Josh Triplett <josh@joshtriplett.org>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Aaron Plattner <aplattner@nvidia.com>
+    (cherry picked from commit 0f380a5005f800572773cd4667ce43c7459cc467)
+
+commit aabd25bd0bd5f30e4ebbf1d48ef800b3ed2abcbe
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Sat Sep 24 00:06:32 2011 -0700
+
+    configure.ac: Version bumped to 1.11.1
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit 89881051664209b5b2e2c4a7c2dd25f085581d43
+Author: Aaron Plattner <aplattner@nvidia.com>
+Date:   Wed Sep 14 15:25:06 2011 -0700
+
+    fb: Rename wfbTriangles and wfbTrapezoids
+    
+    These symbols were not renamed when they were added to libfb:
+    
+     # nm -D libwfb.so | grep ' fb'
+     0000000000028d00 T fbTrapezoids
+     0000000000028d60 T fbTriangles
+    
+    This causes corruption and/or crashes on wfb-ful drivers like nvidia:
+    
+     Program received signal SIGABRT, Aborted.
+     0x00007fd67f3a0405 in *__GI_raise (sig=<optimized out>) at ../nptl/sysdeps/unix/sysv/linux/raise.c:64
+     64      ../nptl/sysdeps/unix/sysv/linux/raise.c: No such file or directory.
+         in ../nptl/sysdeps/unix/sysv/linux/raise.c
+     (gdb) bt
+     #0  0x00007fd67f3a0405 in *__GI_raise (sig=<optimized out>) at ../nptl/sysdeps/unix/sysv/linux/raise.c:64
+     #1  0x00007fd67f3a3680 in *__GI_abort () at abort.c:92
+     #2  0x00007fd67f3995b1 in *__GI___assert_fail (assertion=0x7fd679ecb804 "key->initialized", file=<optimized out>, line=116, function=0x7fd679ecbbc0 "dixGetPrivateAddr")
+         at assert.c:81
+     #3  0x00007fd679ec55b6 in ?? () from /usr/lib/xorg/modules/libfb.so
+     #4  0x00007fd679eca9ef in ?? () from /usr/lib/xorg/modules/libfb.so
+     #5  0x00007fd679ecae20 in fbTriangles () from /usr/lib/xorg/modules/libfb.so
+     #6  0x00007fd67a58fc55 in ?? () from /usr/lib/xorg/modules/drivers/nvidia_drv.so
+     #7  0x00000000004f38d1 in ?? ()
+     #8  0x0000000000437ae9 in ?? ()
+     #9  0x0000000000426eaa in ?? ()
+     #10 0x00007fd67f38cead in __libc_start_main (main=<optimized out>, argc=<optimized out>, ubp_av=<optimized out>, init=<optimized out>, fini=<optimized out>,
+         rtld_fini=<optimized out>, stack_end=0x7fff99860d78) at libc-start.c:228
+     #11 0x000000000042719d in _start ()
+    
+    Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 03d032991da21bf866ca30dcbb6b7f9f99df441a)
+
+commit 4ad271d06c5aa42721c0e2e01e17e34a39825c65
+Author: Aaron Plattner <aplattner@nvidia.com>
+Date:   Mon Aug 29 20:44:18 2011 -0700
+
+    xfree86: Bump extension ABI version to 6.0
+    
+    The video driver ABI was bumped to 11.0 in commit
+    0de7cec90738a7a5020150309866bb0e23b6f479 because of a change to the
+    size of ATOM in commit 51f353d0a0d116af16d7d9590cadef6c56328746.  This
+    also affects extension modules, so the extension ABI version should
+    have been bumped too.
+    
+    Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+
 commit 0caeef6146bee5fb1827ab25db191685dde9d4b4
 Author: Keith Packard <keithp@keithp.com>
 Date:   Fri Aug 26 16:46:13 2011 -0700
