@@ -853,6 +853,24 @@ static void SRawEvent(xXIRawEvent *from, xXIRawEvent *to)
     swaps(&to->valuators_len, n);
 }
 
+static void STouchOwnershipEvent(xXITouchOwnershipEvent *from,
+                                 xXITouchOwnershipEvent *to)
+{
+    char n;
+
+    *to = *from;
+    swaps(&to->sequenceNumber, n);
+    swapl(&to->length, n);
+    swaps(&to->evtype, n);
+    swaps(&to->deviceid, n);
+    swapl(&to->time, n);
+    swaps(&to->sourceid, n);
+    swapl(&to->touchid, n);
+    swapl(&to->flags, n);
+    swapl(&to->root, n);
+    swapl(&to->event, n);
+    swapl(&to->child, n);
+}
 
 /** Event swapping function for XI2 events. */
 void
@@ -886,6 +904,10 @@ XI2EventSwap(xGenericEvent *from, xGenericEvent *to)
         case XI_TouchUpdate:
         case XI_TouchEnd:
             SDeviceEvent((xXIDeviceEvent*)from, (xXIDeviceEvent*)to);
+            break;
+        case XI_TouchOwnership:
+            STouchOwnershipEvent((xXITouchOwnershipEvent*)from,
+                                 (xXITouchOwnershipEvent*)to);
             break;
         case XI_RawMotion:
         case XI_RawKeyPress:
