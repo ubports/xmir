@@ -1,3 +1,69 @@
+xorg-server (2:1.11.2.902-1) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * New upstream release candidate (1.11.3 RC2)
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 10 Dec 2011 22:36:42 +0100
+
+xorg-server (2:1.11.2.901-1) unstable; urgency=low
+
+  * New upstream release candidate (1.11.3 RC1):
+    - As usual: Fixes for various crashes and correctness issues.
+    - In particular: Fix for crash when starting a game (in wine) twice
+      (Closes: #637448).
+    - Also: Fix crashes with server regeneration (Closes: #649420).
+  * Add some lintian overrides:
+    - xserver-xorg-core: breaks-without-version against virtual packages
+      is perfectly OK.
+  * Don't forget to ship xorg.conf.d(5) in xserver-xorg-core.
+
+ -- Cyril Brulebois <kibi@debian.org>  Tue, 29 Nov 2011 17:04:09 +0100
+
+xorg-server (2:1.11.1.902-1) unstable; urgency=low
+
+  * New upstream release candidate (1.11.2 RC2):
+    - Fixes for various crashes and correctness issues.
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 02 Nov 2011 11:10:03 +0100
+
+xorg-server (2:1.11.1.901-2) unstable; urgency=high
+
+  * Merge from upstream to get CVEs fixed:
+    - Fix CVE-2011-4028: File disclosure vulnerability.
+    - Fix CVE-2011-4029: File permission change vulnerability.
+  * Set urgency to “high” accordingly.
+
+ -- Cyril Brulebois <kibi@debian.org>  Thu, 20 Oct 2011 15:04:53 +0200
+
+xorg-server (2:1.11.1.901-1) unstable; urgency=low
+
+  * New upstream release candidate (1.11.2 RC1)
+    + Disable check of double-aligned in test/input.c on Renesas SH
+      (closes: #636673)
+  * Use dpkg-buildflags to enable hardening with recent dpkg.
+  * Enable PIE with DEB_BUILD_MAINT_OPTIONS, but add -Bsymbolic to LDFLAGS to
+    reduce performance loss from PIE.
+  * Pass --disable-silent-rules to configure.
+  * Drop dh_testroot from clean target.
+  * Add dummy build-{arch,indep} targets depending on build.
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 15 Oct 2011 19:05:41 +0200
+
+xorg-server (2:1.11.1-1) unstable; urgency=high
+
+  [ Cyril Brulebois ]
+  * Bump glproto dependency for xserver-xorg-dev (Closes: #639651).
+  * Set urgency to “high” since there were no issues other than the libwfb
+    one (see below) in the last 4 weeks.
+
+  [ Julien Cristau ]
+  * New upstream bugfix release
+    - belatedly bump extension ABI major
+    - add missing fbFoo → wfbFoo renames for libwfb.so, fixing issues with the
+      nvidia driver (closes: #641344)
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 24 Sep 2011 11:23:17 +0200
+
 xorg-server (2:1.11.0-1ubuntu1~prep1) oneiric; urgency=low
 
   * Merge from Debian experimental.  Remaining Ubuntu changes
@@ -9,7 +75,7 @@ xorg-server (2:1.11.0-1ubuntu1~prep1) oneiric; urgency=low
 
  -- Christopher James Halse Rogers <chris@cooperteam.net>  Sat, 10 Sep 2011 21:26:49 -0700
 
-xorg-server (2:1.11.0-1) UNRELEASED; urgency=low
+xorg-server (2:1.11.0-1) unstable; urgency=low
 
   [ Julien Cristau ]
   * Make xvfb, xnest, xserver-xephyr and xserver-xfbdev provide the xserver
@@ -21,7 +87,7 @@ xorg-server (2:1.11.0-1) UNRELEASED; urgency=low
       Thanks, Mohammed Sameer!
     - Fix memcpy abuse in the fb layer (Closes: #626682).
 
- -- Julien Cristau <jcristau@debian.org>  Mon, 01 Aug 2011 01:18:39 +0200
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 28 Aug 2011 12:53:06 +0200
 
 xorg-server (2:1.10.99.901+git20110731-1) experimental; urgency=low
 
