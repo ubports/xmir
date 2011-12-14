@@ -61,7 +61,7 @@ static void test_values_XIRawEvent(RawDeviceEvent *in, xXIRawEvent *out,
 
     assert(out->type == GenericEvent);
     assert(out->extension == 0); /* IReqCode defaults to 0 */
-    assert(out->evtype == GetXI2Type((InternalEvent*)in));
+    assert(out->evtype == GetXI2Type(in->type));
     assert(out->time == in->time);
     assert(out->detail == in->detail.button);
     assert(out->deviceid == in->deviceid);
@@ -311,7 +311,7 @@ static void test_values_XIDeviceEvent(DeviceEvent *in, xXIDeviceEvent *out,
     }
 
     assert(out->extension == 0); /* IReqCode defaults to 0 */
-    assert(out->evtype == GetXI2Type((InternalEvent*)in));
+    assert(out->evtype == GetXI2Type(in->type));
     assert(out->time == in->time);
     assert(out->detail == in->detail.button);
     assert(out->length >= 12);
@@ -671,7 +671,7 @@ static void test_values_XIDeviceChangedEvent(DeviceChangedEvent *in,
 
     assert(out->type == GenericEvent);
     assert(out->extension == 0); /* IReqCode defaults to 0 */
-    assert(out->evtype == GetXI2Type((InternalEvent*)in));
+    assert(out->evtype == GetXI2Type(in->type));
     assert(out->time == in->time);
     assert(out->deviceid == in->deviceid);
     assert(out->sourceid == in->sourceid);
