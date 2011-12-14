@@ -785,7 +785,7 @@ WINDOWSWMPROTO="windowswmproto"
 APPLEWMPROTO="applewmproto >= 1.4"
 
 dnl Core modules for most extensions, et al.
-SDK_REQUIRED_MODULES="[xproto >= 7.0.22] [randrproto >= 1.2.99.3] [renderproto >= 0.11] [xextproto >= 7.1.99] [inputproto >= 2.0.99.1] [kbproto >= 1.0.3] fontsproto"
+SDK_REQUIRED_MODULES="[xproto >= 7.0.22] [randrproto >= 1.2.99.3] [renderproto >= 0.11] [xextproto >= 7.1.99] [inputproto >= 2.1.99.3] [kbproto >= 1.0.3] fontsproto"
 # Make SDK_REQUIRED_MODULES available for inclusion in xorg-server.pc
 AC_SUBST(SDK_REQUIRED_MODULES)
 
