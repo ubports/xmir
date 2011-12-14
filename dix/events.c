@@ -2464,6 +2464,9 @@ FixUpEventFromWindow(
             case XI_RawButtonPress:
             case XI_RawButtonRelease:
             case XI_RawMotion:
+            case XI_RawTouchBegin:
+            case XI_RawTouchUpdate:
+            case XI_RawTouchEnd:
             case XI_DeviceChanged:
             case XI_HierarchyChanged:
             case XI_PropertyEvent:
