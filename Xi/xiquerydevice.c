@@ -425,13 +425,15 @@ ListScrollInfo(DeviceIntPtr dev, xXIScrollInfo *info, int axisnumber)
 static void
 SwapScrollInfo(DeviceIntPtr dev, xXIScrollInfo* info)
 {
-    swaps(&info->type);
-    swaps(&info->length);
-    swaps(&info->number);
-    swaps(&info->sourceid);
-    swaps(&info->scroll_type);
-    swapl(&info->increment.integral);
-    swapl(&info->increment.frac);
+    char n;
+
+    swaps(&info->type, n);
+    swaps(&info->length, n);
+    swaps(&info->number, n);
+    swaps(&info->sourceid, n);
+    swaps(&info->scroll_type, n);
+    swapl(&info->increment.integral, n);
+    swapl(&info->increment.frac, n);
 }
 
 int GetDeviceUse(DeviceIntPtr dev, uint16_t *attachment)

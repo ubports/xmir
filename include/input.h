@@ -56,6 +56,7 @@ SOFTWARE.
 #include "window.h"     /* for WindowPtr */
 #include "xkbrules.h"
 #include "events.h"
+#include "list.h"
 
 #define DEVICE_INIT	0
 #define DEVICE_ON	1

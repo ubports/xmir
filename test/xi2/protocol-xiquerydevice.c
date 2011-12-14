@@ -197,10 +197,12 @@ static void reply_XIQueryDevice_data(ClientPtr client, int len, char *data, void
 
                             if (client->swapped)
                             {
-                                swaps(&si->number);
-                                swaps(&si->scroll_type);
-                                swapl(&si->increment.integral);
-                                swapl(&si->increment.frac);
+                                char n;
+
+                                swaps(&si->number, n);
+                                swaps(&si->scroll_type, n);
+                                swapl(&si->increment.integral, n);
+                                swapl(&si->increment.frac, n);
                             }
                             assert(si->length == 6);
                             assert(si->number == 2 || si->number == 3);
