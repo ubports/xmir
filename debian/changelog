@@ -3,8 +3,10 @@ xorg-server (2:1.11.2.902-1ubuntu1) UNRELEASED; urgency=low
   * Drop prototype XI multitouch patches
   * Merge in input changes from upstream master through commit 7da7aa9
   * Bump input ABI
+  * Refresh patches
+    - Drop 210_pixman_null_ptr_check.patch, merged upstream
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 14 Dec 2011 15:21:46 -0800
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 14 Dec 2011 15:32:47 -0800
 
 xorg-server (2:1.11.2.902-1) unstable; urgency=low
 
