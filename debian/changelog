@@ -1,6 +1,7 @@
 xorg-server (2:1.11.2.902-1ubuntu1) UNRELEASED; urgency=low
 
   * Drop prototype XI multitouch patches
+  * Merge in input changes from upstream master through commit 7da7aa9
 
  -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 14 Dec 2011 15:10:19 -0800
 

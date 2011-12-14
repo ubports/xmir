@@ -1,3 +1,1041 @@
+commit 3eaf942e727652db144d055a08ac2deb93c86105
+Author: Keith Packard <keithp@keithp.com>
+Date:   Wed Dec 14 11:40:10 2011 -0800
+
+    Merge remote-tracking branch 'whot/for-keith'
+    (cherry picked from commit 7da7aa96a0acb895e1fe57a9d3f2d093479cf2a2)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 481c6f70eb9889fa52e9ac2cc2805101ff2b8777
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Tue Dec 13 17:39:20 2011 -0800
+
+    A few random fixes that are needed due to backport cherry-picking
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit a44c1d329d1284939f9948161838193e9de2ef4f
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Thu Dec 8 21:52:07 2011 -0800
+
+    Change disable_clientpointer return type to void
+    
+    It doesn't return anything, nor does it's caller expect it to.
+    
+    Fixes Solaris Studio compiler error:
+    "xichangehierarchy.c", line 214: Function has no return statement : disable_clientpointer
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 372a6f10dc2d74d2d179e8b92449e9b8636a99ef)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 77cae4b31f9e22210d3b98dfd2f413818915ffc3
+Author: Keith Packard <keithp@keithp.com>
+Date:   Thu Dec 8 20:57:26 2011 -0800
+
+    Merge remote-tracking branch 'whot/for-keith'
+    (cherry picked from commit 522f8bcc0360d6a117e929a004bc956ab92037e9)
+    
+    Conflicts:
+    
+    	hw/xfree86/common/xf86Module.h
+    	include/input.h
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 9963b023509a8ec3ff33700faf331994b14bbd84
+Author: Keith Packard <keithp@keithp.com>
+Date:   Thu Dec 1 14:36:58 2011 +0000
+
+    Merge remote-tracking branch 'whot/for-keith'
+    (cherry picked from commit 3197b773c81e58cd4aa412eccaee49526012ed6f)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit cec13888543742bed1bee9edad0e7ad96b911539
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Tue Nov 1 16:56:18 2011 -0700
+
+    Make XIGetKnownProperty take a const char * argument
+    
+    Now that MakeAtom takes const char *, so can XIGetKnownProperty.
+    Clears 71 warnings from gcc -Wwrite-strings of the form:
+    devices.c:145:5: warning: passing argument 1 of 'XIGetKnownProperty' discards qualifiers from pointer target type
+    ../include/exevents.h:128:23: note: expected 'char *' but argument is of type 'const char *'
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 5f285a30a1d6ffba82ebe5e08a0b68352bb51556)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 92f7f64c91c07ce5a74e5714166ce2372301e807
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Mon Oct 24 23:40:45 2011 -0700
+
+    Enable memory checking during unit testing
+    
+    If configure is generated with xorg-macros 1.16.0 or newer, and
+    an appropriate memory checking library is found for the platform,
+    use it when running unit tests.   If not, then no harm is done.
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit e47aa9475027ed6a255daefec85561c6b15789bd)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 3ea81b1d44befe9fa51bb3fefb51bba5b4a67454
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Tue Oct 25 00:12:48 2011 -0700
+
+    Don't require ld -wrap for tests that don't need it
+    
+    If configure is generated with xorg-macros 1.16 or later, this allows
+    builders to --enable-unit-test and run the tests other than the xi2
+    tests which require ld -wrap (and are still wrapped in if HAVE_LD_WRAP
+    in tests/xi2/Makefile).  If an older xorg-macros is used, the existing
+    behaviour is preserved of requiring ld -wrap for all unit tests, but
+    no side effects occur, so the minimum xorg-macros version is not raised.
+    
+    If unit testing is enabled without ld -wrap, then we create a bogus
+    "xi2-tests" script just to report that we're skipping them.
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 36670065bd74b870d0da7c6a69a9c0d222b21706)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 8eece5a0ef9547a247872419a63c81a9d6cf0223
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 14:14:02 2011 +1000
+
+    input: replace remaining GetPairedDevice() with GetMaster()
+    
+    Wherever it's obvious which device we need (keyboard or pointer), use
+    GetMaster() instead of GetPairedDevice(). It is more reliable in actually
+    getting the device type we want.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 35ec24cf245e5ef676e98a0bf7c77296a3f1ff63)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 4b7dd4523c11ef4952b78e4164b2fa7b34588867
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Nov 1 12:17:50 2011 +1000
+
+    xfree86: duplicate name and driver from pInfo for NewInputDeviceRequest
+    
+    xorg.conf devices had the name and driver set in the DDX's InputInfoPtr list
+    but not in the option list for those devices. That information was lost when
+    passing the options into NewInputDeviceRequest. NIDR then refused to start
+    the devices.
+    
+    Introduced in xorg-server-1.11.0-250-ge4cd24e
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Tested-by: James Cloos <cloos@jhcloos.com>
+    (cherry picked from commit c643c2b7bf480f5c27ff8606bda087f8bff3b154)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit cb5044370af84c760feeb32522d98e157f88fb6a
+Author: Keith Packard <keithp@keithp.com>
+Date:   Wed Nov 2 21:20:07 2011 -0700
+
+    Merge remote-tracking branch 'whot/two-screen-coordinates'
+    (cherry picked from commit d91aa0e6601bdf3e2cfa57b3412ab14ac486edc4)
+    
+    Conflicts:
+    
+    	dix/dispatch.c
+    	dix/inpututils.c
+    	hw/xfree86/common/xf86Xinput.h
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 5f6416463b2acb5e434eb1e2209f79b2040e9fae
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Oct 27 08:38:45 2011 +1000
+
+    test: fix two more failing FP3232 tests
+    
+    And put a comment in to explain why we're testing for a frac between .3 and
+    .6. We can't directly compare the frac since the floating/fixed point
+    conversion loses precision.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 005ab41986b0bb6a4e626aee7a7a542247f422e7)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 869bd27ab17d46f3982ea4930d861b616fc90330
+Author: Alexandr Shadchin <alexandr.shadchin@gmail.com>
+Date:   Sat Oct 29 00:14:32 2011 +0600
+
+    Fix position _X_EXPORT
+    
+    Signed-off-by: Alexandr Shadchin <Alexandr.Shadchin@gmail.com>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 91131037a2d2e07079de5d222d8a8c95300750cc)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit c8e249e5bd0dee563effb7ae58d97b0e1d5865d1
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Oct 20 16:42:20 2011 +1000
+
+    Use new FP1616/FP3232 conversion functions
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit ffe20acedb3cdc4811eb52f8fc540ba6af7339fa)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 11b244ab6ea1dd2a8655d1fd5d1e2055531bf0fe
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Oct 20 16:49:28 2011 +1000
+
+    test: fix test with new double -> fp3232 conversion functions
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Tested-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Dave Airlie <airlied@redhat.com>
+    (cherry picked from commit 7500d841f4c709ae0edc6420332096d3b9ef9fcc)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit dc06150807ecd57d13959fbfda87b0512efed91a
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Oct 19 13:17:51 2011 +1000
+
+    Xi: send DeviceChangedEvents when the scroll valuators change value
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 4bb5d8fae4f9a70f12591315f0b267a2ea826a0c)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 1036c8b3233766a9a7e392a5c11d2972efcea81c
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Oct 19 12:28:37 2011 +1000
+
+    dix: accept a NULL master for CreateClassesChangedEvent
+    
+    If a floating device changes, the master is NULL but we must still create a
+    DCE for it.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 1f4af6c12fb5d4c19f4eac3df768517c9132cc88)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit a3e6b576402e02c5b03483f96c8eaf72ebcd73fb
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Oct 19 12:11:16 2011 +1000
+
+    Xi: ensure the deviceid for DeviceChangedEvents is always the right one
+    
+    If we're sending the event for a given device, make sure the deviceid is
+    that of the device.
+    This allows callers to use the same DCE for slave and master without having
+    to fiddle the DCE's internal fields.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit d77dec6971e4a0b306c8dbd5adf627908d7972cb)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 740d7e37a1e2d3b2f955f95276f746afe43515ec
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Oct 18 17:47:59 2011 +1000
+
+    dix: pass the flags into the CreateClassesChangedEvent
+    
+    No effective functional changes, prep work for future patches.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit e9dee21fa3213bfe87b2b728a38eb41d3ba0e664)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 4d7824db35c4121a6a3a9560981c8f6f3826f8bf
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Oct 18 17:41:29 2011 +1000
+
+    dix: drop unused argument from XISendDeviceChangedEvent
+    
+    Instead of device and master (and just using master), drop the master
+    argument and let the callers pass in the device the event is to be sent for.
+    
+    No effective functional changes.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit fcdd2587a17437b643b4592aa7f65d11c05a4cd8)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 5647fd210d0d7d7c723689f95c84eeb968339b7e
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Oct 18 17:11:27 2011 +1000
+
+    dix: add ScrollInfo to DeviceChangedEvents
+    
+    3304bbff9b4ed63f1a47410a5320a136420ba2c6 added smooth scrolling support for
+    pointer events and for XIQueryDevice but didn't add the matching parts to
+    XIDeviceChangedEvents.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 8473e441b0f832775153281bc3df5e2d4feb2b36)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit e3744f444174c63d0a297e2127c9437483a84546
+Author: Andreas Wettstein <wettstein509@solnet.ch>
+Date:   Thu Aug 11 16:33:33 2011 +1000
+
+    xkb: Support noLock and noUnlock flags for LockMods
+    
+    These flags are required by the XKB spec section 6.3.
+    
+    Signed-off-by: Andreas Wettstein <wettstein509@solnet.ch>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit e3f6a76dd480717eae4b17ad8e2ff707de2ffe4c)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit c6325a9d104029ae7e7045b7a8a0612b1da802f9
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Oct 21 09:09:55 2011 +1000
+
+    xfree86 doc: replace driver "keyboard" with "kbd"
+    
+    We've deprecated keyboard a long time ago
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit 6f33593dc087d367d899d1cb6e6e30b282d922e2)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 7ee1621364d2b6230bb1c02bbdb5b6abb74ad2ff
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Aug 5 14:48:02 2011 +1000
+
+    xfree86: use NewInputDeviceRequest for xorg.conf devices too
+    
+    Only use one init path for input devices - through NIDR.
+    
+    This requires that inp_driver and inp_identifier from the
+    XF86ConfInputRec are copied over into the options for NIDR to see them.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit e4cd24e717ef1059804b3f6bb483810b708cd56a)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 2d2cf90360126ddf9c3d404568bafacbc7456d84
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Aug 10 14:37:41 2011 +1000
+
+    dix: move #if statement to stop compiler warning
+    
+    ptrveloc.c: In function 'QueryTrackers':
+    ptrveloc.c:598:34: warning: variable 'used_offset' set but not used
+    [-Wunused-but-set-variable]
+    
+    used_offset is used, but only in the debugging code. Move the #if statement
+    to ignore that warning.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 1ecc427a39d41e723912492b846512fd0ad9af2d)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 9c5d621fc6a6c0c067c0a7de8872771271985554
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Aug 5 14:05:58 2011 +1000
+
+    xfree86: Fix a comment, the old function doesn't exist anymore
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit f9067c1dd8ce9058eb48a20dfae52bc8cf3a1e55)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit c3deb23e59a4d93899a8e9025fd0215a4a4d7723
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Aug 10 15:58:34 2011 +1000
+
+    xfree86: use xf86AddNewOption instead of xf86addNewOption
+    
+    The former strdups for us. If the strdup fails we miss out on the
+    CorePointer option (default on anyway) and we're likely to fall over soon
+    anyway, so let's pretend this is the same behaviour.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit aeab26e9e1751e1e3514798fa53e9bd604b0d254)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 58c411bd0f5d867f21f98c965deb054404211780
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Mon Oct 17 23:45:32 2011 -0700
+
+    test: Add unit test for mieq
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 4597ac6fe0580323860080dae2576733acc49757)
+    
+    Conflicts:
+    
+    	test/input.c
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit ab7c89d52bf043d7eaa1a5adecf2412fac048325
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Mon Oct 17 21:16:37 2011 -0700
+
+    mieq: Reserve some space in EQ for release and other special events
+    
+    The last 64 events in the event queue will be reserved for release
+    events in order to help return the system to a cleaner state when
+    it comes back from a soft wedge.
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit ad450d76e468cd62406c4f09e71e131f7ff4555c)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 1ecb0b451bb622d22b4a34b0c60a5caee8ca5137
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Sat Oct 15 22:51:30 2011 -0700
+
+    mieq: Provide better adaptability and diagnostics during mieq overflow
+    
+    This patch changes from a static length event queue (512) to one that
+    starts at 128 and grows to 4096 as it overflows, logging each time it
+    grows.
+    
+    This change also allows for multiple backtraces to be printed when the
+    server is wedged rather than just one.  This increased sampling should
+    help identify the true hog in cases where one backtrace might be
+    insufficient.
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 7d153f25be678acf500236ae422b33d17e6cb7a6)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 809ff8badee654467329182e21fc35db0f01704c
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Wed Oct 5 15:02:52 2011 -0700
+
+    test: Silence some debug lines from the input unit tests
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit a046d649e4c7e4d28f350382dcdd293e92a59aad)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 3c12875447cbe24664ae5578df832110e58fb76f
+Author: Keith Packard <keithp@keithp.com>
+Date:   Wed Oct 19 17:26:50 2011 -0700
+
+    Merge remote-tracking branch 'whot/for-keith'
+    (cherry picked from commit 15bbdc103b34b6b374815698946e6c409421a644)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit e4b0c485ff3dafc90e0171ad49f88345193e3b7a
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Oct 12 09:59:38 2011 +0100
+
+    test: fix input test
+    
+    The test was memsetting the wrong thing, this fixes make check in my tinderbox.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 1433103a49b97e356da0f20aa65046cdb2f5ece6)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 44431b35e6fe1e8ab3152b784a951d9c54b72242
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Wed Oct 5 15:02:52 2011 -0700
+
+    dix: add utility functions for double to/fro FP1616/FP3232 conversion
+    
+    Co-authored-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Mark Kettenis <kettenis@openbsd.org>
+    (cherry picked from commit f9c6903d4a90b59c328f4fa05d2be9e0ce1c5189)
+    
+    Conflicts:
+    
+    	test/input.c
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit ddf22daa6f7f4c7c01e95cd11218e7357fdda337
+Author: Keith Packard <keithp@keithp.com>
+Date:   Mon Oct 17 13:50:25 2011 -0700
+
+    Merge remote-tracking branch 'whot/next'
+    (cherry picked from commit fb84be47db7cdaff406792c08e34670e8e0cbda9)
+    
+    Conflicts:
+    
+    	dix/inpututils.c
+    	include/input.h
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit cf4e91a4c8a9dd227dce2a9fe15e507b7ae844e4
+Author: Keith Packard <keithp@keithp.com>
+Date:   Mon Oct 3 11:36:28 2011 -0700
+
+    Merge remote-tracking branch 'whot/next'
+    (cherry picked from commit f5d50b46ddeb039ab6564141f61261e94ee67637)
+    
+    Conflicts:
+    
+    	hw/xfree86/common/xf86Xinput.h
+    	test/xi2/protocol-eventconvert.c
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit a17c72bc0ed96441662a8d827220d389041bbafb
+Author: vdb@picaros.org <vdb@picaros.org>
+Date:   Wed Aug 31 07:23:01 2011 +0200
+
+    xfree86: .BI style: monitor section in xorg.conf man page
+    
+    The xorg.conf manual uses the following convention in most of its
+    sections:
+    
+    bold = text to be copied literally to the config file,
+    italic = a symbolic name to be substituted by a true value.
+    
+    Some configuration keywords seem to have been changed into generic
+    options.  Prepending Option to the manual entry swapped the
+    bold-italic logic.  This patch restores the convention in the monitor
+    section and consists of
+    
+    -.BI "Option " "\*qPreferredMode\*q  " \*qstring\*q
+    +.BI "Option \*qPreferredMode\*q \*q" name \*q
+    
+    modifications.
+    
+    Plus a few minor changes (Modes → Mode) and a typo fix.
+    
+    Signed-off-by: Servaas Vandenberghe
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit c7163fdd302f706a3d67f0fdf93eeb3396bb3332)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit f5be70465e8125bb30596761207e16d5487161e2
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Sep 6 09:33:43 2011 +1000
+
+    xfree86: expose Option "TransformationMatrix"
+    
+    Recent changes to the server change the default absolute input device
+    behaviour on zaphods to span the whole desktop too. Since these setups
+    usually use an xorg.conf, allow the transformation matrix to be specified in
+    the config as well.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Simon Thum <simon.thum@gmx.de>
+    (cherry picked from commit 4b4caecb7d2c8e0b7e4fedc95fba2a728bbc25e6)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 6f1775f76248561367cb908207f05b9e7ab74864
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Sep 6 09:39:01 2011 +1000
+
+    xfree86: use subheader for Pointer Acceleration parts in xorg.conf(5)
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit cf51424a34fb2b567a867338ab44f83b5c43251c)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit dee2412a68e04d43c86c2aa7a4e1f70ee98f4a60
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Sep 5 15:43:14 2011 +1000
+
+    xfree86: fix comment typo
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 9125952b407090b040bffb3d752288293137cf77)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit e36277e9e31190d403e1ddb44539ab262cf0eea2
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 8 15:21:46 2011 +1000
+
+    Add null-terminated list interface.
+    
+    This is a set of macros to provide a struct list-alike interface for classic
+    linked lists such as the XF86OptionRec or the DeviceIntRec. The typical
+    format for these is to have a "struct foo *next" pointer in each struct foo
+    and walk through those. These macros provide a few basic functions to add to,
+    remove from and iterate through these lists.
+    
+    While struct list is in some ways more flexible, switching legacy code to
+    use struct list is not alway viable. These macros at least reduce the amount
+    of open-coded lists.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    (cherry picked from commit fcafe825751bef99f4c0b36250ca6f15f127502f)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 4cc88f2c59eb21689ecba221bc0eaeaa46e7374d
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Aug 12 15:55:48 2011 +1000
+
+    xfree86: comment typo fix
+    
+    in synch → in sync
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 79ca7c0b5786a02a80a1c40ed475e928da7c82b3)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 95bc0b5705bb0e78a9cb2aaaf8d7ba61af21450c
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Jul 29 16:33:54 2011 +1000
+
+    dix: don't XWarpPointer through the last slave anymore (#38313)
+    
+    This line was introduced pre-1.6 to fix Bug 19297. The effect of warping
+    through the VCP then was that if a device had custom valuator ranges, the
+    warp position would be wrong. The better device for this effect is the the
+    XTest device.
+    
+    This fixes a server crash where the lastSlave is a pointer device without
+    valuators (Bug 38313#0).
+    
+    And while we're at it, make sure the Xinerama code-path does the same.
+    
+    X.Org Bug 38313 <http://bugs.freedesktop.org/show_bug.cgi?id=38313>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 2bfb802839688ecf328119c4c6979390fc60348d)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 0bfa207c31ce962e7373a3e9c0d4e4764474c867
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Aug 11 10:59:07 2011 +1000
+
+    dix: use helper functions in EventIsDeliverable
+    
+    Proximity events don't have an XI2 type and caused error messages in the
+    log when trying to get the event filter. Use this opportunity to
+    clean up the code, instead of manually setting the fields that
+    GetEventFilter requires use EventTo(XI2|XI|Core) instead.
+    
+    Co-Authored-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 3be379f5076566edaf92c27df5a4d447bcf5d015)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit d6b224872b2a950c91cab3369a1d18015376e3a7
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Thu Aug 11 10:57:05 2011 +1000
+
+    dix: abstract XI2 filter mask lookup
+    
+    Don't access the xi2mask bytes directly or calculate the offsets manually,
+    use a few helper functions instead. XI2 masks are a bit weird in the event
+    handling code since they slot onto the legacy code. For core/XI 1.x events,
+    the event mask is a CARD32. That mask is used together with the event filter
+    (also 32 bit) to determine if event delivery should be attempted.
+    XI2 masks are of arbitrary size and their mask is simply the byte of the
+    mask that contains the event mask. Likewise, the filter is a single byte
+    matching that mask. Provide helper functions get these bytes and masks in
+    the right order instead of accessing them manually.
+    
+    EventIsDeliverable should be part of this cleanup patch but it will be
+    gutted with the next patch.
+    
+    Co-Authored-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 799879797505a5e891ccaec2bea73fd838c94b7a)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 3df4cf9f986a1758972d47e1a4955dd6148bb9bf
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Aug 3 15:07:23 2011 +1000
+
+    input: provide a single function to init DeviceEvents to 0
+    
+    getevents.c already had that function, but XKB was manually initializing it,
+    causing bugs when the event structure was updated in one place but not the
+    other.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 3a077f246e9ac07a37c1b01c3d321e0f5ceb4153)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 93b29777be13d2d1055b6a4d191b4dd03e953961
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 14:20:53 2011 +1000
+
+    dix: fix compiler warnings ("foo" set but not used)
+    
+    devices.c: In function 'AttachDevice':
+    devices.c:2409:18: warning: variable 'oldmaster' set but not used
+    [-Wunused-but-set-variable]
+    
+    events.c: In function 'ConfineToShape':
+    events.c:683:15: warning: variable 'pSprite' set but not used
+    [-Wunused-but-set-variable]
+    
+    events.c: In function 'ProcGrabPointer':
+    events.c:4759:15: warning: variable 'time' set but not used
+    [-Wunused-but-set-variable]
+    
+    getevents.c: In function 'GetMotionHistory':
+    getevents.c:425:9: warning: variable 'dflt' set but not used
+    [-Wunused-but-set-variable]
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 4b376ddeb4f3c9d9d279ffd2946d88edd5af4cfc)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit af899fc57c08a3f7bbf033204b2fb0aacc5f0aa4
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 14:27:54 2011 +1000
+
+    mi: fix compiler warnings ("foo" set but not used)
+    
+    misprite.c: In function 'miSpriteSaveUnderCursor':
+    misprite.c:940:12: warning: variable 'y' set but not used
+    [-Wunused-but-set-variable]
+    misprite.c:940:9: warning: variable 'x' set but not used
+    [-Wunused-but-set-variable]
+    
+    mivaltree.c: In function 'miComputeClips':
+    mivaltree.c:226:10: warning: variable 'resized' set but not used
+    [-Wunused-but-set-variable]
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 6fd2adc179141310e45a56ee90ef5b5f6115a1f6)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 2ad6d4c3abe3e3d4c517a50f30c73016c5e683d0
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Aug 2 09:21:00 2011 +1000
+
+    Xi: silence compiler warnings (set but not used)
+    
+    exevents.c: In function 'UpdateDeviceState':
+    exevents.c:719:9: warning: variable 'bit' set but not used
+    [-Wunused-but-set-variable]
+    
+    exevents.c: In function 'ProcessOtherEvent':
+    exevents.c:889:22: warning: variable 'v' set but not used
+    [-Wunused-but-set-variable]
+    exevents.c:888:17: warning: variable 'k' set but not used
+    [-Wunused-but-set-variable]
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 484cef5b29ef82402a15e155b3b8505b1e4a6830)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 4ce019c541c41bb5533a5a5a8b74db82049115a7
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 13:52:13 2011 +1000
+
+    dix: add KEYBOARD_OR_FLOAT and POINTER_OR_FLOAT to GetMaster()
+    
+    GetMaster() currently requires an attached slave device as parameter,
+    resuling in many calls being IsFloating(dev) ? dev : GetMaster(...);
+    
+    Add two new parameters so GetMaster can be called unconditionally to get the
+    right device.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 98fe735ea1d756711019c3d90ed6abd9c06abebf)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 7127c6960d04dd681cd3de8852220d2f90513e82
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Aug 2 08:54:00 2011 +1000
+
+    test: add a test for GetMaster() behaviour
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit dbbe5735d1451bb32f43bce90f0bcfeff46f9743)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 7cea2bd9a921ae55d6d9f5072b8f9a6d7b761146
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 11:54:17 2011 +1000
+
+    mi: fix comment typo, whitespace in miPointerSetPosition
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit b3c76b0c53ac42b70d12849da18465e8467e474c)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 82241760f5e738646d30253c08ec2e1c91bcf513
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Aug 1 09:52:38 2011 +1000
+
+    dix: rename mieqSwitchScreen argument fromDix → set_dequeue_screen, document
+    
+    fromDIX is neither exactly true nor particularly helpful in understanding
+    what this parameter triggers. Rename to set_dequeue_screen, because that's
+    exactly what happens.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit c9562bed0d5e26b7e3e55e26cf1ddc5086d61cc6)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit e4e5c3806093da3c8d798da3771fadce30f8858a
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Aug 9 11:21:06 2011 +1000
+
+    config: use add_option for '_source' too
+    
+    _source was being allocated manually, with all other options added to that
+    list through add_option. Skip the manual part, allocate the first option
+    _source with add_option too.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 20a61845d3c93c337bf3331a6bac30cf66c2a293)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 79289b346559876579be1cffc1d2fd35b33ccc2b
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Aug 9 11:20:31 2011 +1000
+
+    config: return the new InputOption from add_option.
+    
+    Change add_option to return the new InputOption on success, or NULL
+    failure. This way we can at least check for errors in callers.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit d33652dad8838ab0a9175ca4613a3161ebc5676f)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 9d4324b005d177671827048b25e0314c6470cf8e
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Jul 8 16:13:45 2011 +1000
+
+    Revert "Attempt to add the 'mouse' driver in more situations."
+    
+    This reverts commit 43d9edd31e31b33b9da4a50d8ab05004881c8d5a.
+    
+    This commit was introduced in the 1.2 cycle when hotplugging was less than
+    ideal (i.e. it didn't exist). From the commit message:
+    
+        Always add a mouse driver instance configured to send core events, unless
+        a core pointer already exists using either the mouse or void drivers.  This
+        handles the laptop case where the config file only specifies, say,
+        synaptics, which causes the touchpad to work but not the pointing stick.
+        We don't double-instantiate the mouse driver to avoid the mouse moving twice
+        as fast, and we skip this logic when the user asked for a void core pointer
+        since that probably means they want to run with no pointer at all.
+    
+    To get this case above, a user would need to disable hotplugging _and_ have a
+    xorg.conf that only references one device. This is possible, but not a use-case
+    we should worry about too much now.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 1357cd725143c1a35e32f15df658de111b151692)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 94283b6b5b0d529041a061f96a90f357c5e091e3
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Jul 8 16:10:07 2011 +1000
+
+    xfree86: use xf86AllocateInput for implicit devices too
+    
+    Slowly merging the vastly different code-paths.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 95772598b57f6054fbf88683fa0a492c77605790)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 025dd499ae9c1190b8f6baef5bd50f9b26ae6d80
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 15:02:20 2011 +1000
+
+    xfree86: factor out adding/removing a device from the input device array
+    
+    No functional changes, just readability improvements. This also gets rid of
+    the count variable. Count was just used for resizing the null-terminated
+    list. Since we're not in a time-critical path here at all we can afford to
+    loop the list multiple times instead of keeping an extra variable around.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit fa8f4652819b692faaf2789cf32d7fa99fbb34aa)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 22434f6706b9742ea9c350ae61324d7045a2e30e
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 14:14:11 2011 +1000
+
+    xfree86: update comment for InitInput
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 5b5477c05f691205064ca4d8034f8dd47ab975b7)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 8362af42e29add5d02c88712f49808bed072fbd0
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 14:26:13 2011 +1000
+
+    xfree86: nest loops instead of 0x1 pointers.
+    
+    If we find the core device, move all other device pointers forward right
+    then and there. The break will jump out of the top loop.
+    
+    They had a special on braces today, so I added some for readability (and
+    fixed up tab vs space indentation.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 7354f607833c69626d8692bc5176b18ea1cf6263)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit c5c869867c5fcc7b60cad3c69237624ad51162db
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 14:05:30 2011 +1000
+
+    xfree86: improve readability of synthesized device.
+    
+    No functional changes.
+    
+    The options we assign are the ones from the Pointer/Keyboard device so we
+    might as well use those readable names instead of dev[count-1]->options.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 5669aa2d24dff9ab276e5f74a09f97ec77b90e75)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 19cdfec1b49afcf9d00f486526f14aa0ac32e94a
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 13:52:11 2011 +1000
+
+    test: add a option duplication test
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 5aa826cdd1f2e768bedf23d399703a5d0b6302be)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit eebfaa128b6b87012918545e19ee67acd0306433
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 13:46:24 2011 +1000
+
+    xfree86: when implicitly choosing a core device, set the option to a value
+    
+    Devices are core pointers/keyboards by default now anyway, but let's set the
+    option to some value instead of just NULL.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 4527e2b776cfcdac2b189b5439b9a3d0b6433077)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 7a6b7fba273adf42b80fcb278db2a9dafcb9d2b6
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jul 4 13:44:44 2011 +1000
+
+    xfree86: don't warn about duplicate core devices
+    
+    It doesn't matter. All devices are core pointer devices by default now
+    anyway.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    (cherry picked from commit 44d53728a6a533fc0a6e0a10269d1cc99e9dad32)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
 commit 0ca8869e4537412f25bfd5610aba5e604952608c
 Author: Jeremy Huddleston <jeremyhu@apple.com>
 Date:   Fri Dec 9 12:58:30 2011 -0800
