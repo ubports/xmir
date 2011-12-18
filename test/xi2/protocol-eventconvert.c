@@ -197,7 +197,6 @@ static void test_convert_XIRawEvent(void)
 
     memset(&in, 0, sizeof(in));
 
-    printf("Testing all event types\n");
     in.header = ET_Internal;
     in.type = ET_RawMotion;
     test_XIRawEvent(&in);
@@ -218,7 +217,6 @@ static void test_convert_XIRawEvent(void)
     in.type = ET_RawButtonRelease;
     test_XIRawEvent(&in);
 
-    printf("Testing details and other fields\n");
     in.detail.button = 1L;
     test_XIRawEvent(&in);
     in.detail.button = 1L << 8;
@@ -250,7 +248,6 @@ static void test_convert_XIRawEvent(void)
     in.deviceid = ~0 & 0xFF;
     test_XIRawEvent(&in);
 
-    printf("Testing valuator masks\n");
     for (i = 0; i < MAX_VALUATORS; i++)
     {
         XISetMask(in.valuators.mask, i);
@@ -439,7 +436,6 @@ static void test_convert_XIDeviceEvent(void)
 
     memset(&in, 0, sizeof(in));
 
-    printf("Testing simple field values\n");
     in.header = ET_Internal;
     in.type = ET_Motion;
     in.length = sizeof(DeviceEvent);
@@ -463,7 +459,6 @@ static void test_convert_XIDeviceEvent(void)
 
     test_XIDeviceEvent(&in);
 
-    printf("Testing field ranges\n");
     /* 32 bit */
     in.detail.button = 1L;
     test_XIDeviceEvent(&in);
@@ -611,7 +606,6 @@ static void test_convert_XIDeviceEvent(void)
     in.mods.effective = ~0 & 0xFF;
     test_XIDeviceEvent(&in);
 
-    printf("Testing button masks\n");
     for (i = 0; i < sizeof(in.buttons) * 8; i++)
     {
         XISetMask(in.buttons, i);
@@ -625,7 +619,6 @@ static void test_convert_XIDeviceEvent(void)
         test_XIDeviceEvent(&in);
     }
 
-    printf("Testing valuator masks\n");
     for (i = 0; i < MAX_VALUATORS; i++)
     {
         XISetMask(in.valuators.mask, i);
@@ -813,7 +806,6 @@ static void test_convert_XIDeviceChangedEvent(void)
     DeviceChangedEvent in;
     int i;
 
-    printf("Testing simple field values\n");
     memset(&in, 0, sizeof(in));
     in.header = ET_Internal;
     in.type = ET_DeviceChanged;
