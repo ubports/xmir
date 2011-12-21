@@ -1,3 +1,10 @@
+xorg-server (2:1.11.3-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream bugfix release
+  * Merge in input changes from upstream master through commit fcda98c
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 21 Dec 2011 12:35:17 -0800
+
 xorg-server (2:1.11.2.902-1ubuntu1) precise; urgency=low
 
   * Drop prototype XI multitouch patches
