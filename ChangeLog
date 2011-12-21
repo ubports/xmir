@@ -1,3 +1,162 @@
+commit 17d456955ca912ff6536b7cff2f491f8b951e35e
+Merge: ce03688 625d108
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Wed Dec 21 12:30:03 2011 -0800
+
+    Merge remote-tracking branch 'upstream/server-1.11-branch' into upstream-1.11+input
+
+commit 625d1088192a9ad972c20fbdbcb4bb9fda979157
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Dec 16 09:15:25 2011 -0500
+
+    dmx: force -fno-strict-aliasing for xinput example
+    
+    Compiler warning:
+    xinput.c:272: warning: dereferencing pointer 'e' does break strict-aliasing
+    rules
+    
+    The code itself is the usual XInput client-side code:
+            XEvent event;
+            XDeviceMotionEvent *e = (XDeviceMotionEvent *)&event;
+            XNextEvent(display, &event);
+            printf("%d\n", e->type);
+    
+    Since XDeviceMotionEvent is not guaranteed the same size as XEvent, clients
+    must use pointer aliasing as above when using the XNextEvent API. Disable
+    strict aliasing for this example.
+    
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Gaetan Nadon <memsize@videotron.ca>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Gaetan Nadon <memsize@videotron.ca>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 3aca8199405cff5097ee5813605ec78b5ae44a43)
+
+commit ce03688df5447e6634667a32785276105c31230e
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Dec 16 12:41:08 2011 +1000
+
+    dix: button state must show the logical buttons, not physical buttons
+    
+    If the device is mapped 3 2 1, a click on physical button 1 sends a button 3
+    press, but the state was set for button 1. Fix this, the state must be set
+    for that button's logical mapping.
+    
+    https://bugzilla.gnome.org/show_bug.cgi?id=655928
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Chase Douglas <chase.douglas@canonical.com>
+    (cherry picked from commit fcda98c48610fd507ca0b89c6006a5497d9dc1c9)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit d2178c5f2931363c8626ee27352235aa5688931d
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Dec 19 14:52:41 2011 +1000
+
+    dix: don't retrieve the syncEvents tail on an empty list
+    
+    An empty list points to itself but syncEvents has the list head only and is
+    of a different format than the elements. Thus, casting it to a QdEventPtr
+    gives us garbage.
+    
+    Segfaults with XTS test case Xlib13/XGrabKeyboard
+    
+    Introduced in 7af23259d88f4c28ed21140f82cc03b3724c06bb.
+    
+    Reported-by: Aaron Plattner <aplattner@nvidia.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Chase Douglas <chase.douglas@canonical.com>
+    (cherry picked from commit 47da6b6b2c2e9245422655f94770146fb8cd430b)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 53e347b22bb79043243e25891cd7d6f374a8aa23
+Author: Keith Packard <keithp@keithp.com>
+Date:   Tue Nov 8 10:13:15 2011 -0800
+
+    Save major/minor opcodes in ClientRec for RecordAReply
+    
+    The record extension needs the major and minor opcodes in the reply
+    hook, but the request buffer may have been freed by the time the hook
+    is invoked. Saving the request major and minor codes as the request is
+    executed avoids fetching from the defunct request buffer.
+    
+    This patch also eliminates the public MinorOpcodeOfRequest function,
+    inlining it into Dispatch. Usages of that function have been replaced
+    with direct access to the new ClientRec field.
+    
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit fb22a408c69a84f81905147de9e82cf66ffb6eb2)
+    
+    Conflicts:
+    
+    	include/extension.h
+
+commit b736f8c92bae7773ff6e1fca886f9ccc50156488
+Author: Julien Cristau <jcristau@debian.org>
+Date:   Sat Nov 5 13:00:07 2011 +0100
+
+    Fix ShmPutImage for XYBitmap
+    
+    We can't call CopyArea in that case because the image has depth 1, which
+    might not match the target drawable, so we might overrun the shm
+    segment.  Commit 11817a881cb93a89788105d1e575a468f2a8d27c apparently
+    fixed a similar bug for XYPixmap, but missed the bitmap case.
+    
+    Fixes: http://bugs.debian.org/629611
+    
+    Thanks to Alan Curry for diagnosing this and providing a test case.
+    
+    Reported-and-tested-by: Alan Curry <pacman@kosh.dhis.org>
+    Reviewed-by: Peter Harris <pharris@opentext.com>
+    Signed-off-by: Julien Cristau <jcristau@debian.org>
+    (cherry picked from commit 08ec4da6a7617637914bee1636858474213cf39d)
+
+commit b2a4c09507b267495ea5e4c2e05373b323c80edf
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Sat Dec 17 12:56:59 2011 -0800
+
+    kdrive/linux: Fix compilation with -Werror=int-to-pointer-cast -Werror=pointer-to-int-cast
+    
+    Reported-by: Arkadiusz Miśkiewicz <arekm@maven.pl>
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit 1deede3c48d5ac91f50774c79f02afc6e036614e)
+
+commit beaa7ad2ec45811e16722283a8b557a08e91ef18
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Sat Dec 17 12:25:26 2011 -0800
+
+    configure.ac: Make Xephyr dependency error message more informative
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Jamey Sharp <jamey@minilop.net>
+    (cherry picked from commit d0170d54c71fc761b8f1ae7a0e555dc2ca23cf9c)
+
+commit 41524dd61020f2a446ec54643fa17aa791338cac
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Fri Dec 16 17:47:46 2011 -0800
+
+    configure.ac: 1.11.3
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+
+commit ee66474eb2009118a41539c6773e514a09d27e4d
+Author: Gaetan Nadon <memsize@videotron.ca>
+Date:   Fri Dec 9 07:45:02 2011 -0500
+
+    dmx: fix distcheck failure, missing compsize.h in Makefile.am
+    
+    which was added in commit:
+    dmx: Build fix for -Werror=implicit-function-declaration
+    
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Gaetan Nadon <memsize@videotron.ca>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 2c1d0a539c0fb1860ac89a00d1fb609f1959e1b6)
+
 commit 3eaf942e727652db144d055a08ac2deb93c86105
 Author: Keith Packard <keithp@keithp.com>
 Date:   Wed Dec 14 11:40:10 2011 -0800
