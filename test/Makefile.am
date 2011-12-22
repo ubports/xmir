@@ -1,6 +1,6 @@
 if ENABLE_UNIT_TESTS
 SUBDIRS= . xi2
-noinst_PROGRAMS = xkb input xtest list misc fixes xfree86
+noinst_PROGRAMS = xkb input xtest list misc fixes xfree86 touch
 check_LTLIBRARIES = libxservertest.la
 
 TESTS=$(noinst_PROGRAMS)
@@ -24,6 +24,7 @@ list_LDADD=$(TEST_LDADD)
 misc_LDADD=$(TEST_LDADD)
 fixes_LDADD=$(TEST_LDADD)
 xfree86_LDADD=$(TEST_LDADD)
+touch_LDADD=$(TEST_LDADD)
 
 nodist_libxservertest_la_SOURCES = $(top_builddir)/hw/xfree86/sdksyms.c
 libxservertest_la_LIBADD = \
