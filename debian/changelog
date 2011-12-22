@@ -3,8 +3,9 @@ xorg-server (2:1.11.3-0ubuntu1) UNRELEASED; urgency=low
   * New upstream bugfix release
   * Merge in input changes from upstream master through commit e7df42a
   * Bump input ABI
+  * Bump x11proto-input-dev build dependency version
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 22 Dec 2011 11:16:36 -0800
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 22 Dec 2011 11:19:59 -0800
 
 xorg-server (2:1.11.2.902-1ubuntu1) precise; urgency=low
 
