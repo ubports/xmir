@@ -4,8 +4,10 @@ xorg-server (2:1.11.3-0ubuntu1) UNRELEASED; urgency=low
   * Merge in input changes from upstream master through commit e7df42a
   * Bump input ABI
   * Bump x11proto-input-dev build dependency version
+  * Add temporary patch for fixing a test case loop
+    - Add 220_test-loop.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 22 Dec 2011 11:19:59 -0800
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 22 Dec 2011 12:11:05 -0800
 
 xorg-server (2:1.11.2.902-1ubuntu1) precise; urgency=low
 
