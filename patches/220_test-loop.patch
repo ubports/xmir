@@ -1,0 +1,36 @@
+From 5750b6dbd015529e2c7b03755c8235ee3c9e6ff7 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Thu, 22 Dec 2011 11:55:34 -0800
+Subject: [PATCH] test/xi2: Really fix infinite loop in
+ test_convert_XITouchOwnershipEvent
+
+long i;
+for (i = 1; ; i <<= 1)
+  if (i == (1 << 31))
+    break;
+
+(1 << 31) is compiled as an int, and thus is equal to -2147483648. We
+are trying to compare it against a long, which on 64-bit machines is
+2147483648. This results in an infinite loop.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+---
+ test/xi2/protocol-eventconvert.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/test/xi2/protocol-eventconvert.c b/test/xi2/protocol-eventconvert.c
+index faa9f40..bf1493c 100644
+--- a/test/xi2/protocol-eventconvert.c
++++ b/test/xi2/protocol-eventconvert.c
+@@ -1005,7 +1005,7 @@ test_convert_XITouchOwnershipEvent(void)
+     {
+         in.touchid = i;
+         test_XITouchOwnershipEvent(&in);
+-	if (i == (1 << 31))
++	if (i == ((long)1 << 31))
+ 	    break;
+     }
+ }
+-- 
+1.7.5.4
+
