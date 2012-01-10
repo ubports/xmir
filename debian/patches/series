@@ -27,4 +27,3 @@
 208_switch_on_release.diff
 209_add_legacy_bgnone_option.patch
 214_glx_dri_searchdirs.patch
-220_test-loop.patch
