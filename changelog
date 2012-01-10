@@ -1,3 +1,10 @@
+xorg-server (2:1.11.3-0ubuntu2) precise; urgency=low
+
+  * Merge in input changes from upstream master through commit 8722ad6
+  * Remove temporary patch 220_test-loop.patch, merged upstream
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 10 Jan 2012 10:48:31 +0100
+
 xorg-server (2:1.11.3-0ubuntu1) precise; urgency=low
 
   * New upstream bugfix release
