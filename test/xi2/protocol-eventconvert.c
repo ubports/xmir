@@ -1021,7 +1021,7 @@ test_convert_XITouchOwnershipEvent(void)
     {
         in.touchid = i;
         test_XITouchOwnershipEvent(&in);
-	if (i == (1 << 31))
+	if (i == ((long)1 << 31))
 	    break;
     }
 }
