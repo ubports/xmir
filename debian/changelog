@@ -1,3 +1,10 @@
+xorg-server (2:1.11.3-0ubuntu3) UNRELEASED; urgency=low
+
+  * Add temporary patch for fixing grab time bug
+    - Add 220_grab_event_time.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 11 Jan 2012 07:39:47 -0800
+
 xorg-server (2:1.11.3-0ubuntu2) precise; urgency=low
 
   * Merge in input changes from upstream master through commit 8722ad6
