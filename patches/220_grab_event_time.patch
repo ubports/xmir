@@ -1,0 +1,38 @@
+From 7aca9306a2ef3c9df5abfb1c0a2e86b2022d00f8 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Wed, 11 Jan 2012 07:31:06 -0800
+Subject: [PATCH 2/2] Use event time instead of CurrentTime for grab times
+
+When {XI,X,}AllowEvents is called, the timestamp is compared against the
+grab time to ensure that the request pertains to the current grab in the
+server. While many clients may use CurrentTime (client-side), the
+timestamp of the event causing the grab is also valid.
+
+This change ensures that the server's notion of the grab time is the
+time of the event that activated the grab rather than the time that the
+grab is actually activated.
+
+This bug was exposed through nested touch then pointer grabs.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+---
+ dix/events.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/dix/events.c b/dix/events.c
+index 5360267..d4b00e0 100644
+--- a/dix/events.c
++++ b/dix/events.c
+@@ -3723,7 +3723,8 @@ ActivatePassiveGrab(DeviceIntPtr device, GrabPtr grab, InternalEvent *event,
+         }
+     }
+ 
+-    (*grabinfo->ActivateGrab)(device, grab, currentTime, TRUE);
++    (*grabinfo->ActivateGrab)(device, grab,
++                              ClientTimeToServerTime(event->any.time), TRUE);
+ 
+     if (xE)
+     {
+-- 
+1.7.7.3
+
