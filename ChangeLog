@@ -1,42 +1,59 @@
-commit a607cde134173b158335b2c1d92a91b2ec876aa9
-Author: Keith Packard <keithp@keithp.com>
-Date:   Mon Jan 9 13:17:37 2012 -0800
-
-    Merge remote-tracking branch 'whot/multitouch'
-    
-    (cherry picked from commit e476af417d83730b11054f4e5b127ab5540bb332)
-    
-    Conflicts:
-    
-    	configure.ac
-
-commit fe5444bfe3c7cc56cd8bddb32d2dc45b22431aea
-Author: Keith Packard <keithp@keithp.com>
-Date:   Mon Jan 9 11:40:23 2012 -0800
-
-    Merge remote-tracking branch 'whot/for-keith'
-    (cherry picked from commit 0b2c6491c5e5e1c9ba067299f3de61f5acee263b)
-    
-    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
-
-commit 447156777040e0695391ecac709de3a857368a8d
+commit 7014cf0a6497f122bfa2b0e6e7794dc3e30c0c6f
 Author: Chase Douglas <chase.douglas@canonical.com>
-Date:   Thu Dec 22 12:00:37 2011 -0800
+Date:   Wed Jan 11 07:38:12 2012 -0800
 
-    test/xi2: Really fix infinite loop in test_convert_XITouchOwnershipEvent
+    Use event time instead of CurrentTime for grab times
     
-    long i;
-    for (i = 1; ; i <<= 1)
-      if (i == (1 << 31))
-        break;
+    When {XI,X,}AllowEvents is called, the timestamp is compared against the
+    grab time to ensure that the request pertains to the current grab in the
+    server. While many clients may use CurrentTime (client-side), the
+    timestamp of the event causing the grab is also valid.
     
-    (1 << 31) is compiled as an int, and thus is equal to -2147483648. We
-    are trying to compare it against a long, which on 64-bit machines is
-    2147483648. This results in an infinite loop.
+    This change ensures that the server's notion of the grab time is the
+    time of the event that activated the grab rather than the time that the
+    grab is actually activated.
+    
+    This bug was exposed through nested touch then pointer grabs.
     
     Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
-    Signed-off-by: Keith Packard <keithp@keithp.com>
-    (cherry picked from commit a28ff2cf92c2b35e02eacca21af929afabbf6b83)
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit f9e6858d5c10be6a8439c0f18bfb2325fa0ee070)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 4989bff6bfe2c0409127a523e56f177b3141b8d1
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Jan 6 13:20:45 2012 +1000
+
+    render: don't bother with animated cursors on floating slaves (#39989)
+    
+    X.Org Bug 39989 <http://bugs.freedesktop.org/show_bug.cgi?id=39989>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit bbb6b8c834e0e1491ca14403b5d0840dd14380d3)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit b5f71a5f124eb44eab08f68d3c8ef946df05bb45
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jan 9 15:04:10 2012 +1000
+
+    dix: Update pointer limits for floating devices too (#43635)
+    
+    When the screen is restructured, the pointer limits need to be reset for
+    floating slave devices as well, not just for master pointers. Only skip
+    devices that don't have a cursor (attached slaves and keyboard)
+    
+    Bug reproducer: float an absolute slave device, rotate the screen - the
+    device is now confined to a section of the screen only.
+    
+    X.Org Bug 43635 <http://bugs.freedesktop.org/show_bug.cgi?id=43635>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Chase Douglas <chase.douglas@canonical.com>
+    (cherry picked from commit 35bd77e9d0701daae87d681900d749604fc6471f)
     
     Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
 
