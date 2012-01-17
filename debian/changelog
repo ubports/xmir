@@ -1,3 +1,9 @@
+xorg-server (2:1.11.3-0ubuntu6) UNRELEASED; urgency=low
+
+  * Bump Build-Depends on x11proto-input-dev to 2.1.99.5
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 17 Jan 2012 22:21:54 +0100
+
 xorg-server (2:1.11.3-0ubuntu5) precise; urgency=low
 
   * Add Breaks clause for XInput changes
