@@ -1,3 +1,9 @@
+xorg-server (2:1.11.3-0ubuntu4) UNRELEASED; urgency=low
+
+  * Merge in input changes from upstream master through commit 954bb99
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 17 Jan 2012 19:50:43 +0100
+
 xorg-server (2:1.11.3-0ubuntu3) precise; urgency=low
 
   * Add temporary patch for fixing grab time bug
