@@ -1,8 +1,9 @@
 xorg-server (2:1.11.3-0ubuntu4) UNRELEASED; urgency=low
 
   * Merge in input changes from upstream master through commit 954bb99
+  * Remove temporary patch 220_grab_event_time.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 17 Jan 2012 19:50:43 +0100
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 17 Jan 2012 19:51:45 +0100
 
 xorg-server (2:1.11.3-0ubuntu3) precise; urgency=low
 
