@@ -120,6 +120,10 @@ Breaks:
  xserver-xorg-video-vga (<= 1:4.1.0-8),
  libgl1-mesa-dri (<< 7.10.2-4),
  libgl1-mesa-dri-experimental (<< 7.10.2-4),
+ qt4-x11 (<< 4:4.8.0-1ubuntu2),
+ utouch-geis (<< 2.2.3),
+ utouch-frame (<< 2.1.0),
+ unity (<< 5.0.0),
 Provides:
  ${videoabi},
  ${inputabi},
