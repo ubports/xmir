@@ -1,4 +1,4 @@
-xorg-server (2:1.11.3-0ubuntu5) UNRELEASED; urgency=low
+xorg-server (2:1.11.3-0ubuntu5) precise; urgency=low
 
   * Add Breaks clause for XInput changes
     - qt4-x11 < 4:4.8.0-1ubuntu2 (crashes due to XI ABI change)
@@ -6,7 +6,7 @@ xorg-server (2:1.11.3-0ubuntu5) UNRELEASED; urgency=low
     - utouch-frame < 2.1.0 (crashes due to XI ABI change)
     - unity < 5.0.0 (crashes if utouch stack is unavailable)
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 17 Jan 2012 21:58:01 +0100
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 17 Jan 2012 22:03:35 +0100
 
 xorg-server (2:1.11.3-0ubuntu4) precise; urgency=low
 
