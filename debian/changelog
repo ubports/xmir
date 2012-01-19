@@ -1,3 +1,13 @@
+xorg-server (2:1.11.3-0ubuntu7) UNRELEASED; urgency=low
+
+  * Fixes for relative devices
+    - Add 220_dont_scale_indirect.patch
+    - Add 221_pointer_motion_update_fix.patch
+    - Add 222_touch_valuators_absolute.patch
+    - Add 223_indirect_touch_x_y_valuators.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Jan 2012 10:31:20 -0800
+
 xorg-server (2:1.11.3-0ubuntu6) precise; urgency=low
 
   * Bump Build-Depends on x11proto-input-dev to 2.1.99.5

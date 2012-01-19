@@ -1,0 +1,49 @@
+From d9f359e17e1ba15ef0605250c6fa0cf48301c386 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Wed, 18 Jan 2012 18:39:01 -0800
+Subject: [PATCH 3/4] Treat all touch event valuators as absolute
+
+An indirect touch device, such as a multitouch touchpad, has relative X
+and Y axes internally. These axes are in screen coordinates. However,
+the cooresponding axes for touch events are in absolute device
+coordinates.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+---
+ dix/getevents.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/dix/getevents.c b/dix/getevents.c
+index 1547059..3e37910 100644
+--- a/dix/getevents.c
++++ b/dix/getevents.c
+@@ -222,17 +222,23 @@ set_valuators(DeviceIntPtr dev, DeviceEvent* event, ValuatorMask *mask)
+     int i;
+ 
+     /* Set the data to the previous value for unset absolute axes. The values
+-     * may be used when sent as part of an XI 1.x valuator event. */
++     * may be used when sent as part of an XI 1.x valuator event.
++     *
++     * All touch event valuators are absolute, even if the corresponding pointer
++     * valuator is relative. This is the case for indirect touch devices for the
++     * X and Y axes. */
+     for (i = 0; i < valuator_mask_size(mask); i++)
+     {
+         if (valuator_mask_isset(mask, i))
+         {
+             SetBit(event->valuators.mask, i);
+-            if (valuator_get_mode(dev, i) == Absolute)
++            if (IsTouchEvent((InternalEvent *)event) ||
++                valuator_get_mode(dev, i) == Absolute)
+                 SetBit(event->valuators.mode, i);
+             event->valuators.data[i] = valuator_mask_get_double(mask, i);
+         }
+-        else if (valuator_get_mode(dev, i) == Absolute)
++        else if (IsTouchEvent((InternalEvent *)event) ||
++                 valuator_get_mode(dev, i) == Absolute)
+             event->valuators.data[i] = dev->valuator->axisVal[i];
+     }
+ }
+-- 
+1.7.8.3
+
