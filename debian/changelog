@@ -1,3 +1,11 @@
+xorg-server (2:1.11.3-0ubuntu8) precise; urgency=low
+
+  * debian/patches/224_return_BadWindow_not_BadMatch.diff:
+    - Fix the error values of a whole slew of window-related calls.
+      Fixes some gnome-settings-daemon aborts in XLib (LP: #903973)
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 23 Jan 2012 16:09:29 +1100
+
 xorg-server (2:1.11.3-0ubuntu7) precise; urgency=low
 
   * Fixes for relative devices
