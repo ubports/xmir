@@ -31,3 +31,4 @@
 221_pointer_motion_update_fix.patch
 222_touch_valuators_absolute.patch
 223_indirect_touch_x_y_valuators.patch
+224_return_BadWindow_not_BadMatch.diff
