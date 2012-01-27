@@ -3,6 +3,8 @@ xorg-server (2:1.11.3-0ubuntu9) precise; urgency=low
   * debian/patches/500_pointer_barrier_thresholds.diff:
     - Implement proposed XFIXES 6.0 protocol.  This protocol is subject to
       change, use at own risk!
+  * debian/control:
+    - Bump build-dep on x11proto-fixes to pick up new protocol definition
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 27 Jan 2012 20:05:42 +1100
 
