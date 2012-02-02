@@ -1,3 +1,11 @@
+xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
+
+  * Drop 214_glx_dri_searchdirs.patch, drisearchdirs is no longer
+    exported in mesa's dri.pc because of multiarch and the only consumer
+    (dri-alternates) is no longer used.
+
+ -- Robert Hooker <sarvatt@ubuntu.com>  Thu, 02 Feb 2012 12:08:55 -0500
+
 xorg-server (2:1.11.3-0ubuntu9) precise; urgency=low
 
   * debian/patches/500_pointer_barrier_thresholds.diff:
