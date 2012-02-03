@@ -1,3 +1,10 @@
+xorg-server (2:1.11.3-0ubuntu11) UNRELEASED; urgency=low
+
+  * Allow for non-root config paths so xorg-gtest can be run without root
+    - Add 225_non-root_config_paths.patch backported from upstream
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 02 Feb 2012 17:01:49 -0800
+
 xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
 
   * Drop 214_glx_dri_searchdirs.patch, drisearchdirs is no longer

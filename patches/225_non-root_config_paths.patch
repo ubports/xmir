@@ -1,0 +1,247 @@
+From ead968a4300c0adeff89b9886e888b6d284c75cc Mon Sep 17 00:00:00 2001
+From: Antoine Martin <antoine@nagafix.co.uk>
+Date: Sat, 17 Dec 2011 01:36:51 +0700
+Subject: [PATCH] xserver: check for elevated privileges not uid=0
+
+This allows us to run the server as a normal user whilst still
+being able to use the -modulepath, -logfile and -config switches
+We define a xf86PrivsElevated which will do the checks and cache
+the result in case it is called more than once.
+Also renamed the paths #defines to match their new meaning.
+Original discussion which led to this patch can be found here:
+http://lists.freedesktop.org/archives/xorg-devel/2011-September/025853.html
+
+Signed-off-by: Antoine Martin <antoine@nagafix.co.uk>
+Tested-by: Michal Suchanek <hramrach at centrum.cz>
+Reviewed-by: Jamey Sharp <jamey at minilop.net>
+Reviewed-by: Adam Jackson <ajax@redhat.com>
+---
+ configure.ac                   |    2 +-
+ hw/xfree86/common/xf86Config.c |   28 +++++++-------
+ hw/xfree86/common/xf86Init.c   |   78 +++++++++++++++++++++++++++++++++++-----
+ hw/xfree86/common/xf86Priv.h   |    1 +
+ include/xorg-config.h.in       |    6 +++
+ 5 files changed, 91 insertions(+), 24 deletions(-)
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -210,7 +210,8 @@ dnl Checks for library functions.
+ AC_FUNC_VPRINTF
+ AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr \
+ 		strtol getopt getopt_long vsnprintf walkcontext backtrace \
+-		getisax getzoneid shmctl64 strcasestr ffs vasprintf])
++		getisax getzoneid shmctl64 strcasestr ffs vasprintf issetugid \
++		getresuid])
+ AC_FUNC_ALLOCA
+ dnl Old HAS_* names used in os/*.c.
+ AC_CHECK_FUNC([getdtablesize],
+--- a/hw/xfree86/common/xf86Config.c
++++ b/hw/xfree86/common/xf86Config.c
+@@ -72,8 +72,8 @@
+  * These paths define the way the config file search is done.  The escape
+  * sequences are documented in parser/scan.c.
+  */
+-#ifndef ROOT_CONFIGPATH
+-#define ROOT_CONFIGPATH	"%A," "%R," \
++#ifndef ALL_CONFIGPATH
++#define ALL_CONFIGPATH	"%A," "%R," \
+ 			"/etc/X11/%R," "%P/etc/X11/%R," \
+ 			"%E," "%F," \
+ 			"/etc/X11/%F," "%P/etc/X11/%F," \
+@@ -83,8 +83,8 @@
+ 			"%P/lib/X11/%X.%H," \
+ 			"%P/lib/X11/%X"
+ #endif
+-#ifndef USER_CONFIGPATH
+-#define USER_CONFIGPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
++#ifndef RESTRICTED_CONFIGPATH
++#define RESTRICTED_CONFIGPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
+ 			"/etc/X11/%G," "%P/etc/X11/%G," \
+ 			"/etc/X11/%X," "/etc/%X," \
+ 			"%P/etc/X11/%X.%H," \
+@@ -92,14 +92,14 @@
+ 			"%P/lib/X11/%X.%H," \
+ 			"%P/lib/X11/%X"
+ #endif
+-#ifndef ROOT_CONFIGDIRPATH
+-#define ROOT_CONFIGDIRPATH	"%A," "%R," \
++#ifndef ALL_CONFIGDIRPATH
++#define ALL_CONFIGDIRPATH	"%A," "%R," \
+ 				"/etc/X11/%R," "%C/X11/%R," \
+ 				"/etc/X11/%X," "%C/X11/%X"
+ #endif
+-#ifndef USER_CONFIGDIRPATH
+-#define USER_CONFIGDIRPATH	"/etc/X11/%R," "%C/X11/%R," \
+-				"/etc/X11/%X," "%C/X11/%X"
++#ifndef RESTRICTED_CONFIGDIRPATH
++#define RESTRICTED_CONFIGDIRPATH	"/etc/X11/%R," "%C/X11/%R," \
++					"/etc/X11/%X," "%C/X11/%X"
+ #endif
+ #ifndef SYS_CONFIGDIRPATH
+ #define SYS_CONFIGDIRPATH	"/usr/share/X11/%X," "%D/X11/%X"
+@@ -2361,12 +2361,12 @@ xf86HandleConfigFile(Bool autoconfig)
+     Bool implicit_layout = FALSE;
+ 
+     if (!autoconfig) {
+-	if (getuid() == 0) {
+-	    filesearch = ROOT_CONFIGPATH;
+-	    dirsearch = ROOT_CONFIGDIRPATH;
++	if (!xf86PrivsElevated()) {
++	    filesearch = ALL_CONFIGPATH;
++	    dirsearch = ALL_CONFIGDIRPATH;
+ 	} else {
+-	    filesearch = USER_CONFIGPATH;
+-	    dirsearch = USER_CONFIGDIRPATH;
++	    filesearch = RESTRICTED_CONFIGPATH;
++	    dirsearch = RESTRICTED_CONFIGDIRPATH;
+ 	}
+ 
+ 	if (xf86ConfigFile)
+--- a/hw/xfree86/common/xf86Init.c
++++ b/hw/xfree86/common/xf86Init.c
+@@ -236,6 +236,65 @@ xf86PrintMarkers(void)
+   LogPrintMarkers();
+ }
+ 
++Bool xf86PrivsElevated(void)
++{
++  static Bool privsTested = FALSE;
++  static Bool privsElevated = TRUE;
++
++  if (!privsTested) {
++#if defined(WIN32)
++    privsElevated = FALSE;
++#else
++    if ((getuid() != geteuid()) || (getgid() != getegid())) {
++      privsElevated = TRUE;
++    } else {
++#if defined(HAVE_ISSETUGID)
++      privsElevated = issetugid();
++#elif defined(HAVE_GETRESUID)
++      uid_t ruid, euid, suid;
++      gid_t rgid, egid, sgid;
++
++      if ((getresuid(&ruid, &euid, &suid) == 0) &&
++          (getresgid(&rgid, &egid, &sgid) == 0)) {
++        privsElevated = (euid != suid) || (egid != sgid);
++      }
++      else {
++        printf("Failed getresuid or getresgid");
++        /* Something went wrong, make defensive assumption */
++        privsElevated = TRUE;
++      }
++#else
++      if (getuid()==0) {
++        /* running as root: uid==euid==0 */
++        privsElevated = FALSE;
++      }
++      else {
++        /*
++         * If there are saved ID's the process might still be privileged
++         * even though the above test succeeded. If issetugid() and
++         * getresgid() aren't available, test this by trying to set
++         * euid to 0.
++         */
++        unsigned int oldeuid;
++        oldeuid = geteuid();
++
++        if (seteuid(0) != 0) {
++          privsElevated = FALSE;
++        } else {
++          if (seteuid(oldeuid) != 0) {
++            FatalError("Failed to drop privileges.  Exiting\n");
++          }
++          privsElevated = TRUE;
++        }
++      }
++#endif
++    }
++#endif
++    privsTested = TRUE;
++  }
++  return privsElevated;
++}
++
+ static Bool
+ xf86CreateRootWindow(WindowPtr pWin)
+ {
+@@ -855,7 +914,7 @@ OsVendorInit(void)
+ 
+ #ifdef O_NONBLOCK
+   if (!beenHere) {
+-    if (geteuid() == 0 && getuid() != geteuid())
++    if (xf86PrivsElevated())
+     {
+       int status;
+ 
+@@ -1064,10 +1123,11 @@ ddxProcessArgument(int argc, char **argv
+       FatalError("Required argument to %s not specified\n", argv[i]);	\
+     }
+ 
+-  /* First the options that are only allowed for root */
++  /* First the options that are not allowed with elevated privileges */
+   if (!strcmp(argv[i], "-modulepath") || !strcmp(argv[i], "-logfile")) {
+-    if ( (geteuid() == 0) && (getuid() != 0) ) {
+-      FatalError("The '%s' option can only be used by root.\n", argv[i]);
++    if (xf86PrivsElevated()) {
++      FatalError("The '%s' option cannot be used with "
++                 "elevated privileges.\n", argv[i]);
+     }
+     else if (!strcmp(argv[i], "-modulepath"))
+     {
+@@ -1095,9 +1155,9 @@ ddxProcessArgument(int argc, char **argv
+   if (!strcmp(argv[i], "-config") || !strcmp(argv[i], "-xf86config"))
+   {
+     CHECK_FOR_REQUIRED_ARGUMENT();
+-    if (getuid() != 0 && !xf86PathIsSafe(argv[i + 1])) {
++    if (xf86PrivsElevated() && !xf86PathIsSafe(argv[i + 1])) {
+       FatalError("\nInvalid argument for %s\n"
+-	  "\tFor non-root users, the file specified with %s must be\n"
++	  "\tWith elevated privileges, the file specified with %s must be\n"
+ 	  "\ta relative path and must not contain any \"..\" elements.\n"
+ 	  "\tUsing default "__XCONFIGFILE__" search path.\n\n",
+ 	  argv[i], argv[i]);
+@@ -1108,9 +1168,9 @@ ddxProcessArgument(int argc, char **argv
+   if (!strcmp(argv[i], "-configdir"))
+   {
+     CHECK_FOR_REQUIRED_ARGUMENT();
+-    if (getuid() != 0 && !xf86PathIsSafe(argv[i + 1])) {
++    if (xf86PrivsElevated() && !xf86PathIsSafe(argv[i + 1])) {
+       FatalError("\nInvalid argument for %s\n"
+-	  "\tFor non-root users, the file specified with %s must be\n"
++	  "\tWith elevated privileges, the file specified with %s must be\n"
+ 	  "\ta relative path and must not contain any \"..\" elements.\n"
+ 	  "\tUsing default "__XCONFIGDIR__" search path.\n\n",
+ 	  argv[i], argv[i]);
+@@ -1384,7 +1444,7 @@ ddxUseMsg(void)
+   ErrorF("\n");
+   ErrorF("\n");
+   ErrorF("Device Dependent Usage\n");
+-  if (getuid() == 0 || geteuid() != 0)
++  if (!xf86PrivsElevated())
+   {
+     ErrorF("-modulepath paths      specify the module search path\n");
+     ErrorF("-logfile file          specify a log file name\n");
+--- a/hw/xfree86/common/xf86Priv.h
++++ b/hw/xfree86/common/xf86Priv.h
+@@ -148,6 +148,7 @@ extern _X_EXPORT Bool xf86LoadModules(ch
+ extern _X_EXPORT int xf86SetVerbosity(int verb);
+ extern _X_EXPORT int xf86SetLogVerbosity(int verb);
+ extern _X_EXPORT Bool xf86CallDriverProbe( struct _DriverRec * drv, Bool detect_only );
++extern _X_EXPORT Bool xf86PrivsElevated(void);
+ 
+ #endif /* _NO_XF86_PROTOTYPES */
+ 
+--- a/include/xorg-config.h.in
++++ b/include/xorg-config.h.in
+@@ -145,4 +145,10 @@
+ /* Build with libdrm support */
+ #undef WITH_LIBDRM
+ 
++/* Have setugid */
++#undef HAVE_ISSETUGID
++
++/* Have getresuid */
++#undef HAVE_GETRESUID
++
+ #endif /* _XORG_CONFIG_H_ */

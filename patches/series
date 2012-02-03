@@ -31,6 +31,7 @@
 222_touch_valuators_absolute.patch
 223_indirect_touch_x_y_valuators.patch
 224_return_BadWindow_not_BadMatch.diff
+225_non-root_config_paths.patch
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
