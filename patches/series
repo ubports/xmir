@@ -32,3 +32,16 @@
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
+
+# Temporary, until they are merged upstream
+600-Revert-dix-deduplicate-callers-of-DeliverDeviceEvent.patch
+601-Store-window-pointer-in-touch-listener-record.patch
+602-Factor-out-TouchEnd-generation-and-delivery.patch
+603-Export-TouchEventRejected-as-TouchRejected.patch
+604-Move-AllowTouch-to-dix-touch.c-and-rename-to-TouchAc.patch
+605-Check-for-proper-window-ID-when-processing-touch-all.patch
+606-Implement-early-touch-reject.patch
+607-Implement-touch-early-accept.patch
+608-dix-fix-an-out-of-memory-crash.patch
+609-Xi-handle-new-XIAllowEvents-request-in-inputproto-2..patch
+610-Fix-scrolling.patch

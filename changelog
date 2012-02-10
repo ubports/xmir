@@ -17,8 +17,20 @@ xorg-server (2:1.11.4-0ubuntu1) UNRELEASED; urgency=low
     - 221_pointer_motion_update_fix.patch
     - 222_touch_valuators_absolute.patch
     - 223_indirect_touch_x_y_valuators.patch
+  * Add reviewed input patches that have not been merged upstream yet:
+    - 600-Revert-dix-deduplicate-callers-of-DeliverDeviceEvent.patch
+    - 601-Store-window-pointer-in-touch-listener-record.patch
+    - 602-Factor-out-TouchEnd-generation-and-delivery.patch
+    - 603-Export-TouchEventRejected-as-TouchRejected.patch
+    - 604-Move-AllowTouch-to-dix-touch.c-and-rename-to-TouchAc.patch
+    - 605-Check-for-proper-window-ID-when-processing-touch-all.patch
+    - 606-Implement-early-touch-reject.patch
+    - 607-Implement-touch-early-accept.patch
+    - 608-dix-fix-an-out-of-memory-crash.patch
+    - 609-Xi-handle-new-XIAllowEvents-request-in-inputproto-2..patch
+    - 610-Fix-scrolling.patch (LP: #925785)
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:07:32 +0100
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:18:30 +0100
 
 xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
 
