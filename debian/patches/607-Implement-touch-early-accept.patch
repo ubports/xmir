@@ -1,0 +1,108 @@
+From 6241b5e4fdbdb08d30cc8787d858ac27122d2d49 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Fri, 3 Feb 2012 16:19:11 -0800
+Subject: [PATCH] Implement touch early accept
+
+This doesn't really implement early accept as it should. Ideally, the
+server should send end events to all subsequent touch clients as soon as
+an early accept comes in. However, this implementation is still protocol
+compliant. We can always improve it later.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ Xi/exevents.c   |   27 ++++++++++++++++++++++++++-
+ dix/touch.c     |    9 ++++-----
+ include/input.h |    2 ++
+ 3 files changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/Xi/exevents.c b/Xi/exevents.c
+index b0832d0..1ecc3ba 100644
+--- a/Xi/exevents.c
++++ b/Xi/exevents.c
+@@ -1088,6 +1088,27 @@ DeliverOneTouchEvent(ClientPtr client, DeviceIntPtr dev, TouchPointInfoPtr ti,
+     return TRUE;
+ }
+ 
++static void
++ActivateEarlyAccept(DeviceIntPtr dev, TouchPointInfoPtr ti)
++{
++    int rc;
++    ClientPtr client;
++    XID error;
++
++    rc = dixLookupClient(&client, ti->listeners[0].listener, serverClient,
++                         DixSendAccess);
++    if (rc != Success)
++    {
++        ErrorF("[Xi] Failed to lookup early accepting client.\n");
++        return;
++    }
++
++    if (TouchAcceptReject(client, dev, XIAcceptTouch, ti->client_id,
++                          ti->listeners[0].window->drawable.id, &error) !=
++        Success)
++        ErrorF("[Xi] Failed to accept touch grab after early acceptance.\n");
++}
++
+ /**
+  * Generate and deliver a TouchEnd event.
+  *
+@@ -1130,7 +1151,8 @@ TouchPuntToNextOwner(DeviceIntPtr dev, TouchPointInfoPtr ti,
+                      TouchOwnershipEvent *ev)
+ {
+     /* Deliver the ownership */
+-    if (ti->listeners[0].state == LISTENER_AWAITING_OWNER)
++    if (ti->listeners[0].state == LISTENER_AWAITING_OWNER ||
++        ti->listeners[0].state == LISTENER_EARLY_ACCEPT)
+         DeliverTouchEvents(dev, ti, (InternalEvent*)ev, ti->listeners[0].listener);
+     else if (ti->listeners[0].state == LISTENER_AWAITING_BEGIN)
+         TouchEventHistoryReplay(ti, dev, ti->listeners[0].listener);
+@@ -1143,6 +1165,9 @@ TouchPuntToNextOwner(DeviceIntPtr dev, TouchPointInfoPtr ti,
+         EmitTouchEnd(dev, ti, 0, 0);
+         TouchEndTouch(dev, ti);
+     }
++
++    if (ti->listeners[0].state == LISTENER_EARLY_ACCEPT)
++        ActivateEarlyAccept(dev, ti);
+ }
+ 
+ /**
+diff --git a/dix/touch.c b/dix/touch.c
+index f55bb8c..d04801c 100644
+--- a/dix/touch.c
++++ b/dix/touch.c
+@@ -1022,12 +1022,11 @@ TouchAcceptReject(ClientPtr client, DeviceIntPtr dev, int mode,
+     if (i > 0)
+     {
+         if (mode == XIRejectTouch)
+-        {
+             TouchRejected(dev, ti, ti->listeners[i].listener, NULL);
+-            return Success;
+-        }
+-        /* FIXME: Implement early accept */
+-        return BadAccess;
++        else
++            ti->listeners[i].state = LISTENER_EARLY_ACCEPT;
++
++        return Success;
+     }
+ 
+     nev = GetTouchOwnershipEvents(events, dev, ti, mode,
+diff --git a/include/input.h b/include/input.h
+index fea5a31..b7825a7 100644
+--- a/include/input.h
++++ b/include/input.h
+@@ -583,6 +583,8 @@ extern _X_EXPORT void FreeInputAttributes(InputAttributes *attrs);
+ enum TouchListenerState{
+     LISTENER_AWAITING_BEGIN = 0,   /**< Waiting for a TouchBegin event */
+     LISTENER_AWAITING_OWNER,       /**< Waiting for a TouchOwnership event */
++    LISTENER_EARLY_ACCEPT,         /**< Waiting for ownership, has already
++                                        accepted */
+     LISTENER_IS_OWNER,             /**< Is the current owner */
+     LISTENER_HAS_END,              /**< Has already received the end event */
+ };
+-- 
+1.7.8.3
+

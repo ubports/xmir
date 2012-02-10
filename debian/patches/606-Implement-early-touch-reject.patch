@@ -1,0 +1,37 @@
+From b0c54856df71f9cabf9dad176fdade960ef8c5d9 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Fri, 3 Feb 2012 16:19:10 -0800
+Subject: [PATCH] Implement early touch reject
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ dix/touch.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/dix/touch.c b/dix/touch.c
+index 7daf81b..f55bb8c 100644
+--- a/dix/touch.c
++++ b/dix/touch.c
+@@ -1019,9 +1019,16 @@ TouchAcceptReject(ClientPtr client, DeviceIntPtr dev, int mode,
+     if (i == ti->num_listeners)
+         return BadAccess;
+ 
+-    /* FIXME: Implement early accept/reject */
+     if (i > 0)
++    {
++        if (mode == XIRejectTouch)
++        {
++            TouchRejected(dev, ti, ti->listeners[i].listener, NULL);
++            return Success;
++        }
++        /* FIXME: Implement early accept */
+         return BadAccess;
++    }
+ 
+     nev = GetTouchOwnershipEvents(events, dev, ti, mode,
+                                   ti->listeners[0].listener, 0);
+-- 
+1.7.8.3
+

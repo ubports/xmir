@@ -1,0 +1,102 @@
+From ceb026c6a6f1eea8b34e745f06f1ebcd652c0ba1 Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Fri, 27 Jan 2012 12:41:09 +1000
+Subject: [PATCH] Xi: handle new XIAllowEvents request in inputproto 2.1.99.6
+
+grab_window and touchid were removed from the struct for ABI compatibility
+reasons, we need to pull in the new, XI 2.2-specific struct.
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ Xi/xiallowev.c |   41 +++++++++++++++++++++++++++++++++++------
+ configure.ac   |    2 +-
+ 2 files changed, 36 insertions(+), 7 deletions(-)
+
+Index: xorg-server/Xi/xiallowev.c
+===================================================================
+--- xorg-server.orig/Xi/xiallowev.c	2012-02-11 00:19:36.000000000 +0100
++++ xorg-server/Xi/xiallowev.c	2012-02-11 00:20:41.372346001 +0100
+@@ -41,6 +41,7 @@
+ #include <X11/extensions/XI2proto.h>
+ 
+ #include "exglobals.h" /* BadDevice */
++#include "exevents.h"
+ #include "xiallowev.h"
+ 
+ int
+@@ -53,8 +54,12 @@ SProcXIAllowEvents(ClientPtr client)
+     swaps(&stuff->length, n);
+     swaps(&stuff->deviceid, n);
+     swapl(&stuff->time, n);
+-    /* FIXME swap touchid */
+-    /* FIXME swap window */
++    if (stuff->length > 3)
++    {
++        xXI2_2AllowEventsReq *req_xi22 = (xXI2_2AllowEventsReq*)stuff;
++        swapl(&req_xi22->touchid, n);
++        swapl(&req_xi22->grab_window, n);
++    }
+ 
+     return ProcXIAllowEvents(client);
+ }
+@@ -65,9 +70,21 @@ ProcXIAllowEvents(ClientPtr client)
+     TimeStamp time;
+     DeviceIntPtr dev;
+     int ret = Success;
+-
+-    REQUEST(xXIAllowEventsReq);
+-    /* FIXME: check request length, 12 for XI 2.0+, 20 for XI 2.2+ */
++    XIClientPtr xi_client;
++    Bool have_xi22 = FALSE;
++    REQUEST(xXI2_2AllowEventsReq);
++
++    xi_client = dixLookupPrivate(&client->devPrivates, XIClientPrivateKey);
++
++    if (version_compare(xi_client->major_version,
++                        xi_client->minor_version, 2, 2) >= 0)
++    {
++        REQUEST_AT_LEAST_SIZE(xXI2_2AllowEventsReq);
++        have_xi22 = TRUE;
++    } else
++    {
++        REQUEST_SIZE_MATCH(xXIAllowEventsReq);
++    }
+ 
+     ret = dixLookupDevice(&dev, stuff->deviceid, client, DixGetAttrAccess);
+     if (ret != Success)
+@@ -99,8 +116,20 @@ ProcXIAllowEvents(ClientPtr client)
+ 	break;
+     case XIRejectTouch:
+     case XIAcceptTouch:
+-        ret = TouchAcceptReject(client, dev, stuff->mode, stuff->touchid,
+-                                stuff->grab_window, &client->errorValue);
++        {
++            int rc;
++            WindowPtr win;
++
++            if (!have_xi22)
++                return BadValue;
++
++            rc = dixLookupWindow(&win, stuff->grab_window, client, DixReadAccess);
++            if (rc != Success)
++                return rc;
++
++            ret = TouchAcceptReject(client, dev, stuff->mode, stuff->touchid,
++                                    stuff->grab_window, &client->errorValue);
++        }
+         break;
+     default:
+ 	client->errorValue = stuff->mode;
+Index: xorg-server/configure.ac
+===================================================================
+--- xorg-server.orig/configure.ac	2012-02-11 00:19:36.000000000 +0100
++++ xorg-server/configure.ac	2012-02-11 00:20:18.960345999 +0100
+@@ -790,7 +790,7 @@ WINDOWSWMPROTO="windowswmproto"
+ APPLEWMPROTO="applewmproto >= 1.4"
+ 
+ dnl Core modules for most extensions, et al.
+-SDK_REQUIRED_MODULES="[xproto >= 7.0.22] [randrproto >= 1.2.99.3] [renderproto >= 0.11] [xextproto >= 7.1.99] [inputproto >= 2.1.99.5] [kbproto >= 1.0.3] fontsproto"
++SDK_REQUIRED_MODULES="[xproto >= 7.0.22] [randrproto >= 1.2.99.3] [renderproto >= 0.11] [xextproto >= 7.1.99] [inputproto >= 2.1.99.6] [kbproto >= 1.0.3] fontsproto"
+ # Make SDK_REQUIRED_MODULES available for inclusion in xorg-server.pc
+ AC_SUBST(SDK_REQUIRED_MODULES)
+ 
