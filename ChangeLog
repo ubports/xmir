@@ -1,3 +1,302 @@
+commit 03e15dc10aa7cec2d1db294beb0c006ea0e24e25
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Wed Jan 18 19:09:21 2012 -0800
+
+    Don't set X and Y valuators for indirect touch events
+    
+    For expediency, it made sense to always have the X and Y axes set for
+    direct touch device event propagation. The last X and Y values are
+    stored internally. However, indirect device touch event propagation
+    does not depend on the touch's X and Y values. Thus, we don't need to
+    set the values for every indirect touch event.
+    
+    On top of this, the previous X and Y values aren't stored for indirect
+    touches, so without this change the axes get erroneously set to 0.
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit e1085a0da0b9299f48b3dc41dee5e33bf022bea5)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 17e9669a686c5b943b6e22ed740c2e8ffcb39c27
+Author: Daniel Stone <daniel@fooishbar.org>
+Date:   Thu Jan 19 22:40:32 2012 +1100
+
+    UngrabAllDevices: Don't kill clients if not told to
+    
+    The kill_client argument to UngrabAllClients specifies if we want to
+    kill the client holding the grab or just deactivate the grab.
+    
+    Signed-off-by: Daniel Stone <daniel@fooishbar.org>
+    Reported-by: Julien Cristau <jcristau@debian.org>
+    Reviewed-by: Cyril Brulebois <kibi@debian.org>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 5201310559fe8708ba8278bdef77cdc1673fff71)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 36d20ea69467e0a873a457078c5032d7447ac984
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Wed Jan 18 18:04:14 2012 -0800
+
+    Only update pointer motion data for pointer emulated touch events
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 9b1e18f42a05a79d9ebec372a37b47442e397ca9)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit b6e21d8b973f46fe70517d37385342b5e2f47d22
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Wed Jan 18 18:04:13 2012 -0800
+
+    Only scale direct device touch coordinates
+    
+    Indirect touch devices provide valuator values in pure device
+    coordinates. They also don't need to be fixed up for screen crossings.
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit f00e5b02f5d9928cd88961e761da91b5faff1b32)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit ebf3e90cbb271b00dbe767ce848a9687390ec887
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Mon Jan 16 12:53:39 2012 +1000
+
+    include: Fix comment typo
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 24dc0389da3970e83e4908039957567e55f9ea05)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 1fbd9c6f967484485f1e8b333f21a1dac0da7680
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Wed Jan 18 11:47:21 2012 -0800
+
+    XQuartz: Bump bundle version to 2.7.1
+    
+    Signed-off-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit b747a91485184649c05aba6fa10734f70e926032)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 800d82ff45f150aa6680d8c3a0172a851d8a55ab
+Author: Zhigang Gong <zhigang.gong@linux.intel.com>
+Date:   Wed Jan 4 07:01:19 2012 +0000
+
+    mi/mibitblt: Fix an overflow bug of bit shift.
+    
+    When depth equal to 32 and planeMask equal to 0, the overflow will
+    occur and cause the pixmap can't be cleared. There are some test
+    cases in XTS hit this bug, and this fix can eliminate the corresponding
+    failures.
+    
+    Signed-off-by: Zhigang Gong <zhigang.gong@linux.intel.com>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit f4956faab9ccf9aba6cf9603f4489f5dad19a347)
+    (cherry picked from commit dea9377a257a402b2c7fe4a96c958d951a7d4579)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 8f40cad6e07065691799b54da37204747cb428fa
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Fri Oct 28 21:29:50 2011 -0700
+
+    Convert DetermineClientCmd to use strdup instead of malloc+strncpy
+    
+    *cmdname is initialized to NULL earlier in the function, so it's
+    okay to overwrite it with NULL if strdup fails, don't need that
+    extra check.
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    (cherry picked from commit 780133f9ae7fada462714b47e79d26075bbd9abe)
+    (cherry picked from commit d2db5100b1bafeeea8c1febd390631c8f8abb094)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 2538c43541a48bddc654eea645bd3408e741a49a
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Tue Dec 13 21:23:12 2011 -0500
+
+    dix: Tune dixLookupDrawable for success
+    
+    The vast vast vast majority of resource lookups are successful.  Move some
+    work to the error paths so we don't punish success.
+    
+    Before:
+    40000000 trep @   0.0009 msec (1109091.3/sec): PutImage 10x10 square
+    60000000 trep @   0.0005 msec (2072652.2/sec): ShmPutImage 10x10 square
+    
+    After:
+    40000000 trep @   0.0009 msec (1148346.9/sec): PutImage 10x10 square
+    60000000 trep @   0.0005 msec (2091666.1/sec): ShmPutImage 10x10 square
+    
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit 8f9bdfd293ad8e45755efe8d764b4dcc2a724f51)
+    (cherry picked from commit 5b28bcb340e279e7f4e76617e86b439092367690)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit d0c6ccbfb61eb4b0e5c83b8ecf5ebcf3a4e90ba7
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Tue Dec 13 20:23:40 2011 -0500
+
+    dix: Tune dtrace hooks around Dispatch
+    
+    Don't call LookupMajorName if the hooks aren't active, it's quite expensive.
+    
+    Before:
+    40000000 trep @   0.0009 msec (1087458.5/sec): PutImage 10x10 square
+    60000000 trep @   0.0005 msec (2012238.6/sec): ShmPutImage 10x10 square
+    
+    After:
+    40000000 trep @   0.0009 msec (1109091.3/sec): PutImage 10x10 square
+    60000000 trep @   0.0005 msec (2072652.2/sec): ShmPutImage 10x10 square
+    
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit 83a98543b58c661a22574a6f8d8f9d777c0955b8)
+    (cherry picked from commit e1ea93fec93b13d18df4451210aaaf322b769b6a)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 33af6a8d422a6ba95883e448dbfe6fb8ff4ce2ec
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Tue Dec 13 21:00:05 2011 -0500
+
+    xace: ricer tuning for XaceHook
+    
+    gcc doesn't want to hoist the check for XaceHooks[hook] != NULL above the
+    varargs code for some reason, so do it ourselves.
+    
+    Before:
+    40000000 trep @   0.0010 msec (1050420.2/sec): PutImage 10x10 square
+    60000000 trep @   0.0005 msec (1921147.6/sec): ShmPutImage 10x10 square
+    
+    After:
+    40000000 trep @   0.0009 msec (1087458.5/sec): PutImage 10x10 square
+    60000000 trep @   0.0005 msec (2012238.6/sec): ShmPutImage 10x10 square
+    
+    Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    (cherry picked from commit 11977fab546da35d579ebe285e3c26864007805e)
+    (cherry picked from commit 9eaa0b5c89f645c50ea90e07e8b49ebacf4349a0)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit eecdd1c758c3a610038384308e0f9ae558cc92fc
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Tue Jan 3 10:45:45 2012 +1000
+
+    xfree86: split warning about missing identifier or input driver
+    
+    Check for identifier first and bail if it's missing (also remove the current
+    identifier check after we've already bailed due to missing identifiers)
+    
+    If a driver is missing, warn but also say that we may have added this device
+    already. I see too many bugreports with incorrectly shortened log files.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Cyril Brulebois <kibi@debian.org>
+    (cherry picked from commit 75953ccb9e9e5f1dbbaa44c714716a0049e22aae)
+    (cherry picked from commit a3b6ecc893e17028cfbe16d8d7981c9037fc0766)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit f17bd8187cbce7f848c9613c51d0fcfe86c49489
+Author: Julien Cristau <jcristau@debian.org>
+Date:   Fri Dec 30 20:41:25 2011 +0100
+
+    os: don't ignore failure from dladdr
+    
+    If dladdr returns 0, don't go and use the returned Dl_info, it may
+    contain garbage.
+    
+    X.Org bug#44315 <https://bugs.freedesktop.org/show_bug.cgi?id=44315>
+    
+    Reported-and-tested-by: Cyril Brulebois <kibi@debian.org>
+    Reviewed-by: Jeremy Huddleston <jeremyhu@apple.com>
+    Reviewed-by: Cyril Brulebois <kibi@debian.org>
+    Signed-off-by: Julien Cristau <jcristau@debian.org>
+    (cherry picked from commit 6269977c91071e0ea16ca5b4b8e15fd6db0b6fcf)
+    (cherry picked from commit 4a339afc586d55a9a248b893f007219d79c72600)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 70130bf9e5feaefe9807a47d12c520b91baa5dca
+Author: Matthieu Herrb <matthieu.herrb@laas.fr>
+Date:   Mon Jan 2 13:23:59 2012 +0000
+
+    Add OpenBSD support to DetermineClientCmd()
+    
+    Uses kvm_getargv() from libkvm.
+    
+    Signed-off-by: Matthieu Herrb <matthieu.herrb@laas.fr>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 6d6d4cb6043905d850834946e9bfc526ed5a9ef7)
+    (cherry picked from commit 9a4be7e99f0e832df87b8e7fb548793dd4b52717)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 364540f76e0c80ef26f301785214e6a9cb0e5a04
+Author: Alan Coopersmith <alan.coopersmith@oracle.com>
+Date:   Sat Dec 24 10:00:56 2011 -0800
+
+    Add Solaris support to DetermineClientCmd
+    
+    Uses /proc/pid/psinfo to read command & partial arguments.
+    
+    Moves cmdsize & argsize variables into non-Solaris #else clause
+    to avoid unused variable warnings.
+    
+    Fixes format mismatch errors when building with DEBUG defined on
+    a 64-bit platform (where Mask is defined as CARD32).
+    
+    Signed-off-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+    Reviewed-by: Rami Ylimäki <rami.ylimaki@vincit.fi>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit cfc4c3d7fa8bd4da4c08b2ab8e6f85435f75353a)
+    (cherry picked from commit 8046717d720c1bbbf02ba986622bc96c6b52a36c)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 2c973d2c078e8af01a06334a4a2ee8705e369bf2
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Nov 9 15:31:10 2011 +1000
+
+    Xext: don't swap CARD8 in SProcSELinuxQueryVersion
+    
+    xselinux_ext.c: In function 'SELinuxSendItemsToClient':
+    xselinux_ext.c:340:16: warning: unused variable 'n' [-Wunused-variable]
+    xselinux_ext.c: In function 'SProcSELinuxQueryVersion':
+    xselinux_ext.c:532:62: error: call to 'wrong_size' declared with attribute
+    error: wrong sized variable passed to swap
+    xselinux_ext.c:533:62: error: call to 'wrong_size' declared with attribute
+    error: wrong sized variable passed to swap
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Julien Cristau <jcristau@debian.org>
+    (cherry picked from commit bb4aa1f263ad38c175bfda3b7e6c325260ce3f28)
+    
+    Conflicts:
+    
+    	Xext/xselinux_ext.c
+    (cherry picked from commit cf296f2eeffe4b438e9378268f84a1f63c555e52)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
 commit 7014cf0a6497f122bfa2b0e6e7794dc3e30c0c6f
 Author: Chase Douglas <chase.douglas@canonical.com>
 Date:   Wed Jan 11 07:38:12 2012 -0800
