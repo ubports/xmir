@@ -12,8 +12,13 @@ xorg-server (2:1.11.4-0ubuntu1) UNRELEASED; urgency=low
   [ Chase Douglas ]
   * Update to 1.11.99.902 input stack
   * Update to 1.11.4 for everything else
+  * Drop input patches that have been merged upstream:
+    - 220_dont_scale_indirect.patch
+    - 221_pointer_motion_update_fix.patch
+    - 222_touch_valuators_absolute.patch
+    - 223_indirect_touch_x_y_valuators.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:02:40 +0100
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:07:32 +0100
 
 xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
 
