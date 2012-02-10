@@ -29,8 +29,9 @@ xorg-server (2:1.11.4-0ubuntu1) UNRELEASED; urgency=low
     - 608-dix-fix-an-out-of-memory-crash.patch
     - 609-Xi-handle-new-XIAllowEvents-request-in-inputproto-2..patch
     - 610-Fix-scrolling.patch (LP: #925785)
+  * Bump deps on x11proto-input-dev to 2.1.99.6
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:18:30 +0100
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:23:30 +0100
 
 xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
 
