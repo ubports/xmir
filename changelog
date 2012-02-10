@@ -1,4 +1,4 @@
-xorg-server (2:1.11.3-0ubuntu11) UNRELEASED; urgency=low
+xorg-server (2:1.11.4-0ubuntu1) UNRELEASED; urgency=low
 
   [ Chase Douglas ]
   * Allow for non-root config paths so xorg-gtest can be run without root
@@ -9,7 +9,11 @@ xorg-server (2:1.11.3-0ubuntu11) UNRELEASED; urgency=low
     - Fall back to autoconfiguration for graphics drivers in some cases
       instead of letting X fail when configuration files are available.
 
- -- Alberto Milone <alberto.milone@canonical.com>  Thu, 09 Feb 2012 16:57:10 +0100
+  [ Chase Douglas ]
+  * Update to 1.11.99.902 input stack
+  * Update to 1.11.4 for everything else
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:02:40 +0100
 
 xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
 
