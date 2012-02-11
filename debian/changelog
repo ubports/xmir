@@ -1,4 +1,4 @@
-xorg-server (2:1.11.4-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.11.4-0ubuntu1) precise; urgency=low
 
   [ Chase Douglas ]
   * Allow for non-root config paths so xorg-gtest can be run without root
@@ -31,7 +31,7 @@ xorg-server (2:1.11.4-0ubuntu1) UNRELEASED; urgency=low
     - 610-Fix-scrolling.patch (LP: #925785)
   * Bump deps on x11proto-input-dev to 2.1.99.6
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Sat, 11 Feb 2012 00:23:30 +0100
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 10 Feb 2012 16:27:25 -0800
 
 xorg-server (2:1.11.3-0ubuntu10) precise; urgency=low
 
