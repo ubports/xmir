@@ -45,3 +45,4 @@
 608-dix-fix-an-out-of-memory-crash.patch
 609-Xi-handle-new-XIAllowEvents-request-in-inputproto-2..patch
 610-Fix-scrolling.patch
+611-Fix-touch-punt-crash.patch
