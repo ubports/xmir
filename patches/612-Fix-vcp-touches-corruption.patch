@@ -1,0 +1,45 @@
+From 347e785fa6177b5cac29d6c361e7c54289006a7c Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Mon, 13 Feb 2012 15:44:41 -0800
+Subject: [PATCH 1/2] Don't clobber virtual core pointer touches array length
+
+When copying the touch class, the VCP has its own touches array. The
+length of this array must be kept alongside the array itself or we get
+memory corruption.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+---
+ Xi/exevents.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/Xi/exevents.c b/Xi/exevents.c
+index 671c051..51f991c 100644
+--- a/Xi/exevents.c
++++ b/Xi/exevents.c
+@@ -671,7 +671,8 @@ DeepCopyPointerClasses(DeviceIntPtr from, DeviceIntPtr to)
+ 
+     if (from->touch)
+     {
+-        TouchPointInfoPtr tmp;
++        TouchPointInfoPtr to_touches_array_tmp;
++        int to_num_touches_tmp;
+         if (!to->touch)
+         {
+             classes = to->unused_classes;
+@@ -692,9 +693,11 @@ DeepCopyPointerClasses(DeviceIntPtr from, DeviceIntPtr to)
+             } else
+                 classes->touch = NULL;
+         }
+-        tmp = to->touch->touches;
++        to_touches_array_tmp = to->touch->touches;
++        to_num_touches_tmp = to->touch->num_touches;
+         memcpy(to->touch, from->touch, sizeof(TouchClassRec));
+-        to->touch->touches = tmp;
++        to->touch->touches = to_touches_array_tmp;
++        to->touch->num_touches = to_num_touches_tmp;
+         to->touch->sourceid = from->id;
+     } else if (to->touch)
+     {
+-- 
+1.7.9
+

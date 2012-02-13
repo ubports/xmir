@@ -1,3 +1,11 @@
+xorg-server (2:1.11.4-0ubuntu3) UNRELEASED; urgency=low
+
+  * Fix touch class memory corruption
+    - Add 612-Fix-vcp-touches-corruption.patch
+    - Add 613-Keep-vcp-touch-class.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 13 Feb 2012 15:53:23 -0800
+
 xorg-server (2:1.11.4-0ubuntu2) precise; urgency=low
 
   * Fix crash when punting a touch to a non-existent owner
