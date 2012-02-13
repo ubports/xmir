@@ -46,3 +46,5 @@
 609-Xi-handle-new-XIAllowEvents-request-in-inputproto-2..patch
 610-Fix-scrolling.patch
 611-Fix-touch-punt-crash.patch
+612-Fix-vcp-touches-corruption.patch
+613-Keep-vcp-touch-class.patch
