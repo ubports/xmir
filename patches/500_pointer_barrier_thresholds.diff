@@ -1,7 +1,7 @@
 Index: xorg-server/include/protocol-versions.h
 ===================================================================
---- xorg-server.orig/include/protocol-versions.h	2012-01-27 20:49:26.085712305 +1100
-+++ xorg-server/include/protocol-versions.h	2012-01-27 20:53:59.721697695 +1100
+--- xorg-server.orig/include/protocol-versions.h	2012-02-21 18:14:17.631996352 +1100
++++ xorg-server/include/protocol-versions.h	2012-02-22 11:39:06.722090873 +1100
 @@ -122,7 +122,7 @@
  #define SERVER_XF86VIDMODE_MINOR_VERSION	2
  
@@ -11,34 +11,10 @@ Index: xorg-server/include/protocol-versions.h
  #define SERVER_XFIXES_MINOR_VERSION		0
  
  /* X Input */
-Index: xorg-server/mi/mipointer.c
-===================================================================
---- xorg-server.orig/mi/mipointer.c	2012-01-27 20:53:59.525697704 +1100
-+++ xorg-server/mi/mipointer.c	2012-01-27 20:53:59.721697695 +1100
-@@ -623,6 +623,9 @@
- 	    }
- 	}
-     }
-+    if (pScreen->ConstrainCursorHarder)
-+       pScreen->ConstrainCursorHarder(pDev, pScreen, mode, &x, &y);
-+
-     /* Constrain the sprite to the current limits. */
-     if (x < pPointer->limits.x1)
- 	x = pPointer->limits.x1;
-@@ -633,9 +636,6 @@
-     if (y >= pPointer->limits.y2)
- 	y = pPointer->limits.y2 - 1;
- 
--    if (pScreen->ConstrainCursorHarder)
--       pScreen->ConstrainCursorHarder(pDev, pScreen, mode, &x, &y);
--
-     if (pPointer->x != x || pPointer->y != y ||
-             pPointer->pScreen != pScreen)
-         miPointerMoveNoEvent(pDev, pScreen, x, y);
 Index: xorg-server/xfixes/cursor.c
 ===================================================================
---- xorg-server.orig/xfixes/cursor.c	2012-01-27 20:49:26.109712303 +1100
-+++ xorg-server/xfixes/cursor.c	2012-01-27 20:54:59.037694528 +1100
+--- xorg-server.orig/xfixes/cursor.c	2012-02-21 18:14:17.647996351 +1100
++++ xorg-server/xfixes/cursor.c	2012-02-22 11:39:06.722090873 +1100
 @@ -61,6 +61,7 @@
  static RESTYPE		CursorHideCountType;
  static RESTYPE		CursorWindowType;
@@ -47,7 +23,19 @@ Index: xorg-server/xfixes/cursor.c
  static CursorPtr	CursorCurrent[MAXDEVICES];
  
  static DevPrivateKeyRec CursorScreenPrivateKeyRec;
-@@ -129,6 +130,7 @@
+@@ -119,6 +120,11 @@
+     struct list entry;
+ };
+ 
++/**
++ * Pick up unclamped (x,y) coordinates from dix/getevents
++ */
++extern int unclamped_prex, unclamped_prey;
++
+ /*
+  * Wrap DisplayCursor to catch cursor change events
+  */
+@@ -129,6 +135,7 @@
      ConstrainCursorHarderProcPtr ConstrainCursorHarder;
      CursorHideCountPtr          pCursorHideCounts;
      struct list                 barriers;
@@ -55,7 +43,7 @@ Index: xorg-server/xfixes/cursor.c
  } CursorScreenRec, *CursorScreenPtr;
  
  #define GetCursorScreen(s) ((CursorScreenPtr)dixLookupPrivate(&(s)->devPrivates, CursorScreenPrivateKey))
-@@ -1232,14 +1234,77 @@
+@@ -1232,18 +1239,90 @@
  }
  
  static void
@@ -133,13 +121,29 @@ Index: xorg-server/xfixes/cursor.c
  
  	/* where are we coming from */
  	miPointerGetPosition(dev, &ox, &oy);
-@@ -1252,11 +1317,27 @@
+ 
++	/* Use the unclamped values, if available.  If not, *x, *y
++	 * will have to do.
++	 * NOTE: We should never get here with unclamped values unset.
++	 */
++	if (unclamped_prex == -1 || unclamped_prey == -1) {
++	    unclamped_prex = *x;
++	    unclamped_prey = *y;
++	}
++
+ 	/* How this works:
+ 	 * Given the origin and the movement vector, get the nearest barrier
+ 	 * to the origin that is blocking the movement.
+@@ -1251,12 +1330,28 @@
+ 	 * Then, check from the clamped intersection to the original
  	 * destination, again finding the nearest barrier and clamping.
  	 */
- 	dir = barrier_get_direction(ox, oy, *x, *y);
-+	barrier_calculate_velocity_components(ox, oy, *x, *y, &vel_x, &vel_y);
+-	dir = barrier_get_direction(ox, oy, *x, *y);
++	dir = barrier_get_direction(ox, oy, unclamped_prex, unclamped_prey);
++	barrier_calculate_velocity_components(ox, oy, unclamped_prex, unclamped_prey, &vel_x, &vel_y);
  
- 	nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
+-	nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
++	nearest = barrier_find_nearest(cs, dir, ox, oy, unclamped_prex, unclamped_prey);
  	if (nearest) {
 -	    barrier_clamp_to_barrier(nearest, dir, x, y);
 +	    int velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
@@ -150,21 +154,24 @@ Index: xorg-server/xfixes/cursor.c
 +		/* This is the start of a new barrier event */
 +		nearest->barrierEventID++;
 +	    }
- 
++
 +	    if ((!threshold_exceeded || nearest->lastHit) &&
 +		(nearest->barrierEventID != nearest->releaseEventID)) {
 +		barrier_clamp_to_barrier(nearest, dir, x, y);
 +		nearest->hit = TRUE;
 +	    }
-+
+ 
 +	    SendBarrierEvent(cs, nearest, *x, *y, velocity, threshold_exceeded);
 +		
  	    if (barrier_is_vertical(nearest)) {
  		dir &= ~(BarrierNegativeX | BarrierPositiveX);
  		ox = *x;
-@@ -1267,9 +1348,29 @@
+@@ -1265,11 +1360,31 @@
+ 		oy = *y;
+ 	    }
  
- 	    nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
+-	    nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
++	    nearest = barrier_find_nearest(cs, dir, ox, oy, unclamped_prex, unclamped_prey);
  	    if (nearest) {
 -		barrier_clamp_to_barrier(nearest, dir, x, y);
 +		velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
@@ -193,16 +200,16 @@ Index: xorg-server/xfixes/cursor.c
      }
  
      if (cs->ConstrainCursorHarder) {
-@@ -1288,11 +1389,41 @@
+@@ -1288,11 +1403,41 @@
  
      if (ret) {
  	ret->screen = screen;
 +	ret->barrier.barrier = stuff->barrier;
- 	ret->barrier.x1 = min(stuff->x1, stuff->x2);
- 	ret->barrier.x2 = max(stuff->x1, stuff->x2);
- 	ret->barrier.y1 = min(stuff->y1, stuff->y2);
- 	ret->barrier.y2 = max(stuff->y1, stuff->y2);
- 	ret->barrier.directions = stuff->directions & 0x0f;
++	ret->barrier.x1 = min(stuff->x1, stuff->x2);
++	ret->barrier.x2 = max(stuff->x1, stuff->x2);
++	ret->barrier.y1 = min(stuff->y1, stuff->y2);
++	ret->barrier.y2 = max(stuff->y1, stuff->y2);
++	ret->barrier.directions = stuff->directions & 0x0f;
 +	ret->barrier.velocity = 0;
 +	ret->barrier.barrierEventID = 0;
 +	if (barrier_is_horizontal(&ret->barrier))
@@ -225,17 +232,17 @@ Index: xorg-server/xfixes/cursor.c
 +    if (ret) {
 +	ret->screen = screen;
 +	ret->barrier.barrier = stuff->barrier;
-+	ret->barrier.x1 = min(stuff->x1, stuff->x2);
-+	ret->barrier.x2 = max(stuff->x1, stuff->x2);
-+	ret->barrier.y1 = min(stuff->y1, stuff->y2);
-+	ret->barrier.y2 = max(stuff->y1, stuff->y2);
-+	ret->barrier.directions = stuff->directions & 0x0f;
+ 	ret->barrier.x1 = min(stuff->x1, stuff->x2);
+ 	ret->barrier.x2 = max(stuff->x1, stuff->x2);
+ 	ret->barrier.y1 = min(stuff->y1, stuff->y2);
+ 	ret->barrier.y2 = max(stuff->y1, stuff->y2);
+ 	ret->barrier.directions = stuff->directions & 0x0f;
 +	ret->barrier.velocity = stuff->velocity;
 +	ret->barrier.barrierEventID = 0;
  	if (barrier_is_horizontal(&ret->barrier))
  	    ret->barrier.directions &= ~(BarrierPositiveX | BarrierNegativeX);
  	if (barrier_is_vertical(&ret->barrier))
-@@ -1365,6 +1496,69 @@
+@@ -1365,6 +1510,69 @@
      return ProcXFixesVector[stuff->xfixesReqType](client);
  }
  
@@ -305,7 +312,7 @@ Index: xorg-server/xfixes/cursor.c
  static int
  CursorFreeBarrier(void *data, XID id)
  {
-@@ -1421,6 +1615,118 @@
+@@ -1421,6 +1629,118 @@
      return ProcXFixesVector[stuff->xfixesReqType](client);
  }
  
@@ -424,7 +431,7 @@ Index: xorg-server/xfixes/cursor.c
  Bool
  XFixesCursorInit (void)
  {
-@@ -1441,6 +1747,7 @@
+@@ -1441,6 +1761,7 @@
  	if (!cs)
  	    return FALSE;
  	list_init(&cs->barriers);
@@ -432,7 +439,7 @@ Index: xorg-server/xfixes/cursor.c
  	Wrap (cs, pScreen, CloseScreen, CursorCloseScreen);
  	Wrap (cs, pScreen, DisplayCursor, CursorDisplayCursor);
  	Wrap (cs, pScreen, ConstrainCursorHarder, CursorConstrainCursorHarder);
-@@ -1455,8 +1762,10 @@
+@@ -1455,8 +1776,10 @@
  					     "XFixesCursorWindow");
      PointerBarrierType = CreateNewResourceType(CursorFreeBarrier,
  					      "XFixesPointerBarrier");
@@ -446,8 +453,8 @@ Index: xorg-server/xfixes/cursor.c
  
 Index: xorg-server/xfixes/xfixes.c
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.c	2012-01-27 20:49:26.097712304 +1100
-+++ xorg-server/xfixes/xfixes.c	2012-01-27 20:53:59.721697695 +1100
+--- xorg-server.orig/xfixes/xfixes.c	2012-02-21 18:14:17.655996351 +1100
++++ xorg-server/xfixes/xfixes.c	2012-02-22 11:39:06.726090873 +1100
 @@ -100,6 +100,7 @@
      X_XFixesExpandRegion,	    /* Version 3 */
      X_XFixesShowCursor,		    /* Version 4 */
@@ -480,8 +487,8 @@ Index: xorg-server/xfixes/xfixes.c
  static int
 Index: xorg-server/xfixes/xfixes.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.h	2012-01-27 20:49:26.133712302 +1100
-+++ xorg-server/xfixes/xfixes.h	2012-01-27 20:53:59.721697695 +1100
+--- xorg-server.orig/xfixes/xfixes.h	2012-02-21 18:14:17.671996350 +1100
++++ xorg-server/xfixes/xfixes.h	2012-02-22 11:39:06.726090873 +1100
 @@ -28,6 +28,7 @@
  #define _XFIXES_H_
  
@@ -520,8 +527,8 @@ Index: xorg-server/xfixes/xfixes.h
  
 Index: xorg-server/xfixes/xfixesint.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixesint.h	2012-01-27 20:49:26.121712303 +1100
-+++ xorg-server/xfixes/xfixesint.h	2012-01-27 20:53:59.721697695 +1100
+--- xorg-server.orig/xfixes/xfixesint.h	2012-02-21 18:14:17.683996349 +1100
++++ xorg-server/xfixes/xfixesint.h	2012-02-22 11:39:06.726090873 +1100
 @@ -59,6 +59,7 @@
  #include "windowstr.h"
  #include "selection.h"
@@ -557,3 +564,36 @@ Index: xorg-server/xfixes/xfixesint.h
  /* Xinerama */
  extern int (*PanoramiXSaveXFixesVector[XFixesNumberRequests])(ClientPtr);
  void PanoramiXFixesInit (void);
+Index: xorg-server/dix/getevents.c
+===================================================================
+--- xorg-server.orig/dix/getevents.c	2012-02-21 18:14:17.703996348 +1100
++++ xorg-server/dix/getevents.c	2012-02-22 12:09:46.441992647 +1100
+@@ -79,6 +79,12 @@
+ InternalEvent* InputEventList = NULL;
+ 
+ /**
++ * xfixes/cursor.c wants the unclamped (x,y) values for velocity
++ * calculation.  Export them here.
++ */
++int unclamped_prex = -1, unclamped_prey = -1;
++
++/**
+  * Pick some arbitrary size for Xi motion history.
+  */
+ int
+@@ -903,7 +909,15 @@
+     /* miPointerSetPosition takes care of crossing screens for us, as well as
+      * clipping to the current screen. Coordinates returned are in desktop
+      * coord system */
++    /** 
++     * Hack to pass the unclipped values through to the pointer barrier code.
++     * Required (for now) to calculate the velocity.
++     */
++    unclamped_prex = (int)floor(*screenx) - scr->x;
++    unclamped_prey = (int)floor(*screeny) - scr->y;
+     scr = miPointerSetPosition(dev, mode, screenx, screeny);
++    unclamped_prex = -1;
++    unclamped_prey = -1;
+ 
+     /* If we were constrained, rescale x/y from the screen coordinates so
+      * the device valuators reflect the correct position. For screen
