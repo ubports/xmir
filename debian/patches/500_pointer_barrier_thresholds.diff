@@ -1,7 +1,7 @@
 Index: xorg-server/include/protocol-versions.h
 ===================================================================
---- xorg-server.orig/include/protocol-versions.h	2012-02-21 18:14:17.631996352 +1100
-+++ xorg-server/include/protocol-versions.h	2012-02-22 11:39:06.722090873 +1100
+--- xorg-server.orig/include/protocol-versions.h	2012-02-24 16:39:37.450646271 +1100
++++ xorg-server/include/protocol-versions.h	2012-02-24 16:39:52.162647011 +1100
 @@ -122,7 +122,7 @@
  #define SERVER_XF86VIDMODE_MINOR_VERSION	2
  
@@ -13,8 +13,8 @@ Index: xorg-server/include/protocol-versions.h
  /* X Input */
 Index: xorg-server/xfixes/cursor.c
 ===================================================================
---- xorg-server.orig/xfixes/cursor.c	2012-02-21 18:14:17.647996351 +1100
-+++ xorg-server/xfixes/cursor.c	2012-02-22 11:39:06.722090873 +1100
+--- xorg-server.orig/xfixes/cursor.c	2012-02-24 16:39:37.458646271 +1100
++++ xorg-server/xfixes/cursor.c	2012-02-24 16:39:52.162647011 +1100
 @@ -61,6 +61,7 @@
  static RESTYPE		CursorHideCountType;
  static RESTYPE		CursorWindowType;
@@ -453,8 +453,8 @@ Index: xorg-server/xfixes/cursor.c
  
 Index: xorg-server/xfixes/xfixes.c
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.c	2012-02-21 18:14:17.655996351 +1100
-+++ xorg-server/xfixes/xfixes.c	2012-02-22 11:39:06.726090873 +1100
+--- xorg-server.orig/xfixes/xfixes.c	2012-02-24 16:39:37.470646272 +1100
++++ xorg-server/xfixes/xfixes.c	2012-02-24 16:39:52.162647011 +1100
 @@ -100,6 +100,7 @@
      X_XFixesExpandRegion,	    /* Version 3 */
      X_XFixesShowCursor,		    /* Version 4 */
@@ -487,8 +487,8 @@ Index: xorg-server/xfixes/xfixes.c
  static int
 Index: xorg-server/xfixes/xfixes.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.h	2012-02-21 18:14:17.671996350 +1100
-+++ xorg-server/xfixes/xfixes.h	2012-02-22 11:39:06.726090873 +1100
+--- xorg-server.orig/xfixes/xfixes.h	2012-02-24 16:39:37.474646272 +1100
++++ xorg-server/xfixes/xfixes.h	2012-02-24 16:39:52.162647011 +1100
 @@ -28,6 +28,7 @@
  #define _XFIXES_H_
  
@@ -527,8 +527,8 @@ Index: xorg-server/xfixes/xfixes.h
  
 Index: xorg-server/xfixes/xfixesint.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixesint.h	2012-02-21 18:14:17.683996349 +1100
-+++ xorg-server/xfixes/xfixesint.h	2012-02-22 11:39:06.726090873 +1100
+--- xorg-server.orig/xfixes/xfixesint.h	2012-02-24 16:39:37.482646273 +1100
++++ xorg-server/xfixes/xfixesint.h	2012-02-24 16:39:52.166647011 +1100
 @@ -59,6 +59,7 @@
  #include "windowstr.h"
  #include "selection.h"
@@ -566,8 +566,8 @@ Index: xorg-server/xfixes/xfixesint.h
  void PanoramiXFixesInit (void);
 Index: xorg-server/dix/getevents.c
 ===================================================================
---- xorg-server.orig/dix/getevents.c	2012-02-21 18:14:17.703996348 +1100
-+++ xorg-server/dix/getevents.c	2012-02-22 12:09:46.441992647 +1100
+--- xorg-server.orig/dix/getevents.c	2012-02-24 16:39:37.494646273 +1100
++++ xorg-server/dix/getevents.c	2012-02-24 21:03:00.699085794 +1100
 @@ -79,6 +79,12 @@
  InternalEvent* InputEventList = NULL;
  
@@ -597,3 +597,186 @@ Index: xorg-server/dix/getevents.c
  
      /* If we were constrained, rescale x/y from the screen coordinates so
       * the device valuators reflect the correct position. For screen
+Index: xorg-server/test/gtest/xfixes_barriers.cpp
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/test/gtest/xfixes_barriers.cpp	2012-02-24 21:02:44.595084984 +1100
+@@ -0,0 +1,112 @@
++/*
++
++Copyright (c) 2012, Canonical Ltd
++
++Permission is hereby granted, free of charge, to any person obtaining a
++copy of this software and associated documentation files (the "Software"),
++to deal in the Software without restriction, including without limitation
++the rights to use, copy, modify, merge, publish, distribute, sublicense,
++and/or sell copies of the Software, and to permit persons to whom the
++Software is furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice (including the next
++paragraph) shall be included in all copies or substantial portions of the
++Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++DEALINGS IN THE SOFTWARE.
++*/
++
++#include <iostream>
++#include <gtest/gtest.h>
++#include <xorg/gtest/test.h>
++#include <X11/Xlib.h>
++#include <X11/extensions/XTest.h>
++#include <X11/extensions/Xfixes.h>
++
++class BarrierTest : public xorg::testing::Test {
++    public:
++    ::Display *dpy;
++    static XErrorEvent *lastError;
++
++    protected:
++    virtual void SetUp ()
++    {
++        ASSERT_NO_FATAL_FAILURE (xorg::testing::Test::SetUp());
++
++        dpy = Display ();
++        XSynchronize (Display(), true);
++        int major = 2, minor = 2;
++        ASSERT_TRUE (XTestQueryExtension (dpy,
++                                          &xtest_eventbase, &xtest_errorbase,
++                                          &major, &minor));
++        ASSERT_EQ (2, major);
++        ASSERT_TRUE (minor >= 2);
++
++        major = 6;
++        minor = 0;
++        XFixesQueryVersion (dpy, &major, &minor);
++        ASSERT_EQ (6, major);
++        ASSERT_TRUE (minor >= 0);
++
++        ASSERT_TRUE (XFixesQueryExtension (dpy,
++                                           &fixes_eventbase, &fixes_errorbase));
++
++        lastError = new XErrorEvent;
++        XSetErrorHandler (ErrorHandler);
++    }
++
++    private:
++    static int ErrorHandler (::Display *dpy, XErrorEvent *error)
++    {
++        memcpy (lastError, error, sizeof (*lastError));
++        return 0;
++    } 
++    
++    int xtest_eventbase;
++    int xtest_errorbase;
++    int fixes_eventbase;
++    int fixes_errorbase;
++};
++
++XErrorEvent *BarrierTest::lastError = NULL;
++
++TEST_F (BarrierTest, CreateVerticalBarrierSucceeds)
++{
++    PointerBarrier barrier;
++    barrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow(dpy),
++                                          100, 0,
++                                          100, 100,
++                                          0,
++                                          0, NULL);
++    ASSERT_NE(None, barrier);
++}
++
++TEST_F (BarrierTest, CreateHorizontalBarrierSucceds)
++{
++    PointerBarrier barrier;
++    barrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow(dpy),
++                                          100, 100,
++                                          200, 100,
++                                          0,
++                                          0, NULL);
++    ASSERT_NE(None, barrier);
++}
++
++TEST_F (BarrierTest, CreateNonAxisAlignedBarrierFails)
++{
++    PointerBarrier barrier;
++    
++    barrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow(dpy),
++                                          0, 0,
++                                          100, 100,
++                                          0,
++                                          0, NULL);
++    ASSERT_EQ(BadValue, lastError->error_code);
++}
++ 
+Index: xorg-server/configure.ac
+===================================================================
+--- xorg-server.orig/configure.ac	2012-02-24 16:38:54.834644128 +1100
++++ xorg-server/configure.ac	2012-02-24 21:03:27.391087136 +1100
+@@ -2155,6 +2155,20 @@
+ 
+ AC_CONFIG_COMMANDS([sdksyms], [touch hw/xfree86/sdksyms.dep])
+ 
++AC_PROG_CXX
++
++PKG_CHECK_MODULES(XORG_GTEST, xorg-gtest,
++        [have_xorg_gtest="yes"],
++        [AC_MSG_WARN([xorg-gtest not installed, tests will not be built])])
++AM_CONDITIONAL([HAVE_XORG_GTEST], [test "x$have_xorg_gtest" = xyes])
++AC_SUBST([XORG_GTEST_CFLAGS])
++AC_SUBST([XORG_GTEST_LIBS])
++
++PKG_CHECK_MODULES([XFIXES], xfixes, [have_xfixes="yes"], [have_xfixes="no"])
++AM_CONDITIONAL([HAVE_XFIXES], [test "x$have_xfixes" = xyes])
++AC_SUBST([XFIXES_CFLAGS])
++AC_SUBST([XFIXES_LIBS])
++
+ AC_OUTPUT([
+ Makefile
+ glx/Makefile
+@@ -2254,6 +2268,7 @@
+ hw/kdrive/src/Makefile
+ test/Makefile
+ test/xi2/Makefile
++test/gtest/Makefile
+ xserver.ent
+ xorg-server.pc
+ ])
+Index: xorg-server/test/gtest/Makefile.am
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/test/gtest/Makefile.am	2012-02-24 19:18:12.135124646 +1100
+@@ -0,0 +1,17 @@
++noinst_PROGRAMS = xfixes_barriers
++
++TESTS=xfixes_barriers
++
++xfixes_barriers_CXXFLAGS = $(AM_CXXFLAGS) \
++	$(XORG_GTEST_CFLAGS) \
++	$(XTEST_CFLAGS) \
++	$(XFIXES_CFLAGS)
++
++xfixes_barriers_LDADD = \
++	$(XFIXES_LIBS) \
++	$(XTEST_LIBS) \
++	$(XORG_GTEST_LIBS) \
++	-lgtest -lxorg-gtest_main -lpthread
++
++xfixes_barriers_SOURCES = \
++	xfixes_barriers.cpp
+Index: xorg-server/test/Makefile.am
+===================================================================
+--- xorg-server.orig/test/Makefile.am	2012-02-24 16:38:21.730642463 +1100
++++ xorg-server/test/Makefile.am	2012-02-24 16:50:44.782679822 +1100
+@@ -1,5 +1,5 @@
+ if ENABLE_UNIT_TESTS
+-SUBDIRS= . xi2
++SUBDIRS= . xi2 gtest
+ noinst_PROGRAMS = xkb input xtest list misc fixes xfree86 touch
+ check_LTLIBRARIES = libxservertest.la
+ 
