@@ -1,7 +1,7 @@
 Index: xorg-server/include/protocol-versions.h
 ===================================================================
---- xorg-server.orig/include/protocol-versions.h	2012-02-24 16:39:37.450646271 +1100
-+++ xorg-server/include/protocol-versions.h	2012-02-24 16:39:52.162647011 +1100
+--- xorg-server.orig/include/protocol-versions.h	2012-02-24 21:04:26.323090099 +1100
++++ xorg-server/include/protocol-versions.h	2012-02-27 15:26:08.854514086 +1100
 @@ -122,7 +122,7 @@
  #define SERVER_XF86VIDMODE_MINOR_VERSION	2
  
@@ -13,8 +13,8 @@ Index: xorg-server/include/protocol-versions.h
  /* X Input */
 Index: xorg-server/xfixes/cursor.c
 ===================================================================
---- xorg-server.orig/xfixes/cursor.c	2012-02-24 16:39:37.458646271 +1100
-+++ xorg-server/xfixes/cursor.c	2012-02-24 16:39:52.162647011 +1100
+--- xorg-server.orig/xfixes/cursor.c	2012-02-24 21:04:26.339090100 +1100
++++ xorg-server/xfixes/cursor.c	2012-02-27 15:26:08.854514086 +1100
 @@ -61,6 +61,7 @@
  static RESTYPE		CursorHideCountType;
  static RESTYPE		CursorWindowType;
@@ -453,8 +453,8 @@ Index: xorg-server/xfixes/cursor.c
  
 Index: xorg-server/xfixes/xfixes.c
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.c	2012-02-24 16:39:37.470646272 +1100
-+++ xorg-server/xfixes/xfixes.c	2012-02-24 16:39:52.162647011 +1100
+--- xorg-server.orig/xfixes/xfixes.c	2012-02-24 21:04:26.347090100 +1100
++++ xorg-server/xfixes/xfixes.c	2012-02-27 15:26:08.854514086 +1100
 @@ -100,6 +100,7 @@
      X_XFixesExpandRegion,	    /* Version 3 */
      X_XFixesShowCursor,		    /* Version 4 */
@@ -487,8 +487,8 @@ Index: xorg-server/xfixes/xfixes.c
  static int
 Index: xorg-server/xfixes/xfixes.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.h	2012-02-24 16:39:37.474646272 +1100
-+++ xorg-server/xfixes/xfixes.h	2012-02-24 16:39:52.162647011 +1100
+--- xorg-server.orig/xfixes/xfixes.h	2012-02-24 21:04:26.355090100 +1100
++++ xorg-server/xfixes/xfixes.h	2012-02-27 15:26:08.854514086 +1100
 @@ -28,6 +28,7 @@
  #define _XFIXES_H_
  
@@ -527,8 +527,8 @@ Index: xorg-server/xfixes/xfixes.h
  
 Index: xorg-server/xfixes/xfixesint.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixesint.h	2012-02-24 16:39:37.482646273 +1100
-+++ xorg-server/xfixes/xfixesint.h	2012-02-24 16:39:52.166647011 +1100
+--- xorg-server.orig/xfixes/xfixesint.h	2012-02-24 21:04:26.363090101 +1100
++++ xorg-server/xfixes/xfixesint.h	2012-02-27 15:26:08.854514086 +1100
 @@ -59,6 +59,7 @@
  #include "windowstr.h"
  #include "selection.h"
@@ -566,8 +566,8 @@ Index: xorg-server/xfixes/xfixesint.h
  void PanoramiXFixesInit (void);
 Index: xorg-server/dix/getevents.c
 ===================================================================
---- xorg-server.orig/dix/getevents.c	2012-02-24 16:39:37.494646273 +1100
-+++ xorg-server/dix/getevents.c	2012-02-24 21:03:00.699085794 +1100
+--- xorg-server.orig/dix/getevents.c	2012-02-24 21:04:26.371090101 +1100
++++ xorg-server/dix/getevents.c	2012-02-27 16:53:20.102502427 +1100
 @@ -79,6 +79,12 @@
  InternalEvent* InputEventList = NULL;
  
@@ -600,8 +600,8 @@ Index: xorg-server/dix/getevents.c
 Index: xorg-server/test/gtest/xfixes_barriers.cpp
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/test/gtest/xfixes_barriers.cpp	2012-02-24 21:02:44.595084984 +1100
-@@ -0,0 +1,112 @@
++++ xorg-server/test/gtest/xfixes_barriers.cpp	2012-02-27 16:28:27.474505754 +1100
+@@ -0,0 +1,179 @@
 +/*
 +
 +Copyright (c) 2012, Canonical Ltd
@@ -637,6 +637,20 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +    public:
 +    ::Display *dpy;
 +    static XErrorEvent *lastError;
++
++    void AssertPointerPosition (int asserted_x, int asserted_y)
++    {
++        int x, y, unused_int;
++        unsigned int unused_uint;
++        Window unused_win;
++        
++        XQueryPointer (Display (), DefaultRootWindow (Display ()),
++                       &unused_win, &unused_win, &x, &y,
++                       &unused_int, &unused_int, &unused_uint);
++
++        ASSERT_EQ (asserted_x, x) << "Cursor X coordinate incorrect\n";
++        ASSERT_EQ (asserted_y, y) << "Cursor Y coordinate incorrect\n";
++    }
 +
 +    protected:
 +    virtual void SetUp ()
@@ -714,11 +728,64 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +    ASSERT_EQ(BadValue, lastError->error_code);
 +}
 + 
++TEST_F (BarrierTest, VerticalBidirectionalBarrierBlocksRelativeMotion)
++{
++    PointerBarrier barrier;
++    barrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                          100, 0,
++                                          100, 300,
++                                          0,
++                                          0, NULL);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (dpy, DefaultScreen (dpy),
++                          200, 100,
++                          0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++
++    // Relative motion should block on barrier
++    XTestFakeRelativeMotionEvent (dpy, -200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 100));
++}
++
++TEST_F (BarrierTest, VerticalPositiveXBarrierBlocksMotion)
++{
++    PointerBarrier positiveXBarrier;
++    positiveXBarrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                                   100, 0,
++                                                   100, 300,
++                                                   BarrierPositiveX,
++                                                   0, NULL);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (dpy, DefaultScreen (dpy),
++                          200, 100,
++                          0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++    
++    // Relative motion in -ve X direction should block on barrier
++    XTestFakeRelativeMotionEvent (dpy, -200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 100));
++
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (dpy, DefaultScreen (dpy),
++                          0, 100,
++                          0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (0, 100));
++                          
++    // Relative motion in +ve X direction should ignore barrier
++    XTestFakeRelativeMotionEvent (dpy, 200, 0, 0);
++    
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++}
 Index: xorg-server/configure.ac
 ===================================================================
---- xorg-server.orig/configure.ac	2012-02-24 16:38:54.834644128 +1100
-+++ xorg-server/configure.ac	2012-02-24 21:03:27.391087136 +1100
-@@ -2155,6 +2155,20 @@
+--- xorg-server.orig/configure.ac	2012-02-27 15:26:08.834514085 +1100
++++ xorg-server/configure.ac	2012-02-27 16:53:20.142502426 +1100
+@@ -2155,6 +2155,25 @@
  
  AC_CONFIG_COMMANDS([sdksyms], [touch hw/xfree86/sdksyms.dep])
  
@@ -736,10 +803,15 @@ Index: xorg-server/configure.ac
 +AC_SUBST([XFIXES_CFLAGS])
 +AC_SUBST([XFIXES_LIBS])
 +
++PKG_CHECK_MODULES([XTEST], xtst, [have_xtest="yes"], [have_xtest="no"])
++AM_CONDITIONAL([HAVE_XTEST], [test "x$have_xtest" = xyes])
++AC_SUBST([XTEST_CFLAGS])
++AC_SUBST([XTEST_LIBS])
++
  AC_OUTPUT([
  Makefile
  glx/Makefile
-@@ -2254,6 +2268,7 @@
+@@ -2254,6 +2273,7 @@
  hw/kdrive/src/Makefile
  test/Makefile
  test/xi2/Makefile
@@ -750,7 +822,7 @@ Index: xorg-server/configure.ac
 Index: xorg-server/test/gtest/Makefile.am
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/test/gtest/Makefile.am	2012-02-24 19:18:12.135124646 +1100
++++ xorg-server/test/gtest/Makefile.am	2012-02-27 15:26:08.858514086 +1100
 @@ -0,0 +1,17 @@
 +noinst_PROGRAMS = xfixes_barriers
 +
@@ -771,8 +843,8 @@ Index: xorg-server/test/gtest/Makefile.am
 +	xfixes_barriers.cpp
 Index: xorg-server/test/Makefile.am
 ===================================================================
---- xorg-server.orig/test/Makefile.am	2012-02-24 16:38:21.730642463 +1100
-+++ xorg-server/test/Makefile.am	2012-02-24 16:50:44.782679822 +1100
+--- xorg-server.orig/test/Makefile.am	2012-02-24 21:04:26.391090102 +1100
++++ xorg-server/test/Makefile.am	2012-02-27 15:26:08.858514086 +1100
 @@ -1,5 +1,5 @@
  if ENABLE_UNIT_TESTS
 -SUBDIRS= . xi2
