@@ -1,7 +1,7 @@
 Index: xorg-server/include/protocol-versions.h
 ===================================================================
---- xorg-server.orig/include/protocol-versions.h	2012-02-24 21:04:26.323090099 +1100
-+++ xorg-server/include/protocol-versions.h	2012-02-27 15:26:08.854514086 +1100
+--- xorg-server.orig/include/protocol-versions.h	2012-02-29 14:01:49.926067501 +1100
++++ xorg-server/include/protocol-versions.h	2012-02-29 14:02:32.866067406 +1100
 @@ -122,7 +122,7 @@
  #define SERVER_XF86VIDMODE_MINOR_VERSION	2
  
@@ -13,8 +13,8 @@ Index: xorg-server/include/protocol-versions.h
  /* X Input */
 Index: xorg-server/xfixes/cursor.c
 ===================================================================
---- xorg-server.orig/xfixes/cursor.c	2012-02-24 21:04:26.339090100 +1100
-+++ xorg-server/xfixes/cursor.c	2012-02-27 15:26:08.854514086 +1100
+--- xorg-server.orig/xfixes/cursor.c	2012-02-29 14:01:49.934067502 +1100
++++ xorg-server/xfixes/cursor.c	2012-02-29 14:02:32.870067406 +1100
 @@ -61,6 +61,7 @@
  static RESTYPE		CursorHideCountType;
  static RESTYPE		CursorWindowType;
@@ -147,7 +147,7 @@ Index: xorg-server/xfixes/cursor.c
  	if (nearest) {
 -	    barrier_clamp_to_barrier(nearest, dir, x, y);
 +	    int velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
-+	    Bool threshold_exceeded = (nearest->velocity == 0) ||
++	    Bool threshold_exceeded = (nearest->velocity != 0) &&
 +				      (velocity > nearest->velocity);
 +
 +	    if (!nearest->lastHit) {
@@ -175,7 +175,7 @@ Index: xorg-server/xfixes/cursor.c
  	    if (nearest) {
 -		barrier_clamp_to_barrier(nearest, dir, x, y);
 +		velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
-+		threshold_exceeded = (nearest->velocity == 0) ||
++		threshold_exceeded = (nearest->velocity != 0) &&
 +				     (velocity > nearest->velocity);
 +
 +		if (!nearest->lastHit) {
@@ -200,16 +200,21 @@ Index: xorg-server/xfixes/cursor.c
      }
  
      if (cs->ConstrainCursorHarder) {
-@@ -1288,11 +1403,41 @@
+@@ -1284,15 +1399,45 @@
+ 			   xXFixesCreatePointerBarrierReq *stuff)
+ {
+     CursorScreenPtr cs = GetCursorScreen(screen);
+-    struct PointerBarrierClient *ret = malloc(sizeof(*ret));
++    struct PointerBarrierClient *ret = calloc(sizeof(*ret), 1);
  
      if (ret) {
  	ret->screen = screen;
 +	ret->barrier.barrier = stuff->barrier;
-+	ret->barrier.x1 = min(stuff->x1, stuff->x2);
-+	ret->barrier.x2 = max(stuff->x1, stuff->x2);
-+	ret->barrier.y1 = min(stuff->y1, stuff->y2);
-+	ret->barrier.y2 = max(stuff->y1, stuff->y2);
-+	ret->barrier.directions = stuff->directions & 0x0f;
+ 	ret->barrier.x1 = min(stuff->x1, stuff->x2);
+ 	ret->barrier.x2 = max(stuff->x1, stuff->x2);
+ 	ret->barrier.y1 = min(stuff->y1, stuff->y2);
+ 	ret->barrier.y2 = max(stuff->y1, stuff->y2);
+ 	ret->barrier.directions = stuff->directions & 0x0f;
 +	ret->barrier.velocity = 0;
 +	ret->barrier.barrierEventID = 0;
 +	if (barrier_is_horizontal(&ret->barrier))
@@ -227,16 +232,16 @@ Index: xorg-server/xfixes/cursor.c
 +			   xXFixesCreatePointerBarrierVelocityReq *stuff)
 +{
 +    CursorScreenPtr cs = GetCursorScreen(screen);
-+    struct PointerBarrierClient *ret = malloc(sizeof(*ret));
++    struct PointerBarrierClient *ret = calloc(sizeof(*ret), 1);
 +
 +    if (ret) {
 +	ret->screen = screen;
 +	ret->barrier.barrier = stuff->barrier;
- 	ret->barrier.x1 = min(stuff->x1, stuff->x2);
- 	ret->barrier.x2 = max(stuff->x1, stuff->x2);
- 	ret->barrier.y1 = min(stuff->y1, stuff->y2);
- 	ret->barrier.y2 = max(stuff->y1, stuff->y2);
- 	ret->barrier.directions = stuff->directions & 0x0f;
++	ret->barrier.x1 = min(stuff->x1, stuff->x2);
++	ret->barrier.x2 = max(stuff->x1, stuff->x2);
++	ret->barrier.y1 = min(stuff->y1, stuff->y2);
++	ret->barrier.y2 = max(stuff->y1, stuff->y2);
++	ret->barrier.directions = stuff->directions & 0x0f;
 +	ret->barrier.velocity = stuff->velocity;
 +	ret->barrier.barrierEventID = 0;
  	if (barrier_is_horizontal(&ret->barrier))
@@ -453,8 +458,8 @@ Index: xorg-server/xfixes/cursor.c
  
 Index: xorg-server/xfixes/xfixes.c
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.c	2012-02-24 21:04:26.347090100 +1100
-+++ xorg-server/xfixes/xfixes.c	2012-02-27 15:26:08.854514086 +1100
+--- xorg-server.orig/xfixes/xfixes.c	2012-02-29 14:01:49.946067501 +1100
++++ xorg-server/xfixes/xfixes.c	2012-02-29 14:02:32.870067406 +1100
 @@ -100,6 +100,7 @@
      X_XFixesExpandRegion,	    /* Version 3 */
      X_XFixesShowCursor,		    /* Version 4 */
@@ -487,8 +492,8 @@ Index: xorg-server/xfixes/xfixes.c
  static int
 Index: xorg-server/xfixes/xfixes.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixes.h	2012-02-24 21:04:26.355090100 +1100
-+++ xorg-server/xfixes/xfixes.h	2012-02-27 15:26:08.854514086 +1100
+--- xorg-server.orig/xfixes/xfixes.h	2012-02-29 14:01:49.958067501 +1100
++++ xorg-server/xfixes/xfixes.h	2012-02-29 14:02:32.870067406 +1100
 @@ -28,6 +28,7 @@
  #define _XFIXES_H_
  
@@ -527,8 +532,8 @@ Index: xorg-server/xfixes/xfixes.h
  
 Index: xorg-server/xfixes/xfixesint.h
 ===================================================================
---- xorg-server.orig/xfixes/xfixesint.h	2012-02-24 21:04:26.363090101 +1100
-+++ xorg-server/xfixes/xfixesint.h	2012-02-27 15:26:08.854514086 +1100
+--- xorg-server.orig/xfixes/xfixesint.h	2012-02-29 14:01:49.966067502 +1100
++++ xorg-server/xfixes/xfixesint.h	2012-02-29 14:02:32.870067406 +1100
 @@ -59,6 +59,7 @@
  #include "windowstr.h"
  #include "selection.h"
@@ -566,8 +571,8 @@ Index: xorg-server/xfixes/xfixesint.h
  void PanoramiXFixesInit (void);
 Index: xorg-server/dix/getevents.c
 ===================================================================
---- xorg-server.orig/dix/getevents.c	2012-02-24 21:04:26.371090101 +1100
-+++ xorg-server/dix/getevents.c	2012-02-27 16:53:20.102502427 +1100
+--- xorg-server.orig/dix/getevents.c	2012-02-29 14:01:49.974067501 +1100
++++ xorg-server/dix/getevents.c	2012-02-29 14:02:32.874067406 +1100
 @@ -79,6 +79,12 @@
  InternalEvent* InputEventList = NULL;
  
@@ -966,8 +971,8 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +}
 Index: xorg-server/configure.ac
 ===================================================================
---- xorg-server.orig/configure.ac	2012-02-29 14:01:17.946067573 +1100
-+++ xorg-server/configure.ac	2012-02-29 14:01:17.998067573 +1100
+--- xorg-server.orig/configure.ac	2012-02-29 14:02:32.818067406 +1100
++++ xorg-server/configure.ac	2012-02-29 14:02:32.878067406 +1100
 @@ -2155,6 +2155,25 @@
  
  AC_CONFIG_COMMANDS([sdksyms], [touch hw/xfree86/sdksyms.dep])
