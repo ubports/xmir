@@ -600,8 +600,8 @@ Index: xorg-server/dix/getevents.c
 Index: xorg-server/test/gtest/xfixes_barriers.cpp
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/test/gtest/xfixes_barriers.cpp	2012-02-27 16:28:27.474505754 +1100
-@@ -0,0 +1,179 @@
++++ xorg-server/test/gtest/xfixes_barriers.cpp	2012-02-29 14:02:32.874067406 +1100
+@@ -0,0 +1,362 @@
 +/*
 +
 +Copyright (c) 2012, Canonical Ltd
@@ -627,29 +627,42 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +*/
 +
 +#include <iostream>
++#include <unistd.h>
 +#include <gtest/gtest.h>
 +#include <xorg/gtest/test.h>
++#include <xorg/gtest/environment.h>
 +#include <X11/Xlib.h>
 +#include <X11/extensions/XTest.h>
 +#include <X11/extensions/Xfixes.h>
++
++
++int main (int argc, char **argv)
++{
++    ::testing::InitGoogleTest (&argc, argv);
++    xorg::testing::Environment* environment = new xorg::testing::Environment ();
++    environment->set_conf_file ("dummy.conf");
++    environment->set_server (XORG_BINARY);
++    testing::AddGlobalTestEnvironment (environment);
++    return RUN_ALL_TESTS ();
++}
 +
 +class BarrierTest : public xorg::testing::Test {
 +    public:
 +    ::Display *dpy;
 +    static XErrorEvent *lastError;
 +
-+    void AssertPointerPosition (int asserted_x, int asserted_y)
++    void AssertPointerPosition (int expected_x, int expected_y)
 +    {
 +        int x, y, unused_int;
 +        unsigned int unused_uint;
 +        Window unused_win;
-+        
++
 +        XQueryPointer (Display (), DefaultRootWindow (Display ()),
 +                       &unused_win, &unused_win, &x, &y,
 +                       &unused_int, &unused_int, &unused_uint);
-+
-+        ASSERT_EQ (asserted_x, x) << "Cursor X coordinate incorrect\n";
-+        ASSERT_EQ (asserted_y, y) << "Cursor Y coordinate incorrect\n";
++        
++        ASSERT_EQ (expected_x, x);
++        ASSERT_EQ (expected_y, y);
 +    }
 +
 +    protected:
@@ -658,7 +671,6 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +        ASSERT_NO_FATAL_FAILURE (xorg::testing::Test::SetUp());
 +
 +        dpy = Display ();
-+        XSynchronize (Display(), true);
 +        int major = 2, minor = 2;
 +        ASSERT_TRUE (XTestQueryExtension (dpy,
 +                                          &xtest_eventbase, &xtest_errorbase,
@@ -725,6 +737,7 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +                                          100, 100,
 +                                          0,
 +                                          0, NULL);
++    XSync (Display (), false);
 +    ASSERT_EQ(BadValue, lastError->error_code);
 +}
 + 
@@ -737,14 +750,13 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +                                          0,
 +                                          0, NULL);
 +    // Absolute event will ignore barrier
-+    XTestFakeMotionEvent (dpy, DefaultScreen (dpy),
-+                          200, 100,
-+                          0);
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 100, 0);
 +
 +    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
 +
 +    // Relative motion should block on barrier
-+    XTestFakeRelativeMotionEvent (dpy, -200, 0, 0);
++    XTestFakeRelativeMotionEvent (Display (), -200, 0, 0);
 +
 +    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 100));
 +}
@@ -758,33 +770,204 @@ Index: xorg-server/test/gtest/xfixes_barriers.cpp
 +                                                   BarrierPositiveX,
 +                                                   0, NULL);
 +    // Absolute event will ignore barrier
-+    XTestFakeMotionEvent (dpy, DefaultScreen (dpy),
-+                          200, 100,
-+                          0);
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 100, 0);
 +
 +    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
 +    
 +    // Relative motion in -ve X direction should block on barrier
-+    XTestFakeRelativeMotionEvent (dpy, -200, 0, 0);
-+
++    XTestFakeRelativeMotionEvent (Display (), -200, 0, 0);
++    
 +    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 100));
 +
 +    // Absolute event will ignore barrier
-+    XTestFakeMotionEvent (dpy, DefaultScreen (dpy),
-+                          0, 100,
-+                          0);
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          0, 100, 0);
 +
 +    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (0, 100));
 +                          
 +    // Relative motion in +ve X direction should ignore barrier
-+    XTestFakeRelativeMotionEvent (dpy, 200, 0, 0);
++    XTestFakeRelativeMotionEvent (Display (), 200, 0, 0);
 +    
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++}
++
++TEST_F (BarrierTest, VerticalNegativeXBarrierBlocksMotion)
++{
++    PointerBarrier positiveXBarrier;
++    positiveXBarrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                                   100, 0,
++                                                   100, 300,
++                                                   BarrierNegativeX,
++                                                   0, NULL);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 100, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++    
++    // Relative motion in -ve X direction should ignore barrier
++    XTestFakeRelativeMotionEvent (Display (), -200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (0, 100));
++                          
++    // Relative motion in +ve X direction should block on barrier
++    XTestFakeRelativeMotionEvent (Display (), 200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (99, 100));
++}
++
++TEST_F (BarrierTest, HorizontalBidirectionalBarrierBlocksRelativeMotion)
++{
++    PointerBarrier barrier;
++    barrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                          0,   100,
++                                          300, 100,
++                                          0,
++                                          0, NULL);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 200));
++
++    // Relative motion should block on barrier
++    XTestFakeRelativeMotionEvent (Display (), 0, -200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 0));
++
++    // Relative motion should block on barrier
++    XTestFakeRelativeMotionEvent (Display (), 0, 200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 99));
++}
++
++TEST_F (BarrierTest, HorizontalPositiveYBarrierBlocksMotion)
++{
++    PointerBarrier positiveXBarrier;
++    positiveXBarrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                                   0,   100,
++                                                   300, 100,
++                                                   BarrierPositiveY,
++                                                   0, NULL);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 200));
++    
++    // Relative motion in -ve Y direction should block on barrier
++    XTestFakeRelativeMotionEvent (Display (), 0, -200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          100, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 0));
++                          
++    // Relative motion in +ve X direction should ignore barrier
++    XTestFakeRelativeMotionEvent (Display (), 0, 200, 0);
++    
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 200));
++}
++
++TEST_F (BarrierTest, HorizontalNegativeYBarrierBlocksMotion)
++{
++    PointerBarrier positiveXBarrier;
++    positiveXBarrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                                   0,   100,
++                                                   300, 100,
++                                                   BarrierNegativeY,
++                                                   0, NULL);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 200));
++    
++    // Relative motion in -ve Y direction should ignore barrier
++    XTestFakeRelativeMotionEvent (Display (), 0, -200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 0));
++                          
++    // Relative motion in +ve Y direction should block on barrier
++    XTestFakeRelativeMotionEvent (Display (), 0, 200, 0);
++    
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 99));
++}
++
++TEST_F (BarrierTest, DestroyPointerBarrierSucceeds)
++{
++    PointerBarrier barrier;
++    barrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                          100, 0,
++                                          100, 300,
++                                          0,
++                                          0, NULL);
++
++    XFixesDestroyPointerBarrier (Display (), barrier);
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 100, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++
++    // There should be no barrier to block this.
++    XTestFakeRelativeMotionEvent (Display (), -200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (0, 100));
++}
++
++TEST_F (BarrierTest, BarrierIgnoresNonsensicalDirections)
++{
++    PointerBarrier verticalBarrier;
++    verticalBarrier = XFixesCreatePointerBarrier (Display (),
++                                                  DefaultRootWindow (Display ()),
++                                                  100, 0,
++                                                  100, 300,
++                                                  BarrierPositiveY | BarrierNegativeY,
++                                                  0, NULL);
++
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 100, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
++
++    // Barrier should block relative motion
++    XTestFakeRelativeMotionEvent (Display (), -200, 0, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (100, 100));
++
++    PointerBarrier horizontalBarrier;
++    horizontalBarrier = XFixesCreatePointerBarrier (dpy, DefaultRootWindow (dpy),
++                                                    0,   100,
++                                                    400, 100,
++                                                    BarrierPositiveX | BarrierNegativeX,
++                                                    0, NULL);    
++    // Absolute event will ignore barrier
++    XTestFakeMotionEvent (Display (), DefaultScreen (Display ()),
++                          200, 200, 0);
++
++    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 200));
++
++    // Barrier should block relative motion
++    XTestFakeRelativeMotionEvent (Display (), 0, -200, 0);
++
 +    ASSERT_NO_FATAL_FAILURE (AssertPointerPosition (200, 100));
 +}
 Index: xorg-server/configure.ac
 ===================================================================
---- xorg-server.orig/configure.ac	2012-02-27 15:26:08.834514085 +1100
-+++ xorg-server/configure.ac	2012-02-27 16:53:20.142502426 +1100
+--- xorg-server.orig/configure.ac	2012-02-29 14:01:17.946067573 +1100
++++ xorg-server/configure.ac	2012-02-29 14:01:17.998067573 +1100
 @@ -2155,6 +2155,25 @@
  
  AC_CONFIG_COMMANDS([sdksyms], [touch hw/xfree86/sdksyms.dep])
@@ -822,29 +1005,30 @@ Index: xorg-server/configure.ac
 Index: xorg-server/test/gtest/Makefile.am
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xorg-server/test/gtest/Makefile.am	2012-02-27 15:26:08.858514086 +1100
-@@ -0,0 +1,17 @@
-+noinst_PROGRAMS = xfixes_barriers
++++ xorg-server/test/gtest/Makefile.am	2012-02-29 14:02:49.870067368 +1100
+@@ -0,0 +1,18 @@
++check_PROGRAMS = xfixes_barriers
 +
 +TESTS=xfixes_barriers
 +
 +xfixes_barriers_CXXFLAGS = $(AM_CXXFLAGS) \
 +	$(XORG_GTEST_CFLAGS) \
 +	$(XTEST_CFLAGS) \
-+	$(XFIXES_CFLAGS)
++	$(XFIXES_CFLAGS) \
++	-DXORG_BINARY=\"$(top_builddir)/hw/xfree86/Xorg\"
 +
 +xfixes_barriers_LDADD = \
 +	$(XFIXES_LIBS) \
 +	$(XTEST_LIBS) \
 +	$(XORG_GTEST_LIBS) \
-+	-lgtest -lxorg-gtest_main -lpthread
++	-lgtest -lpthread
 +
 +xfixes_barriers_SOURCES = \
 +	xfixes_barriers.cpp
 Index: xorg-server/test/Makefile.am
 ===================================================================
---- xorg-server.orig/test/Makefile.am	2012-02-24 21:04:26.391090102 +1100
-+++ xorg-server/test/Makefile.am	2012-02-27 15:26:08.858514086 +1100
+--- xorg-server.orig/test/Makefile.am	2012-02-29 14:01:50.014067502 +1100
++++ xorg-server/test/Makefile.am	2012-02-29 14:02:32.878067406 +1100
 @@ -1,5 +1,5 @@
  if ENABLE_UNIT_TESTS
 -SUBDIRS= . xi2
@@ -852,3 +1036,12 @@ Index: xorg-server/test/Makefile.am
  noinst_PROGRAMS = xkb input xtest list misc fixes xfree86 touch
  check_LTLIBRARIES = libxservertest.la
  
+Index: xorg-server/test/gtest/dummy.conf
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xorg-server/test/gtest/dummy.conf	2012-02-29 14:02:32.878067406 +1100
+@@ -0,0 +1,4 @@
++Section "Device"
++    Identifier "Dummy video device"
++    Driver "dummy"
++EndSection
