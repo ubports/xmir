@@ -78,6 +78,10 @@ Build-Depends:
 # unit tests
  xkb-data,
  x11-xkb-utils,
+ libxtst-dev,
+ xserver-xorg-video-dummy,
+ libgtest-dev,
+ libxorg-gtest-dev,
 Standards-Version: 3.9.2
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git

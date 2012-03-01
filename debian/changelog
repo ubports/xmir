@@ -1,3 +1,16 @@
+xorg-server (2:1.11.4-0ubuntu5) UNRELEASED; urgency=low
+
+  * debian/patches/500_pointer_barrier_thresholds.diff:
+    - Don't try to send events from the context of the SIGIO handler.  That
+      leads to the dark side, or at least to server freezes when trying to
+      reveal the launcher in Unity (LP: #946954)
+    - Add build-time tests to make check for barrier behaviour.
+  * debian/control:
+    - Add xserver-xorg-video-dummy, libxtst-dev, libgtest-dev, and
+      libxorg-gtest-dev to build-depends for new tests.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 06 Mar 2012 17:41:20 +1100
+
 xorg-server (2:1.11.4-0ubuntu4) precise; urgency=low
 
   * debian/patches/500_pointer_barrier_thresholds.diff:
