@@ -3449,21 +3449,16 @@ XineramaWarpPointer(ClientPtr client)
 {
     WindowPtr	dest = NULL;
     int		x, y, rc;
-    DeviceIntPtr dev;
-    SpritePtr   pSprite;
+    SpritePtr   pSprite = PickPointer(client)->spriteInfo->sprite;
 
     REQUEST(xWarpPointerReq);
+
 
     if (stuff->dstWid != None) {
 	rc = dixLookupWindow(&dest, stuff->dstWid, client, DixReadAccess);
 	if (rc != Success)
 	    return rc;
     }
-
-    /* Post through the XTest device */
-    dev = PickPointer(client);
-    dev = GetXTestDevice(dev);
-    pSprite = dev->spriteInfo->sprite;
     x = pSprite->hotPhys.x;
     y = pSprite->hotPhys.y;
 
@@ -3513,9 +3508,9 @@ XineramaWarpPointer(ClientPtr client)
     else if (y >= pSprite->physLimits.y2)
 	y = pSprite->physLimits.y2 - 1;
     if (pSprite->hotShape)
-	ConfineToShape(dev, pSprite->hotShape, &x, &y);
+	ConfineToShape(PickPointer(client), pSprite->hotShape, &x, &y);
 
-    XineramaSetCursorPosition(dev, x, y, TRUE);
+    XineramaSetCursorPosition(PickPointer(client), x, y, TRUE);
 
     return Success;
 }
@@ -3533,7 +3528,7 @@ ProcWarpPointer(ClientPtr client)
     WindowPtr	dest = NULL;
     int		x, y, rc;
     ScreenPtr	newScreen;
-    DeviceIntPtr dev, tmp, xtest_dev = NULL;
+    DeviceIntPtr dev, tmp;
     SpritePtr   pSprite;
 
     REQUEST(xWarpPointerReq);
@@ -3546,13 +3541,11 @@ ProcWarpPointer(ClientPtr client)
 	    rc = XaceHook(XACE_DEVICE_ACCESS, client, dev, DixWriteAccess);
 	    if (rc != Success)
 		return rc;
-            if (IsXTestDevice(tmp, dev))
-                xtest_dev = tmp;
 	}
     }
 
-    /* Use the XTest device to actually move the pointer */
-    dev = xtest_dev;
+    if (dev->lastSlave)
+        dev = dev->lastSlave;
     pSprite = dev->spriteInfo->sprite;
 
 #ifdef PANORAMIX
@@ -4266,7 +4259,6 @@ DeliverGrabbedEvent(InternalEvent *event, DeviceIntPtr thisDev,
     if (grab->ownerEvents)
     {
 	WindowPtr focus;
-	WindowPtr win;
 
         /* Hack: Some pointer device have a focus class. So we need to check
          * for the type of event, to see if we really want to deliver it to
@@ -4283,16 +4275,15 @@ DeliverGrabbedEvent(InternalEvent *event, DeviceIntPtr thisDev,
 	else
 	    focus = PointerRootWin;
 	if (focus == PointerRootWin)
-	{
-	    win = pSprite->win;
-	    focus = NullWindow;
-	} else if (focus && (focus == pSprite->win ||
-		    IsParent(focus, pSprite->win)))
-	    win = pSprite->win;
+	    deliveries = DeliverDeviceEvents(pSprite->win, event, grab,
+                                             NullWindow, thisDev);
+	else if (focus && (focus == pSprite->win ||
+                    IsParent(focus, pSprite->win)))
+	    deliveries = DeliverDeviceEvents(pSprite->win, event, grab, focus,
+					     thisDev);
 	else if (focus)
-	    win = focus;
-
-	deliveries = DeliverDeviceEvents(win, event, grab, focus, thisDev);
+	    deliveries = DeliverDeviceEvents(focus, event, grab, focus,
+					     thisDev);
     }
     if (!deliveries)
     {
