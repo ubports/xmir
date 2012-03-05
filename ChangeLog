@@ -1,3 +1,235 @@
+commit 0e7b1080415c85f55462ad863de36df7011bf869
+Author: Gaetan Nadon <memsize@videotron.ca>
+Date:   Sun Feb 26 17:51:50 2012 -0500
+
+    test: add new test cases to .gitignore
+    
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Gaetan Nadon <memsize@videotron.ca>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit e08ed0b757b9b48344a301f612fabb3e39ffec78)
+    
+    Conflicts:
+    
+    	test/.gitignore
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit ab03aafffdbad2966dc01334ecd5d328512acf90
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Wed Feb 22 15:32:56 2012 +1000
+
+    dix: avoid NULL-pointer dereference on button-only devices (#38313)
+    
+    And for such devices simply take the last.valuators[] which must be valid at
+    all times anyway. UpdateSlaveDeviceCoords takes care of that.
+    
+    X.Org Bug 38313 <http://bugs.freedesktop.org/show_bug.cgi?id=38313>
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Chase Douglas <chase.douglas@canonical.com>
+    (cherry picked from commit 2416ee4a015068359807a10f433e8c54192c78a9)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit b533a9bc374ddd863e29eafd9b30018a494b63aa
+Author: Jeremy Huddleston <jeremyhu@apple.com>
+Date:   Tue Jan 31 11:06:21 2012 -0800
+
+    Revert "dix: don't XWarpPointer through the last slave anymore (#38313)"
+    
+    This reverts commit 2bfb802839688ecf328119c4c6979390fc60348d.
+    
+    This commit caused a regression.
+    
+    See: http://xquartz.macosforge.org/trac/ticket/517#comment:10
+    
+    Acked-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 38000e7d1f958f5944e641de3e716944a5876d41)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit ac98fb5a83b458ebecf1a2dfd2d35c9a9c8b1643
+Author: Keith Packard <keithp@keithp.com>
+Date:   Wed Feb 22 18:07:20 2012 +1300
+
+    Merge remote-tracking branch 'whot/for-keith'
+    (cherry picked from commit 71594746c7da32e1c7986341a0da30f241a7a2be)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 453020e435db12eca2a3f21c1944a6e855c2349d
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Fri Jan 27 12:41:09 2012 +1000
+
+    Xi: handle new XIAllowEvents request in inputproto 2.1.99.6
+    
+    grab_window and touchid were removed from the struct for ABI compatibility
+    reasons, we need to pull in the new, XI 2.2-specific struct.
+    
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit 7674d00b04da5cf73cfa5c7ed1d3a9f42b59960e)
+    
+    Conflicts:
+    
+    	Xi/xiallowev.c
+    	configure.ac
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 4d7d1bd15a6a63f82f6075b2efe1e4596c41d322
+Author: Benjamin Otte <otte@redhat.com>
+Date:   Tue Feb 7 18:01:25 2012 +1000
+
+    dix: fix an out-of-memory crash
+    
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit b96275c4cdb164aa71f7aa9fbf88be18886d1936)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit a569ffd93767f6b496eb9f0f3f87f1bf1d03fa3f
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:11 2012 -0800
+
+    Implement touch early accept
+    
+    This doesn't really implement early accept as it should. Ideally, the
+    server should send end events to all subsequent touch clients as soon as
+    an early accept comes in. However, this implementation is still protocol
+    compliant. We can always improve it later.
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 6241b5e4fdbdb08d30cc8787d858ac27122d2d49)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit d6f746e7177fa050e61f6d24e62fe060af829cca
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:10 2012 -0800
+
+    Implement early touch reject
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit b0c54856df71f9cabf9dad176fdade960ef8c5d9)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 50f22a606cd101ece109c46173ba6edcead9e94e
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:09 2012 -0800
+
+    Check for proper window ID when processing touch allow requests
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 656ab879f20892975510723ce8fe78faf64aadb4)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 5eb65eaf9c914322faa413746d9546ff70a1724f
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:08 2012 -0800
+
+    Move AllowTouch to dix/touch.c, and rename to TouchAcceptReject
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 9a260e9af83feb5c53ffd3b2da2dc3adf06240a1)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit f8c27e7765dbb0f08c160ed2f0b3ffedd0610906
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:07 2012 -0800
+
+    Export TouchEventRejected as TouchRejected
+    
+    This function is mostly correct for early reject usage. With a small
+    change to pass the client resource explicitly and making the
+    TouchOwnership event optional, it is usable for all rejection scenarios.
+    This change exports it for use outside Xi/exevents.c and modifies the
+    name accordingly.
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 192b2c9a2ec04522655675ddfe71de5cf974cc7b)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit e6459ad03851a4d667186c863a4cb1d5b6a5471a
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:06 2012 -0800
+
+    Factor out TouchEnd generation and delivery
+    
+    The server often needs to generate and deliver TouchEnd events for
+    circumstances including touch grab acceptance and rejection. This change
+    refactors the code so it can be used more easily.
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit 19073425e5df1317f73f74ce0b95ab24e0e0da14)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 52d4b2fded097475fbe454d1433caa3f8b1b83dd
+Author: Chase Douglas <chase.douglas@canonical.com>
+Date:   Fri Feb 3 16:19:05 2012 -0800
+
+    Store window pointer in touch listener record
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+    (cherry picked from commit ab60cadc2afb9d8882144e30fde11c3ef0f999cd)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 5893d32d1114628fb09fc0caf9569e74966afe4f
+Author: Peter Hutterer <peter.hutterer@who-t.net>
+Date:   Sat Feb 4 19:27:21 2012 +1000
+
+    Revert "dix: deduplicate callers of DeliverDeviceEvents in DeliverGrabbedEvents"
+    
+    This call was supposed to have no functional changes but in some cases
+    DeliverDeviceEvents() was called with a uninitialised win variable.
+    Revert, safer than trying to sort this out otherwise.
+    
+    This reverts commit 6eff14a789341d366b3013c5aa020e959c954651.
+    
+    Reported-by: Mathieu Taillefumier <mathieu.taillefumier@free.fr>
+    Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+    Reviewed-by: Keith Packard <keithp@keithp.com>
+    (cherry picked from commit f92ba92adfce0e1975feb54ab0e1165b7c2a7bea)
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+commit 428aaf7252b2e341427a0cf36c22e0fea3ddcbe4
+Author: Keith Packard <keithp@keithp.com>
+Date:   Mon Jan 9 13:17:37 2012 -0800
+
+    Merge remote-tracking branch 'whot/multitouch'
+    
+    (cherry picked from commit e476af417d83730b11054f4e5b127ab5540bb332)
+    
+    Conflicts:
+    
+    	configure.ac
+    
+    Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
 commit 03e15dc10aa7cec2d1db294beb0c006ea0e24e25
 Author: Chase Douglas <chase.douglas@canonical.com>
 Date:   Wed Jan 18 19:09:21 2012 -0800
