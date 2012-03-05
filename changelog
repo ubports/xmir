@@ -1,3 +1,9 @@
+xorg-server (2:1.11.4-0ubuntu5) UNRELEASED; urgency=low
+
+  * Update to 1.12 input stack 
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 05 Mar 2012 15:11:25 -0800
+
 xorg-server (2:1.11.4-0ubuntu4) precise; urgency=low
 
   * debian/patches/500_pointer_barrier_thresholds.diff:
