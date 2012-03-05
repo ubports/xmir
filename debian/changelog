@@ -1,8 +1,23 @@
 xorg-server (2:1.11.4-0ubuntu5) UNRELEASED; urgency=low
 
   * Update to 1.12 input stack 
+  * Drop input patches that have been merged upstream:
+    - 600-Revert-dix-deduplicate-callers-of-DeliverDeviceEvent.patch
+    - 601-Store-window-pointer-in-touch-listener-record.patch
+    - 602-Factor-out-TouchEnd-generation-and-delivery.patch
+    - 603-Export-TouchEventRejected-as-TouchRejected.patch
+    - 604-Move-AllowTouch-to-dix-touch.c-and-rename-to-TouchAc.patch
+    - 605-Check-for-proper-window-ID-when-processing-touch-all.patch
+    - 606-Implement-early-touch-reject.patch
+    - 607-Implement-touch-early-accept.patch
+    - 608-dix-fix-an-out-of-memory-crash.patch
+    - 609-Xi-handle-new-XIAllowEvents-request-in-inputproto-2..patch
+    - 610-Fix-scrolling.patch
+    - 611-Fix-touch-punt-crash.patch
+    - 612-Fix-vcp-touches-corruption.patch
+    - 613-Keep-vcp-touch-class.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 05 Mar 2012 15:11:25 -0800
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 05 Mar 2012 15:16:28 -0800
 
 xorg-server (2:1.11.4-0ubuntu4) precise; urgency=low
 
