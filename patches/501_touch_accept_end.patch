@@ -1,0 +1,95 @@
+From 40cd6abb66787c79465cda03c17297a06d1cd848 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Fri, 2 Mar 2012 14:40:07 -0800
+Subject: [PATCH 1/2] Xi: Fix TouchEnd to TouchUpdate change for one accepted
+ grab
+
+If there is only one listener of a touch, the listener is a grab, and is
+accepted before the touch has ended, the current code will not end the
+touch record when the touch does end.
+
+This change adds a listener state for when a touch is accepted but has
+not yet ended. We now keep the touch record alive in this state, but end
+it when the touch ends.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+---
+ Xi/exevents.c   |   25 ++++++++++++++++---------
+ include/input.h |    3 ++-
+ 2 files changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/Xi/exevents.c b/Xi/exevents.c
+index f390f67..d71e604 100644
+--- a/Xi/exevents.c
++++ b/Xi/exevents.c
+@@ -1252,6 +1252,8 @@ ProcessTouchOwnershipEvent(DeviceIntPtr dev, TouchPointInfoPtr ti,
+         /* Owner accepted after receiving end */
+         if (ti->listeners[0].state == LISTENER_HAS_END)
+             TouchEndTouch(dev, ti);
++        else
++            ti->listeners[0].state = LISTENER_HAS_ACCEPTED;
+     } else { /* this is the very first ownership event for a grab */
+         DeliverTouchEvents(dev, ti, (InternalEvent*)ev, ev->resource);
+     }
+@@ -1781,7 +1783,11 @@ DeliverTouchBeginEvent(DeviceIntPtr dev, TouchPointInfoPtr ti, InternalEvent *ev
+     {
+         if (has_ownershipmask)
+             TouchSendOwnershipEvent(dev, ti, 0, listener->listener);
+-        state = LISTENER_IS_OWNER;
++
++        if (!has_ownershipmask || listener->type == LISTENER_REGULAR)
++            state = LISTENER_HAS_ACCEPTED;
++        else
++            state = LISTENER_IS_OWNER;
+     }
+     listener->state = state;
+ 
+@@ -1812,22 +1818,23 @@ DeliverTouchEndEvent(DeviceIntPtr dev, TouchPointInfoPtr ti, InternalEvent *ev,
+         listener->state = LISTENER_HAS_END;
+     } else if (TouchResourceIsOwner(ti, listener->listener))
+     {
++        Bool normal_end = !(ev->device_event.flags & TOUCH_ACCEPT);
++
+         /* FIXME: what about early acceptance */
+-        if (!(ev->device_event.flags & TOUCH_ACCEPT))
+-        {
+-            if (listener->state != LISTENER_HAS_END)
+-                rc = DeliverOneTouchEvent(client, dev, ti, grab, win, ev);
+-            listener->state = LISTENER_HAS_END;
+-        }
++        if (normal_end && listener->state != LISTENER_HAS_END)
++            rc = DeliverOneTouchEvent(client, dev, ti, grab, win, ev);
++
+         if ((ti->num_listeners > 1 ||
+-             (listener->type == LISTENER_GRAB &&
+-              xi2mask_isset(xi2mask, dev, XI_TouchOwnership))) &&
++             listener->state != LISTENER_HAS_ACCEPTED) &&
+             (ev->device_event.flags & (TOUCH_ACCEPT|TOUCH_REJECT)) == 0)
+         {
+             ev->any.type = ET_TouchUpdate;
+             ev->device_event.flags |= TOUCH_PENDING_END;
+             ti->pending_finish = TRUE;
+         }
++
++        if (normal_end)
++            listener->state = LISTENER_HAS_END;
+     }
+ 
+ out:
+diff --git a/include/input.h b/include/input.h
+index b7825a7..1e9e0fd 100644
+--- a/include/input.h
++++ b/include/input.h
+@@ -585,7 +585,8 @@ enum TouchListenerState{
+     LISTENER_AWAITING_OWNER,       /**< Waiting for a TouchOwnership event */
+     LISTENER_EARLY_ACCEPT,         /**< Waiting for ownership, has already
+                                         accepted */
+-    LISTENER_IS_OWNER,             /**< Is the current owner */
++    LISTENER_IS_OWNER,             /**< Is the current owner, hasn't accepted */
++    LISTENER_HAS_ACCEPTED,         /**< Is the current owner, has accepted */
+     LISTENER_HAS_END,              /**< Has already received the end event */
+ };
+ 
+-- 
+1.7.9
+
