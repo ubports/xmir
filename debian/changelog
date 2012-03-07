@@ -16,8 +16,11 @@ xorg-server (2:1.11.4-0ubuntu5) UNRELEASED; urgency=low
     - 611-Fix-touch-punt-crash.patch
     - 612-Fix-vcp-touches-corruption.patch
     - 613-Keep-vcp-touch-class.patch
+  * Fix indirect touch grab handling (LP: #929408)
+    - Add temporary patch 501_touch_accept_end.patch
+    - Add temporary patch 502_indirect_touch_window_set.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Mon, 05 Mar 2012 15:16:28 -0800
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 07 Mar 2012 15:34:09 -0800
 
 xorg-server (2:1.11.4-0ubuntu4) precise; urgency=low
 
