@@ -1,5 +1,16 @@
-xorg-server (2:1.11.4-0ubuntu5) precise; urgency=low
+xorg-server (2:1.11.4-0ubuntu6) precise; urgency=low
 
+  * debian/patches/500_pointer_barrier_thresholds.diff:
+    - Don't try to send events from the context of the SIGIO handler.  That
+      leads to the dark side, or at least to server freezes when trying to
+      reveal the launcher in Unity (LP: #946954).  May also fix other seemingly
+      random X server crashes.
+    - Add build-time tests to make check for barrier behaviour.  These are
+      disabled, pending gtest, xorg-gtest, and xserver-xorg-video-dummy MIRs.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 09 Mar 2012 19:16:02 +1100
+
+xorg-server (2:1.11.4-0ubuntu5) precise; urgency=low
   * Update to 1.12 input stack 
   * Drop input patches that have been merged upstream:
     - 600-Revert-dix-deduplicate-callers-of-DeliverDeviceEvent.patch
