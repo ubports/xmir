@@ -1,7 +1,7 @@
-Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
+Index: xorg-server-1.11.4/hw/xfree86/common/xf86AutoConfig.c
 ===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86AutoConfig.c	2011-08-24 12:56:49.565650621 +0300
-+++ xorg-server/hw/xfree86/common/xf86AutoConfig.c	2011-08-24 12:56:49.575650619 +0300
+--- xorg-server-1.11.4.orig/hw/xfree86/common/xf86AutoConfig.c	2012-03-20 02:08:02.154998574 -0300
++++ xorg-server-1.11.4/hw/xfree86/common/xf86AutoConfig.c	2012-03-20 02:08:46.819220051 -0300
 @@ -44,6 +44,12 @@
  # include "xf86sbusBus.h"
  #endif
@@ -15,7 +15,7 @@ Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
  #ifdef sun
  # include <sys/visual_io.h>
  # include <ctype.h>
-@@ -198,6 +204,28 @@
+@@ -198,6 +204,26 @@
      return ret == CONFIG_OK;
  }
  
@@ -35,8 +35,6 @@ Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
 +    if(!current_dir)
 +        return 0;
 +
-+    if (!LoadModule(driver_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL))
-+        return 0;
 +    return 1;
 +}
 +#endif /* defined(__arm__) && defined(__linux__) */
@@ -44,7 +42,7 @@ Index: xorg-server/hw/xfree86/common/xf86AutoConfig.c
  static void
  listPossibleVideoDrivers(char *matches[], int nmatches)
  {
-@@ -282,6 +310,16 @@
+@@ -282,6 +308,16 @@
  #if !defined(__linux__) && defined(__sparc__)
  	matches[i++] = xnfstrdup("wsfb");
  #else
