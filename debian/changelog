@@ -1,3 +1,12 @@
+xorg-server (2:1.11.4-0ubuntu7) precise; urgency=low
+
+  * debian/patches/111_armel-drv-fallbacks.patch:
+    - Avoid loading the driver to test if it's available. Xorg will later load
+      and validate the module, and if it's already loaded it'll trigger an
+      error and invalidate the driver (LP: #959928)
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>  Tue, 20 Mar 2012 02:09:18 -0300
+
 xorg-server (2:1.11.4-0ubuntu6) precise; urgency=low
 
   * debian/patches/500_pointer_barrier_thresholds.diff:
