@@ -1,3 +1,10 @@
+xorg-server (2:1.11.4-0ubuntu8) UNRELEASED; urgency=low
+
+  * Fix crash at startup due to input option abi break (LP: #931397)
+    - Revert two commits from upstream 1.12 input stack
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Fri, 23 Mar 2012 17:26:12 -0700
+
 xorg-server (2:1.11.4-0ubuntu7) precise; urgency=low
 
   * debian/patches/111_armel-drv-fallbacks.patch:
