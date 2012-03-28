@@ -1,4 +1,4 @@
-xorg-server (2:1.11.4-0ubuntu9) UNRELEASED; urgency=low
+xorg-server (2:1.11.4-0ubuntu8) UNRELEASED; urgency=low
 
   [ Chase Douglas ]
   * Fix crash at startup due to input option abi break (LP: #931397)
