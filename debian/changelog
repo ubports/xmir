@@ -10,7 +10,11 @@ xorg-server (2:1.11.4-0ubuntu8) UNRELEASED; urgency=low
       miGetDCDevice.  Fixes crash after connecting a bluetooth keyboard.
       (LP: #930936)
 
- -- Bryce Harrington <bryce@ubuntu.com>  Tue, 27 Mar 2012 18:46:03 -0700
+  [ Chase Douglas ]
+  * Fix mouse warping and clipping (LP: #948938)
+    - Add temporary patch 503_fix_mouse_warp.patch
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 29 Mar 2012 15:38:53 -0700
 
 xorg-server (2:1.11.4-0ubuntu7) precise; urgency=low
 

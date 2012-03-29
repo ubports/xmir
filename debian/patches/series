@@ -34,3 +34,4 @@
 500_pointer_barrier_thresholds.diff
 501_touch_accept_end.patch
 502_indirect_touch_window_set.patch
+503_fix_mouse_warp.patch
