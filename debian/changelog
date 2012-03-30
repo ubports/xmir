@@ -15,8 +15,9 @@ xorg-server (2:1.11.4-0ubuntu8) UNRELEASED; urgency=low
     - Add temporary patch 503_fix_mouse_warp.patch
   * Implement passive touch ungrab (LP: #968726)
     - Add temporary patch 503_implement_passive_touch_ungrab.patch
+  * Bump lintian standards to 3.9.3
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 29 Mar 2012 16:39:42 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 29 Mar 2012 18:09:04 -0700
 
 xorg-server (2:1.11.4-0ubuntu7) precise; urgency=low
 
