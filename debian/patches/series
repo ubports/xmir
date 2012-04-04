@@ -37,3 +37,4 @@
 503_fix_mouse_warp.patch
 504_implement_passive_touch_ungrab.patch
 505_query_pointer_touchscreen.patch
+506_touchscreen_pointer_emulation_checks.patch
