@@ -1,0 +1,32 @@
+From 3d6bd9fd8bd565f4c0513b2649a678109f60bd27 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Tue, 3 Apr 2012 17:18:43 -0700
+Subject: [PATCH] Use touch state when querying pointer through core protocol
+
+QueryPointer is part of the core protocol. As such, it knows nothing
+about touch devices. Touches are converted to button 1 press, pointer
+motion, and button 1 release for core clients, so we should ensure the
+pointer state mask has button 1 set when XQueryPointer is used.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+---
+ dix/events.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/dix/events.c b/dix/events.c
+index 4470947..b9f9cfa 100644
+--- a/dix/events.c
++++ b/dix/events.c
+@@ -5098,8 +5098,7 @@ ProcQueryPointer(ClientPtr client)
+     memset(&rep, 0, sizeof(xQueryPointerReply));
+     rep.type = X_Reply;
+     rep.sequenceNumber = client->sequence;
+-    rep.mask = mouse->button ? (mouse->button->state) : 0;
+-    rep.mask |= XkbStateFieldFromRec(&keyboard->key->xkbInfo->state);
++    rep.mask = event_get_corestate(mouse, keyboard);
+     rep.length = 0;
+     rep.root = (GetCurrentRootWindow(mouse))->drawable.id;
+     rep.rootX = pSprite->hot.x;
+-- 
+1.7.9.1
+

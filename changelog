@@ -1,3 +1,11 @@
+xorg-server (2:1.11.4-0ubuntu9) UNRELEASED; urgency=low
+
+  * Report button press when touchscreen touch is active (LP: #972985)
+    - Add temporary patch 505_query_pointer_touchscreen.patch
+    - Fixes some compiz/unity touchscreen issues
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Tue, 03 Apr 2012 17:40:33 -0700
+
 xorg-server (2:1.11.4-0ubuntu8) precise; urgency=low
 
   [ Chase Douglas ]

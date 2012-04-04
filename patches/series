@@ -36,3 +36,4 @@
 502_indirect_touch_window_set.patch
 503_fix_mouse_warp.patch
 504_implement_passive_touch_ungrab.patch
+505_query_pointer_touchscreen.patch
