@@ -1,9 +1,9 @@
-xorg-server (2:1.11.4-0ubuntu10) UNRELEASED; urgency=low
+xorg-server (2:1.11.4-0ubuntu10) precise; urgency=low
 
   * Fix touchscreen pointer emulation (LP: #949791)
     - Add temporary patch 506_touchscreen_pointer_emulation_checks.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 04 Apr 2012 13:53:16 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Wed, 04 Apr 2012 16:53:33 -0700
 
 xorg-server (2:1.11.4-0ubuntu9) precise; urgency=low
 
