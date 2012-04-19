@@ -323,7 +323,6 @@ rescaleValuatorAxis(double coord, AxisInfoPtr from, AxisInfoPtr to,
 static void
 updateSlaveDeviceCoords(DeviceIntPtr master, DeviceIntPtr pDev)
 {
-    ScreenPtr scr = miPointerGetScreen(pDev);
     int i;
     DeviceIntPtr lastSlave;
 
@@ -341,14 +340,16 @@ updateSlaveDeviceCoords(DeviceIntPtr master, DeviceIntPtr pDev)
         pDev->last.valuators[0] = rescaleValuatorAxis(pDev->last.valuators[0],
                                                       NULL,
                                                       pDev->valuator->axes + 0,
-                                                      0, scr->width);
+                                                      screenInfo.x,
+                                                      screenInfo.width);
     }
     if(pDev->valuator->numAxes > 1)
     {
         pDev->last.valuators[1] = rescaleValuatorAxis(pDev->last.valuators[1],
                                                       NULL,
                                                       pDev->valuator->axes + 1,
-                                                      0, scr->height);
+                                                      screenInfo.y,
+                                                      screenInfo.height);
     }
 
     /* calculate the other axis as well based on info from the old
@@ -1310,17 +1311,18 @@ fill_pointer_events(InternalEvent *events, DeviceIntPtr pDev, int type,
 
         transformAbsolute(pDev, &mask);
         clipAbsolute(pDev, &mask);
+        if ((flags & POINTER_NORAW) == 0)
+            set_raw_valuators(raw, &mask, raw->valuators.data);
     } else {
         if (flags & POINTER_ACCELERATE)
             accelPointer(pDev, &mask, ms);
+        if ((flags & POINTER_NORAW) == 0)
+            set_raw_valuators(raw, &mask, raw->valuators.data);
+
         moveRelative(pDev, &mask);
     }
 
     /* valuators are in device coordinate system in absolute coordinates */
-
-    if ((flags & POINTER_NORAW) == 0)
-        set_raw_valuators(raw, &mask, raw->valuators.data);
-
     scale_to_desktop(pDev, &mask, &devx, &devy, &screenx, &screeny);
     scr = positionSprite(pDev, (flags & POINTER_ABSOLUTE) ? Absolute : Relative,
                          &mask, &devx, &devy, &screenx, &screeny);

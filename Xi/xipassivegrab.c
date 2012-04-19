@@ -303,14 +303,16 @@ ProcXIPassiveUngrabDevice(ClientPtr client)
     if (stuff->grab_type != XIGrabtypeButton &&
         stuff->grab_type != XIGrabtypeKeycode &&
         stuff->grab_type != XIGrabtypeEnter &&
-        stuff->grab_type != XIGrabtypeFocusIn)
+        stuff->grab_type != XIGrabtypeFocusIn &&
+        stuff->grab_type != XIGrabtypeTouchBegin)
     {
         client->errorValue = stuff->grab_type;
         return BadValue;
     }
 
     if ((stuff->grab_type == XIGrabtypeEnter ||
-         stuff->grab_type == XIGrabtypeFocusIn) && stuff->detail != 0)
+         stuff->grab_type == XIGrabtypeFocusIn ||
+         stuff->grab_type == XIGrabtypeTouchBegin) && stuff->detail != 0)
     {
         client->errorValue = stuff->detail;
         return BadValue;
@@ -336,6 +338,7 @@ ProcXIPassiveUngrabDevice(ClientPtr client)
         case XIGrabtypeKeycode:  tempGrab->type = XI_KeyPress;    break;
         case XIGrabtypeEnter:   tempGrab->type = XI_Enter;       break;
         case XIGrabtypeFocusIn: tempGrab->type = XI_FocusIn;     break;
+        case XIGrabtypeTouchBegin: tempGrab->type = XI_TouchBegin; break;
     }
     tempGrab->grabtype = XI2;
     tempGrab->modifierDevice = mod_dev;
