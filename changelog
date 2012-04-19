@@ -1,4 +1,4 @@
-xorg-server (2:1.11.4-0ubuntu11) UNRELEASED; urgency=low
+xorg-server (2:1.11.4-0ubuntu10.1) UNRELEASED; urgency=low
 
   [ Bryce Harrington ]
   * Enable 227_null_ptr_midispcur.patch to apply
