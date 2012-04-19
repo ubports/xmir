@@ -1,8 +1,12 @@
 xorg-server (2:1.11.4-0ubuntu11) UNRELEASED; urgency=low
 
+  [ Bryce Harrington ]
   * Enable 227_null_ptr_midispcur.patch to apply
 
- -- Bryce Harrington <bryce@ubuntu.com>  Mon, 16 Apr 2012 10:50:08 -0700
+  [ Chase Douglas ]
+  * Update to xserver 1.12.1 for the input stack
+
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:05:14 -0700
 
 xorg-server (2:1.11.4-0ubuntu10) precise; urgency=low
 
