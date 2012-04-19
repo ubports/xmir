@@ -5,8 +5,13 @@ xorg-server (2:1.11.4-0ubuntu11) UNRELEASED; urgency=low
 
   [ Chase Douglas ]
   * Update to xserver 1.12.1 for the input stack
+  * Drop patches merged upstream in 1.12.1:
+    - 501_touch_accept_end.patch
+    - 502_indirect_touch_window_set.patch
+    - 503_fix_mouse_warp.patch
+    - 504_implement_passive_touch_ungrab.patch
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:05:14 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:08:37 -0700
 
 xorg-server (2:1.11.4-0ubuntu10) precise; urgency=low
 
