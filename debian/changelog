@@ -12,8 +12,11 @@ xorg-server (2:1.11.4-0ubuntu11) UNRELEASED; urgency=low
     - 504_implement_passive_touch_ungrab.patch
   * Fix patch 506_touchscreen_pointer_emulation_checks.patch after upstream
     review
+  * Fix various touchscreen issues (LP: #974887)
+    - Add temporary patch 506_touchscreen_fixes.patch, which is a combination of
+      multiple upstream patches
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:18:34 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:19:14 -0700
 
 xorg-server (2:1.11.4-0ubuntu10) precise; urgency=low
 
