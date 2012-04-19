@@ -1,4 +1,4 @@
-xorg-server (2:1.11.4-0ubuntu10.1) UNRELEASED; urgency=low
+xorg-server (2:1.11.4-0ubuntu10.1) precise-proposed; urgency=low
 
   [ Bryce Harrington ]
   * Enable 227_null_ptr_midispcur.patch to apply
@@ -16,7 +16,7 @@ xorg-server (2:1.11.4-0ubuntu10.1) UNRELEASED; urgency=low
     - Add temporary patch 506_touchscreen_fixes.patch, which is a combination of
       multiple upstream patches
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:19:14 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 12:34:54 -0700
 
 xorg-server (2:1.11.4-0ubuntu10) precise; urgency=low
 
