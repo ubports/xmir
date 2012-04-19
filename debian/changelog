@@ -10,8 +10,10 @@ xorg-server (2:1.11.4-0ubuntu11) UNRELEASED; urgency=low
     - 502_indirect_touch_window_set.patch
     - 503_fix_mouse_warp.patch
     - 504_implement_passive_touch_ungrab.patch
+  * Fix patch 506_touchscreen_pointer_emulation_checks.patch after upstream
+    review
 
- -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:08:37 -0700
+ -- Chase Douglas <chase.douglas@ubuntu.com>  Thu, 19 Apr 2012 10:18:34 -0700
 
 xorg-server (2:1.11.4-0ubuntu10) precise; urgency=low
 
