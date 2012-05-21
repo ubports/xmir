@@ -37,7 +37,7 @@ index 2693ce7..b5c3880 100644
  xorg-server.pc
  ])
 diff --git a/dix/dixutils.c b/dix/dixutils.c
-index 9eb5489..521bdce 100644
+index 9eb5489..bae5fbc 100644
 --- a/dix/dixutils.c
 +++ b/dix/dixutils.c
 @@ -522,7 +522,7 @@ ProcessWorkQueue(void)
@@ -63,7 +63,7 @@ index 9eb5489..521bdce 100644
  }
  
 +static void
-+FreeWorkQueueItem(WorkQueuePtr this)
++FreeWorkQueueItem (WorkQueuePtr this)
 +{
 +    free(this);
 +}
@@ -83,7 +83,7 @@ index 9eb5489..521bdce 100644
  }
  
 +Bool
-+QueueWorkItem(WorkQueuePtr item)
++QueueWorkItem (WorkQueuePtr item)
 +{
 +    item->next = NULL;
 +    *workQueueLast = item;
@@ -95,10 +95,10 @@ index 9eb5489..521bdce 100644
   * Manage a queue of sleeping clients, awakening them
   * when requested, by using the OS functions IgnoreClient
 diff --git a/dix/getevents.c b/dix/getevents.c
-index 2f6f06c..7151721 100644
+index 3093786..c608382 100644
 --- a/dix/getevents.c
 +++ b/dix/getevents.c
-@@ -79,6 +79,12 @@
+@@ -85,6 +85,12 @@ typedef const char *string;
  InternalEvent *InputEventList = NULL;
  
  /**
@@ -111,16 +111,16 @@ index 2f6f06c..7151721 100644
   * Pick some arbitrary size for Xi motion history.
   */
  int
-@@ -909,7 +915,15 @@ positionSprite(DeviceIntPtr dev, int mode, ValuatorMask *mask,
+@@ -916,7 +922,15 @@ positionSprite(DeviceIntPtr dev, int mode, ValuatorMask *mask,
      /* miPointerSetPosition takes care of crossing screens for us, as well as
       * clipping to the current screen. Coordinates returned are in desktop
       * coord system */
-+    /**
++    /*
 +     * Hack to pass the unclipped values through to the pointer barrier code.
 +     * Required (for now) to calculate the velocity.
 +     */
-+    unclamped_prex = (int) floor(*screenx) - scr->x;
-+    unclamped_prey = (int) floor(*screeny) - scr->y;
++    unclamped_prex = (int)floor(*screenx) - scr->x;
++    unclamped_prey = (int)floor(*screeny) - scr->y;
      scr = miPointerSetPosition(dev, mode, screenx, screeny);
 +    unclamped_prex = -1;
 +    unclamped_prey = -1;
@@ -128,7 +128,7 @@ index 2f6f06c..7151721 100644
      /* If we were constrained, rescale x/y from the screen coordinates so
       * the device valuators reflect the correct position. For screen
 diff --git a/include/dix.h b/include/dix.h
-index d604e06..67dc1d0 100644
+index 5dc2ac5..78b8a73 100644
 --- a/include/dix.h
 +++ b/include/dix.h
 @@ -245,6 +245,8 @@ extern _X_EXPORT Bool QueueWorkProc(Bool (* /*function */ )(
@@ -141,15 +141,16 @@ index d604e06..67dc1d0 100644
                                      pointer /*closure */ );
  
 diff --git a/include/dixstruct.h b/include/dixstruct.h
-index 75685a2..cac4811 100644
+index b2a168a..ba660a3 100644
 --- a/include/dixstruct.h
 +++ b/include/dixstruct.h
-@@ -153,6 +153,8 @@ typedef struct _WorkQueue {
+@@ -153,6 +153,9 @@ typedef struct _WorkQueue {
          );
      ClientPtr client;
      pointer closure;
-+    void (*destroyProc) (struct _WorkQueue *    /* this */
-+        );
++    void       (*destroyProc) (
++                struct _WorkQueue * /* this */
++);
  } WorkQueueRec;
  
  extern _X_EXPORT TimeStamp currentTime;
@@ -181,7 +182,7 @@ index eb61470..29e3fc2 100644
  
  TESTS=$(noinst_PROGRAMS)
 diff --git a/xfixes/cursor.c b/xfixes/cursor.c
-index 602b906..c51897a 100644
+index 602b906..cab5b31 100644
 --- a/xfixes/cursor.c
 +++ b/xfixes/cursor.c
 @@ -61,6 +61,7 @@ static RESTYPE CursorClientType;
@@ -192,18 +193,18 @@ index 602b906..c51897a 100644
  static CursorPtr CursorCurrent[MAXDEVICES];
  
  static DevPrivateKeyRec CursorScreenPrivateKeyRec;
-@@ -120,6 +121,11 @@ struct PointerBarrierClient {
-     struct xorg_list entry;
+@@ -121,6 +122,11 @@ struct PointerBarrierClient {
  };
  
-+/**
+ /*
 + * Pick up unclamped (x,y) coordinates from dix/getevents
 + */
 +extern int unclamped_prex, unclamped_prey;
 +
- /*
++/*
   * Wrap DisplayCursor to catch cursor change events
   */
+ 
 @@ -130,6 +136,7 @@ typedef struct _CursorScreen {
      ConstrainCursorHarderProcPtr ConstrainCursorHarder;
      CursorHideCountPtr pCursorHideCounts;
@@ -217,8 +218,8 @@ index 602b906..c51897a 100644
      /* Algorithm below doesn't handle edge cases well, hence the extra
       * checks. */
 -    if (barrier_is_vertical(barrier)) {
-+    if (barrier_is_vertical(barrier) &&
-+        (dir & (BarrierPositiveX | BarrierNegativeX))) {
++        if (barrier_is_vertical(barrier) &&
++	    (dir & (BarrierPositiveX | BarrierNegativeX))) {
          /* handle immediate barrier adjacency, moving away */
          if (dir & BarrierPositiveX && x1 == barrier->x1)
              return FALSE;
@@ -227,12 +228,12 @@ index 602b906..c51897a 100644
          }
      }
 -    else {
-+    else if (barrier_is_horizontal(barrier) &&
-+             (dir & (BarrierPositiveY | BarrierNegativeY))) {
++   else if (barrier_is_horizontal(barrier) &&
++		(dir & (BarrierPositiveY | BarrierNegativeY))){
          /* handle immediate barrier adjacency, moving away */
          if (dir & BarrierPositiveY && y1 == barrier->y1)
              return FALSE;
-@@ -1191,6 +1200,131 @@ barrier_clamp_to_barrier(struct PointerBarrier *barrier, int dir, int *x,
+@@ -1191,6 +1200,126 @@ barrier_clamp_to_barrier(struct PointerBarrier *barrier, int dir, int *x,
      }
  }
  
@@ -255,86 +256,81 @@ index 602b906..c51897a 100644
 +struct BarrierEventStore barrierEventQueue[BARRIER_EVENT_QUEUE_SIZE];
 +
 +static void
-+CursorWorkQueueDestroyProc(WorkQueuePtr this)
++CursorWorkQueueDestroyProc (WorkQueuePtr this)
 +{
 +    struct BarrierEventStore *store;
-+    store = container_of(this, struct BarrierEventStore, wq_item);
++    store = container_of (this, struct BarrierEventStore, wq_item);
 +
 +    store->in_use = FALSE;
 +}
 +
 +static Bool
-+CursorSendBarrierEvent(ClientPtr client, pointer eventStore)
++CursorSendBarrierEvent (ClientPtr client, pointer eventStore)
 +{
-+    struct BarrierEventStore *store = (struct BarrierEventStore *) eventStore;
-+
-+    WriteEventsToClient(client, 1, (xEvent *) &store->ev);
++    struct BarrierEventStore *store = (struct BarrierEventStore *)eventStore;
++    WriteEventsToClient (client, 1, (xEvent *)&store->ev);
 +
 +    return TRUE;
 +}
 +
 +static struct BarrierEventStore *
-+CursorFindFreeEventStore(void)
++CursorFindFreeEventStore (void)
 +{
 +    for (int i = 0; i < BARRIER_EVENT_QUEUE_SIZE; ++i) {
-+        if (!barrierEventQueue[i].in_use) {
-+            return &barrierEventQueue[i];
-+        }
++	if (!barrierEventQueue[i].in_use) {
++	    return &barrierEventQueue[i];
++	}
 +    }
 +    return NULL;
 +}
 +
 +static void
 +QueueBarrierEvent(CursorScreenPtr cs, struct PointerBarrier *barrier,
-+                  int x, int y, int velocity, Bool threshold_exceeded)
++		  int x, int y, int velocity, Bool threshold_exceeded)
 +{
 +    PointerBarrierEventClientPtr client;
 +    struct BarrierEventStore *store;
++    xorg_list_for_each_entry(client, &cs->barrierClients, entry) {
++	store = CursorFindFreeEventStore ();
++	if (store == NULL) {
++	    ErrorF ("[xfixes] Barrier event queue full.  Dropping further events\n");
++	    return;
++	}
 +
-+    list_for_each_entry(client, &cs->barrierClients, entry) {
-+        store = CursorFindFreeEventStore();
-+        if (store == NULL) {
-+            ErrorF
-+                ("[xfixes] Barrier event queue full.  Dropping further events\n");
-+            return;
-+        }
++	store->in_use = TRUE;
 +
-+        store->in_use = TRUE;
++	store->ev.type = XFixesEventBase + XFixesBarrierNotify;
++	store->ev.subtype = threshold_exceeded ? XFixesBarrierThresholdExceededNotify :
++					         XFixesBarrierHitNotify;
++	store->ev.event_id = barrier->barrierEventID;
++	store->ev.barrier = barrier->barrier;
++	store->ev.x = x;
++	store->ev.y = y;
++	store->ev.velocity = velocity;
++	store->ev.timestamp = currentTime.milliseconds;
 +
-+        store->ev.type = XFixesEventBase + XFixesBarrierNotify;
-+        store->ev.subtype =
-+            threshold_exceeded ? XFixesBarrierThresholdExceededNotify :
-+            XFixesBarrierHitNotify;
-+        store->ev.event_id = barrier->barrierEventID;
-+        store->ev.barrier = barrier->barrier;
-+        store->ev.x = x;
-+        store->ev.y = y;
-+        store->ev.velocity = velocity;
-+        store->ev.timestamp = currentTime.milliseconds;
++	if (client->client->swapped) {
 +
-+        if (client->client->swapped) {
-+            int n;
++	    swapl(&store->ev.event_id);
++	    swapl(&store->ev.barrier);
++	    swaps(&store->ev.x);
++	    swaps(&store->ev.y);
++	    swapl(&store->ev.velocity);
++	    swapl(&store->ev.timestamp);
++	}
 +
-+            swapl(&store->ev.event_id, n);
-+            swapl(&store->ev.barrier, n);
-+            swaps(&store->ev.x, n);
-+            swaps(&store->ev.y, n);
-+            swapl(&store->ev.velocity, n);
-+            swapl(&store->ev.timestamp, n);
-+        }
++	store->wq_item.function = CursorSendBarrierEvent;
++	store->wq_item.client = client->client;
++	store->wq_item.closure = store;
++	store->wq_item.destroyProc = CursorWorkQueueDestroyProc;
 +
-+        store->wq_item.function = CursorSendBarrierEvent;
-+        store->wq_item.client = client->client;
-+        store->wq_item.closure = store;
-+        store->wq_item.destroyProc = CursorWorkQueueDestroyProc;
-+
-+        QueueWorkItem(&store->wq_item);
++	QueueWorkItem (&store->wq_item); 
 +    }
 +}
 +
 +static void
-+barrier_calculate_velocity_components(int x1, int y1, int x2, int y2,
-+                                      int *vel_x, int *vel_y)
++barrier_calculate_velocity_components (int x1, int y1, int x2, int y2,
++				       int *vel_x, int *vel_y)
 +{
 +    static CARD32 last_timestamp = 0;
 +    CARD32 timestamp = GetTimeInMillis();
@@ -342,11 +338,11 @@ index 602b906..c51897a 100644
 +    int dt = timestamp - last_timestamp;
 +
 +    if (last_timestamp == 0) {
-+        /* Not much we can do for the first event */
-+        *vel_x = 0;
-+        *vel_y = 0;
-+        last_timestamp = timestamp;
-+        return;
++	/* Not much we can do for the first event */
++	*vel_x = 0;
++	*vel_y = 0;
++	last_timestamp = timestamp;
++	return;
 +    }
 +
 +    /* Lets not divide by zero if we can avoid it */
@@ -364,7 +360,7 @@ index 602b906..c51897a 100644
  static void
  CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
                              int *x, int *y)
-@@ -1200,12 +1334,23 @@ CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
+@@ -1200,12 +1329,23 @@ CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
      if (!xorg_list_is_empty(&cs->barriers) && !IsFloating(dev) &&
          mode == Relative) {
          int ox, oy;
@@ -388,79 +384,72 @@ index 602b906..c51897a 100644
          /* How this works:
           * Given the origin and the movement vector, get the nearest barrier
           * to the origin that is blocking the movement.
-@@ -1213,11 +1358,31 @@ CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
+@@ -1213,11 +1353,27 @@ CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
           * Then, check from the clamped intersection to the original
           * destination, again finding the nearest barrier and clamping.
           */
 -        dir = barrier_get_direction(ox, oy, *x, *y);
 +        dir = barrier_get_direction(ox, oy, unclamped_prex, unclamped_prey);
-+        barrier_calculate_velocity_components(ox, oy, unclamped_prex,
-+                                              unclamped_prey, &vel_x, &vel_y);
++        barrier_calculate_velocity_components(ox, oy, unclamped_prex, unclamped_prey, &vel_x, &vel_y);
  
 -        nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
-+        nearest =
-+            barrier_find_nearest(cs, dir, ox, oy, unclamped_prex,
-+                                 unclamped_prey);
++        nearest = barrier_find_nearest(cs, dir, ox, oy, unclamped_prex, unclamped_prey);
          if (nearest) {
 -            barrier_clamp_to_barrier(nearest, dir, x, y);
-+            int velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
-+            Bool threshold_exceeded = (nearest->velocity != 0) &&
-+                (velocity > nearest->velocity);
++	    int velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
++	    Bool threshold_exceeded = (nearest->velocity != 0) &&
++				      (velocity > nearest->velocity);
 +
-+            if (!nearest->lastHit) {
-+                /* This is the start of a new barrier event */
-+                nearest->barrierEventID++;
-+            }
++	    if (!nearest->lastHit) {
++		/* This is the start of a new barrier event */
++		nearest->barrierEventID++;
++	    }
 +
-+            if ((!threshold_exceeded || nearest->lastHit) &&
-+                (nearest->barrierEventID != nearest->releaseEventID)) {
-+                barrier_clamp_to_barrier(nearest, dir, x, y);
-+                nearest->hit = TRUE;
-+            }
++	    if ((!threshold_exceeded || nearest->lastHit) &&
++		(nearest->barrierEventID != nearest->releaseEventID)) {
++		barrier_clamp_to_barrier(nearest, dir, x, y);
++		nearest->hit = TRUE;
++	    }
 +
-+            QueueBarrierEvent(cs, nearest, *x, *y, velocity,
-+                              threshold_exceeded);
++	    QueueBarrierEvent(cs, nearest, *x, *y, velocity, threshold_exceeded);
  
              if (barrier_is_vertical(nearest)) {
                  dir &= ~(BarrierNegativeX | BarrierPositiveX);
-@@ -1228,11 +1393,34 @@ CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
+@@ -1228,11 +1384,31 @@ CursorConstrainCursorHarder(DeviceIntPtr dev, ScreenPtr screen, int mode,
                  oy = *y;
              }
  
 -            nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
-+            nearest =
-+                barrier_find_nearest(cs, dir, ox, oy, unclamped_prex,
-+                                     unclamped_prey);
++            nearest = barrier_find_nearest(cs, dir, ox, oy, unclamped_prex, unclamped_prey);
              if (nearest) {
 -                barrier_clamp_to_barrier(nearest, dir, x, y);
-+                velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
-+                threshold_exceeded = (nearest->velocity != 0) &&
-+                    (velocity > nearest->velocity);
++			velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
++			threshold_exceeded = (nearest->velocity != 0) &&
++						(velocity > nearest->velocity);
 +
-+                if (!nearest->lastHit) {
-+                    /* This is the start of a new barrier event */
-+                    nearest->barrierEventID++;
-+                }
++			if (!nearest->lastHit) {
++				/* This is the start of a new barrier event */
++				nearest->barrierEventID++;
++			}
 +
-+                if ((!threshold_exceeded || nearest->lastHit) &&
-+                    (nearest->barrierEventID != nearest->releaseEventID)) {
-+                    barrier_clamp_to_barrier(nearest, dir, x, y);
-+                    nearest->hit = TRUE;
-+                }
++			if ((!threshold_exceeded || nearest->lastHit) &&
++				(nearest->barrierEventID != nearest->releaseEventID)) {
++				barrier_clamp_to_barrier(nearest, dir, x, y);
++				nearest->hit = TRUE;
++			}
 +
-+                QueueBarrierEvent(cs, nearest, *x, *y, velocity,
-+                                  threshold_exceeded);
++			QueueBarrierEvent(cs, nearest, *x, *y, velocity, threshold_exceeded);
              }
          }
 +
-+        list_for_each_entry(c, &cs->barriers, entry) {
-+            c->barrier.lastHit = c->barrier.hit;
-+            c->barrier.hit = FALSE;
-+        }
++	xorg_list_for_each_entry(c, &cs->barriers, entry) {
++	    c->barrier.lastHit = c->barrier.hit;
++	    c->barrier.hit = FALSE;
++	}
      }
  
      if (cs->ConstrainCursorHarder) {
-@@ -1247,15 +1435,46 @@ CreatePointerBarrierClient(ScreenPtr screen, ClientPtr client,
+@@ -1247,15 +1423,45 @@ CreatePointerBarrierClient(ScreenPtr screen, ClientPtr client,
                             xXFixesCreatePointerBarrierReq * stuff)
  {
      CursorScreenPtr cs = GetCursorScreen(screen);
@@ -475,13 +464,13 @@ index 602b906..c51897a 100644
          ret->barrier.y1 = min(stuff->y1, stuff->y2);
          ret->barrier.y2 = max(stuff->y1, stuff->y2);
          ret->barrier.directions = stuff->directions & 0x0f;
-+        ret->barrier.velocity = 0;
-+        ret->barrier.barrierEventID = 0;
-+        if (barrier_is_horizontal(&ret->barrier))
-+            ret->barrier.directions &= ~(BarrierPositiveX | BarrierNegativeX);
-+        if (barrier_is_vertical(&ret->barrier))
-+            ret->barrier.directions &= ~(BarrierPositiveY | BarrierNegativeY);
-+        list_add(&ret->entry, &cs->barriers);
++	ret->barrier.velocity = 0;
++	ret->barrier.barrierEventID = 0;
++	if (barrier_is_horizontal(&ret->barrier))
++	    ret->barrier.directions &= ~(BarrierPositiveX | BarrierNegativeX);
++	if (barrier_is_vertical(&ret->barrier))
++	    ret->barrier.directions &= ~(BarrierPositiveY | BarrierNegativeY);
++	xorg_list_add(&ret->entry, &cs->barriers);
 +    }
 +
 +    return ret;
@@ -489,51 +478,49 @@ index 602b906..c51897a 100644
 +
 +static struct PointerBarrierClient *
 +CreatePointerBarrierVelocityClient(ScreenPtr screen, ClientPtr client,
-+                                   xXFixesCreatePointerBarrierVelocityReq *
-+                                   stuff)
++			   xXFixesCreatePointerBarrierVelocityReq *stuff)
 +{
 +    CursorScreenPtr cs = GetCursorScreen(screen);
 +    struct PointerBarrierClient *ret = calloc(sizeof(*ret), 1);
 +
 +    if (ret) {
-+        ret->screen = screen;
-+        ret->barrier.barrier = stuff->barrier;
-+        ret->barrier.x1 = min(stuff->x1, stuff->x2);
-+        ret->barrier.x2 = max(stuff->x1, stuff->x2);
-+        ret->barrier.y1 = min(stuff->y1, stuff->y2);
-+        ret->barrier.y2 = max(stuff->y1, stuff->y2);
-+        ret->barrier.directions = stuff->directions & 0x0f;
-+        ret->barrier.velocity = stuff->velocity;
-+        ret->barrier.barrierEventID = 0;
++	ret->screen = screen;
++	ret->barrier.barrier = stuff->barrier;
++	ret->barrier.x1 = min(stuff->x1, stuff->x2);
++	ret->barrier.x2 = max(stuff->x1, stuff->x2);
++	ret->barrier.y1 = min(stuff->y1, stuff->y2);
++	ret->barrier.y2 = max(stuff->y1, stuff->y2);
++	ret->barrier.directions = stuff->directions & 0x0f;
++	ret->barrier.velocity = stuff->velocity;
++	ret->barrier.barrierEventID = 0;
          if (barrier_is_horizontal(&ret->barrier))
              ret->barrier.directions &= ~(BarrierPositiveX | BarrierNegativeX);
          if (barrier_is_vertical(&ret->barrier))
-@@ -1328,6 +1547,71 @@ SProcXFixesCreatePointerBarrier(ClientPtr client)
+@@ -1328,6 +1534,68 @@ SProcXFixesCreatePointerBarrier(ClientPtr client)
      return ProcXFixesVector[stuff->xfixesReqType] (client);
  }
  
 +int
-+ProcXFixesCreatePointerBarrierVelocity(ClientPtr client)
++ProcXFixesCreatePointerBarrierVelocity (ClientPtr client)
 +{
 +    int err;
 +    WindowPtr pWin;
 +    struct PointerBarrierClient *barrier;
 +    struct PointerBarrier b;
-+
-+    REQUEST(xXFixesCreatePointerBarrierVelocityReq);
++    REQUEST (xXFixesCreatePointerBarrierVelocityReq);
 +
 +    REQUEST_SIZE_MATCH(xXFixesCreatePointerBarrierVelocityReq);
 +    LEGAL_NEW_RESOURCE(stuff->barrier, client);
 +
 +    err = dixLookupWindow(&pWin, stuff->window, client, DixReadAccess);
 +    if (err != Success) {
-+        client->errorValue = stuff->window;
-+        return err;
++	client->errorValue = stuff->window;
++	return err;
 +    }
 +
 +    /* This sure does need fixing. */
 +    if (stuff->num_devices)
-+        return BadImplementation;
++	return BadImplementation;
 +
 +    b.x1 = stuff->x1;
 +    b.x2 = stuff->x2;
@@ -541,46 +528,44 @@ index 602b906..c51897a 100644
 +    b.y2 = stuff->y2;
 +
 +    if (!barrier_is_horizontal(&b) && !barrier_is_vertical(&b))
-+        return BadValue;
++	return BadValue;
 +
 +    /* no 0-sized barriers */
 +    if (barrier_is_horizontal(&b) && barrier_is_vertical(&b))
-+        return BadValue;
++	return BadValue;
 +
 +    if (!(barrier = CreatePointerBarrierVelocityClient(pWin->drawable.pScreen,
-+                                                       client, stuff)))
-+        return BadAlloc;
++						       client, stuff)))
++	return BadAlloc;
 +
 +    if (!AddResource(stuff->barrier, PointerBarrierType, &barrier->barrier))
-+        return BadAlloc;
++	return BadAlloc;
 +
 +    return Success;
 +}
 +
 +int
-+SProcXFixesCreatePointerBarrierVelocity(ClientPtr client)
++SProcXFixesCreatePointerBarrierVelocity (ClientPtr client)
 +{
-+    int n;
-+
 +    REQUEST(xXFixesCreatePointerBarrierVelocityReq);
 +
-+    swaps(&stuff->length, n);
++    swaps(&stuff->length);
 +    REQUEST_SIZE_MATCH(xXFixesCreatePointerBarrierReq);
-+    swapl(&stuff->barrier, n);
-+    swapl(&stuff->window, n);
-+    swaps(&stuff->x1, n);
-+    swaps(&stuff->y1, n);
-+    swaps(&stuff->x2, n);
-+    swaps(&stuff->y2, n);
-+    swapl(&stuff->directions, n);
-+    swapl(&stuff->velocity, n);
-+    return ProcXFixesVector[stuff->xfixesReqType] (client);
++    swapl(&stuff->barrier);
++    swapl(&stuff->window);
++    swaps(&stuff->x1);
++    swaps(&stuff->y1);
++    swaps(&stuff->x2);
++    swaps(&stuff->y2);
++    swapl(&stuff->directions);
++    swapl(&stuff->velocity);
++    return ProcXFixesVector[stuff->xfixesReqType](client);
 +}
 +
  static int
  CursorFreeBarrier(void *data, XID id)
  {
-@@ -1384,6 +1668,121 @@ SProcXFixesDestroyPointerBarrier(ClientPtr client)
+@@ -1384,6 +1652,116 @@ SProcXFixesDestroyPointerBarrier(ClientPtr client)
      return ProcXFixesVector[stuff->xfixesReqType] (client);
  }
  
@@ -592,11 +577,11 @@ index 602b906..c51897a 100644
 +    CursorScreenPtr cs = GetCursorScreen(screen);
 +
 +    /* find and unlink from the screen private */
-+    list_for_each_entry(c, &cs->barrierClients, entry) {
-+        if (c == client) {
-+            list_del(&c->entry);
-+            break;
-+        }
++    xorg_list_for_each_entry(c, &cs->barrierClients, entry) {
++	if (c == client) {
++	    xorg_list_del(&c->entry);
++	    break;
++	}
 +    }
 +
 +    free(client);
@@ -605,79 +590,76 @@ index 602b906..c51897a 100644
 +
 +static struct PointerBarrierEventClient *
 +CreatePointerBarrierEventClient(ScreenPtr screen, ClientPtr client,
-+                                xXFixesSelectBarrierInputReq * stuff)
++				   xXFixesSelectBarrierInputReq *stuff)
 +{
 +    CursorScreenPtr cs = GetCursorScreen(screen);
 +    struct PointerBarrierEventClient *ret = malloc(sizeof(*ret));
 +
 +    if (ret) {
-+        ret->screen = screen;
-+        ret->client = client;
-+        ret->eventMask = stuff->eventMask;
-+        ret->window = stuff->window;
-+        ret->resource = FakeClientID(client->index);
-+        list_add(&ret->entry, &cs->barrierClients);
++	ret->screen = screen;
++	ret->client = client;
++	ret->eventMask = stuff->eventMask;
++	ret->window = stuff->window;
++	ret->resource = FakeClientID (client->index);
++      xorg_list_add(&ret->entry, &cs->barrierClients);
 +    }
 +
 +    return ret;
 +}
 +
 +int
-+ProcXFixesSelectBarrierInput(ClientPtr client)
++ProcXFixesSelectBarrierInput (ClientPtr client)
 +{
 +    int err;
 +    WindowPtr pWin;
 +    struct PointerBarrierEventClient *eventClient;
-+
-+    REQUEST(xXFixesSelectBarrierInputReq);
++    REQUEST (xXFixesSelectBarrierInputReq);
 +
 +    REQUEST_SIZE_MATCH(xXFixesSelectBarrierInputReq);
 +
-+    err = dixLookupWindow(&pWin, stuff->window, client, DixReadAccess);
++    err = dixLookupWindow(&pWin	, stuff->window, client, DixReadAccess);
 +    if (err != Success) {
-+        client->errorValue = stuff->window;
-+        return err;
++	client->errorValue = stuff->window;
++	return err;
 +    }
 +
 +    if (!(eventClient = CreatePointerBarrierEventClient(pWin->drawable.pScreen,
-+                                                        client, stuff)))
-+        return BadAlloc;
++							client,
++							stuff)))
++      return BadAlloc;
 +
-+    if (!AddResource
-+        (eventClient->resource, PointerBarrierClientType, eventClient))
-+        return BadAlloc;
++    if (!AddResource (eventClient->resource, PointerBarrierClientType, eventClient))
++      return BadAlloc;
 +
 +    return Success;
 +}
 +
 +int
-+SProcXFixesSelectBarrierInput(ClientPtr client)
++SProcXFixesSelectBarrierInput (ClientPtr client)
 +{
-+    int n;
-+
 +    REQUEST(xXFixesSelectBarrierInputReq);
 +
-+    swaps(&stuff->length, n);
++    swaps(&stuff->length);
 +    REQUEST_SIZE_MATCH(xXFixesSelectBarrierInputReq);
-+    swapl(&stuff->window, n);
-+    swapl(&stuff->eventMask, n);
-+    return ProcXFixesVector[stuff->xfixesReqType] (client);
++    swapl(&stuff->window);
++    swapl(&stuff->eventMask);
++    return ProcXFixesVector[stuff->xfixesReqType](client);
 +}
 +
 +int
-+ProcXFixesBarrierReleasePointer(ClientPtr client)
++ProcXFixesBarrierReleasePointer (ClientPtr client)
 +{
 +    int err;
 +    struct PointerBarrier *barrier;
-+
-+    REQUEST(xXFixesBarrierReleasePointerReq);
++    REQUEST (xXFixesBarrierReleasePointerReq);
 +    REQUEST_SIZE_MATCH(xXFixesBarrierReleasePointerReq);
 +
-+    err = dixLookupResourceByType((void **) &barrier, stuff->barrier,
-+                                  PointerBarrierType, client, DixReadAccess);
++    err = dixLookupResourceByType((void **)&barrier, stuff->barrier,
++				  PointerBarrierType, client,
++				  DixReadAccess);
 +    if (err != Success) {
-+        client->errorValue = stuff->barrier;
-+        return err;
++	client->errorValue = stuff->barrier;
++	return err;
 +    }
 +
 +    barrier->releaseEventID = stuff->event_id;
@@ -686,23 +668,21 @@ index 602b906..c51897a 100644
 +}
 +
 +int
-+SProcXFixesBarrierReleasePointer(ClientPtr client)
++SProcXFixesBarrierReleasePointer (ClientPtr client)
 +{
-+    int n;
-+
 +    REQUEST(xXFixesBarrierReleasePointerReq);
 +
-+    swaps(&stuff->length, n);
++    swaps(&stuff->length);
 +    REQUEST_SIZE_MATCH(xXFixesBarrierReleasePointerReq);
-+    swapl(&stuff->barrier, n);
-+    swapl(&stuff->event_id, n);
-+    return ProcXFixesVector[stuff->xfixesReqType] (client);
++    swapl(&stuff->barrier);
++    swapl(&stuff->event_id);
++    return ProcXFixesVector[stuff->xfixesReqType](client);
 +}
 +
  Bool
  XFixesCursorInit(void)
  {
-@@ -1403,6 +1802,7 @@ XFixesCursorInit(void)
+@@ -1403,6 +1781,7 @@ XFixesCursorInit(void)
          if (!cs)
              return FALSE;
          xorg_list_init(&cs->barriers);
@@ -710,55 +690,57 @@ index 602b906..c51897a 100644
          Wrap(cs, pScreen, CloseScreen, CursorCloseScreen);
          Wrap(cs, pScreen, DisplayCursor, CursorDisplayCursor);
          Wrap(cs, pScreen, ConstrainCursorHarder, CursorConstrainCursorHarder);
-@@ -1417,7 +1817,9 @@ XFixesCursorInit(void)
+@@ -1417,7 +1796,8 @@ XFixesCursorInit(void)
                                               "XFixesCursorWindow");
      PointerBarrierType = CreateNewResourceType(CursorFreeBarrier,
                                                 "XFixesPointerBarrier");
+-
 +    PointerBarrierClientType = CreateNewResourceType(CursorFreeBarrierClient,
-+                                                     "XFixesPointerBarrierClient");
- 
++                                               "XFixesPointerBarrierClient");
      return CursorClientType && CursorHideCountType && CursorWindowType &&
 -        PointerBarrierType;
 +        PointerBarrierType && PointerBarrierClientType;
  }
 diff --git a/xfixes/xfixes.c b/xfixes/xfixes.c
-index f80230f..2c0ed05 100644
+index f80230f..36b93b7 100644
 --- a/xfixes/xfixes.c
 +++ b/xfixes/xfixes.c
 @@ -102,6 +102,7 @@ static const int version_requests[] = {
      X_XFixesExpandRegion,       /* Version 3 */
      X_XFixesShowCursor,         /* Version 4 */
      X_XFixesDestroyPointerBarrier,      /* Version 5 */
-+    X_XFixesBarrierReleasePointer,      /* Version 6 */
++    X_XFixesBarrierReleasePointer, /* Version 6 */
  };
  
  #define NUM_VERSION_REQUESTS	(sizeof (version_requests) / sizeof (version_requests[0]))
-@@ -140,7 +141,10 @@ int (*ProcXFixesVector[XFixesNumberRequests]) (ClientPtr) = {
+@@ -140,7 +141,11 @@ int (*ProcXFixesVector[XFixesNumberRequests]) (ClientPtr) = {
  /*************** Version 4 ****************/
          ProcXFixesHideCursor, ProcXFixesShowCursor,
  /*************** Version 5 ****************/
 -ProcXFixesCreatePointerBarrier, ProcXFixesDestroyPointerBarrier,};
-+        ProcXFixesCreatePointerBarrier, ProcXFixesDestroyPointerBarrier,
++ProcXFixesCreatePointerBarrier, ProcXFixesDestroyPointerBarrier,
 +/*************** Version 6 ****************/
-+ProcXFixesCreatePointerBarrierVelocity,
-+        ProcXFixesSelectBarrierInput, ProcXFixesBarrierReleasePointer,};
++        ProcXFixesCreatePointerBarrierVelocity,
++        ProcXFixesSelectBarrierInput,
++        ProcXFixesBarrierReleasePointer,};
  
  static int
  ProcXFixesDispatch(ClientPtr client)
-@@ -200,7 +204,10 @@ static int (*SProcXFixesVector[XFixesNumberRequests]) (ClientPtr) = {
+@@ -200,7 +205,11 @@ static int (*SProcXFixesVector[XFixesNumberRequests]) (ClientPtr) = {
  /*************** Version 4 ****************/
          SProcXFixesHideCursor, SProcXFixesShowCursor,
  /*************** Version 5 ****************/
 -SProcXFixesCreatePointerBarrier, SProcXFixesDestroyPointerBarrier,};
-+        SProcXFixesCreatePointerBarrier, SProcXFixesDestroyPointerBarrier,
++SProcXFixesCreatePointerBarrier, SProcXFixesDestroyPointerBarrier,
 +/*************** Version 6 ****************/
-+SProcXFixesCreatePointerBarrierVelocity,
-+        SProcXFixesSelectBarrierInput, SProcXFixesBarrierReleasePointer,};
++        SProcXFixesCreatePointerBarrierVelocity,
++        SProcXFixesSelectBarrierInput,
++        SProcXFixesBarrierReleasePointer,};
  
  static int
  SProcXFixesDispatch(ClientPtr client)
 diff --git a/xfixes/xfixes.h b/xfixes/xfixes.h
-index 19af09f..770935c 100644
+index 19af09f..fc7c3c4 100644
 --- a/xfixes/xfixes.h
 +++ b/xfixes/xfixes.h
 @@ -28,6 +28,7 @@
@@ -778,25 +760,25 @@ index 19af09f..770935c 100644
 +struct PointerBarrierEventClient {
 +    ScreenPtr screen;
 +    ClientPtr client;
-+    CARD32 eventMask;
++    CARD32    eventMask;
 +    XID window;
 +    XID resource;
-+    struct list entry;
++    struct xorg_list entry;
 +};
 +
  struct PointerBarrier {
-+    XID barrier;
++    XID    barrier;
      CARD16 x1, x2, y1, y2;
      CARD32 directions;
 +    CARD32 velocity;
 +    CARD32 barrierEventID;
 +    CARD32 releaseEventID;
-+    Bool hit, lastHit;
++    Bool   hit, lastHit;
  };
  
  extern int
 diff --git a/xfixes/xfixesint.h b/xfixes/xfixesint.h
-index 71f88a9..8cb9342 100644
+index 71f88a9..8b204dc 100644
 --- a/xfixes/xfixesint.h
 +++ b/xfixes/xfixesint.h
 @@ -59,6 +59,7 @@
@@ -814,26 +796,28 @@ index 71f88a9..8cb9342 100644
 +/* Version 6 */
 +
 +int
-+ ProcXFixesSelectBarrierInput(ClientPtr client);
++ProcXFixesSelectBarrierInput (ClientPtr client);
 +
 +int
-+ SProcXFixesSelectBarrierInput(ClientPtr client);
++SProcXFixesSelectBarrierInput (ClientPtr client);
 +
 +int
-+ ProcXFixesCreatePointerBarrierVelocity(ClientPtr client);
++ProcXFixesCreatePointerBarrierVelocity (ClientPtr client);
 +
 +int
-+ SProcXFixesCreatePointerBarrierVelocity(ClientPtr client);
++SProcXFixesCreatePointerBarrierVelocity (ClientPtr client);
 +
 +int
-+ ProcXFixesBarrierReleasePointer(ClientPtr client);
++ProcXFixesBarrierReleasePointer (ClientPtr client);
 +
 +int
-+ SProcXFixesBarrierReleasePointer(ClientPtr client);
++SProcXFixesBarrierReleasePointer (ClientPtr client);
 +
  /* Xinerama */
  extern int (*PanoramiXSaveXFixesVector[XFixesNumberRequests]) (ClientPtr);
  void PanoramiXFixesInit(void);
+diff --git a/dix/dixutils.c b/dix/dixutils.c
+index 9eb5489..521bdce 100644
 diff -Nru /dev/null xorg-server/test/gtest/dummy.conf
 --- /dev/null	1970-01-01 01:00:00.000000000 +0100
 +++ xorg-server/test/gtest/dummy.conf	2012-05-21 18:00:45.996945542 +0200
