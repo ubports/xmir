@@ -1,0 +1,47 @@
+commit ef492e9797b6d4f6bbc25e86bedc24477819fde7
+Author: Chris Halse Rogers <christopher.halse.rogers@canonical.com>
+Date:   Thu Jan 5 01:22:39 2012 +0000
+
+    dix: Return BadWindow rather than BadMatch from dixLookupWindow
+    
+    dixLookupWindow uses dixLookupDrawable internally, which returns
+    BadMatch when the XID matches a non-Window drawable.  Users
+    of dixLookupWindow don't care about this, just that it's not
+    a valid Window.
+    
+    This is a generalised version of the fix for X.Org Bug 23562,
+    where GetProperty was incorrectly returning BadMatch. Auditing other
+    window requests, all that I checked would incorrectly return BadMatch
+    in these circumstances.  An incomplete list of calls that could
+    incorrectly return BadMatch is: ListProperties, SetSelectionOwner,
+    {Destroy,Map,Unmap}{,Sub}Window.
+    
+    None of the callers of dixLookupWindow, except for GetProperty, check
+    for BadMatch
+    
+    Signed-off-by: Christopher James Halse Rogers <christopher.halse.rogers@canonical.com>
+    Reviewed-by: Daniel Stone <daniel@fooishbar.org>
+    Reviewed-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+
+diff --git a/dix/dixutils.c b/dix/dixutils.c
+index 2b5391f..da26dc1 100644
+--- a/dix/dixutils.c
++++ b/dix/dixutils.c
+@@ -224,7 +224,15 @@ dixLookupWindow(WindowPtr *pWin, XID id, ClientPtr client, Mask access)
+ {
+     int rc;
+     rc = dixLookupDrawable((DrawablePtr*)pWin, id, client, M_WINDOW, access);
+-    return (rc == BadDrawable) ? BadWindow : rc;
++    /* dixLookupDrawable returns BadMatch iff id is a valid Drawable
++       but is not a Window. Users of dixLookupWindow expect a BadWindow
++       error in this case; they don't care that it's a valid non-Window XID */
++    if (rc == BadMatch)
++	rc = BadWindow;
++    /* Similarly, users of dixLookupWindow don't want BadDrawable. */
++    if (rc == BadDrawable)
++	rc = BadWindow;
++    return rc;
+ }
+ 
+ int

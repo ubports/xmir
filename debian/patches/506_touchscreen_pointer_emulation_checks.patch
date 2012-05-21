@@ -1,0 +1,159 @@
+From ec9c4295830c3de610e65aca17f4da4a7af3c4c5 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Wed, 18 Apr 2012 12:04:58 -0700
+Subject: [PATCH] Check other clients' core masks properly when adding touch
+ listener
+
+The current code checks the core event mask as though it were an XI
+mask. This change fixes the checks so the proper client and event masks
+are used.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ dix/touch.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/dix/touch.c b/dix/touch.c
+index 572bdfb..f8f26c8 100644
+--- a/dix/touch.c
++++ b/dix/touch.c
+@@ -811,6 +811,7 @@ TouchAddRegularListener(DeviceIntPtr dev, TouchPointInfoPtr ti,
+     if (mask & EVENT_CORE_MASK) {
+         int coretype = GetCoreType(TouchGetPointerEventType(ev));
+         Mask core_filter = event_get_filter_from_type(dev, coretype);
++        OtherClients *oclients;
+ 
+         /* window owner */
+         if (IsMaster(dev) && (win->eventMask & core_filter)) {
+@@ -822,13 +823,12 @@ TouchAddRegularListener(DeviceIntPtr dev, TouchPointInfoPtr ti,
+         }
+ 
+         /* all others */
+-        nt_list_for_each_entry(iclients, (InputClients*)wOtherClients(win), next)
+-        {
+-            if (!(iclients->mask[XIAllDevices] & core_filter))
++        nt_list_for_each_entry(oclients, wOtherClients(win), next) {
++            if (!(oclients->mask & core_filter))
+                 continue;
+ 
+             TouchEventHistoryAllocate(ti);
+-            TouchAddListener(ti, iclients->resource, CORE,
++            TouchAddListener(ti, oclients->resource, CORE,
+                              type, LISTENER_AWAITING_BEGIN, win);
+             return TRUE;
+         }
+-- 
+1.7.9.1
+
+From 01091806f762f6f8fc83dc1051b5f3cfb38e88b1 Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Wed, 4 Apr 2012 12:57:40 -0700
+Subject: [PATCH 2/3] Check core event mask properly for pointer emulated
+ touch events
+
+The current code checks the core event mask as though it were an XI2
+mask. This change fixes the checks so the proper client and event masks
+are used.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+Conflicts:
+
+	Xi/exevents.c
+---
+ Xi/exevents.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/Xi/exevents.c b/Xi/exevents.c
+index f390f67..72e6d91 100644
+--- a/Xi/exevents.c
++++ b/Xi/exevents.c
+@@ -1342,6 +1342,8 @@ RetrieveTouchDeliveryData(DeviceIntPtr dev, TouchPointInfoPtr ti,
+             BUG_WARN(!iclients);
+             if (!iclients)
+                 return FALSE;
++
++            *client = rClient(iclients);
+         } else if (listener->level == XI)
+         {
+             int xi_type = GetXIType(TouchGetPointerEventType(ev));
+@@ -1352,19 +1354,22 @@ RetrieveTouchDeliveryData(DeviceIntPtr dev, TouchPointInfoPtr ti,
+             BUG_WARN(!iclients);
+             if (!iclients)
+                 return FALSE;
++
++            *client = rClient(iclients);
+         } else
+         {
+             int coretype = GetCoreType(TouchGetPointerEventType(ev));
+             Mask core_filter = event_get_filter_from_type(dev, coretype);
++            OtherClients *oclients;
+ 
+             /* all others */
+-            nt_list_for_each_entry(iclients, (InputClients*)wOtherClients(*win), next)
+-                if (iclients->mask[XIAllDevices] & core_filter)
++            nt_list_for_each_entry(oclients, (InputClients*)wOtherClients(*win), next)
++                if (oclients->mask & core_filter)
+                     break;
+-            /* if owner selected, iclients is NULL */
++            /* if owner selected, oclients is NULL */
++            *client = oclients ? rClient(oclients) : wClient(*win);
+         }
+ 
+-        *client = iclients ? rClient(iclients) : wClient(*win);
+         *mask = iclients ? iclients->xi2mask : NULL;
+         *grab = NULL;
+     }
+-- 
+1.7.9.1
+
+From 4b4c88b247c6435578c983d74a90f35472849f3a Mon Sep 17 00:00:00 2001
+From: Chase Douglas <chase.douglas@canonical.com>
+Date: Wed, 4 Apr 2012 12:59:55 -0700
+Subject: [PATCH 3/3] Only set XI2 mask if pointer emulation is for XI2 client
+
+The current code returns a reference to memory that may not actually be
+an XI2 mask. Instead, only return a value when an XI2 client has
+selected for events.
+
+Signed-off-by: Chase Douglas <chase.douglas@canonical.com>
+
+Conflicts:
+
+	Xi/exevents.c
+---
+ Xi/exevents.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/Xi/exevents.c b/Xi/exevents.c
+index 72e6d91..fe06efa 100644
+--- a/Xi/exevents.c
++++ b/Xi/exevents.c
+@@ -1293,6 +1293,7 @@ RetrieveTouchDeliveryData(DeviceIntPtr dev, TouchPointInfoPtr ti,
+ {
+      int rc;
+      InputClients *iclients = NULL;
++     *mask = NULL;
+ 
+     if (listener->type == LISTENER_GRAB ||
+         listener->type == LISTENER_POINTER_GRAB)
+@@ -1343,6 +1344,7 @@ RetrieveTouchDeliveryData(DeviceIntPtr dev, TouchPointInfoPtr ti,
+             if (!iclients)
+                 return FALSE;
+ 
++            *mask = iclients->xi2mask;
+             *client = rClient(iclients);
+         } else if (listener->level == XI)
+         {
+@@ -1370,7 +1372,6 @@ RetrieveTouchDeliveryData(DeviceIntPtr dev, TouchPointInfoPtr ti,
+             *client = oclients ? rClient(oclients) : wClient(*win);
+         }
+ 
+-        *mask = iclients ? iclients->xi2mask : NULL;
+         *grab = NULL;
+     }
+ 
+-- 
+1.7.9.1
+
