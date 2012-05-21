@@ -1,3 +1,18 @@
+xorg-server (2:1.12.1.902-1ubuntu1) UNRELEASED; urgency=medium
+
+  * Refresh patches to apply on x-server 1.12
+    - patch-x-indent.sh from xorg-pkg-tools was used to redo coding style
+  * Deleted following patches because they have been committed upstream
+    - 224_return_BadWindow_not_BadMatch.diff
+    - 225_non-root_config_paths.patch
+    - 505_query_pointer_touchscreen.patch
+    - 506_touchscreen_pointer_emulation_checks.patch
+    - 507_touchscreen_fixes.patch
+  * Non-trivial refresh of 500_pointer_barrier_thresholds.diff, based on xorg-edgers
+  * Rest was refreshed with patch-x-indent.sh to survive coding style changes
+
+ -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Mon, 21 May 2012 21:08:48 +0200
+
 xorg-server (2:1.12.1.902-1) unstable; urgency=medium
 
   [ Julien Cristau ]
