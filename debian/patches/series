@@ -24,14 +24,9 @@
 #201_report-real-dpi.patch
 208_switch_on_release.diff
 209_add_legacy_bgnone_option.patch
-224_return_BadWindow_not_BadMatch.diff
-225_non-root_config_paths.patch
 226_fall_back_to_autoconfiguration.patch
 227_null_ptr_midispcur.patch
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
-505_query_pointer_touchscreen.patch
-506_touchscreen_pointer_emulation_checks.patch
-507_touchscreen_fixes.patch
 508_device_off_release_buttons.patch
