@@ -1,14 +1,14 @@
-Index: xorg-server/hw/xfree86/common/xisb.c
-===================================================================
---- xorg-server.orig/hw/xfree86/common/xisb.c	2011-08-24 12:52:45.315647139 +0300
-+++ xorg-server/hw/xfree86/common/xisb.c	2011-08-24 12:56:49.655650624 +0300
-@@ -98,6 +98,9 @@
+diff --git a/hw/xfree86/common/xisb.c b/hw/xfree86/common/xisb.c
+index 3568a57..6eaf594 100644
+--- a/hw/xfree86/common/xisb.c
++++ b/hw/xfree86/common/xisb.c
+@@ -96,6 +96,9 @@ XisbRead(XISBuffer * b)
  {
- 	int ret;
+     int ret;
  
-+        if (b == NULL)
-+            return -2;
++    if (b == NULL)
++        return -2;
 +
- 	if (b->current >= b->end)
- 	{
- 		if (b->block_duration >= 0)
+     if (b->current >= b->end) {
+         if (b->block_duration >= 0) {
+             if (xf86WaitForInput(b->fd, b->block_duration) < 1)

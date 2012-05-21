@@ -1,9 +1,8 @@
-=== modified file 'randr/randr.c'
-Index: xorg-server/randr/randr.c
-===================================================================
---- xorg-server.orig/randr/randr.c	2011-08-24 12:52:44.745647133 +0300
-+++ xorg-server/randr/randr.c	2011-08-24 12:57:30.195651199 +0300
-@@ -235,7 +235,7 @@
+diff --git a/randr/randr.c b/randr/randr.c
+index 9f3df5f..52443b5 100644
+--- a/randr/randr.c
++++ b/randr/randr.c
+@@ -233,7 +233,7 @@ RRScreenInit(ScreenPtr pScreen)
      /*
       * Calling function best set these function vectors
       */
@@ -11,4 +10,4 @@ Index: xorg-server/randr/randr.c
 +    pScrPriv->rrGetInfo = NULL;
      pScrPriv->maxWidth = pScrPriv->minWidth = pScreen->width;
      pScrPriv->maxHeight = pScrPriv->minHeight = pScreen->height;
-     
+ 

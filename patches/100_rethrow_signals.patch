@@ -1,21 +1,20 @@
-Index: xorg-server/hw/dmx/dmxinit.c
-===================================================================
---- xorg-server.orig/hw/dmx/dmxinit.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/dmx/dmxinit.c	2011-09-10 21:45:50.066123727 -0700
-@@ -821,7 +821,7 @@
- /** This function is called in Xserver/os/utils.c from \a AbortServer().
+--- a/hw/dmx/dmxinit.c
++++ b/hw/dmx/dmxinit.c
+@@ -864,7 +864,7 @@
   * We must ensure that backend and console state is restored in the
   * event the server shutdown wasn't clean. */
--void AbortDDX(enum ExitCode error)
-+void SigAbortDDX(int signo, enum ExitCode error)
+ void
+-AbortDDX(enum ExitCode error)
++SigAbortDDX(int signo, enum ExitCode error)
  {
      int i;
  
-@@ -839,6 +839,11 @@
+@@ -884,6 +884,12 @@
  }
  #endif
  
-+void AbortDDX(enum ExitCode error)
++void
++AbortDDX(enum ExitCode error)
 +{
 +    SigAbortDDX(0, error);
 +}
@@ -23,20 +22,18 @@ Index: xorg-server/hw/dmx/dmxinit.c
  /** This function is called in Xserver/dix/main.c from \a main() when
   * dispatchException & DE_TERMINATE (which is the only way to exit the
   * main loop without an interruption. */
-Index: xorg-server/hw/kdrive/src/kdrive.c
-===================================================================
---- xorg-server.orig/hw/kdrive/src/kdrive.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/kdrive/src/kdrive.c	2011-09-10 21:52:09.393274790 -0700
-@@ -232,7 +232,7 @@
+--- a/hw/kdrive/src/kdrive.c
++++ b/hw/kdrive/src/kdrive.c
+@@ -222,7 +222,7 @@
  }
  
  void
 -AbortDDX(enum ExitCode error)
 +SigAbortDDX(int signo, enum ExitCode error)
  {
-     KdDisableScreens ();
-     if (kdOsFuncs)
-@@ -248,6 +248,11 @@
+     KdDisableScreens();
+     if (kdOsFuncs) {
+@@ -237,6 +237,11 @@
          OsAbort();
  }
  
@@ -46,12 +43,10 @@ Index: xorg-server/hw/kdrive/src/kdrive.c
 +}
 +
  void
- ddxGiveUp (enum ExitCode error)
+ ddxGiveUp(enum ExitCode error)
  {
-Index: xorg-server/hw/vfb/InitOutput.c
-===================================================================
---- xorg-server.orig/hw/vfb/InitOutput.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/vfb/InitOutput.c	2011-09-10 21:53:51.404181875 -0700
+--- a/hw/vfb/InitOutput.c
++++ b/hw/vfb/InitOutput.c
 @@ -201,11 +201,17 @@
  }
  
@@ -61,35 +56,30 @@ Index: xorg-server/hw/vfb/InitOutput.c
  {
      ddxGiveUp(error);
  }
--
-+ 
+ 
 +void
 +AbortDDX(enum ExitCode error)
 +{
 +    SigAbortDDX(0, error);
 +}
-+ 
++
  #ifdef __APPLE__
  void
  DarwinHandleGUI(int argc, char *argv[])
-Index: xorg-server/hw/xfree86/common/xf86Events.c
-===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86Events.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/xfree86/common/xf86Events.c	2011-09-10 21:45:50.066123727 -0700
+--- a/hw/xfree86/common/xf86Events.c
++++ b/hw/xfree86/common/xf86Events.c
 @@ -348,6 +348,8 @@
  int
  xf86SigWrapper(int signo)
  {
-+  static Bool beenhere = FALSE;
++    static Bool beenhere = FALSE;
 +
-   if ((signo == SIGILL) && xf86SigIllHandler) {
-     (*xf86SigIllHandler)();
-     return 0; /* continue */
-Index: xorg-server/hw/xfree86/common/xf86Init.c
-===================================================================
---- xorg-server.orig/hw/xfree86/common/xf86Init.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/xfree86/common/xf86Init.c	2011-09-11 09:58:17.741645191 -0700
-@@ -895,14 +895,17 @@
+     if ((signo == SIGILL) && xf86SigIllHandler) {
+         (*xf86SigIllHandler) ();
+         return 0;               /* continue */
+--- a/hw/xfree86/common/xf86Init.c
++++ b/hw/xfree86/common/xf86Init.c
+@@ -967,14 +967,17 @@
  }
  
  /*
@@ -109,27 +99,29 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
  {
      int i;
  
-@@ -929,24 +932,46 @@
+@@ -1001,22 +1004,46 @@
      if (xorgHWOpenConsole)
- 	xf86CloseConsole();
+         xf86CloseConsole();
  
-+    ErrorF (" ddxSigGiveUp: Closing log\n");
++    ErrorF(" ddxSigGiveUp: Closing log\n");
 +
      xf86CloseLog(error);
  
      /* If an unexpected signal was caught, dump a core for debugging */
 -    if (xf86Info.caughtSignal)
--	OsAbort();
+-        OsAbort();
 +    if (xf86Info.caughtSignal) {
 +        if (signo != 0) {
 +            raise(signo);
-+        } else {
++        }
++        else {
 +            OsAbort();
 +        }
 +    }
  }
  
-+/*
+ /*
+- * AbortDDX --
 + * ddxGiveUp --
 + *      Device dependent cleanup. Called by by dix before normal server death.
 + *      For SYSV386 we must switch the terminal back to normal mode. No error-
@@ -141,10 +133,8 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
 +{
 +    ddxSigGiveUp(0, error);
 +}
- 
- 
- /*
-- * AbortDDX --
++
++/*
 + * SigAbortDDX --
   *      DDX - specific abort routine.  Called by AbortServer(). The attempt is
   *      made to restore all original setting of the displays. Also all devices
@@ -158,14 +148,14 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
 -AbortDDX(enum ExitCode error)
 +SigAbortDDX(int signo, enum ExitCode error)
  {
-   int i;
+     int i;
  
-@@ -979,7 +1004,20 @@
-    * This is needed for an abnormal server exit, since the normal exit stuff
-    * MUST also be performed (i.e. the vt must be left in a defined state)
-    */
--  ddxGiveUp(error);
-+  ddxSigGiveUp(signo, error);
+@@ -1049,7 +1076,20 @@
+      * This is needed for an abnormal server exit, since the normal exit stuff
+      * MUST also be performed (i.e. the vt must be left in a defined state)
+      */
+-    ddxGiveUp(error);
++    ddxSigGiveUp(signo, error);
 +}
 +
 +/*
@@ -182,35 +172,32 @@ Index: xorg-server/hw/xfree86/common/xf86Init.c
  }
  
  void
-Index: xorg-server/hw/xnest/Init.c
-===================================================================
---- xorg-server.orig/hw/xnest/Init.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/xnest/Init.c	2011-09-10 21:45:50.076124422 -0700
-@@ -114,12 +114,17 @@
- /*
+--- a/hw/xnest/Init.c
++++ b/hw/xnest/Init.c
+@@ -115,12 +115,18 @@
   * DDX - specific abort routine.  Called by AbortServer().
   */
--void AbortDDX(enum ExitCode error)
-+void SigAbortDDX(int signo, enum ExitCode error)
+ void
+-AbortDDX(enum ExitCode error)
++SigAbortDDX(int signo, enum ExitCode error)
  {
-   xnestDoFullGeneration = True;
-   xnestCloseDisplay();
+     xnestDoFullGeneration = True;
+     xnestCloseDisplay();
  }
  
-+void AbortDDX(enum ExitCode error)
++void
++AbortDDX(enum ExitCode error)
 +{
 +    SigAbortDDX(0, error);
 +}
 +
  /* Called by GiveUp(). */
- void ddxGiveUp(enum ExitCode error)
- {
-Index: xorg-server/hw/xquartz/darwin.c
-===================================================================
---- xorg-server.orig/hw/xquartz/darwin.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/xquartz/darwin.c	2011-09-10 22:01:07.976518255 -0700
-@@ -773,14 +773,20 @@
- 
+ void
+ ddxGiveUp(enum ExitCode error)
+--- a/hw/xquartz/darwin.c
++++ b/hw/xquartz/darwin.c
+@@ -853,15 +853,22 @@
+ }
  
  /*
 - * AbortDDX --
@@ -220,77 +207,78 @@ Index: xorg-server/hw/xquartz/darwin.c
   *      are closed.
   */
  _X_NORETURN
--void AbortDDX( enum ExitCode error ) {
-+void SigAbortDDX( int signo, enum ExitCode error )
-+{
-     ErrorF( "   AbortDDX\n" );
+ void
+-AbortDDX(enum ExitCode error)
++SigAbortDDX(int signo, enum ExitCode error)
+ {
+     ErrorF("   AbortDDX\n");
      OsAbort();
  }
- 
++
 +_X_NORETURN
-+void AbortDDX( enum ExitCode error )
++void
++AbortDDX(enum ExitCode error)
 +{
-+    SigAbortDDX(signo, error);
++    SigAbortDDX(0, error);
 +}
-Index: xorg-server/hw/xwin/InitOutput.c
-===================================================================
---- xorg-server.orig/hw/xwin/InitOutput.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/hw/xwin/InitOutput.c	2011-09-10 22:02:02.515804736 -0700
-@@ -258,7 +258,7 @@
+\ No newline at end of file
+--- a/hw/xwin/InitOutput.c
++++ b/hw/xwin/InitOutput.c
+@@ -233,7 +233,7 @@
  
  /* See Porting Layer Definition - p. 57 */
  void
--AbortDDX (enum ExitCode error)
-+SigAbortDDX (int signo, enum ExitCode error)
+-AbortDDX(enum ExitCode error)
++SigAbortDDX(int signo, enum ExitCode error)
  {
  #if CYGDEBUG
-   winDebug ("AbortDDX\n");
-@@ -266,6 +266,12 @@
-   ddxGiveUp (error);
+     winDebug("AbortDDX\n");
+@@ -241,6 +241,12 @@
+     ddxGiveUp(error);
  }
  
 +void
-+AbortDDX (enum ExitCode error)
++AbortDDX(enum ExitCode error)
 +{
 +    SigAbortDDX(0, error);
 +}
 +
  #ifdef __CYGWIN__
  /* hasmntopt is currently not implemented for cygwin */
- static const char *winCheckMntOpt(const struct mntent *mnt, const char *opt)
-Index: xorg-server/include/os.h
-===================================================================
---- xorg-server.orig/include/os.h	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/include/os.h	2011-09-11 09:51:52.766866712 -0700
-@@ -466,7 +466,9 @@
-     EXIT_ERR_DRIVERS	= 3,
+ static const char *
+--- a/include/os.h
++++ b/include/os.h
+@@ -521,8 +521,12 @@
  };
  
-+extern _X_EXPORT void SigAbortDDX(int signo, enum ExitCode error);
- extern _X_EXPORT void AbortDDX(enum ExitCode error);
-+extern _X_EXPORT void ddxSigGiveUp(int signo, enum ExitCode error);
- extern _X_EXPORT void ddxGiveUp(enum ExitCode error);
- extern _X_EXPORT int TimeSinceLastInputEvent(void);
+ extern _X_EXPORT void
++SigAbortDDX(int signo, enum ExitCode error);
++extern _X_EXPORT void
+ AbortDDX(enum ExitCode error);
+ extern _X_EXPORT void
++ddxSigGiveUp(int signo, enum ExitCode error);
++extern _X_EXPORT void
+ ddxGiveUp(enum ExitCode error);
+ extern _X_EXPORT int
+ TimeSinceLastInputEvent(void);
+--- a/os/log.c
++++ b/os/log.c
+@@ -86,6 +86,8 @@
+ #include <stdarg.h>
+ #include <stdlib.h>             /* for malloc() */
  
-Index: xorg-server/os/log.c
-===================================================================
---- xorg-server.orig/os/log.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/os/log.c	2011-09-11 09:51:21.555668560 -0700
-@@ -89,6 +89,8 @@
- #include <stdlib.h>	/* for malloc() */
- #include <errno.h>
- 
-+#include <signal.h>	/* for raise() */
++#include <signal.h>             /* for raise() */
 +
  #include "input.h"
  #include "site.h"
  #include "opaque.h"
-@@ -403,9 +405,11 @@
- 
+@@ -463,9 +465,12 @@
  void
- AbortServer(void) _X_NORETURN;
+ AbortServer(void)
+     _X_NORETURN;
 +void
-+SigAbortServer(int signo) _X_NORETURN;
++SigAbortServer(int signo)
++    _X_NORETURN;
  
  void
 -AbortServer(void)
@@ -298,7 +286,7 @@ Index: xorg-server/os/log.c
  {
  #ifdef XF86BIGFONT
      XF86BigfontCleanup();
-@@ -413,11 +417,22 @@
+@@ -473,11 +478,23 @@
      CloseWellKnownConnections();
      OsCleanup(TRUE);
      CloseDownDevices();
@@ -306,15 +294,16 @@ Index: xorg-server/os/log.c
 +    SigAbortDDX(signo, EXIT_ERR_ABORT);
      fflush(stderr);
 -    if (CoreDump)
--	OsAbort();
--    exit (1);
+-        OsAbort();
+-    exit(1);
 +    if (CoreDump) {
-+	if (signo != 0)
-+	    raise(signo);
-+	else
-+	    OsAbort();
-+    } else {
-+	exit (1);
++        if (signo != 0)
++            raise(signo);
++        else
++            OsAbort();
++    }
++    else {
++        exit(1);
 +    }
 +}
 +
@@ -325,7 +314,7 @@ Index: xorg-server/os/log.c
  }
  
  #define AUDIT_PREFIX "AUDIT: %s: %ld: "
-@@ -518,6 +533,27 @@
+@@ -580,6 +597,27 @@
  }
  
  void
@@ -334,42 +323,40 @@ Index: xorg-server/os/log.c
 +    static Bool beenhere = FALSE;
 +
 +    if (beenhere)
-+	ErrorF("\nFatalSignal re-entered, aborting\n");
++        ErrorF("\nFatalSignal re-entered, aborting\n");
 +    else
-+	ErrorF("\nCaught signal %d (%s). Server aborting\n",
++        ErrorF("\nCaught signal %d (%s). Server aborting\n",
 +               signo, strsignal(signo));
 +
 +    if (!beenhere)
-+	OsVendorFatalError();
++        OsVendorFatalError();
 +    if (!beenhere) {
-+	beenhere = TRUE;
-+	SigAbortServer(signo);
-+    } else
-+	abort();
-+    /*NOTREACHED*/
-+}
++        beenhere = TRUE;
++        SigAbortServer(signo);
++    }
++    else
++        abort();
++ /*NOTREACHED*/}
 +
 +void
  FatalError(const char *f, ...)
  {
      va_list args;
-Index: xorg-server/os/osinit.c
-===================================================================
---- xorg-server.orig/os/osinit.c	2011-09-10 21:40:27.000000000 -0700
-+++ xorg-server/os/osinit.c	2011-09-10 21:45:50.076124422 -0700
+--- a/os/osinit.c
++++ b/os/osinit.c
 @@ -138,13 +138,13 @@
-           case SIGBUS:
-           case SIGILL:
-           case SIGFPE:
-+	      signal(signo,SIG_DFL);
- 	      ErrorF("%s at address %p\n", strsignal(signo), sip->si_addr);
-       }
-   }
+         case SIGBUS:
+         case SIGILL:
+         case SIGFPE:
++            signal(signo, SIG_DFL);
+             ErrorF("%s at address %p\n", strsignal(signo), sip->si_addr);
+         }
+     }
  #endif
  
--  FatalError("Caught signal %d (%s). Server aborting\n",
--	     signo, strsignal(signo));
-+  FatalSignal(signo);
+-    FatalError("Caught signal %d (%s). Server aborting\n",
+-               signo, strsignal(signo));
++    FatalSignal(signo);
  }
  
  void
