@@ -1,7 +1,8 @@
 Source: xorg-server
 Section: x11
 Priority: optional
-Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
+Maintainer: Ubuntu X-SWAT <ubuntu-x@lists.ubuntu.com>
+XSBC-Original-Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
 Uploaders: Drew Parsons <dparsons@debian.org>, Cyril Brulebois <kibi@debian.org>
 # all the Build-Depends up to x11proto-xf86-dri-dev are for the normal Xorg
 # server, and common dependencies for the DIX.
@@ -17,13 +18,14 @@ Build-Depends:
  flex,
  automake,
  libtool,
+ xauth,
  xutils-dev (>= 1:7.6+4),
  xfonts-utils (>= 1:7.5+1),
  x11proto-bigreqs-dev (>= 1:1.1.0),
  x11proto-composite-dev (>= 1:0.4),
  x11proto-core-dev (>= 7.0.22),
  x11proto-damage-dev (>= 1.1),
- x11proto-fixes-dev (>= 1:5.0),
+ x11proto-fixes-dev (>= 1:5.0-2ubuntu1),
  x11proto-kb-dev (>= 1.0.3),
  x11proto-xinerama-dev,
  x11proto-randr-dev (>= 1.2.99.3),
@@ -50,13 +52,12 @@ Build-Depends:
  nettle-dev,
  libdbus-1-dev [kfreebsd-any],
  libhal-dev [kfreebsd-any],
- libudev-dev (>= 151-3) [linux-any],
- libselinux1-dev (>= 2.0.80) [linux-any],
- libaudit-dev [linux-any],
+ libudev-dev (>= 151-3),
+ libselinux1-dev (>= 2.0.80),
  x11proto-xf86dri-dev (>= 2.1.0),
  libdrm-dev (>= 2.4.3) [!hurd-i386],
  x11proto-gl-dev (>= 1.4.14),
- mesa-common-dev (>= 7.8),
+ mesa-common-dev (>= 7.10.3-0ubuntu1),
  libgl1-mesa-dev (>= 7.8),
  libxmuu-dev (>= 1:0.99.1),
  libxext-dev (>= 1:0.99.1),
@@ -77,7 +78,7 @@ Build-Depends:
 # unit tests
  xkb-data,
  x11-xkb-utils,
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
 
@@ -106,9 +107,9 @@ Breaks:
  xserver-xorg-input-7,
  xserver-xorg-input-wacom (<< 0.7.8),
  xserver-xorg-input-joystick (<= 1:1.5.0-3),
- xserver-xorg-input-synaptics (<= 1.2.2-1),
+ xserver-xorg-input-synaptics (<= 1.2.2-1ubuntu4),
  xserver-xorg-input-tslib (<= 0.0.6-3),
- xserver-xorg-input-vmmouse (<= 1:12.6.5-4),
+ xserver-xorg-input-vmmouse (<= 1:12.6.5-4ubuntu2),
  xserver-xorg-input-wacom (<= 0.10.5+20100415-1),
  xserver-xorg-video-cyrix (<= 1:1.1.0-8),
  xserver-xorg-video-i810 (<< 2:2.4),
@@ -119,6 +120,10 @@ Breaks:
  xserver-xorg-video-vga (<= 1:4.1.0-8),
  libgl1-mesa-dri (<< 7.10.2-4),
  libgl1-mesa-dri-experimental (<< 7.10.2-4),
+ qt4-x11 (<< 4:4.8.0-1ubuntu2),
+ utouch-geis (<< 2.2.3),
+ utouch-frame (<< 2.1.0),
+ unity (<< 5.0.0),
 Provides:
  ${videoabi},
  ${inputabi},
@@ -213,7 +218,6 @@ Depends:
  xdmx,
  ${shlibs:Depends},
  ${misc:Depends},
-Replaces: xdmx (<= 2:1.1.1-10)
 Description: Distributed Multihead X tools
  This package provides a collection of tools used for administration of
  the Xdmx server; see the xdmx package for more information.
@@ -250,7 +254,9 @@ Depends:
  xserver-common (>= ${source:Version}),
  ${shlibs:Depends},
  ${misc:Depends},
-Recommends: xauth
+ xauth,
+ x11-xkb-utils
+Recommends: libgl1-mesa-dri
 Provides: xserver
 Description: Virtual Framebuffer 'fake' X server
  Xvfb provides an X server that can run on machines with no display hardware

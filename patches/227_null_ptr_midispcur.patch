@@ -1,0 +1,14 @@
+diff -u a/mi/midispcur.c b/mi/midispcur.c
+--- a/mi/midispcur.c    2011-08-05 09:59:03.000000000 +0400
++++ b/mi/midispcur.c    2012-02-16 10:07:52.524576132 +0400
+@@ -479,6 +479,10 @@
+     GCPtr          pGC;
+
+     pBuffer = miGetDCDevice(pDev, pScreen);
++
++    if (!pBuffer)
++       return FALSE;
++
+     pSave = pBuffer->pSave;
+
+     pWin = pScreen->root;

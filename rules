@@ -36,6 +36,7 @@ ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 	MAKEFLAGS += -j$(NUMJOBS)
 endif
 
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 DEB_HOST_ARCH      ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
@@ -60,7 +61,8 @@ endif
 
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	build_xfbdev = --enable-xfbdev
-	selinux = --enable-xselinux
+	selinux = --disable-xselinux
+	xkbrules = --with-default-xkb-rules=evdev
 else
 	build_xfbdev = --disable-xfbdev
 	selinux = --disable-xselinux
@@ -95,7 +97,7 @@ VENDOR = $(shell lsb_release -i -s)
 
 SOURCE_NAME    :=  xorg-server
 SOURCE_VERSION := $(shell dpkg-parsechangelog | awk -F': ' '/^Version: / {print $$2}')
-BUILDER        := $(shell dpkg-parsechangelog | awk -F': ' '/^Maintainer: / {print $$2}')
+BUILDER=For technical support please see http://www.ubuntu.com/support
 
 # disable-static is so we don't get libfoo.a for modules.  now if only we could
 # kill the .las.
@@ -107,11 +109,13 @@ confflags += \
 	     --disable-debug \
 	     $(config_tests) \
 	     --with-int10=x86emu \
+	     --with-extra-module-dir="/usr/lib/${DEB_HOST_MULTIARCH}/xorg/extra-modules,/usr/lib/xorg/extra-modules" \
 	     --with-os-vendor="$(VENDOR)" \
 	     --with-builderstring="$(SOURCE_NAME) $(SOURCE_VERSION) ($(BUILDER))" \
 	     --with-xkb-path=/usr/share/X11/xkb \
 	     --with-xkb-output=/var/lib/xkb \
-	     --disable-builddocs \
+	     $(xkbrules) \
+	     --disable-devel-docs \
 	     --disable-install-libxf86config \
 	     --enable-mitshm \
 	     --enable-xres \
@@ -126,7 +130,8 @@ confflags += \
 	     --disable-xquartz \
 	     --disable-xwin \
 	     --disable-xfake \
-	     --disable-install-setuid
+	     --disable-install-setuid \
+	     --enable-gestures
 
 confflags_main = \
 	--with-default-font-path="/usr/share/fonts/X11/misc,/usr/share/fonts/X11/cyrillic,/usr/share/fonts/X11/100dpi/:unscaled,/usr/share/fonts/X11/75dpi/:unscaled,/usr/share/fonts/X11/Type1,/usr/share/fonts/X11/100dpi,/usr/share/fonts/X11/75dpi,/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType,built-ins" \
@@ -270,6 +275,10 @@ endif
 	rm -f debian/tmp/udeb/usr/lib/xorg/modules/libxf8_16bpp.so
 
 	install -m 755 debian/local/xvfb-run debian/tmp/main/usr/bin
+	# Make sure Xvfb at least starts up
+	PATH=debian/tmp/main/usr/bin/:/bin:/usr/bin \
+	  debian/tmp/main/usr/bin/xvfb-run -s "-screen 0 1280x1024x24 -nolisten tcp -noreset" true
+
 	install debian/local/xvfb-run.1 debian/tmp/main/usr/share/man/man1
 ifneq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/tmp/main/usr/share/X11/xorg.conf.d
@@ -355,13 +364,16 @@ endif
 
 
 # Build architecture-independent files here
-binary-indep: build install
+binary-indep: build install check
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-initial
 	dh_install -i --sourcedir=debian/tmp
 	dh_installdocs -i
 	dh_installchangelogs -i ChangeLog
 
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-deb
+
+check:
+	dh_testdir
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
