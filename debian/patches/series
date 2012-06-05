@@ -12,18 +12,14 @@
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
 165_man_xorg_conf_no_device_ident.patch
-166_nullptr_xinerama_keyrepeat.patch
 167_nullptr_xisbread.patch
 168_glibc_trace_to_stderr.patch
 172_cwgetbackingpicture_nullptr_check.patch
 188_default_primary_to_first_busid.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
-198_nohwaccess.patch
 200_randr-null.patch
-#201_report-real-dpi.patch
 208_switch_on_release.diff
-209_add_legacy_bgnone_option.patch
 226_fall_back_to_autoconfiguration.patch
 227_null_ptr_midispcur.patch
 
