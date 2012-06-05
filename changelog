@@ -1,5 +1,6 @@
-xorg-server (2:1.12.1.902-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.12.1.902-1ubuntu2) UNRELEASED; urgency=medium
 
+  [ Maarten Lankhorst ]
   * Refresh patches to apply on x-server 1.12
     - patch-x-indent.sh from xorg-pkg-tools was used to redo coding style
   * Deleted following patches because they have been committed upstream
@@ -11,7 +12,18 @@ xorg-server (2:1.12.1.902-1ubuntu1) UNRELEASED; urgency=medium
   * Non-trivial refresh of 500_pointer_barrier_thresholds.diff, based on xorg-edgers
   * Rest was refreshed with patch-x-indent.sh to survive coding style changes
 
- -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Mon, 21 May 2012 21:08:48 +0200
+  [ Bryce Harrington ]
+  * Drop 209_add_legacy_bgnone_option.patch: lightdm and other *dm's have
+    switched to the new standard -background option.  No need to continue
+    providing the legacy -nr synonym.
+  * Drop 201_report-real-dpi.patch:  Commented out in series.
+  * Drop 198_nohwaccess.patch: Rootless-X no longer a development focus
+    for us; the patch would need reworked anyway to provide proper
+    support.
+  * Drop 166_nullptr_xinerama_keyrepeat.patch: Fixed differently upstream
+    in commit 24e682d0, as verified by original reporter.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 04 Jun 2012 19:12:23 -0700
 
 xorg-server (2:1.12.1.902-1) unstable; urgency=medium
 
