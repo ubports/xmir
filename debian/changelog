@@ -11,6 +11,13 @@ xorg-server (2:1.12.1.902-1ubuntu1) UNRELEASED; urgency=medium
     - 507_touchscreen_fixes.patch
   * Non-trivial refresh of 500_pointer_barrier_thresholds.diff, based on xorg-edgers
   * Rest was refreshed with patch-x-indent.sh to survive coding style changes
+  * Add upstream patches for proper device disabling:
+    - 510-dix-return-early-from-DisableDevice-if-the-device-is.patch
+    - 511-dix-move-freeing-the-sprite-into-a-function.patch
+    - 512-dix-free-the-sprite-when-disabling-the-device.patch
+    - 513-dix-disable-non-sprite-owners-first-when-disabling-p.patch
+    - 514-Xi-drop-forced-unpairing-when-changing-the-hierarchy.patch
+    - 515-dix-disable-all-devices-before-shutdown.patch
 
   [ Bryce Harrington ]
   * Drop 209_add_legacy_bgnone_option.patch: lightdm and other *dm's have
