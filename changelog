@@ -1,4 +1,4 @@
-xorg-server (2:1.12.1.902-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.12.1.902-1ubuntu1) quantal-proposed; urgency=medium
 
   [ Maarten Lankhorst ]
   * Refresh patches to apply on x-server 1.12
@@ -9,7 +9,8 @@ xorg-server (2:1.12.1.902-1ubuntu1) UNRELEASED; urgency=medium
     - 505_query_pointer_touchscreen.patch
     - 506_touchscreen_pointer_emulation_checks.patch
     - 507_touchscreen_fixes.patch
-  * Non-trivial refresh of 500_pointer_barrier_thresholds.diff, based on xorg-edgers
+  * Non-trivial refresh of 500_pointer_barrier_thresholds.diff, based on 
+    xorg-edgers
   * Rest was refreshed with patch-x-indent.sh to survive coding style changes
   * Add upstream patches for proper device disabling:
     - 510-dix-return-early-from-DisableDevice-if-the-device-is.patch
