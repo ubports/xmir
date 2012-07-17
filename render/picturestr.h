@@ -377,11 +377,14 @@ extern _X_EXPORT RESTYPE GlyphSetType;
     } \
 } \
 
+extern _X_EXPORT PictFormatPtr
+ PictureWindowFormat(WindowPtr pWindow);
+
 extern _X_EXPORT Bool
  PictureDestroyWindow(WindowPtr pWindow);
 
 extern _X_EXPORT Bool
- PictureCloseScreen(int Index, ScreenPtr pScreen);
+ PictureCloseScreen(ScreenPtr pScreen);
 
 extern _X_EXPORT void
  PictureStoreColors(ColormapPtr pColormap, int ndef, xColorItem * pdef);
@@ -543,8 +546,6 @@ CompositeTriFan(CARD8 op,
                 PicturePtr pDst,
                 PictFormatPtr maskFormat,
                 INT16 xSrc, INT16 ySrc, int npoints, xPointFixed * points);
-
-extern _X_EXPORT void RenderExtensionInit(void);
 
 Bool
  AnimCurInit(ScreenPtr pScreen);

@@ -42,6 +42,7 @@
 #include "darwin.h"
 #include "darwinEvents.h"
 #include "pseudoramiX.h"
+#include "extension.h"
 #define _APPLEWM_SERVER_
 #include "applewmExt.h"
 
@@ -68,6 +69,12 @@
 
 #include <rootlessCommon.h>
 #include <Xplugin.h>
+
+/* Work around a bug on Leopard's headers */
+#if defined (__LP64__) && MAC_OS_X_VERSION_MAX_ALLOWED >= 1050 && MAC_OS_X_VERSION_MAX_ALLOWED < 1060
+extern OSErr UpdateSystemActivity(UInt8 activity);
+#define OverallAct 0
+#endif
 
 DevPrivateKeyRec quartzScreenKeyRec;
 int aquaMenuBarHeight = 0;
@@ -137,6 +144,22 @@ QuartzSetupScreen(int index,
     return TRUE;
 }
 
+static const ExtensionModule quartzExtensions[] = {
+    { PseudoramiXExtensionInit, "PseudoramiX", &noPseudoramiXExtension, NULL },
+};
+
+/*
+ * QuartzExtensionInit
+ * Initialises XQuartz-specific extensions.
+ */
+void QuartzExtensionInit(void)
+{
+    int i;
+
+    for (i = 0; i < ARRAY_SIZE(quartzExtensions); i++)
+        LoadExtension(&quartzExtensions[i], TRUE);
+}
+
 /*
  * QuartzInitOutput
  *  Quartz display initialization.
@@ -176,6 +199,8 @@ QuartzInitOutput(int argc,
 
     // Do display mode specific initialization
     quartzProcs->DisplayInit();
+
+    QuartzExtensionInit();
 }
 
 /*

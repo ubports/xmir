@@ -42,10 +42,6 @@
 
 extern int KdTsPhyScreen;
 
-#ifdef GLXEXT
-extern Bool noGlxVisualInit;
-#endif
-
 KdKeyboardInfo *ephyrKbd;
 KdPointerInfo *ephyrMouse;
 EphyrKeySyms ephyrKeySyms;
@@ -624,22 +620,13 @@ ephyrInitScreen(ScreenPtr pScreen)
     }
 #endif /*XV*/
 #ifdef XF86DRI
-        if (!ephyrNoDRI && !hostx_has_dri()) {
+    if (!ephyrNoDRI && !hostx_has_dri()) {
         EPHYR_LOG("host x does not support DRI. Disabling DRI forwarding\n");
         ephyrNoDRI = TRUE;
-#ifdef GLXEXT
-        noGlxVisualInit = FALSE;
-#endif
     }
     if (!ephyrNoDRI) {
         ephyrDRIExtensionInit(pScreen);
         ephyrHijackGLXExtension();
-    }
-#endif
-
-#ifdef GLXEXT
-    if (ephyrNoDRI) {
-        noGlxVisualInit = FALSE;
     }
 #endif
 
@@ -772,26 +759,6 @@ ephyrUpdateModifierState(unsigned int state)
     }
 }
 
-static void
-ephyrBlockSigio(void)
-{
-    sigset_t set;
-
-    sigemptyset(&set);
-    sigaddset(&set, SIGIO);
-    sigprocmask(SIG_BLOCK, &set, 0);
-}
-
-static void
-ephyrUnblockSigio(void)
-{
-    sigset_t set;
-
-    sigemptyset(&set);
-    sigaddset(&set, SIGIO);
-    sigprocmask(SIG_UNBLOCK, &set, 0);
-}
-
 static Bool
 ephyrCursorOffScreen(ScreenPtr *ppScreen, int *x, int *y)
 {
@@ -808,11 +775,11 @@ int ephyrCurScreen;             /*current event screen */
 static void
 ephyrWarpCursor(DeviceIntPtr pDev, ScreenPtr pScreen, int x, int y)
 {
-    ephyrBlockSigio();
+    OsBlockSIGIO();
     ephyrCurScreen = pScreen->myNum;
     miPointerWarpCursor(inputInfo.pointer, pScreen, x, y);
 
-    ephyrUnblockSigio();
+    OsReleaseSIGIO();
 }
 
 miPointerScreenFuncRec ephyrPointerScreenFuncs = {

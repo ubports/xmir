@@ -175,17 +175,17 @@ ProcXISelectEvents(ClientPtr client)
                 if (inputMasks)
                     iclient = inputMasks->inputClients;
                 for (; iclient; iclient = iclient->next) {
-                    DeviceIntPtr dummy;
+                    DeviceIntPtr tmp;
 
                     if (CLIENT_ID(iclient->resource) == client->index)
                         continue;
 
-                    dixLookupDevice(&dummy, evmask->deviceid, serverClient,
+                    dixLookupDevice(&tmp, evmask->deviceid, serverClient,
                                     DixReadAccess);
-                    if (!dummy)
+                    if (!tmp)
                         return BadImplementation;       /* this shouldn't happen */
 
-                    if (xi2mask_isset(iclient->xi2mask, dummy, XI_TouchBegin))
+                    if (xi2mask_isset(iclient->xi2mask, tmp, XI_TouchBegin))
                         return BadAccess;
                 }
             }
@@ -260,11 +260,13 @@ ProcXIGetSelectedEvents(ClientPtr client)
     if (rc != Success)
         return rc;
 
-    reply.repType = X_Reply;
-    reply.RepType = X_XIGetSelectedEvents;
-    reply.length = 0;
-    reply.sequenceNumber = client->sequence;
-    reply.num_masks = 0;
+    reply = (xXIGetSelectedEventsReply) {
+        .repType = X_Reply,
+        .RepType = X_XIGetSelectedEvents,
+        .sequenceNumber = client->sequence,
+        .length = 0,
+        .num_masks = 0
+    };
 
     masks = wOtherInputMasks(win);
     if (masks) {
@@ -335,5 +337,5 @@ SRepXIGetSelectedEvents(ClientPtr client,
     swaps(&rep->sequenceNumber);
     swapl(&rep->length);
     swaps(&rep->num_masks);
-    WriteToClient(client, len, (char *) rep);
+    WriteToClient(client, len, rep);
 }

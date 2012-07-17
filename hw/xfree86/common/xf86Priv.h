@@ -95,6 +95,8 @@ extern _X_EXPORT Bool xorgHWAccess;
 
 extern _X_EXPORT RootWinPropPtr *xf86RegisteredPropertiesTable;
 
+extern ScrnInfoPtr *xf86GPUScreens;      /* List of pointers to ScrnInfoRecs */
+extern int xf86NumGPUScreens;
 #ifndef DEFAULT_VERBOSE
 #define DEFAULT_VERBOSE		0
 #endif
@@ -114,8 +116,9 @@ extern _X_EXPORT void xf86BusProbe(void);
 extern _X_EXPORT void xf86AccessEnter(void);
 extern _X_EXPORT void xf86AccessLeave(void);
 extern _X_EXPORT void xf86PostProbe(void);
-extern _X_EXPORT void xf86ClearEntityListForScreen(int scrnIndex);
+extern _X_EXPORT void xf86ClearEntityListForScreen(ScrnInfoPtr pScrn);
 extern _X_EXPORT void xf86AddDevToEntity(int entityIndex, GDevPtr dev);
+extern _X_EXPORT void xf86RemoveDevFromEntity(int entityIndex, GDevPtr dev);
 
 /* xf86Config.c */
 

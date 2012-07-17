@@ -442,13 +442,13 @@ Bool
  KdCreateScreenResources(ScreenPtr pScreen);
 
 Bool
- KdCloseScreen(int index, ScreenPtr pScreen);
+ KdCloseScreen(ScreenPtr pScreen);
 
 Bool
  KdSaveScreen(ScreenPtr pScreen, int on);
 
 Bool
- KdScreenInit(int index, ScreenPtr pScreen, int argc, char **argv);
+ KdScreenInit(ScreenPtr pScreen, int argc, char **argv);
 
 void
 
@@ -537,22 +537,17 @@ void
 
 void
 
-KdBlockHandler(int screen,
-               pointer blockData, pointer timeout, pointer readmask);
+KdBlockHandler(ScreenPtr pScreen, pointer timeout, pointer readmask);
 
 void
 
-KdWakeupHandler(int screen,
-                pointer data, unsigned long result, pointer readmask);
+KdWakeupHandler(ScreenPtr pScreen, unsigned long result, pointer readmask);
 
 void
  KdDisableInput(void);
 
 void
  KdEnableInput(void);
-
-void
- ProcessInputEvents(void);
 
 void
  KdRingBell(KdKeyboardInfo * ki, int volume, int pitch, int duration);

@@ -61,10 +61,7 @@
  ****************************************************************************/
 
 /* fwds */
-int
- SetAccelerationProfile(DeviceVelocityPtr vel, int profile_num);
 static double
-
 SimpleSmoothProfile(DeviceIntPtr dev, DeviceVelocityPtr vel, double velocity,
                     double threshold, double acc);
 static PointerAccelerationProfileFunc
@@ -791,7 +788,8 @@ ComputeAcceleration(DeviceIntPtr dev,
         result +=
             4.0f * BasicComputeAcceleration(dev, vel,
                                             (vel->last_velocity +
-                                             vel->velocity) / 2, threshold,
+                                             vel->velocity) / 2,
+                                            threshold,
                                             acc);
         result /= 6.0f;
         DebugAccelF("(dix ptracc) profile average [%.2f ... %.2f] is %.3f\n",

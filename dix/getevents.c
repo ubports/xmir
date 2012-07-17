@@ -35,6 +35,7 @@
 #include <X11/keysym.h>
 #include <X11/Xproto.h>
 #include <math.h>
+#include <limits.h>
 
 #include "misc.h"
 #include "resource.h"
@@ -67,6 +68,12 @@
 #include "exevents.h"
 #include "extnsionst.h"
 #include "listdev.h"            /* for sizing up DeviceClassesChangedEvent */
+
+#if XSERVER_DTRACE
+#include <sys/types.h>
+typedef const char *string;
+#include <Xserver-dtrace.h>
+#endif
 
 /* Number of motion history events to store. */
 #define MOTION_HISTORY_SIZE 256
@@ -750,6 +757,29 @@ clipAbsolute(DeviceIntPtr dev, ValuatorMask *mask)
     }
 }
 
+static void
+add_to_scroll_valuator(DeviceIntPtr dev, ValuatorMask *mask, int valuator, double value)
+{
+    double v;
+
+    if (!valuator_mask_fetch_double(mask, valuator, &v))
+        return;
+
+    /* protect against scrolling overflow. INT_MAX for double, because
+     * we'll eventually write this as 32.32 fixed point */
+    if ((value > 0 && v > INT_MAX - value) || (value < 0 && v < INT_MIN - value)) {
+        v = 0;
+
+        /* reset last.scroll to avoid a button storm */
+        valuator_mask_set_double(dev->last.scroll, valuator, 0);
+    }
+    else
+        v += value;
+
+    valuator_mask_set_double(mask, valuator, v);
+}
+
+
 /**
  * Move the device's pointer by the values given in @valuators.
  *
@@ -768,13 +798,17 @@ moveRelative(DeviceIntPtr dev, ValuatorMask *mask)
 
         if (!valuator_mask_isset(mask, i))
             continue;
-        val += valuator_mask_get_double(mask, i);
+
+        add_to_scroll_valuator(dev, mask, i, val);
+
         /* x & y need to go over the limits to cross screens if the SD
          * isn't currently attached; otherwise, clip to screen bounds. */
         if (valuator_get_mode(dev, i) == Absolute &&
-            ((i != 0 && i != 1) || clip_xy))
+            ((i != 0 && i != 1) || clip_xy)) {
+            val = valuator_mask_get_double(mask, i);
             clipAxis(dev, i, &val);
-        valuator_mask_set_double(mask, i, val);
+            valuator_mask_set_double(mask, i, val);
+        }
     }
 }
 
@@ -1026,6 +1060,15 @@ GetKeyboardEvents(InternalEvent *events, DeviceIntPtr pDev, int type,
     RawDeviceEvent *raw;
     ValuatorMask mask;
 
+#if XSERVER_DTRACE
+    if (XSERVER_INPUT_EVENT_ENABLED()) {
+        XSERVER_INPUT_EVENT(pDev->id, type, key_code, 0,
+                            mask_in ? mask_in->last_bit + 1 : 0,
+                            mask_in ? mask_in->mask : NULL,
+                            mask_in ? mask_in->valuators : NULL);
+    }
+#endif
+
     /* refuse events from disabled devices */
     if (!pDev->enabled)
         return 0;
@@ -1151,16 +1194,33 @@ static void
 transformAbsolute(DeviceIntPtr dev, ValuatorMask *mask)
 {
     double x, y, ox, oy;
+    int has_x, has_y;
+
+    has_x = valuator_mask_fetch_double(mask, 0, &ox);
+    has_y = valuator_mask_fetch_double(mask, 1, &oy);
+
+    if (!has_x && !has_y)
+        return;
+
+    if (!has_x || !has_y) {
+        struct pixman_f_transform invert;
+
+        /* undo transformation from last event */
+        ox = dev->last.valuators[0];
+        oy = dev->last.valuators[1];
+
+        pixman_f_transform_invert(&invert, &dev->transform);
+        transform(&invert, &ox, &oy);
+
+        x = ox;
+        y = oy;
+    }
 
     if (valuator_mask_isset(mask, 0))
         ox = x = valuator_mask_get_double(mask, 0);
-    else
-        ox = x = dev->last.valuators[0];
 
     if (valuator_mask_isset(mask, 1))
         oy = y = valuator_mask_get_double(mask, 1);
-    else
-        oy = y = dev->last.valuators[1];
 
     transform(&dev->transform, &x, &y);
 
@@ -1474,6 +1534,7 @@ emulate_scroll_button_events(InternalEvent *events,
     return num_events;
 }
 
+
 /**
  * Generate a complete series of InternalEvents (filled into the EventList)
  * representing pointer motion, or button presses.  If the device is a slave
@@ -1503,6 +1564,15 @@ GetPointerEvents(InternalEvent *events, DeviceIntPtr pDev, int type,
     int i;
     int realtype = type;
 
+#if XSERVER_DTRACE
+    if (XSERVER_INPUT_EVENT_ENABLED()) {
+        XSERVER_INPUT_EVENT(pDev->id, type, buttons, flags,
+                            mask_in ? mask_in->last_bit + 1 : 0,
+                            mask_in ? mask_in->mask : NULL,
+                            mask_in ? mask_in->valuators : NULL);
+    }
+#endif
+
     /* refuse events from disabled devices */
     if (!pDev->enabled)
         return 0;
@@ -1519,7 +1589,7 @@ GetPointerEvents(InternalEvent *events, DeviceIntPtr pDev, int type,
      * necessary. This only needs to cater for the XIScrollFlagPreferred
      * axis (if more than one scrolling axis is present) */
     if (type == ButtonPress) {
-        double val, adj;
+        double adj;
         int axis;
         int h_scroll_axis = -1;
         int v_scroll_axis = -1;
@@ -1555,8 +1625,7 @@ GetPointerEvents(InternalEvent *events, DeviceIntPtr pDev, int type,
 
         if (adj != 0.0 && axis != -1) {
             adj *= pDev->valuator->axes[axis].scroll.increment;
-            val = valuator_mask_get_double(&mask, axis) + adj;
-            valuator_mask_set_double(&mask, axis, val);
+            add_to_scroll_valuator(pDev, &mask, axis, adj);
             type = MotionNotify;
             buttons = 0;
             flags |= POINTER_EMULATED;
@@ -1574,7 +1643,7 @@ GetPointerEvents(InternalEvent *events, DeviceIntPtr pDev, int type,
     /* Now turn the smooth-scrolling axes back into emulated button presses
      * for legacy clients, based on the integer delta between before and now */
     for (i = 0; i < valuator_mask_size(&mask); i++) {
-        if (i >= pDev->valuator->numAxes)
+        if ( !pDev->valuator || (i >= pDev->valuator->numAxes))
             break;
 
         if (!valuator_mask_isset(&mask, i))
@@ -1630,6 +1699,15 @@ GetProximityEvents(InternalEvent *events, DeviceIntPtr pDev, int type,
     int num_events = 1, i;
     DeviceEvent *event;
     ValuatorMask mask;
+
+#if XSERVER_DTRACE
+    if (XSERVER_INPUT_EVENT_ENABLED()) {
+        XSERVER_INPUT_EVENT(pDev->id, type, 0, 0,
+                            mask_in ? mask_in->last_bit + 1 : 0,
+                            mask_in ? mask_in->mask : NULL,
+                            mask_in ? mask_in->valuators : NULL);
+    }
+#endif
 
     /* refuse events from disabled devices */
     if (!pDev->enabled)
@@ -1755,6 +1833,15 @@ GetTouchEvents(InternalEvent *events, DeviceIntPtr dev, uint32_t ddx_touchid,
     Bool emulate_pointer = FALSE;
     int client_id = 0;
 
+#if XSERVER_DTRACE
+    if (XSERVER_INPUT_EVENT_ENABLED()) {
+        XSERVER_INPUT_EVENT(dev->id, type, ddx_touchid, flags,
+                            mask_in ? mask_in->last_bit + 1 : 0,
+                            mask_in ? mask_in->mask : NULL,
+                            mask_in ? mask_in->valuators : NULL);
+    }
+#endif
+
     if (!dev->enabled || !t || !v)
         return 0;
 
@@ -1762,10 +1849,7 @@ GetTouchEvents(InternalEvent *events, DeviceIntPtr dev, uint32_t ddx_touchid,
 
     if (flags & TOUCH_CLIENT_ID) {      /* A DIX-submitted TouchEnd */
         touchpoint.dix_ti = TouchFindByClientID(dev, ddx_touchid);
-        BUG_WARN(!touchpoint.dix_ti);
-
-        if (!touchpoint.dix_ti)
-            return 0;
+        BUG_RETURN_VAL(!touchpoint.dix_ti, 0);
 
         if (!mask_in ||
             !valuator_mask_isset(mask_in, 0) ||
@@ -1783,8 +1867,8 @@ GetTouchEvents(InternalEvent *events, DeviceIntPtr dev, uint32_t ddx_touchid,
         touchpoint.ti =
             TouchFindByDDXID(dev, ddx_touchid, (type == XI_TouchBegin));
         if (!touchpoint.ti) {
-            ErrorF("[dix] %s: unable to %s touch point %x\n", dev->name,
-                   type == XI_TouchBegin ? "begin" : "find", ddx_touchid);
+            ErrorFSigSafe("[dix] %s: unable to %s touch point %u\n", dev->name,
+                          type == XI_TouchBegin ? "begin" : "find", ddx_touchid);
             return 0;
         }
         client_id = touchpoint.ti->client_id;

@@ -77,8 +77,14 @@ xf86CallDriverProbe(DriverPtr drv, Bool detect_only)
 {
     Bool foundScreen = FALSE;
 
+#ifdef XSERVER_PLATFORM_BUS
+    if (drv->platformProbe != NULL) {
+        foundScreen = xf86platformProbeDev(drv);
+    }
+#endif
+
 #ifdef XSERVER_LIBPCIACCESS
-    if (drv->PciProbe != NULL) {
+    if (!foundScreen && (drv->PciProbe != NULL)) {
         if (xf86DoConfigure && xf86DoConfigurePass1) {
             assert(detect_only);
             foundScreen = xf86PciAddMatchingDev(drv);
@@ -179,9 +185,13 @@ xf86BusConfig(void)
             xf86Msg(X_ERROR,
                     "Screen %d deleted because of no matching config section.\n",
                     i);
-            xf86DeleteScreen(i--, 0);
+            xf86DeleteScreen(xf86Screens[i--]);
         }
     }
+
+    /* bind GPU conf screen to protocol screen 0 */
+    for (i = 0; i < xf86NumGPUScreens; i++)
+        xf86GPUScreens[i]->confScreen = xf86Screens[0]->confScreen;
 
     /* If no screens left, return now.  */
     if (xf86NumScreens == 0) {
@@ -202,6 +212,9 @@ xf86BusConfig(void)
 void
 xf86BusProbe(void)
 {
+#ifdef XSERVER_PLATFORM_BUS
+    xf86platformProbe();
+#endif
 #ifdef XSERVER_LIBPCIACCESS
     xf86PciProbe();
 #endif
@@ -238,6 +251,8 @@ StringToBusType(const char *busID, const char **retID)
         ret = BUS_PCI;
     if (!xf86NameCmp(p, "sbus"))
         ret = BUS_SBUS;
+    if (!xf86NameCmp(p, "platform"))
+        ret = BUS_PLATFORM;
     if (ret != BUS_NONE)
         if (retID)
             *retID = busID + strlen(p) + 1;
@@ -270,6 +285,8 @@ xf86IsEntityPrimary(int entityIndex)
         return pEnt->bus.id.pci == primaryBus.id.pci;
     case BUS_SBUS:
         return pEnt->bus.id.sbus.fbNum == primaryBus.id.sbus.fbNum;
+    case BUS_PLATFORM:
+        return pEnt->bus.id.plat == primaryBus.id.plat;
     default:
         return FALSE;
     }
@@ -377,13 +394,12 @@ xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex)
 }
 
 /*
- * xf86ClearEntitiesForScreen() - called when a screen is deleted
+ * xf86ClearEntityListForScreen() - called when a screen is deleted
  * to mark it's entities unused. Called by xf86DeleteScreen().
  */
 void
-xf86ClearEntityListForScreen(int scrnIndex)
+xf86ClearEntityListForScreen(ScrnInfoPtr pScrn)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     int i, entityIndex;
 
     if (pScrn->entityList == NULL || pScrn->numEntities == 0)
@@ -420,6 +436,26 @@ xf86AddDevToEntity(int entityIndex, GDevPtr dev)
     dev->claimed = TRUE;
 }
 
+
+void
+xf86RemoveDevFromEntity(int entityIndex, GDevPtr dev)
+{
+    EntityPtr pEnt;
+    int i, j;
+    if (entityIndex >= xf86NumEntities)
+        return;
+
+    pEnt = xf86Entities[entityIndex];
+    for (i = 0; i < pEnt->numInstances; i++) {
+        if (pEnt->devices[i] == dev) {
+            for (j = i; j < pEnt->numInstances - 1; j++)
+                pEnt->devices[j] = pEnt->devices[j + 1];
+            break;
+        }
+    }
+    pEnt->numInstances--;
+    dev->claimed = FALSE;
+}
 /*
  * xf86GetEntityInfo() -- This function hands information from the
  * EntityRec struct to the drivers. The EntityRec structure itself
@@ -521,6 +557,9 @@ xf86PostProbe(void)
     if (fbSlotClaimed && (
 #if (defined(__sparc__) || defined(__sparc)) && !defined(__OpenBSD__)
                              sbusSlotClaimed ||
+#endif
+#ifdef XSERVER_PLATFORM_BUS
+                             platformSlotClaimed ||
 #endif
 #ifdef XSERVER_LIBPCIACCESS
                              pciSlotClaimed

@@ -330,8 +330,8 @@ that.  This is a significant difference compared with the old design.
 
     <para>
 The entry points for drawing operations are already taken care of by
-the framebuffer code (including, XAA).  Extensions and enhancements to
-framebuffer code are outside the scope of this document.
+the framebuffer code.  Extensions and enhancements to framebuffer code
+are outside the scope of this document.
     </para>
 
     <para>
@@ -662,11 +662,6 @@ Here is what <function>InitOutput()</function> does:
 
       <para>
     This is done at the start of the first server generation only.
-      </para>
-
-      <para>
-    The core server contains a list of mandatory modules.  These are loaded
-    first.  Currently the only module on this list is the bitmap font module.
       </para>
 
       <para>
@@ -1311,7 +1306,7 @@ Here is what <function>InitOutput()</function> does:
 
       <blockquote><para>
 	  <programlisting>
-    Bool ChipScreenInit(int index, ScreenPtr pScreen,
+    Bool ChipScreenInit(ScreenPtr pScreen,
                         int argc, char **argv);
 	  </programlisting>
 	  <blockquote><para>
@@ -1447,7 +1442,7 @@ Here is what <function>InitOutput()</function> does:
 
       <blockquote><para>
 	  <programlisting>
-    Bool ChipSwitchMode(int index, DisplayModePtr mode, int flags);
+    Bool ChipSwitchMode(int index, DisplayModePtr mode);
 	  </programlisting>
 	  <blockquote><para>
       Initialises the new mode for the screen identified by
@@ -1469,7 +1464,7 @@ Here is what <function>InitOutput()</function> does:
 
       <blockquote><para>
 	  <programlisting>
-    void ChipAdjustFrame(int index, int x, int y, int flags);
+    void ChipAdjustFrame(int index, int x, int y);
 	  </programlisting>
 	  <blockquote><para>
       Changes the viewport for the screen identified by
@@ -1577,7 +1572,7 @@ Here is what <function>InitOutput()</function> does:
 
       <blockquote><para>
 	  <programlisting>
-    Bool ChipEnterVT(int index, int flags);
+    Bool ChipEnterVT(ScrnInfoPtr pScrn);
 	  </programlisting>
 	  <blockquote><para>
       This function should initialise the current video mode and
@@ -1594,7 +1589,7 @@ Here is what <function>InitOutput()</function> does:
 
       <blockquote><para>
 	  <programlisting>
-    void ChipLeaveVT(int index, int flags);
+    void ChipLeaveVT(ScrnInfoPtr pScrn);
 	  </programlisting>
 	  <blockquote><para>
       This function should restore the saved video state.  If
@@ -1696,7 +1691,7 @@ but their presence is optional.
 
       <blockquote><para>
 	  <programlisting>
-    ModeStatus ChipValidMode(int index, DisplayModePtr mode,
+    ModeStatus ChipValidMode(ScrnInfoPtr pScrn, DisplayModePtr mode,
                              Bool verbose, int flags);
 	  </programlisting>
 	  <blockquote><para>
@@ -1744,7 +1739,7 @@ MODECHECK_FINAL are intended for checks that may involve more than one mode.
 
       <blockquote><para>
 	  <programlisting>
-    void ChipFreeScreen(int scrnindex, int flags);
+    void ChipFreeScreen(ScrnInfoPtr pScrn);
 	  </programlisting>
 	  <blockquote><para>
       Free any driver-allocated data that may have been allocated up to
@@ -2008,10 +2003,9 @@ also include the video card's saved state.
       </para>
 
       <para>
-Per-screen data for other modules that the driver uses (for example,
-the XAA module) that is reset for each server generation is hooked into
-the <structname>ScrnInfoRec</structname> through it's <structfield>privates</structfield>
-field.
+Per-screen data for other modules that the driver uses that is reset for each
+server generation is hooked into the <structname>ScrnInfoRec</structname>
+through its <structfield>privates</structfield> field.
       </para>
 
       <para>
@@ -2829,12 +2823,12 @@ Several functions are provided to simplify resource registration:
 
 	  <blockquote><para>
 	      <programlisting>
-    Bool xf86IsScreenPrimary(int scrnIndex);
+    Bool xf86IsScreenPrimary(ScrnInfoPtr pScrn);
 	      </programlisting>
 	      <blockquote><para>
       This function returns <constant>TRUE</constant> if the primary entity
       is registered with the screen referenced by
-      <parameter>scrnIndex</parameter>.
+      <parameter>pScrn</parameter>.
 		</para>
 
 	      </blockquote></para></blockquote>
@@ -3620,14 +3614,6 @@ The following include files are typically required by video drivers:
 	  </para>
 
 	  <para>
-  If a driver uses XAA, it needs these:
-	    <literallayout><filename>
-    "xaa.h"
-    "xaalocal.h"
-	      </filename></literallayout>
-	  </para>
-
-	  <para>
   If a driver uses the fb manager, it needs this:
 	    <literallayout><filename>
     "xf86fbman.h"
@@ -3845,31 +3831,6 @@ manager is allowed to manage.  This is typically a box with a width of
 can be fit within the total video memory, however, the driver can reserve
 areas at the extremities by passing a smaller area to the manager.
     </para>
-
-    <para>
-<function>xf86InitFBManager()</function> must be called before XAA is
-initialized since XAA uses the manager for it's pixmap cache.
-    </para>
-
-    <para>
-An alternative function is provided to allow the driver to initialize
-the framebuffer manager with a Region rather than a box.
-
-    <programlisting>
-    Bool xf86InitFBManagerRegion(ScreenPtr pScreen,
-                                 RegionPtr FullRegion);
-    </programlisting>
-
-<function>xf86InitFBManagerRegion()</function>, unlike
-<function>xf86InitFBManager()</function>, does not remove the area used for
-the visible screen so that area should not be included in the region
-passed to the function.  <function>xf86InitFBManagerRegion()</function> is
-useful when non-contiguous areas are available to be managed, and is
-required when multiple framebuffers are stored in video memory (as in
-the case where an overlay of a different depth is stored as a second
-framebuffer in offscreen memory).
-    </para>
-
   </sect1>
 
   <sect1 id="cmap">
@@ -5368,15 +5329,6 @@ XFree86 common layer.
 		  way by modules loaded directly by the XFree86 common
 		  layer.  However, it may be used for application-specific
 		  parameter passing in other situations.
-		    </para>
-
-		    <para>
-		  When loading <quote>external</quote> modules (modules that don't
-		  have the standard entry point, for example a
-		  special shared library) the options parameter can be
-		  set to <constant>EXTERN_MODULE</constant> to tell the
-		  loader not to reject the module when it doesn't find
-		  the standard entry point.
 		    </para></listitem></varlistentry>
 
 
@@ -5987,28 +5939,7 @@ typedef struct {
     InitExtension       initFunc;
     char *              name;
     Bool                *disablePtr;
-    InitExtension       setupFunc;
 } ExtensionModule;
-	      </programlisting>
-	    </para>
-
-	  </blockquote></para></blockquote>
-
-      <blockquote><para>
-	  <programlisting>
-    void LoadFont(FontModule *font);
-	  </programlisting>
-	  <blockquote><para>
-    This registers the entry points for the font rasteriser module
-    identified by <parameter>font</parameter>.  The <structname>FontModule</structname>
-    struct is defined as:
-
-	      <programlisting>
- typedef struct {
-    InitFont    initFunc;
-    char *      name;
-    pointer     module;
-} FontModule;
 	      </programlisting>
 	    </para>
 
@@ -8935,12 +8866,6 @@ ZZZPreInit(ScrnInfoPtr pScrn, int flags)
         ZZZFreeRec(pScrn);
         return FALSE;
 
-    /* Load XAA if needed */
-    if (!pZzz-&gt;noAccel || pZzz-&gt;hwCursor)
-        if (!xf86LoadSubModule(pScrn, "xaa")) {
-            ZZZFreeRec(pScrn);
-            return FALSE;
-        }
 
     /* Done */
     return TRUE;
@@ -9058,10 +8983,10 @@ ZZZModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	<programlisting>
 static Bool
-ZZZScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+ZZZScreenInit(ScreenPtr pScreen, int argc, char **argv)
 {
     /* Get the ScrnInfoRec */
-    pScrn = xf86Screens[pScreen-&gt;myNum];
+    pScrn = xf86ScreenToScrn(pScreen);
 
     /*
      * If using the vgahw module, its data structures and related
@@ -9076,7 +9001,7 @@ ZZZScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Set the viewport if supported */
 
-    ZZZAdjustFrame(scrnIndex, pScrn-&gt;frameX0, pScrn-&gt;frameY0, 0);
+    ZZZAdjustFrame(pScrn, pScrn-&gt;frameX0, pScrn-&gt;frameY0);
 
     /*
      * Setup the screen's visuals, and initialise the framebuffer
@@ -9245,9 +9170,9 @@ ZZZScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	<programlisting>
 static Bool
-ZZZSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+ZZZSwitchMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-    return ZZZModeInit(xf86Screens[scrnIndex], mode);
+    return ZZZModeInit(pScrn, mode);
 }
 	</programlisting>
       </sect3>
@@ -9262,7 +9187,7 @@ ZZZSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 
 	<programlisting>
 static void
-ZZZAdjustFrame(int scrnIndex, int x, int y, int flags)
+ZZZAdjustFrame(ScrnInfoPtr pScrn, int x, int y)
 {
     /* Adjust the viewport */
 }
@@ -9283,16 +9208,14 @@ ZZZAdjustFrame(int scrnIndex, int x, int y, int flags)
 
 	<programlisting>
 static Bool
-ZZZEnterVT(int scrnIndex, int flags)
+ZZZEnterVT(ScrnInfoPtr pScrn)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     return ZZZModeInit(pScrn, pScrn-&gt;currentMode);
 }
 
 static void
-ZZZLeaveVT(int scrnIndex, int flags)
+ZZZLeaveVT(ScrnInfoPtr pScrn)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     ZZZRestore(pScrn);
 }
 	</programlisting>
@@ -9313,16 +9236,16 @@ ZZZLeaveVT(int scrnIndex, int flags)
 
 	<programlisting>
 static Bool
-ZZZCloseScreen(int scrnIndex, ScreenPtr pScreen)
+ZZZCloseScreen(ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     if (pScrn-&gt;vtSema) {
         ZZZRestore(pScrn);
         ZZZUnmapMem(pScrn);
     }
     pScrn-&gt;vtSema = FALSE;
     pScreen-&gt;CloseScreen = ZZZPTR(pScrn)-&gt;CloseScreen;
-    return (*pScreen-&gt;CloseScreen)(scrnIndex, pScreen);
+    return (*pScreen-&gt;CloseScreen)(pScreen);
 }
 	</programlisting>
       </sect3>
@@ -9367,13 +9290,13 @@ ZZZSaveScreen(ScreenPtr pScreen, int mode)
 
 	<programlisting>
 static void
-ZZZFreeScreen(int scrnIndex, int flags)
+ZZZFreeScreen(ScrnInfoPtr pScrn)
 {
     /*
      * If the vgahw module is used vgaHWFreeHWRec() would be called
      * here.
      */
-    ZZZFreeRec(xf86Screens[scrnIndex]);
+    ZZZFreeRec(pScrn);
 }
 
 	</programlisting>

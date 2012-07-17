@@ -78,6 +78,8 @@
 #include "quartzKeyboard.h"
 #include "quartz.h"
 
+#include "X11Application.h"
+
 aslclient aslc;
 
 void
@@ -191,7 +193,7 @@ DarwinSaveScreen(ScreenPtr pScreen, int on)
  *  Initialize the screen and communicate information about it back to dix.
  */
 static Bool
-DarwinScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
+DarwinScreenInit(ScreenPtr pScreen, int argc, char **argv)
 {
     int dpi;
     static int foundIndex = 0;
@@ -202,7 +204,7 @@ DarwinScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
 
     // reset index of found screens for each server generation
-    if (index == 0) {
+    if (pScreen->myNum == 0) {
         foundIndex = 0;
 
         // reset the visual list
@@ -273,7 +275,7 @@ DarwinScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
     pScreen->SaveScreen = DarwinSaveScreen;
 
     // finish mode dependent screen setup including cursor support
-    if (!QuartzSetupScreen(index, pScreen)) {
+    if (!QuartzSetupScreen(pScreen->myNum, pScreen)) {
         return FALSE;
     }
 
@@ -670,9 +672,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
  * OsVendorFatalError
  */
 void
-OsVendorFatalError(void)
+OsVendorFatalError(const char *f, va_list args)
 {
-    ErrorF("   OsVendorFatalError\n");
+    X11ApplicationFatalError(f, args);
 }
 
 /*

@@ -49,6 +49,7 @@ SOFTWARE.
 
 #include "misc.h"
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
 #define SCREEN_SAVER_ON   0
@@ -321,7 +322,8 @@ extern _X_EXPORT void
 OsCleanup(Bool);
 
 extern _X_EXPORT void
-OsVendorFatalError(void);
+OsVendorFatalError(const char *f, va_list args)
+_X_ATTRIBUTE_PRINTF(1, 0);
 
 extern _X_EXPORT void
 OsVendorInit(void);
@@ -331,6 +333,15 @@ OsBlockSignals(void);
 
 extern _X_EXPORT void
 OsReleaseSignals(void);
+
+extern _X_EXPORT int
+OsBlockSIGIO(void);
+
+extern _X_EXPORT void
+OsReleaseSIGIO(void);
+
+extern void
+OsResetSignals(void);
 
 extern _X_EXPORT void
 OsAbort(void)
@@ -578,6 +589,7 @@ typedef enum {
     X_INFO,                     /* Informational message */
     X_NONE,                     /* No prefix */
     X_NOT_IMPLEMENTED,          /* Not implemented */
+    X_DEBUG,                    /* Debug message */
     X_UNKNOWN = -1              /* unknown -- this must always be last */
 } MessageType;
 
@@ -602,6 +614,12 @@ _X_ATTRIBUTE_PRINTF(3, 4);
 extern _X_EXPORT void
 LogMessage(MessageType type, const char *format, ...)
 _X_ATTRIBUTE_PRINTF(2, 3);
+extern _X_EXPORT void
+LogMessageVerbSigSafe(MessageType type, int verb, const char *format, ...)
+_X_ATTRIBUTE_PRINTF(3, 4);
+extern _X_EXPORT void
+LogVMessageVerbSigSafe(MessageType type, int verb, const char *format, va_list args)
+_X_ATTRIBUTE_PRINTF(3, 0);
 
 extern _X_EXPORT void
 LogVHdrMessageVerb(MessageType type, int verb,
@@ -645,6 +663,12 @@ VErrorF(const char *f, va_list args)
 _X_ATTRIBUTE_PRINTF(1, 0);
 extern _X_EXPORT void
 ErrorF(const char *f, ...)
+_X_ATTRIBUTE_PRINTF(1, 2);
+extern _X_EXPORT void
+VErrorFSigSafe(const char *f, va_list args)
+_X_ATTRIBUTE_PRINTF(1, 0);
+extern _X_EXPORT void
+ErrorFSigSafe(const char *f, ...)
 _X_ATTRIBUTE_PRINTF(1, 2);
 extern _X_EXPORT void
 LogPrintMarkers(void);

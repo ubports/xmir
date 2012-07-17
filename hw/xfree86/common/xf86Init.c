@@ -394,16 +394,19 @@ InstallSignalHandlers(void)
 void
 InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 {
-    int i, j, k, scr_index, was_blocked = 0;
+    int i, j, k, scr_index;
     char **modulelist;
     pointer *optionlist;
     Pix24Flags screenpix24, pix24;
     MessageType pix24From = X_DEFAULT;
     Bool pix24Fail = FALSE;
     Bool autoconfig = FALSE;
+    Bool sigio_blocked = FALSE;
     GDevPtr configured_device;
 
     xf86Initialising = TRUE;
+
+    config_pre_init();
 
     if (serverGeneration == 1) {
         if ((xf86ServerName = strrchr(argv[0], '/')) != 0)
@@ -468,6 +471,8 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 #ifdef XF86PM
         xf86OSPMClose = xf86OSPMOpen();
 #endif
+
+        xf86ExtensionInit();
 
         /* Load all modules specified explicitly in the config file */
         if ((modulelist = xf86ModulelistFromConfig(&optionlist))) {
@@ -589,7 +594,19 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
         }
         for (i = 0; i < xf86NumScreens; i++)
             if (!xf86Screens[i]->configured)
-                xf86DeleteScreen(i--, 0);
+                xf86DeleteScreen(xf86Screens[i--]);
+
+        for (i = 0; i < xf86NumGPUScreens; i++) {
+            xf86VGAarbiterScrnInit(xf86GPUScreens[i]);
+            xf86VGAarbiterLock(xf86GPUScreens[i]);
+            if (xf86GPUScreens[i]->PreInit &&
+                xf86GPUScreens[i]->PreInit(xf86GPUScreens[i], 0))
+                xf86GPUScreens[i]->configured = TRUE;
+            xf86VGAarbiterUnlock(xf86GPUScreens[i]);
+        }
+        for (i = 0; i < xf86NumGPUScreens; i++)
+            if (!xf86GPUScreens[i]->configured)
+                xf86DeleteScreen(xf86GPUScreens[i--]);
 
         /*
          * If no screens left, return now.
@@ -804,7 +821,8 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
             ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ);
 #endif
             xf86AccessEnter();
-            was_blocked = xf86BlockSIGIO();
+            OsBlockSIGIO();
+            sigio_blocked = TRUE;
         }
     }
 
@@ -815,6 +833,36 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
     if (!dixRegisterPrivateKey(&xf86ScreenKeyRec, PRIVATE_SCREEN, 0) ||
         !dixRegisterPrivateKey(&xf86CreateRootWindowKeyRec, PRIVATE_SCREEN, 0))
         FatalError("Cannot register DDX private keys");
+
+    for (i = 0; i < xf86NumGPUScreens; i++) {
+        ScrnInfoPtr pScrn = xf86GPUScreens[i];
+        xf86VGAarbiterLock(pScrn);
+
+        /*
+         * Almost everything uses these defaults, and many of those that
+         * don't, will wrap them.
+         */
+        pScrn->EnableDisableFBAccess = xf86EnableDisableFBAccess;
+#ifdef XFreeXDGA
+        pScrn->SetDGAMode = xf86SetDGAMode;
+#endif
+        pScrn->DPMSSet = NULL;
+        pScrn->LoadPalette = NULL;
+        pScrn->SetOverscan = NULL;
+        pScrn->DriverFunc = NULL;
+        pScrn->pScreen = NULL;
+        scr_index = AddGPUScreen(pScrn->ScreenInit, argc, argv);
+        xf86VGAarbiterUnlock(pScrn);
+        if (scr_index == i) {
+            dixSetPrivate(&screenInfo.gpuscreens[scr_index]->devPrivates,
+                          xf86ScreenKey, xf86GPUScreens[i]);
+            pScrn->pScreen = screenInfo.gpuscreens[scr_index];
+            /* The driver should set this, but make sure it is set anyway */
+            pScrn->vtSema = TRUE;
+        } else {
+            FatalError("AddScreen/ScreenInit failed for gpu driver %d %d\n", i, scr_index);
+        }
+    }
 
     for (i = 0; i < xf86NumScreens; i++) {
         xf86VGAarbiterLock(xf86Screens[i]);
@@ -876,8 +924,12 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 #endif
     }
 
+    for (i = 0; i < xf86NumGPUScreens; i++)
+        AttachUnboundGPU(xf86Screens[0]->pScreen, xf86GPUScreens[i]->pScreen);
+
     xf86VGAarbiterWrapFunctions();
-    xf86UnblockSIGIO(was_blocked);
+    if (sigio_blocked)
+        OsReleaseSIGIO();
 
     xf86InitOrigins();
 
@@ -1020,7 +1072,7 @@ AbortDDX(enum ExitCode error)
 {
     int i;
 
-    xf86BlockSIGIO();
+    OsBlockSIGIO();
 
     /*
      * try to restore the original video state
@@ -1038,7 +1090,7 @@ AbortDDX(enum ExitCode error)
                  * screen explicitely.
                  */
                 xf86VGAarbiterLock(xf86Screens[i]);
-                (xf86Screens[i]->LeaveVT) (i, 0);
+                (xf86Screens[i]->LeaveVT) (xf86Screens[i]);
                 xf86VGAarbiterUnlock(xf86Screens[i]);
             }
     }
@@ -1053,19 +1105,19 @@ AbortDDX(enum ExitCode error)
 }
 
 void
-OsVendorFatalError(void)
+OsVendorFatalError(const char *f, va_list args)
 {
 #ifdef VENDORSUPPORT
-    ErrorF("\nPlease refer to your Operating System Vendor support pages\n"
-           "at %s for support on this crash.\n", VENDORSUPPORT);
+    ErrorFSigSafe("\nPlease refer to your Operating System Vendor support "
+                 "pages\nat %s for support on this crash.\n", VENDORSUPPORT);
 #else
-    ErrorF("\nPlease consult the " XVENDORNAME " support \n"
-           "\t at " __VENDORDWEBSUPPORT__ "\n for help. \n");
+    ErrorFSigSafe("\nPlease consult the " XVENDORNAME " support \n\t at "
+                 __VENDORDWEBSUPPORT__ "\n for help. \n");
 #endif
     if (xf86LogFile && xf86LogFileWasOpened)
-        ErrorF("Please also check the log file at \"%s\" for additional "
-               "information.\n", xf86LogFile);
-    ErrorF("\n");
+        ErrorFSigSafe("Please also check the log file at \"%s\" for additional "
+                     "information.\n", xf86LogFile);
+    ErrorFSigSafe("\n");
 }
 
 int
@@ -1580,3 +1632,10 @@ xf86GetBppFromDepth(ScrnInfoPtr pScrn, int depth)
     else
         return 0;
 }
+
+#ifdef DDXBEFORERESET
+void
+ddxBeforeReset(void)
+{
+}
+#endif

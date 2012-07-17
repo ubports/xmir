@@ -219,7 +219,7 @@ OsVendorInit(void)
 }
 
 void
-OsVendorFatalError(void)
+OsVendorFatalError(const char *f, va_list args)
 {
 }
 
@@ -760,9 +760,9 @@ static miPointerScreenFuncRec vfbPointerCursorFuncs = {
 };
 
 static Bool
-vfbCloseScreen(int index, ScreenPtr pScreen)
+vfbCloseScreen(ScreenPtr pScreen)
 {
-    vfbScreenInfoPtr pvfb = &vfbScreens[index];
+    vfbScreenInfoPtr pvfb = &vfbScreens[pScreen->myNum];
     int i;
 
     pScreen->CloseScreen = pvfb->closeScreen;
@@ -774,13 +774,20 @@ vfbCloseScreen(int index, ScreenPtr pScreen)
     for (i = 0; i < screenInfo.numScreens; i++)
         SetInstalledColormap(screenInfo.screens[i], NULL);
 
-    return pScreen->CloseScreen(index, pScreen);
+    /*
+     * fb overwrites miCloseScreen, so do this here
+     */
+    if (pScreen->devPrivate)
+        (*pScreen->DestroyPixmap) (pScreen->devPrivate);
+    pScreen->devPrivate = NULL;
+
+    return pScreen->CloseScreen(pScreen);
 }
 
 static Bool
-vfbScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
+vfbScreenInit(ScreenPtr pScreen, int argc, char **argv)
 {
-    vfbScreenInfoPtr pvfb = &vfbScreens[index];
+    vfbScreenInfoPtr pvfb = &vfbScreens[pScreen->myNum];
     int dpix = monitorResolution, dpiy = monitorResolution;
     int ret;
     char *pbits;

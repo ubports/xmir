@@ -264,7 +264,7 @@ extern _X_EXPORT Bool ActivateDevice(DeviceIntPtr /*device */ ,
 
 extern _X_EXPORT Bool DisableDevice(DeviceIntPtr /*device */ ,
                                     BOOL /* sendevent */ );
-
+extern void DisableAllDevices(void);
 extern int InitAndStartDevices(void);
 
 extern void CloseDownDevices(void);
@@ -472,6 +472,9 @@ extern _X_EXPORT int GetProximityEvents(InternalEvent *events,
 extern _X_EXPORT void QueueProximityEvents(DeviceIntPtr pDev,
                                            int type, const ValuatorMask *mask);
 
+#ifdef PANORAMIX
+_X_EXPORT
+#endif
 extern void PostSyntheticMotion(DeviceIntPtr pDev,
                                 int x, int y, int screen, unsigned long time);
 
