@@ -3,6 +3,14 @@ xorg-server (2:1.12.99.901-1) UNRELEASED; urgency=low
   * New upstream release snapshot (on the way to 1.13).
   * Bump minimum required abi, randr, dri2 and gl protos.
   * Add fix for building udeb without xv
+  * Refreshed patches to apply on x1.13
+  * Remove patches merged upstream:
+    - 510-dix-return-early-from-DisableDevice-if-the-device-is.patch
+    - 511-dix-move-freeing-the-sprite-into-a-function.patch
+    - 512-dix-free-the-sprite-when-disabling-the-device.patch
+    - 513-dix-disable-non-sprite-owners-first-when-disabling-p.patch
+    - 514-Xi-drop-forced-unpairing-when-changing-the-hierarchy.patch
+    - 515-dix-disable-all-devices-before-shutdown.patch
 
  -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Thu, 12 Jul 2012 13:54:50 +0200
 
