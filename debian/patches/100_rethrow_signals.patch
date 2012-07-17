@@ -79,7 +79,7 @@
          return 0;               /* continue */
 --- a/hw/xfree86/common/xf86Init.c
 +++ b/hw/xfree86/common/xf86Init.c
-@@ -967,14 +967,17 @@
+@@ -1019,14 +1019,17 @@
  }
  
  /*
@@ -99,7 +99,7 @@
  {
      int i;
  
-@@ -1001,22 +1004,46 @@
+@@ -1053,22 +1056,46 @@
      if (xorgHWOpenConsole)
          xf86CloseConsole();
  
@@ -150,7 +150,7 @@
  {
      int i;
  
-@@ -1049,7 +1076,20 @@
+@@ -1101,7 +1128,20 @@
       * This is needed for an abnormal server exit, since the normal exit stuff
       * MUST also be performed (i.e. the vt must be left in a defined state)
       */
@@ -196,7 +196,7 @@
  ddxGiveUp(enum ExitCode error)
 --- a/hw/xquartz/darwin.c
 +++ b/hw/xquartz/darwin.c
-@@ -853,15 +853,22 @@
+@@ -855,15 +855,22 @@
  }
  
  /*
@@ -248,7 +248,7 @@
  static const char *
 --- a/include/os.h
 +++ b/include/os.h
-@@ -521,8 +521,12 @@
+@@ -532,8 +532,12 @@
  };
  
  extern _X_EXPORT void
@@ -272,7 +272,7 @@
  #include "input.h"
  #include "site.h"
  #include "opaque.h"
-@@ -463,9 +465,12 @@
+@@ -619,9 +621,12 @@
  void
  AbortServer(void)
      _X_NORETURN;
@@ -286,7 +286,7 @@
  {
  #ifdef XF86BIGFONT
      XF86BigfontCleanup();
-@@ -473,11 +478,23 @@
+@@ -629,11 +634,23 @@
      CloseWellKnownConnections();
      OsCleanup(TRUE);
      CloseDownDevices();
@@ -314,7 +314,7 @@
  }
  
  #define AUDIT_PREFIX "AUDIT: %s: %ld: "
-@@ -580,6 +597,27 @@
+@@ -736,6 +753,27 @@
  }
  
  void
@@ -349,7 +349,7 @@
          case SIGILL:
          case SIGFPE:
 +            signal(signo, SIG_DFL);
-             ErrorF("%s at address %p\n", strsignal(signo), sip->si_addr);
+             ErrorFSigSafe("%s at address %p\n", strsignal(signo), sip->si_addr);
          }
      }
  #endif

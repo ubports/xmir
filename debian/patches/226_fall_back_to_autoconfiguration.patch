@@ -1,20 +1,16 @@
-diff --git a/hw/xfree86/common/xf86Globals.c b/hw/xfree86/common/xf86Globals.c
-index 0071004..ea66973 100644
 --- a/hw/xfree86/common/xf86Globals.c
 +++ b/hw/xfree86/common/xf86Globals.c
-@@ -153,6 +153,7 @@ int xf86NumDrivers = 0;
- InputDriverPtr *xf86InputDriverList = NULL;
+@@ -161,6 +161,7 @@
  int xf86NumInputDrivers = 0;
  int xf86NumScreens = 0;
+ int xf86NumGPUScreens = 0;
 +Bool xf86AttemptedFallback = FALSE;
  
  const char *xf86VisualNames[] = {
      "StaticGray",
-diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
-index 0974893..6f313f6 100644
 --- a/hw/xfree86/common/xf86Init.c
 +++ b/hw/xfree86/common/xf86Init.c
-@@ -476,20 +476,34 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+@@ -481,20 +481,34 @@
              free(optionlist);
          }
  
@@ -52,7 +48,7 @@ index 0974893..6f313f6 100644
          }
  
          /* Load all input driver modules specified in the config file. */
-@@ -549,8 +563,15 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+@@ -554,8 +568,15 @@
          else
              xf86Info.dontVTSwitch = TRUE;
  
@@ -70,11 +66,9 @@ index 0974893..6f313f6 100644
  
          xf86PostProbe();
  
-diff --git a/hw/xfree86/common/xf86Priv.h b/hw/xfree86/common/xf86Priv.h
-index 8d9cb55..1a604d6 100644
 --- a/hw/xfree86/common/xf86Priv.h
 +++ b/hw/xfree86/common/xf86Priv.h
-@@ -88,6 +88,7 @@ extern _X_EXPORT int xf86NumDrivers;
+@@ -89,6 +89,7 @@
  extern _X_EXPORT Bool xf86Resetting;
  extern _X_EXPORT Bool xf86Initialising;
  extern _X_EXPORT int xf86NumScreens;
