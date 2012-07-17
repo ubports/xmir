@@ -314,12 +314,15 @@
  }
  
  #define AUDIT_PREFIX "AUDIT: %s: %ld: "
-@@ -736,6 +753,27 @@
+@@ -735,6 +752,55 @@
+     free(prefix);
  }
  
- void
-+FatalSignal(int signo)
++static void
++FatalSignal2(int signo, const char *f, ...)
 +{
++    va_list args;
++    va_list args2;
 +    static Bool beenhere = FALSE;
 +
 +    if (beenhere)
@@ -328,20 +331,45 @@
 +        ErrorF("\nCaught signal %d (%s). Server aborting\n",
 +               signo, strsignal(signo));
 +
++    va_start(args, f);
++
++    /* Make a copy for OsVendorFatalError */
++    va_copy(args2, args);
++
++#ifdef __APPLE__
++    {
++        va_list apple_args;
++
++        va_copy(apple_args, args);
++        (void)vsnprintf(__crashreporter_info_buff__,
++                        sizeof(__crashreporter_info_buff__), f, apple_args);
++        va_end(apple_args);
++    }
++#endif
++    VErrorF(f, args);
++    va_end(args);
++    ErrorF("\n");
 +    if (!beenhere)
-+        OsVendorFatalError();
++        OsVendorFatalError(f, args2);
++    va_end(args2);
 +    if (!beenhere) {
 +        beenhere = TRUE;
 +        SigAbortServer(signo);
 +    }
 +    else
-+        abort();
++        OsAbort();
 + /*NOTREACHED*/}
 +
 +void
++FatalSignal(int signo)
++{
++    FatalSignal2(signo, "Caught signal %d (%s). Server aborting\n",
++               signo, strsignal(signo));
++ /*NOTREACHED*/}
++
+ void
  FatalError(const char *f, ...)
  {
-     va_list args;
 --- a/os/osinit.c
 +++ b/os/osinit.c
 @@ -138,13 +138,13 @@
