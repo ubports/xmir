@@ -2,7 +2,6 @@ xorg-server (2:1.12.99.902-1) UNRELEASED; urgency=low
 
   * New upstream release snapshot (on the way to 1.13).
   * Bump minimum required abi, randr, dri2 and gl protos.
-  * Add fix for building udeb without xv
   * Refreshed patches to apply on x1.13
   * Remove patches merged upstream:
     - 510-dix-return-early-from-DisableDevice-if-the-device-is.patch
