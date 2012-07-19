@@ -1,6 +1,7 @@
 xorg-server (2:1.12.99.902-1) UNRELEASED; urgency=low
 
   * New upstream release snapshot (on the way to 1.13).
+    - Fixes QT5 app segfaults (LP: #1015292)
   * Bump minimum required abi, randr, dri2 and gl protos.
   * Refreshed patches to apply on x1.13
   * Remove patches merged upstream:
