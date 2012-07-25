@@ -5,6 +5,7 @@ xorg-server (2:1.12.99.902-1) UNRELEASED; urgency=low
   * Bump minimum required abi, randr, dri2 and gl protos.
   * Refreshed patches to apply on x1.13
   * Remove patches merged upstream:
+    - 508_device_off_release_buttons.patch
     - 510-dix-return-early-from-DisableDevice-if-the-device-is.patch
     - 511-dix-move-freeing-the-sprite-into-a-function.patch
     - 512-dix-free-the-sprite-when-disabling-the-device.patch
