@@ -25,4 +25,3 @@
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
-508_device_off_release_buttons.patch
