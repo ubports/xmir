@@ -5,7 +5,6 @@
 #13_debian_add_xkbpath_env_variable.diff
 
 # Ubuntu patches
-100_rethrow_signals.patch
 105_nvidia_fglrx_autodetect.patch
 111_armel-drv-fallbacks.patch
 122_xext_fix_card32_overflow_in_xauth.patch

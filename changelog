@@ -1,5 +1,6 @@
-xorg-server (2:1.12.99.902-1) UNRELEASED; urgency=low
+xorg-server (2:1.12.99.902-0ubuntu1) quantal-proposed; urgency=low
 
+  [ Maarten Lankhorst ]
   * New upstream release snapshot (on the way to 1.13).
     - Fixes QT5 app segfaults (LP: #1015292)
   * Bump minimum required abi, randr, dri2 and gl protos.
@@ -13,7 +14,14 @@ xorg-server (2:1.12.99.902-1) UNRELEASED; urgency=low
     - 514-Xi-drop-forced-unpairing-when-changing-the-hierarchy.patch
     - 515-dix-disable-all-devices-before-shutdown.patch
 
- -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Thu, 12 Jul 2012 13:54:50 +0200
+  [ Christopher James Halse Rogers ]
+  * debian/patches/100_rethrow_signals.patch:
+    - Drop, in favour of getting LightDM to pass -core to the server. This
+      upstream mechanism is significantly more reliable at dumping core in
+      my testing. We may later wish to improve this with some processing in
+      the apport hook.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 25 Jul 2012 16:54:16 +1000
 
 xorg-server (2:1.12.1.902-1ubuntu1) quantal-proposed; urgency=medium
 
