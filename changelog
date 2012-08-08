@@ -1,7 +1,6 @@
-xorg-server (2:1.12.99.904-1) UNRELEASED; urgency=low
+xorg-server (2:1.12.99.904-0ubuntu1) UNRELEASED; urgency=low
 
   * New upstream release snapshot (on the way to 1.13).
-  * Bump minimum required abi, randr, dri2 and gl protos.
 
  -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Thu, 12 Jul 2012 13:54:50 +0200
 
