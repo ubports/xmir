@@ -1,6 +1,8 @@
 xorg-server (2:1.12.99.904-0ubuntu1) UNRELEASED; urgency=low
 
   * New upstream release snapshot (on the way to 1.13).
+  * Remove 172_cwgetbackingpicture_nullptr_check.patch:
+    - Code is removed now that XAA is gone.
 
  -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Thu, 12 Jul 2012 13:54:50 +0200
 

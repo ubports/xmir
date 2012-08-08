@@ -13,7 +13,6 @@
 165_man_xorg_conf_no_device_ident.patch
 167_nullptr_xisbread.patch
 168_glibc_trace_to_stderr.patch
-172_cwgetbackingpicture_nullptr_check.patch
 188_default_primary_to_first_busid.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
