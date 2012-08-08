@@ -1,10 +1,11 @@
-xorg-server (2:1.12.99.904-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.12.99.904-0ubuntu1) quantal-proposed; urgency=low
 
+  [ Maarten Lankhorst ]
   * New upstream release snapshot (on the way to 1.13).
   * Remove 172_cwgetbackingpicture_nullptr_check.patch:
     - Code is removed now that XAA is gone.
 
- -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Thu, 12 Jul 2012 13:54:50 +0200
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 08 Aug 2012 14:35:03 +0300
 
 xorg-server (2:1.12.99.902-0ubuntu1) quantal-proposed; urgency=low
 
