@@ -1,3 +1,13 @@
+xorg-server (2:1.12.99.904-0ubuntu2) UNRELEASED; urgency=low
+
+  * Remove disabled and unwanted patches
+    - 13_debian_add_xkbpath_env_variable.diff
+    - 200_randr-null.patch
+    - 217_revert_bgnonevisitwindow.patch
+    - 219_fedora-pointer-barriers.diff
+
+ -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Mon, 20 Aug 2012 22:48:13 +0200
+
 xorg-server (2:1.12.99.904-0ubuntu1) quantal-proposed; urgency=low
 
   [ Maarten Lankhorst ]
