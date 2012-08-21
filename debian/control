@@ -55,7 +55,7 @@ Build-Depends:
  libudev-dev (>= 151-3),
  libselinux1-dev (>= 2.0.80),
  x11proto-xf86dri-dev (>= 2.1.0),
- libdrm-dev (>= 2.4.3) [!hurd-i386],
+ libdrm-dev (>= 2.4.38-0ubuntu2~) [!hurd-i386],
  x11proto-gl-dev (>= 1.4.16),
  mesa-common-dev (>= 7.10.3-0ubuntu1),
  libgl1-mesa-dev (>= 7.8),

@@ -1,12 +1,17 @@
-xorg-server (2:1.12.99.904-0ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.12.99.904-0ubuntu2) quantal; urgency=low
 
+  [ Maarten Lankhorst ]
   * Remove disabled and unwanted patches
     - 13_debian_add_xkbpath_env_variable.diff
     - 200_randr-null.patch
     - 217_revert_bgnonevisitwindow.patch
     - 219_fedora-pointer-barriers.diff
 
- -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Mon, 20 Aug 2012 22:48:13 +0200
+  [ Christopher James Halse Rogers ]
+  * Bump build-dep on libdrm to 2.4.38-0ubuntu2 and rebuild to pick up correct
+    libdrm2-udeb dependencies on xserver-xorg-core-udeb
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 21 Aug 2012 16:07:00 +1000
 
 xorg-server (2:1.12.99.904-0ubuntu1) quantal-proposed; urgency=low
 
