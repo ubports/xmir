@@ -1,8 +1,9 @@
-xorg-server (2:1.12.99.905-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.12.99.905-0ubuntu1) quantal; urgency=low
 
+  [ Robert Hooker ]
   * New upstream release snapshot (1.13-rc5)
 
- -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:23:33 -0400
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 22 Aug 2012 18:29:26 +0300
 
 xorg-server (2:1.12.99.905-1) UNRELEASED; urgency=low
 
