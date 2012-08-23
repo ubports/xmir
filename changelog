@@ -1,3 +1,14 @@
+xorg-server (2:1.12.99.905-0ubuntu2) quantal; urgency=low
+
+  * debian/patches/111_armel-drv-fallbacks.patch:
+    - Adding support for omapdrm based devices (using the omap xorg driver),
+      and make xorg to use the recently added platform probe functions, by
+      trying to probe the driver in case there's only one platform device
+      available and without a valid busID (case of Omap3 and Omap4 based
+      devices) (LP: #1040405)
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>  Thu, 23 Aug 2012 01:20:03 -0300
+
 xorg-server (2:1.12.99.905-0ubuntu1) quantal; urgency=low
 
   [ Robert Hooker ]
