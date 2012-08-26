@@ -1,5 +1,5 @@
 diff --git a/hw/xfree86/common/xf86AutoConfig.c b/hw/xfree86/common/xf86AutoConfig.c
-index 55412b4..058db0c 100644
+index 55412b4..d4a95d2 100644
 --- a/hw/xfree86/common/xf86AutoConfig.c
 +++ b/hw/xfree86/common/xf86AutoConfig.c
 @@ -45,6 +45,12 @@
@@ -43,11 +43,12 @@ index 55412b4..058db0c 100644
  static void
  listPossibleVideoDrivers(char *matches[], int nmatches)
  {
-@@ -297,6 +324,18 @@ listPossibleVideoDrivers(char *matches[], int nmatches)
- #if !defined(__linux__) && defined(__sparc__)
-         matches[i++] = xnfstrdup("wsfb");
- #else
+@@ -287,6 +314,21 @@ listPossibleVideoDrivers(char *matches[], int nmatches)
+ #endif
+     }
+ 
 +#if defined(__linux__) && defined(__arm__)
++    if (i < (nmatches - 1)) {
 +        if (test_sysfs_device("mxc_gpu", "imx"))
 +            matches[i++] = xnfstrdup("imx");
 +        else if (test_sysfs_device("dovefb", "dovefb"))
@@ -58,10 +59,12 @@ index 55412b4..058db0c 100644
 +            matches[i++] = xnfstrdup("omapfb");
 +        else if (test_sysfs_device("omap", "pvr"))
 +            matches[i++] = xnfstrdup("pvr");
++    }
 +#endif                          /* defined(__linux__) && defined(__arm__) */
-         matches[i++] = xnfstrdup("fbdev");
++
+ #if defined(__linux__)
+     matches[i++] = xnfstrdup("modesetting");
  #endif
-     }
 diff --git a/hw/xfree86/common/xf86platformBus.c b/hw/xfree86/common/xf86platformBus.c
 index 24b9473..0061c25 100644
 --- a/hw/xfree86/common/xf86platformBus.c
