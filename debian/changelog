@@ -1,4 +1,4 @@
-xorg-server (2:1.13.0-1.1) UNRELEASED; urgency=low
+xorg-server (2:1.13.0-0ubuntu1) quantal; urgency=low
 
   * Merge from unreleased debian git.
 
