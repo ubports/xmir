@@ -1,3 +1,9 @@
+xorg-server (2:1.13.0-1.1) UNRELEASED; urgency=low
+
+  * Merge from unreleased debian git.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 06 Sep 2012 12:25:51 +0300
+
 xorg-server (2:1.13.0-1) UNRELEASED; urgency=low
 
   * New upstream release
