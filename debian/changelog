@@ -1,3 +1,15 @@
+xorg-server (2:1.13.0-1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+  [ Maarten Lankhorst ]
+  * Bump minimum required abi, randr, dri2 and gl protos.
+
+  [ Timo Aaltonen ]
+  * Refresh 02_Add-libnettle-as-option-for-sha1.diff.
+
+ -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
+
 xorg-server (2:1.12.99.905-0ubuntu3) quantal; urgency=low
 
   * debian/patches/111_armel-drv-fallbacks.patch:
@@ -25,17 +37,6 @@ xorg-server (2:1.12.99.905-0ubuntu1) quantal; urgency=low
   * New upstream release snapshot (1.13-rc5)
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 22 Aug 2012 18:29:26 +0300
-
-xorg-server (2:1.12.99.905-1) UNRELEASED; urgency=low
-
-  [ Maarten Lankhorst ]
-  * New upstream release snapshot (on the way to 1.13). (rc4)
-  * Bump minimum required abi, randr, dri2 and gl protos.
-
-  [ Robert Hooker ]
-  * New upstream release (rc5)
-
- -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
 
 xorg-server (2:1.12.99.904-0ubuntu2) quantal; urgency=low
 
