@@ -19,6 +19,7 @@
 208_switch_on_release.diff
 226_fall_back_to_autoconfiguration.patch
 227_null_ptr_midispcur.patch
+228_autobind_gpu.patch
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
