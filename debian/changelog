@@ -1,6 +1,10 @@
 xorg-server (2:1.13.0-0ubuntu2) UNRELEASED; urgency=low
 
+  [ Maarten Lankhorst ]
   * Add patch to autobind gpu's
+
+  [ Timo Aaltonen ]
+  * Add a patch to fix drm device hotplugging.
 
  -- Maarten Lankhorst <maarten.lankhorst@canonical.com>  Fri, 14 Sep 2012 11:29:40 +0200
 
