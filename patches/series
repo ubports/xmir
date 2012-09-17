@@ -20,6 +20,7 @@
 226_fall_back_to_autoconfiguration.patch
 227_null_ptr_midispcur.patch
 228_autobind_gpu.patch
+229_udev-fix.diff
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
