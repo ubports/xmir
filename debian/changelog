@@ -1,4 +1,4 @@
-xorg-server (2:1.13.0-0ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.13.0-0ubuntu4) quantal; urgency=low
 
   * Add patches to fix issues with hybrid graphics:
     - 230-fix-compat-output-selection.patch
