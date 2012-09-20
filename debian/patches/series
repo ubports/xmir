@@ -21,6 +21,8 @@
 227_null_ptr_midispcur.patch
 228_autobind_gpu.patch
 229_udev-fix.diff
+230-fix-compat-output-selection.patch
+231-scan-pci-after-probing-devices.patch
 
 # Temporary, until it's reviewed & accepted upstream
 500_pointer_barrier_thresholds.diff
