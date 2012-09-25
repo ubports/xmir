@@ -1,3 +1,10 @@
+xorg-server (2:1.13.0-0ubuntu5) quantal; urgency=low
+
+  * Update 228_autobind_gpu.patch to not crash when the device has no
+    randr provider. (LP: #1054051)
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 25 Sep 2012 09:46:44 +0300
+
 xorg-server (2:1.13.0-0ubuntu4) quantal; urgency=low
 
   * Add patches to fix issues with hybrid graphics:
