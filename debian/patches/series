@@ -4,25 +4,30 @@
 02_Add-libnettle-as-option-for-sha1.diff
 #13_debian_add_xkbpath_env_variable.diff
 
-# Ubuntu patches
+## Ubuntu patches, not upstreamable
 105_nvidia_fglrx_autodetect.patch
-111_armel-drv-fallbacks.patch
+168_glibc_trace_to_stderr.patch
+188_default_primary_to_first_busid.patch
+190_cache-xkbcomp_output_for_fast_start_up.patch
+191-Xorg-add-an-extra-module-path.patch
+226_fall_back_to_autoconfiguration.patch
+# drop after desktop support arrives
+228_autobind_gpu.patch
+
+## send upstream
 122_xext_fix_card32_overflow_in_xauth.patch
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
 165_man_xorg_conf_no_device_ident.patch
 167_nullptr_xisbread.patch
-168_glibc_trace_to_stderr.patch
-188_default_primary_to_first_busid.patch
-190_cache-xkbcomp_output_for_fast_start_up.patch
-191-Xorg-add-an-extra-module-path.patch
 208_switch_on_release.diff
-226_fall_back_to_autoconfiguration.patch
 227_null_ptr_midispcur.patch
-228_autobind_gpu.patch
+
+## waiting for review by upstream
+111_armel-drv-fallbacks.patch
+500_pointer_barrier_thresholds.diff
+
+## from upstream, drop when rebasing to a new version
 229_udev-fix.diff
 230-fix-compat-output-selection.patch
 231-scan-pci-after-probing-devices.patch
-
-# Temporary, until it's reviewed & accepted upstream
-500_pointer_barrier_thresholds.diff
