@@ -1,7 +1,11 @@
 xorg-server (2:1.13.0-0ubuntu6) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * patches/series: Reorganize our patches in categories in order to
     make reviewing and rebasing easier.
+
+  [ Maarten Lankhorst ]
+  * add 232-xf86compatoutput-valgrind.patch to silence a valgrind error
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 01 Oct 2012 09:29:29 +0300
 
