@@ -1,0 +1,17 @@
+diff --git a/hw/xfree86/common/xf86Events.c b/hw/xfree86/common/xf86Events.c
+index 3ad34b5..98ee8cd 100644
+--- a/hw/xfree86/common/xf86Events.c
++++ b/hw/xfree86/common/xf86Events.c
+@@ -271,9 +271,10 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
+     }
+ 
+     if (err >= 0) {             /* we don't want the handlers called if select() */
+-        IHPtr ih;               /* returned with an error condition, do we?      */
++        IHPtr ih, ih_next;      /* returned with an error condition, do we?      */
+ 
+-        for (ih = InputHandlers; ih; ih = ih->next) {
++        for (ih = InputHandlers; ih; ih = ih_next) {
++            ih_next = ih->next;
+             if (ih->enabled && ih->fd >= 0 && ih->ihproc &&
+                 (FD_ISSET(ih->fd, ((fd_set *) pReadmask)) != 0)) {
+                 ih->ihproc(ih->fd, ih->data);
