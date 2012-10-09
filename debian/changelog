@@ -6,6 +6,8 @@ xorg-server (2:1.13.0-0ubuntu6) quantal; urgency=low
 
   [ Maarten Lankhorst ]
   * add 232-xf86compatoutput-valgrind.patch to silence a valgrind error
+  * add 233-xf86events-valgrind.patch to fix a xserver corruption
+    when acpid is stopped before Xorg is.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Mon, 08 Oct 2012 17:58:54 +0300
 
