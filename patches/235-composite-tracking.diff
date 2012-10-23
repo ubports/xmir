@@ -1,0 +1,78 @@
+From: Michel Dänzer <michel.daenzer@amd.com>
+
+In particular, make sure pExaScr->src/maskPix are cleared when the
+corresponding pictures aren't associated with drawables, i.e. solid or gradient
+pictures. Without this, we would in some cases associate the source/mask region
+with unrelated pixmaps from previous Composite fallbacks, resulting in random
+corruption.
+
+Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=47266
+
+Signed-off-by: Michel Dänzer <michel.daenzer@amd.com>
+---
+ exa/exa_priv.h    |    1 +
+ exa/exa_unaccel.c |   16 ++++++++++++----
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/exa/exa_priv.h b/exa/exa_priv.h
+index cd6a40b..819feb0 100644
+--- a/exa/exa_priv.h
++++ b/exa/exa_priv.h
+@@ -201,6 +201,7 @@ typedef struct {
+     RegionRec srcReg;
+     RegionRec maskReg;
+     PixmapPtr srcPix;
++    PixmapPtr maskPix;
+ 
+ } ExaScreenPrivRec, *ExaScreenPrivPtr;
+ 
+diff --git a/exa/exa_unaccel.c b/exa/exa_unaccel.c
+index 72e59ca..ec49ef0 100644
+--- a/exa/exa_unaccel.c
++++ b/exa/exa_unaccel.c
+@@ -451,6 +451,13 @@ ExaSrcValidate(DrawablePtr pDrawable,
+     RegionPtr dst;
+     int xoff, yoff;
+ 
++    if (pExaScr->srcPix == pPix)
++        dst = &pExaScr->srcReg;
++    else if (pExaScr->maskPix == pPix)
++        dst = &pExaScr->maskReg;
++    else
++        return;
++
+     exaGetDrawableDeltas(pDrawable, pPix, &xoff, &yoff);
+ 
+     box.x1 = x + xoff;
+@@ -458,8 +465,6 @@ ExaSrcValidate(DrawablePtr pDrawable,
+     box.x2 = box.x1 + width;
+     box.y2 = box.y1 + height;
+ 
+-    dst = (pExaScr->srcPix == pPix) ? &pExaScr->srcReg : &pExaScr->maskReg;
+-
+     RegionInit(&reg, &box, 1);
+     RegionUnion(dst, dst, &reg);
+     RegionUninit(&reg);
+@@ -504,16 +509,19 @@ ExaPrepareCompositeReg(ScreenPtr pScreen,
+         if (pSrc != pDst)
+             RegionTranslate(pSrc->pCompositeClip,
+                             -pSrc->pDrawable->x, -pSrc->pDrawable->y);
+-    }
++    } else
++        pExaScr->srcPix = NULL;
+ 
+     if (pMask && pMask->pDrawable) {
+         pMaskPix = exaGetDrawablePixmap(pMask->pDrawable);
+         RegionNull(&pExaScr->maskReg);
+         maskReg = &pExaScr->maskReg;
++        pExaScr->maskPix = pMaskPix;
+         if (pMask != pDst && pMask != pSrc)
+             RegionTranslate(pMask->pCompositeClip,
+                             -pMask->pDrawable->x, -pMask->pDrawable->y);
+-    }
++    } else
++        pExaScr->maskPix = NULL;
+ 
+     RegionTranslate(pDst->pCompositeClip,
+                     -pDst->pDrawable->x, -pDst->pDrawable->y);
+-- 1.7.10.4

@@ -1,0 +1,48 @@
+compRedirectWindow does not initialize borderClip(X,Y ) members on allocation,
+which could theoretically cause a crash because borderClip contains a pointer.
+Solve this by copying the data over from pWin.
+
+Noticed this when working on
+https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/1065113
+
+Specific error valgrind error I was receiving is:
+
+==25858== Conditional jump or move depends on uninitialised value(s)
+==25858==    at 0x1EBF32: compClipNotify (compwindow.c:304)
+==25858==    by 0x2A2C23: miComputeClips (mivaltree.c:489)
+==25858==    by 0x2A321C: miValidateTree (mivaltree.c:695)
+==25858==    by 0x1896EE: MapWindow (window.c:2594)
+==25858==    by 0x1EB15B: compCreateOverlayWindow (compoverlay.c:155)
+==25858==    by 0x1E9ABA: ProcCompositeGetOverlayWindow (compext.c:304)
+==25858==    by 0x15DA50: Dispatch (dispatch.c:428)
+==25858==    by 0x14C569: main (main.c:295)
+==25858==  Uninitialised value was created by a heap allocation
+==25858==    at 0x4C2B3F8: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==25858==    by 0x1ED4A3: compRedirectWindow (compalloc.c:172)
+==25858==    by 0x1EC142: compCreateWindow (compwindow.c:558)
+==25858==    by 0x18C56C: CreateWindow (window.c:801)
+==25858==    by 0x1EB0FF: compCreateOverlayWindow (compoverlay.c:145)
+==25858==    by 0x1E9ABA: ProcCompositeGetOverlayWindow (compext.c:304)
+==25858==    by 0x15DA50: Dispatch (dispatch.c:428)
+==25858==    by 0x14C569: main (main.c:295)
+
+Signed-off-by: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+
+---
+I'm not 100% sure if this is the correct assignment, I'm just guessing from the functions.
+
+diff --git a/composite/compalloc.c b/composite/compalloc.c
+index cc69c68..b6c5785 100644
+--- a/composite/compalloc.c
++++ b/composite/compalloc.c
+@@ -195,6 +195,8 @@ compRedirectWindow(ClientPtr pClient, WindowPtr pWin, int update)
+         cw->damaged = FALSE;
+         cw->pOldPixmap = NullPixmap;
+         dixSetPrivate(&pWin->devPrivates, CompWindowPrivateKey, cw);
++        cw->borderClipX = pWin->drawable.x;
++        cw->borderClipY = pWin->drawable.y;
+     }
+     ccw->next = cw->clients;
+     cw->clients = ccw;
+
+
