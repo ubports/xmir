@@ -1,4 +1,4 @@
-xorg-server (2:1.13.0-0ubuntu7) UNRELEASED; urgency=low
+xorg-server (2:1.13.0-0ubuntu6.1) quantal-proposed; urgency=low
 
   [ Maarten Lankhorst ]
   * add 233-xf86events-valgrind.patch to fix a xserver corruption
@@ -9,7 +9,7 @@ xorg-server (2:1.13.0-0ubuntu7) UNRELEASED; urgency=low
       for upstream response for right fix..
   * add 235-composite-tracking.diff to fix exa corruption. (LP: #1010794)
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 09 Oct 2012 10:22:24 +0300
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 25 Oct 2012 15:43:26 +0300
 
 xorg-server (2:1.13.0-0ubuntu6) quantal; urgency=low
 
