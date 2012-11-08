@@ -1,4 +1,4 @@
-xorg-server (2:1.13.0-0ubuntu6.1) quantal-proposed; urgency=low
+xorg-server (2:1.13.0-0ubuntu7) UNRELEASED; urgency=low
 
   [ Maarten Lankhorst ]
   * add 233-xf86events-valgrind.patch to fix a xserver corruption
