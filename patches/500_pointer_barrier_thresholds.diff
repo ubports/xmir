@@ -392,8 +392,7 @@ index 602b906..cab5b31 100644
 +        dir = barrier_get_direction(ox, oy, unclamped_prex, unclamped_prey);
 +        barrier_calculate_velocity_components(ox, oy, unclamped_prex, unclamped_prey, &vel_x, &vel_y);
  
--        nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
-+        nearest = barrier_find_nearest(cs, dir, ox, oy, unclamped_prex, unclamped_prey);
+         nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
          if (nearest) {
 -            barrier_clamp_to_barrier(nearest, dir, x, y);
 +	    int velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
@@ -419,8 +418,7 @@ index 602b906..cab5b31 100644
                  oy = *y;
              }
  
--            nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
-+            nearest = barrier_find_nearest(cs, dir, ox, oy, unclamped_prex, unclamped_prey);
+             nearest = barrier_find_nearest(cs, dir, ox, oy, *x, *y);
              if (nearest) {
 -                barrier_clamp_to_barrier(nearest, dir, x, y);
 +			velocity = barrier_is_vertical(nearest) ? vel_x : vel_y;
