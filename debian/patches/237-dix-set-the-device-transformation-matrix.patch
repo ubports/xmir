@@ -1,0 +1,42 @@
+From 3d1051aecbb1955084804133cacd12c7f696833a Mon Sep 17 00:00:00 2001
+From: Peter Hutterer <peter.hutterer@who-t.net>
+Date: Thu, 20 Sep 2012 05:56:39 +1000
+Subject: [PATCH] dix: set the device transformation matrix
+
+The property handler is registered after setting the property, so
+dev->transform remains as all-zeros. That causes pixman_f_transform_invert()
+to fail (in transformAbsolute()) and invert remains as garbage. This
+may then cause a cursor jump to 0,0.
+
+Since the axes are not yet initialized here and we need to allow for drivers
+changing the matrix, we cannot use the property handler for matrix
+initialization, essentially duplicating the code.
+
+Triggered by the fix to (#49347) in 749a593e49adccdf1225be28a521412ec85333f4
+
+https://bugzilla.redhat.com/show_bug.cgi?id=852841
+
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+Reviewed-by: Chase Douglas <chase.douglas@ubuntu.com>
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+ dix/devices.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/dix/devices.c b/dix/devices.c
+index 9cf04ed..66d4406 100644
+--- a/dix/devices.c
++++ b/dix/devices.c
+@@ -306,6 +306,9 @@ AddInputDevice(ClientPtr client, DeviceProc deviceProc, Bool autoStart)
+     /* unity matrix */
+     memset(transform, 0, sizeof(transform));
+     transform[0] = transform[4] = transform[8] = 1.0f;
++    dev->transform.m[0][0] = 1.0;
++    dev->transform.m[1][1] = 1.0;
++    dev->transform.m[2][2] = 1.0;
+ 
+     XIChangeDeviceProperty(dev, XIGetKnownProperty(XI_PROP_TRANSFORM),
+                            XIGetKnownProperty(XATOM_FLOAT), 32,
+-- 
+1.7.11.3
+
