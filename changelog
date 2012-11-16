@@ -1,19 +1,28 @@
-xorg-server (2:1.13.0-0ubuntu7) UNRELEASED; urgency=low
+xorg-server (2:1.13.0-0ubuntu7) raring; urgency=low
 
   [ Maarten Lankhorst ]
-  * add 233-xf86events-valgrind.patch to fix a xserver corruption
-    when acpid is stopped before Xorg is. (LP: #1070481)
-  * add 234-composite-borderclip.patch to fix another valgrind
-    that I found when investigating a bug. (LP: #1065113)
-    - This might not the cause, though. Patch is wrong, waiting
+  * Add 233-xf86events-valgrind.patch to fix a xserver corruption
+    when acpid is stopped before Xorg is.
+    (LP: #1070481)
+  * Add 234-composite-borderclip.patch to fix another valgrind
+    that I found when investigating a bug.
+    (LP: #1065113)
+    - This might not be the cause, though. Patch is wrong, waiting
       for upstream response for right fix..
-  * add 235-composite-tracking.diff to fix exa corruption. (LP: #1010794)
+  * Add 235-composite-tracking.patch to fix exa corruption.
+    (LP: #1010794)
 
   [ Tim Lunn ]
   * 500_pointer_barrier_thresholds.diff: Update to fix gaps above
-    barriers at edge of screen (LP: #1073724)
+    barriers at edge of screen
+    (LP: #1073724)
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 25 Oct 2012 15:43:26 +0300
+  [ Matthias Klumpp ]
+  * Add 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch: Never use Intel
+    driver on Poulsbo/Oaktrail/Medfield
+    (LP: #1069031)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Fri, 16 Nov 2012 11:37:26 -0800
 
 xorg-server (2:1.13.0-0ubuntu6) quantal; urgency=low
 
