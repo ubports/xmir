@@ -25,7 +25,8 @@
 232-xf86compatoutput-valgrind.patch
 233-xf86events-valgrind.patch
 234-composite-borderclip.patch
-235-composite-tracking.diff
+235-composite-tracking.patch
+236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
