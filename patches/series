@@ -35,3 +35,4 @@
 229_udev-fix.diff
 230-fix-compat-output-selection.patch
 231-scan-pci-after-probing-devices.patch
+237-dix-set-the-device-transformation-matrix.patch

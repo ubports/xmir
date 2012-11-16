@@ -7,15 +7,19 @@ xorg-server (2:1.13.0-0ubuntu7) raring; urgency=low
   * Add 235-composite-tracking.patch to fix exa corruption.
     (LP: #1010794)
 
+  [ Bryce Harrington ]
+  * Add 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch: Never use Intel
+    driver on Poulsbo/Oaktrail/Medfield.  Thanks to Matthias Klumpp.
+    (LP: #1069031)
+  * Add 237-dix-set-the-device-transformation-matrix.patch: Fix pointer
+    jumping with absolute pointing device.  Initializes device
+    transformation matrix to an identity matrix.  Thanks to a7x.
+    (LP: #1041063)
+
   [ Tim Lunn ]
   * 500_pointer_barrier_thresholds.diff: Update to fix gaps above
     barriers at edge of screen
     (LP: #1073724)
-
-  [ Matthias Klumpp ]
-  * Add 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch: Never use Intel
-    driver on Poulsbo/Oaktrail/Medfield
-    (LP: #1069031)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Fri, 16 Nov 2012 11:37:26 -0800
 
