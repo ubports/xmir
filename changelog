@@ -4,11 +4,6 @@ xorg-server (2:1.13.0-0ubuntu7) raring; urgency=low
   * Add 233-xf86events-valgrind.patch to fix a xserver corruption
     when acpid is stopped before Xorg is.
     (LP: #1070481)
-  * Add 234-composite-borderclip.patch to fix another valgrind
-    that I found when investigating a bug.
-    (LP: #1065113)
-    - This might not be the cause, though. Patch is wrong, waiting
-      for upstream response for right fix..
   * Add 235-composite-tracking.patch to fix exa corruption.
     (LP: #1010794)
 

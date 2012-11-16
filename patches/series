@@ -24,7 +24,6 @@
 227_null_ptr_midispcur.patch
 232-xf86compatoutput-valgrind.patch
 233-xf86events-valgrind.patch
-234-composite-borderclip.patch
 235-composite-tracking.patch
 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 
