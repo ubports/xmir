@@ -3,6 +3,11 @@
 001_fedora_extramodes.patch
 02_Add-libnettle-as-option-for-sha1.diff
 #13_debian_add_xkbpath_env_variable.diff
+04_int10-fix-pci_device_read_rom-usage.diff
+05_Revert-Unload-submodules.diff
+06_Revert-fb-reorder-Bresenham-error-correction-to-avoi.diff
+07_Revert-kinput-allocate-enough-space-for-null-charact.diff
+08_xfree86_fix_ia64_inx_outx.diff
 
 ## Ubuntu patches, not upstreamable
 105_nvidia_fglrx_autodetect.patch
