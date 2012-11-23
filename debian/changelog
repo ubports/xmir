@@ -1,3 +1,18 @@
+xorg-server (2:1.13.0.901-1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+  [ Maarten Lankhorst ]
+  * Bump minimum required abi, randr, dri2 and gl protos.
+
+  [ Timo Aaltonen ]
+  * Refresh 02_Add-libnettle-as-option-for-sha1.diff.
+  * Remove 03_fix-panning.diff, upstream
+  * Refresh 04_int10-fix-pci_device_read_rom-usage.diff.
+  * Drop 09_EXA-Track...diff, upstream.
+
+ -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
+
 xorg-server (2:1.13.0-0ubuntu8) raring; urgency=low
 
   * Revert the change to 500_pointer_barrier_thresholds.diff, causes
@@ -80,18 +95,6 @@ xorg-server (2:1.13.0-0ubuntu1) quantal; urgency=low
   * Merge from unreleased debian git.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 06 Sep 2012 12:25:51 +0300
-
-xorg-server (2:1.13.0-1) UNRELEASED; urgency=low
-
-  * New upstream release
-
-  [ Maarten Lankhorst ]
-  * Bump minimum required abi, randr, dri2 and gl protos.
-
-  [ Timo Aaltonen ]
-  * Refresh 02_Add-libnettle-as-option-for-sha1.diff.
-
- -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
 
 xorg-server (2:1.12.99.905-0ubuntu3) quantal; urgency=low
 
@@ -176,6 +179,64 @@ xorg-server (2:1.12.99.902-0ubuntu1) quantal-proposed; urgency=low
       the apport hook.
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 25 Jul 2012 16:54:16 +1000
+
+xorg-server (2:1.12.4-4) UNRELEASED; urgency=low
+
+  * Fix memory leak in libnettle sha1 patch.  Thanks, Yaakov Selkowitz!
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 05 Nov 2012 20:39:01 +0100
+
+xorg-server (2:1.12.4-3) unstable; urgency=low
+
+  * Replace EXA patch from previous upload with the one actually applied
+    upstream (closes: #666468).
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 05 Nov 2012 10:44:58 +0100
+
+xorg-server (2:1.12.4-2) unstable; urgency=low
+
+  * Fix Xephyr command line option parsing (closes: #689246).  Thanks, Andrzej
+    Pietrasiewicz!
+  * Restore {in,out}{b,w,l} on ia64 (closes: #685750).  Thanks, Stephan
+    Schreiber!
+  * EXA: Fall back earlier and more thoroughly from exaGlyphs (closes:
+    #666468).  Patch by Michel Dänzer stolen from upstream bugzilla.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 24 Oct 2012 16:46:48 +0200
+
+xorg-server (2:1.12.4-1) unstable; urgency=low
+
+  * New upstream stable release.
+  * int10: fix pci_device_read_rom usage (closes: #686153).  Thanks, Stephan
+    Schreiber!
+  * Revert 'Unload submodules' (closes: #686152).  Seems to introduce a
+    regression, let's try that again later.  Thanks, Stephan Schreiber!
+  * Revert "fb: reorder Bresenham error correction to avoid overshoot".  Fixes
+    regression introduced in 1.12.3.902 (fdo#54168, closes: #688908)
+  * Add conflicts against obsolete evtouch input driver (hopefully closes:
+    #687268)
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 30 Sep 2012 12:47:00 +0200
+
+xorg-server (2:1.12.3.902-1) unstable; urgency=low
+
+  * New upstream release candidate
+    + glx: Free DRI2 drawable reference to destroyed GLX drawable
+      (closes: #681265, #674668)
+    + dix: make sure the mask is set for emulated scroll events
+      (closes: #684051)
+  * 03_fix-panning.diff: disable cursor confinement when panning is enabled
+    (closes: #643693)
+  * Video ABI bumped to 12.1, serverminver to 2:1.12.3.901.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 21 Aug 2012 21:35:25 +0200
+
+xorg-server (2:1.12.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * Install /var/lib/xkb/README.compiled in xserver-common.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 18 Jul 2012 08:36:57 +0200
 
 xorg-server (2:1.12.1.902-1ubuntu1) quantal-proposed; urgency=medium
 
