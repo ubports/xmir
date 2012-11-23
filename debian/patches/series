@@ -29,7 +29,6 @@
 227_null_ptr_midispcur.patch
 232-xf86compatoutput-valgrind.patch
 233-xf86events-valgrind.patch
-235-composite-tracking.patch
 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 
 ## waiting for review by upstream
@@ -37,7 +36,4 @@
 500_pointer_barrier_thresholds.diff
 
 ## from upstream, drop when rebasing to a new version
-229_udev-fix.diff
 230-fix-compat-output-selection.patch
-231-scan-pci-after-probing-devices.patch
-237-dix-set-the-device-transformation-matrix.patch
