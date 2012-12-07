@@ -12,8 +12,10 @@ xorg-server (2:1.13.0.902-0ubuntu1) UNRELEASED; urgency=low
   * Dropped upstream patches:
     - 230-fix-compat-output-selection.patch
   * Merge 1.13.1.rc2 from unreleased debian git.
+  * Bump ABI_VIDEODRV_VERSION to 13.1
+    - xf86UpdateDesktopDimensions is newly exported for nvidia blob
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 23 Nov 2012 10:02:42 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Fri, 07 Dec 2012 09:14:37 +0100
 
 xorg-server (2:1.13.0.902-1) UNRELEASED; urgency=low
 
