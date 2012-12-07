@@ -36,4 +36,3 @@
 500_pointer_barrier_thresholds.diff
 
 ## from upstream, drop when rebasing to a new version
-230-fix-compat-output-selection.patch
