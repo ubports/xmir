@@ -1,3 +1,17 @@
+xorg-server (2:1.13.1.901-1) UNRELEASED; urgency=low
+
+  [ Maarten Lankhorst ]
+  * New upstream release
+  * Bump minimum required abi, randr, dri2 and gl protos.
+
+  [ Timo Aaltonen ]
+  * Refresh 02_Add-libnettle-as-option-for-sha1.diff.
+  * Remove 03_fix-panning.diff, upstream
+  * Refresh 04_int10-fix-pci_device_read_rom-usage.diff.
+  * Drop 09_EXA-Track...diff, upstream.
+
+ -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
+
 xorg-server (2:1.13.0.902-0ubuntu1) raring; urgency=low
 
   [ Timo Aaltonen ]
@@ -16,20 +30,6 @@ xorg-server (2:1.13.0.902-0ubuntu1) raring; urgency=low
     - xf86UpdateDesktopDimensions is newly exported for nvidia blob
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Fri, 07 Dec 2012 09:14:37 +0100
-
-xorg-server (2:1.13.0.902-1) UNRELEASED; urgency=low
-
-  [ Maarten Lankhorst ]
-  * New upstream release
-  * Bump minimum required abi, randr, dri2 and gl protos.
-
-  [ Timo Aaltonen ]
-  * Refresh 02_Add-libnettle-as-option-for-sha1.diff.
-  * Remove 03_fix-panning.diff, upstream
-  * Refresh 04_int10-fix-pci_device_read_rom-usage.diff.
-  * Drop 09_EXA-Track...diff, upstream.
-
- -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
 
 xorg-server (2:1.13.0-0ubuntu8) raring; urgency=low
 
