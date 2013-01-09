@@ -1,10 +1,4 @@
-xorg-server (2:1.13.1.901-0ubuntu1) raring; urgency=low
-
-  * Merge from unreleased debian git.
-
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 08 Jan 2013 16:40:30 +0200
-
-xorg-server (2:1.13.1.901-1) UNRELEASED; urgency=low
+xorg-server (2:1.13.99.901-1) UNRELEASED; urgency=low
 
   [ Maarten Lankhorst ]
   * New upstream release
@@ -16,7 +10,22 @@ xorg-server (2:1.13.1.901-1) UNRELEASED; urgency=low
   * Refresh 04_int10-fix-pci_device_read_rom-usage.diff.
   * Drop 09_EXA-Track...diff, upstream.
 
+  [ Maarten Lankhorst ]
+  * Remove upstreamed patches.
+    - 02_Add-libnettle-as-option-for-sha1.diff
+    - 04_int10-fix-pci_device_read_rom-usage.diff
+    - 07_Revert-kinput-allocate-enough-space-for-null-charact.diff
+  * Bump x11proto-input-dev and libpixman-1-dev minimum versions.
+  * Add patch to fix build failure of xserver-xorg-core-udeb.
+    - 02_hide_panoramix_symbol.diff
+
  -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
+
+xorg-server (2:1.13.1.901-0ubuntu1) raring; urgency=low
+
+  * Merge from unreleased debian git.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 08 Jan 2013 16:40:30 +0200
 
 xorg-server (2:1.13.0.902-0ubuntu1) raring; urgency=low
 
