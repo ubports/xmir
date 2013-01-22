@@ -36,3 +36,4 @@
 500_pointer_barrier_thresholds.diff
 
 ## from upstream, drop when rebasing to a new version
+237_dix_save_touchpoint_last_coords_before_transform.patch
