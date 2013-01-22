@@ -1,3 +1,11 @@
+xorg-server (2:1.13.1.901-0ubuntu2) raring; urgency=low
+
+  * Add 237_dix_save_touchpoint_last_coords_before_transform.patch:
+    Fix sensitive touch settings on Nexus 7 when input is transformed.
+    (LP: #1075415, #1076567, #1076627)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 22 Jan 2013 13:51:16 -0800
+
 xorg-server (2:1.13.1.901-0ubuntu1) raring; urgency=low
 
   * Merge from unreleased debian git.
