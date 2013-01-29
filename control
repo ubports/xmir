@@ -264,6 +264,7 @@ Depends:
  x11-xkb-utils
 Recommends: libgl1-mesa-dri
 Provides: xserver
+Multi-Arch: foreign
 Description: Virtual Framebuffer 'fake' X server
  Xvfb provides an X server that can run on machines with no display hardware
  and no physical input devices. It emulates a dumb framebuffer using virtual
