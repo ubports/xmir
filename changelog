@@ -1,5 +1,6 @@
-xorg-server (2:1.13.1.901-0ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.13.2-0ubuntu1) UNRELEASED; urgency=low
 
+  * New upstream release.
   * control: Mark xvfb M-A: foreign.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 29 Jan 2013 17:23:44 +0200
