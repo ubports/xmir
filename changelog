@@ -1,7 +1,11 @@
 xorg-server (2:1.13.99.901-0ubuntu1) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * Merge from unreleased debian git.
   * 500_pointer_barrier_thresholds.diff: Dropped, implemented upstream.
+
+  [ Bryce Harrington ]
+  * 157_check_null_modes.patch: Dropped, patch included upstream.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 07 Feb 2013 20:25:26 +0200
 
