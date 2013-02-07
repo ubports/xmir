@@ -31,6 +31,5 @@
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
-#500_pointer_barrier_thresholds.diff
 
 ## from upstream, drop when rebasing to a new version
