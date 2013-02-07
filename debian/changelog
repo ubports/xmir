@@ -6,6 +6,8 @@ xorg-server (2:1.13.99.901-0ubuntu1) UNRELEASED; urgency=low
 
   [ Bryce Harrington ]
   * 157_check_null_modes.patch: Dropped, patch included upstream.
+  * 162_null_crtc_in_rotation.patch: Dropped, no longer relevant
+    (see LP: 139990)
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 07 Feb 2013 20:25:26 +0200
 
