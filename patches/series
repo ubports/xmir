@@ -17,8 +17,12 @@
 # drop after desktop support arrives
 228_autobind_gpu.patch
 
-## send upstream
+## In progress upstream
 122_xext_fix_card32_overflow_in_xauth.patch
+#   https://bugs.freedesktop.org/show_bug.cgi?id=27134
+#   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
+
+## To send upstream
 157_check_null_modes.patch
 162_null_crtc_in_rotation.patch
 165_man_xorg_conf_no_device_ident.patch
