@@ -19,7 +19,6 @@
 
 ## send upstream
 232-xf86compatoutput-valgrind.patch
-236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
@@ -34,5 +33,7 @@
 #   https://bugs.freedesktop.org/show_bug.cgi?id=24181
 233-xf86events-valgrind.patch
 #   http://patchwork.freedesktop.org/patch/12156/
+236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
+#   https://bugzilla.novell.com/show_bug.cgi?id=772279
 
 ## from upstream, drop when rebasing to a new version
