@@ -22,8 +22,10 @@
 #   https://bugs.freedesktop.org/show_bug.cgi?id=27134
 #   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
 
-## To send upstream
 165_man_xorg_conf_no_device_ident.patch
+#   https://bugs.freedesktop.org/show_bug.cgi?id=20742
+
+## To send upstream
 167_nullptr_xisbread.patch
 208_switch_on_release.diff
 227_null_ptr_midispcur.patch
