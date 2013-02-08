@@ -17,22 +17,21 @@
 # drop after desktop support arrives
 228_autobind_gpu.patch
 
-## In progress upstream
-122_xext_fix_card32_overflow_in_xauth.patch
-#   https://bugs.freedesktop.org/show_bug.cgi?id=27134
-#   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
-
-165_man_xorg_conf_no_device_ident.patch
-#   https://bugs.freedesktop.org/show_bug.cgi?id=20742
-
-## To send upstream
-208_switch_on_release.diff
+## send upstream
 227_null_ptr_midispcur.patch
 232-xf86compatoutput-valgrind.patch
-233-xf86events-valgrind.patch
 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
+122_xext_fix_card32_overflow_in_xauth.patch
+#   https://bugs.freedesktop.org/show_bug.cgi?id=27134
+#   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
+165_man_xorg_conf_no_device_ident.patch
+#   https://bugs.freedesktop.org/show_bug.cgi?id=20742
+208_switch_on_release.diff
+#   https://bugs.freedesktop.org/show_bug.cgi?id=865
+233-xf86events-valgrind.patch
+#   http://patchwork.freedesktop.org/patch/12156/
 
 ## from upstream, drop when rebasing to a new version
