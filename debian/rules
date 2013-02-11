@@ -61,7 +61,7 @@ endif
 
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	build_xfbdev = --enable-xfbdev
-	selinux = --disable-xselinux
+	selinux = --enable-xselinux
 	xkbrules = --with-default-xkb-rules=evdev
 else
 	build_xfbdev = --disable-xfbdev
