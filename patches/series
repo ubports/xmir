@@ -26,9 +26,6 @@
 #   https://bugs.freedesktop.org/show_bug.cgi?id=27134
 #   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
 #   Resent to mailing list, Feb 2013
-165_man_xorg_conf_no_device_ident.patch
-#   https://bugs.freedesktop.org/show_bug.cgi?id=20742
-#   Resent to mailing list, Feb 2013
 208_switch_on_release.diff
 #   https://bugs.freedesktop.org/show_bug.cgi?id=865
 #   - Violates XKB spec: Section 6.3, SA_LockGroup
@@ -37,12 +34,5 @@
 227_null_ptr_midispcur.patch
 #   https://bugs.freedesktop.org/show_bug.cgi?id=24181
 #   Probably is just papering over issue; needs further analysis
-233-xf86events-valgrind.patch
-#   http://patchwork.freedesktop.org/patch/12156/
-#   Upstream review comments need addressed
-236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
-#   https://bugzilla.novell.com/show_bug.cgi?id=772279
-#   https://bugs.freedesktop.org/show_bug.cgi?id=60514
-#   Resent to mailing list, Feb 2013
 
 ## from upstream, drop when rebasing to a new version

@@ -3,6 +3,10 @@ xorg-server (2:1.13.99.902-0ubuntu1) UNRELEASED; urgency=low
   [ Timo Aaltonen ]
   * Merge from unreleased debian git.
   * 500_pointer_barrier_thresholds.diff: Dropped, implemented upstream.
+  * Dropped upstreamed patches:
+    165_man_xorg_conf_no_device_ident.patch
+    233-xf86events-valgrind.patch
+    236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 
   [ Bryce Harrington ]
   * 157_check_null_modes.patch: Dropped, patch included upstream.
