@@ -28,6 +28,7 @@
 232-xf86compatoutput-valgrind.patch
 233-xf86events-valgrind.patch
 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
+drm_device_keep_trying.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
