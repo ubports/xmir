@@ -1,9 +1,10 @@
-xorg-server (2:1.13.2-0ubuntu3~lp982889~1) raring; urgency=low
+xorg-server (2:1.13.2-0ubuntu3~lp982889~2) raring; urgency=low
 
-  * Add drm_device_keep_trying.patch:  When kernel reports drm device is not available,
-    don't give up immediately, but keep retrying for a little bit.  Fixes boot failures
-    due to a race condition with plymouth or the kernel.  Typical symptom is xserver error
-    exit, "Cannot run in framebuffer mode".
+  * Add drm_device_keep_trying.patch: When kernel reports drm device is
+    not available, don't give up immediately, but keep retrying for a
+    little bit.  Fixes boot failures due to a race condition with plymouth
+    or the kernel.  Typical symptom is xserver error exit, "Cannot run in
+    framebuffer mode".
     (LP: #982889)
 
  -- Bryce Harrington <bryce@ubuntu.com>  Tue, 19 Feb 2013 07:58:24 -0800

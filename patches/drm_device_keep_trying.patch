@@ -1,34 +1,47 @@
-From d650ecb5e638cf5d9e8d6b789412cb1fb5225a73 Mon Sep 17 00:00:00 2001
+From fe5802680b5ecf5ecef55b839f2f555882207d41 Mon Sep 17 00:00:00 2001
 From: Bryce Harrington <bryce@canonical.com>
 Date: Wed, 13 Feb 2013 11:39:34 -0800
 Subject: [PATCH] If drm device couldn't be opened, keep trying for a sec.
 
-The kernel returns EAGAIN on drm open when the drm device is
+The kernel returns EACCES or EAGAIN on drm open when the drm device is
 currently unavailable, such as if it is in use by another process
-(e.g. plymouth), or hasn't finished initializing (e.g. on a really
-fast SSD).  Check for this error code, and if it's hit then block
-until it either resolved or some other error returned (and in which
-case, log the appropriate messages to that effect).
+(e.g. plymouth), or hasn't finished initializing (e.g. on a really fast
+SSD).  Check for errors when trying to open the device, and continue
+retrying for a short period before giving up.
+
+Fixes: https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/982889
 
 Signed-off-by: Bryce Harrington <bryce@canonical.com>
 ---
- hw/xfree86/os-support/linux/lnx_platform.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ hw/xfree86/os-support/linux/lnx_platform.c |   29 +++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
 diff --git a/hw/xfree86/os-support/linux/lnx_platform.c b/hw/xfree86/os-support/linux/lnx_platform.c
-index 76f5583..32107a9 100644
+index 76f5583..e26ef25 100644
 --- a/hw/xfree86/os-support/linux/lnx_platform.c
 +++ b/hw/xfree86/os-support/linux/lnx_platform.c
-@@ -23,6 +23,8 @@ get_drm_info(struct OdevAttributes *attribs, char *path)
+@@ -7,6 +7,7 @@
+ #include <xf86drm.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <errno.h>
+ 
+ /* Linux platform device support */
+ #include "xf86_OSproc.h"
+@@ -23,6 +24,12 @@ get_drm_info(struct OdevAttributes *attribs, char *path)
      drmSetVersion sv;
      char *buf;
      int fd;
 +    int err = 0;
-+    int counter = 100000;
++    int drm_wait_total = 2;     /* Max seconds we'll wait for drm */
++    int drm_wait_usleep = 50;   /* How frequently we'll re-check */
++    int drm_wait_max_msgs = 10; /* Max errors we'll print to logs */
++    int drm_wait_counter = drm_wait_total * 1000000 / drm_wait_usleep;
++    int drm_wait_msg_time = drm_wait_counter / drm_wait_max_msgs;
  
      fd = open(path, O_RDWR, O_CLOEXEC);
      if (fd == -1)
-@@ -32,9 +34,17 @@ get_drm_info(struct OdevAttributes *attribs, char *path)
+@@ -32,9 +39,25 @@ get_drm_info(struct OdevAttributes *attribs, char *path)
      sv.drm_di_minor = 4;
      sv.drm_dd_major = -1;       /* Don't care */
      sv.drm_dd_minor = -1;       /* Don't care */
@@ -36,12 +49,20 @@ index 76f5583..32107a9 100644
 -        ErrorF("setversion 1.4 failed\n");
 -        return FALSE;
 +    err = drmSetInterfaceVersion(fd, &sv);
-+    while (err!=0 && counter>0) {
-+	/* TODO: Check if it's returning EAGAIN, and only loop on that */
-+        ErrorF("drm device not ready (%d), sleeping for 20us\n", err);
-+	usleep(20);
++    while (err && drm_wait_counter--) {
++	if (drm_wait_counter % drm_wait_msg_time == 0) {
++	    if (err == -EACCES) {
++		ErrorF("drm device access denied\n");
++	    } else if (err == -EAGAIN) {
++		LogMessage(X_INFO, "get_drm_info: waiting on drm device\n");
++	    } else {
++		ErrorF("drm device not ready (%d)\n", err);
++	    }
++	}
++	usleep(drm_wait_usleep);
 +	err = drmSetInterfaceVersion(fd, &sv);
-+	counter--;
++	if (!err)
++	    ErrorF("drm setversion 1.4 succeeded after wait\n");
 +    }
 +    if (err) {
 +	ErrorF("setversion 1.4 failed\n");
