@@ -1,3 +1,24 @@
+xorg-server (2:1.14.0-0ubuntu0.1) raring; urgency=low
+
+  [ Timo Aaltonen ]
+  * Merge from unreleased debian git.
+  * 500_pointer_barrier_thresholds.diff: Dropped, implemented upstream.
+  * Dropped upstreamed patches:
+    165_man_xorg_conf_no_device_ident.patch
+    233-xf86events-valgrind.patch
+    236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
+
+  [ Bryce Harrington ]
+  * 157_check_null_modes.patch: Dropped, patch included upstream.
+  * 162_null_crtc_in_rotation.patch: Dropped, no longer relevant
+    (see LP: 139990)
+  * 167_nullptr_xisbread.patch: Dropped, fixed differently upstream.
+
+  [ Maarten Lankhorst ]
+  * Update to 1.14.0 release.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 06 Mar 2013 14:49:21 +0100
+
 xorg-server (2:1.14.0-1) UNRELEASED; urgency=low
 
   [ Maarten Lankhorst ]
@@ -24,24 +45,6 @@ xorg-server (2:1.14.0-1) UNRELEASED; urgency=low
   * Bump libxi-dev build requirement to 2:1.6.99.1
 
  -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
-
-xorg-server (2:1.13.99.902-0ubuntu1) UNRELEASED; urgency=low
-
-  [ Timo Aaltonen ]
-  * Merge from unreleased debian git.
-  * 500_pointer_barrier_thresholds.diff: Dropped, implemented upstream.
-  * Dropped upstreamed patches:
-    165_man_xorg_conf_no_device_ident.patch
-    233-xf86events-valgrind.patch
-    236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
-
-  [ Bryce Harrington ]
-  * 157_check_null_modes.patch: Dropped, patch included upstream.
-  * 162_null_crtc_in_rotation.patch: Dropped, no longer relevant
-    (see LP: 139990)
-  * 167_nullptr_xisbread.patch: Dropped, fixed differently upstream.
-
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 07 Feb 2013 20:25:26 +0200
 
 xorg-server (2:1.13.1.901-0ubuntu1) raring; urgency=low
 
