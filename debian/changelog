@@ -1,3 +1,12 @@
+xorg-server (2:1.13.3-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+  * Drop patches applied upstream.
+    - 237_dix_save_touchpoint_last_coords_before_transform.patch
+    - randr-cleanup-provider-properly.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 11 Mar 2013 19:30:46 +0100
+
 xorg-server (2:1.13.2-0ubuntu3) raring; urgency=low
 
   * Add drm_device_keep_trying.patch: When kernel reports drm device is
