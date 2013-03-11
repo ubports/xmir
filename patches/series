@@ -34,9 +34,6 @@ drm_device_keep_trying.patch
 111_armel-drv-fallbacks.patch
 500_pointer_barrier_thresholds.diff
 
-## from upstream, drop when rebasing to a new version
-237_dix_save_touchpoint_last_coords_before_transform.patch
-
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
 
@@ -48,5 +45,4 @@ xf86crtc-don-t-use-display-for-vx-vy-for-gpu-screens.patch
 dix-allow-pixmap-dirty-helper-to-be-used-for-non-sha.patch
 xserver-call-CSR-for-gpus.patch
 xf86-actually-set-the-compat-output-in-the-failure-c.patch
-randr-cleanup-provider-properly.patch
 autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
