@@ -57,7 +57,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +        if (!err)
 +            break;
 +
-+        if (err != -EACCESS) {
++        if (err != -EACCES) {
 +            ErrorF("drmSetInterfaceVersion failed with %i(%s)\n", err, strerror(-err));
 +            goto err;
 +        }
