@@ -26,7 +26,31 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  
  /* Linux platform device support */
  #include "xf86_OSproc.h"
-@@ -23,17 +24,40 @@
+@@ -17,23 +18,60 @@
+ 
+ #include "hotplug.h"
+ 
++static Bool get_drm_master(int fd)
++{
++    int ret, tries = 400;
++
++    LogMessage(X_INFO, "spinning!\n");
++
++    while (tries--) {
++        if (drmSetMaster(fd) >= 0)
++            return TRUE;
++
++        if (errno != EINVAL)
++            break;
++
++        usleep(10000);
++    }
++    return FALSE;
++}
++
+ static Bool
+ get_drm_info(struct OdevAttributes *attribs, char *path)
+ {
      drmSetVersion sv;
      char *buf;
      int fd;
@@ -57,17 +81,13 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +        if (!err)
 +            break;
 +
-+        if (err != -EACCES) {
++        if (err == -EACCES) {
++            if (get_drm_master(fd))
++                continue;
++            ErrorF("drmSetMaster failed with -%i(%m)\n", errno);
++        } else
 +            ErrorF("drmSetInterfaceVersion failed with %i(%s)\n", err, strerror(-err));
-+            goto err;
-+        }
 +
-+        err = drmSetMaster(fd);
-+        if (!err)
-+            /* retry */
-+            continue;
-+
-+        ErrorF("drmSetMaster failed with %i(%m)\n", errno);
 +err:
 +        close(fd);
          return FALSE;
