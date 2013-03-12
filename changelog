@@ -4,6 +4,7 @@ xorg-server (2:1.13.3-0ubuntu1) UNRELEASED; urgency=low
   * Drop patches applied upstream.
     - 237_dix_save_touchpoint_last_coords_before_transform.patch
     - randr-cleanup-provider-properly.patch
+  * Rework drm_device_keep_trying.patch (LP: #982889)
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 11 Mar 2013 19:30:46 +0100
 
