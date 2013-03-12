@@ -67,7 +67,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +            /* retry */
 +            continue;
 +
-+        ErrorF("drmSetMaster failed with %i(%s)\n", err, strerror(-err));
++        ErrorF("drmSetMaster failed with %i(%m)\n", errno);
 +err:
 +        close(fd);
          return FALSE;
