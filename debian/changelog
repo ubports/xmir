@@ -1,4 +1,4 @@
-xorg-server (2:1.13.3-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.13.3-0ubuntu1) raring; urgency=low
 
   * New upstream release.
   * Drop patches applied upstream.
@@ -6,7 +6,7 @@ xorg-server (2:1.13.3-0ubuntu1) UNRELEASED; urgency=low
     - randr-cleanup-provider-properly.patch
   * Rework drm_device_keep_trying.patch (LP: #982889)
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 11 Mar 2013 19:30:46 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 14 Mar 2013 08:41:51 +0100
 
 xorg-server (2:1.13.2-0ubuntu3) raring; urgency=low
 
