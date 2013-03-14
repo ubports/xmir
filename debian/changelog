@@ -1,3 +1,10 @@
+xorg-server (2:1.13.3-0ubuntu2) raring; urgency=low
+
+  * Add patch to improve backtraces in the Xorg log.
+    - os-use-libunwind-to-generate-backtraces.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 14 Mar 2013 16:12:16 +0100
+
 xorg-server (2:1.13.3-0ubuntu1) raring; urgency=low
 
   * New upstream release.

@@ -34,6 +34,9 @@ drm_device_keep_trying.patch
 111_armel-drv-fallbacks.patch
 500_pointer_barrier_thresholds.diff
 
+## upstream patches
+os-use-libunwind-to-generate-backtraces.patch
+
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
 
