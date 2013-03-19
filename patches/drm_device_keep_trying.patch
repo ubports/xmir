@@ -26,7 +26,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  
  /* Linux platform device support */
  #include "xf86_OSproc.h"
-@@ -17,23 +18,60 @@
+@@ -17,23 +18,54 @@
  
  #include "hotplug.h"
  
@@ -55,11 +55,6 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
      char *buf;
      int fd;
 +    int err = 0;
-+    int drm_wait_total = 2;     /* Max seconds we'll wait for drm */
-+    int drm_wait_usleep = 50;   /* How frequently we'll re-check */
-+    int drm_wait_max_msgs = 10; /* Max errors we'll print to logs */
-+    int drm_wait_counter = drm_wait_total * 1000000 / drm_wait_usleep;
-+    int drm_wait_msg_time = drm_wait_counter / drm_wait_max_msgs;
  
      fd = open(path, O_RDWR, O_CLOEXEC);
      if (fd == -1)
@@ -88,7 +83,6 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +        } else
 +            ErrorF("drmSetInterfaceVersion failed with %i(%s)\n", err, strerror(-err));
 +
-+err:
 +        close(fd);
          return FALSE;
      }
