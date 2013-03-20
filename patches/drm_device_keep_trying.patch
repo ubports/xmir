@@ -16,74 +16,94 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  hw/xfree86/os-support/linux/lnx_platform.c |   29 +++++++++++++++++++++++++---
  1 file changed, 26 insertions(+), 3 deletions(-)
 
+diff --git a/config/udev.c b/config/udev.c
+index 454838f..af133d2 100644
+--- a/config/udev.c
++++ b/config/udev.c
+@@ -98,7 +98,7 @@ device_added(struct udev_device *udev_device)
+         if (strncmp(sysname, "card", 4) != 0)
+             return;
+ 
+-        LogMessage(X_INFO, "config/udev: Adding drm device (%s)\n", path);
++        LogMessage(X_INFO, "config/udev: Adding drm device (%s) %s %s\n", path, sysname, syspath);
+ 
+         config_udev_odev_setup_attribs(path, syspath, NewGPUDeviceRequest);
+         return;
+@@ -267,7 +267,7 @@ device_removed(struct udev_device *device)
+ 
+         if (strncmp(sysname,"card", 4) != 0)
+             return;
+-        ErrorF("removing GPU device %s %d\n", syspath, path);
++        ErrorF("removing GPU device %s %s\n", syspath, path);
+         if (!path)
+             return;
+ 
+@@ -437,6 +437,16 @@ config_udev_odev_setup_attribs(const char *path, const char *syspath,
+     if (ret == FALSE)
+         goto fail;
+ 
++    if (strstr(syspath, "/devices/pci")) {
++        const char *end = strstr(syspath, "/drm/card");
++        if (end && end - 12 > syspath) {
++            char pci_str[17] = "pci:";
++
++            strncpy(pci_str + 4, end - 12, 12);
++            ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, pci_str);
++        }
++    }
++
+     /* ownership of attribs is passed to probe layer */
+     probe_callback(attribs);
+     return TRUE;
+diff --git a/hw/xfree86/os-support/linux/lnx_platform.c b/hw/xfree86/os-support/linux/lnx_platform.c
+index 76f5583..11bb9fc 100644
 --- a/hw/xfree86/os-support/linux/lnx_platform.c
 +++ b/hw/xfree86/os-support/linux/lnx_platform.c
-@@ -7,6 +7,7 @@
- #include <xf86drm.h>
- #include <fcntl.h>
- #include <unistd.h>
-+#include <errno.h>
- 
- /* Linux platform device support */
- #include "xf86_OSproc.h"
-@@ -17,23 +18,54 @@
+@@ -17,36 +17,6 @@
  
  #include "hotplug.h"
  
-+static Bool get_drm_master(int fd)
-+{
-+    int ret, tries = 400;
-+
-+    LogMessage(X_INFO, "spinning!\n");
-+
-+    while (tries--) {
-+        if (drmSetMaster(fd) >= 0)
-+            return TRUE;
-+
-+        if (errno != EINVAL)
-+            break;
-+
-+        usleep(10000);
-+    }
-+    return FALSE;
-+}
-+
- static Bool
- get_drm_info(struct OdevAttributes *attribs, char *path)
- {
-     drmSetVersion sv;
-     char *buf;
-     int fd;
-+    int err = 0;
- 
-     fd = open(path, O_RDWR, O_CLOEXEC);
-     if (fd == -1)
-         return FALSE;
- 
+-static Bool
+-get_drm_info(struct OdevAttributes *attribs, char *path)
+-{
+-    drmSetVersion sv;
+-    char *buf;
+-    int fd;
+-
+-    fd = open(path, O_RDWR, O_CLOEXEC);
+-    if (fd == -1)
+-        return FALSE;
+-
 -    sv.drm_di_major = 1;
 -    sv.drm_di_minor = 4;
 -    sv.drm_dd_major = -1;       /* Don't care */
 -    sv.drm_dd_minor = -1;       /* Don't care */
 -    if (drmSetInterfaceVersion(fd, &sv)) {
 -        ErrorF("setversion 1.4 failed\n");
-+    while (1) {
-+        sv.drm_di_major = 1;
-+        sv.drm_di_minor = 4;
-+        sv.drm_dd_major = -1;       /* Don't care */
-+        sv.drm_dd_minor = -1;       /* Don't care */
-+
-+        err = drmSetInterfaceVersion(fd, &sv);
-+        if (!err)
-+            break;
-+
-+        if (err == -EACCES) {
-+            if (get_drm_master(fd))
-+                continue;
-+            ErrorF("drmSetMaster failed with -%i(%m)\n", errno);
-+        } else
-+            ErrorF("drmSetInterfaceVersion failed with %i(%s)\n", err, strerror(-err));
-+
-+        close(fd);
-         return FALSE;
-     }
+-        return FALSE;
+-    }
+-
+-    xf86_add_platform_device(attribs);
+-
+-    buf = drmGetBusid(fd);
+-    xf86_add_platform_device_attrib(xf86_num_platform_devices - 1,
+-                                    ODEV_ATTRIB_BUSID, buf);
+-    drmFreeBusid(buf);
+-    close(fd);
+-    return TRUE;
+-}
+-
+ Bool
+ xf86PlatformDeviceCheckBusID(struct xf86_platform_device *device, const char *busid)
+ {
+@@ -119,10 +89,6 @@ xf86PlatformDeviceProbe(struct OdevAttributes *attribs)
+     LogMessage(X_INFO, "config/udev: Adding drm device (%s)\n",
+                path);
  
+-    ret = get_drm_info(attribs, path);
+-    if (ret == FALSE)
+-        goto out_free;
+-
+     return;
+ 
+ out_free:
