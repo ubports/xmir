@@ -96,10 +96,11 @@ index 76f5583..11bb9fc 100644
  Bool
  xf86PlatformDeviceCheckBusID(struct xf86_platform_device *device, const char *busid)
  {
-@@ -119,10 +89,6 @@ xf86PlatformDeviceProbe(struct OdevAttributes *attribs)
+@@ -119,10 +89,7 @@ xf86PlatformDeviceProbe(struct OdevAttributes *attribs)
      LogMessage(X_INFO, "config/udev: Adding drm device (%s)\n",
                 path);
  
++    xf86_add_platform_device(attribs);
 -    ret = get_drm_info(attribs, path);
 -    if (ret == FALSE)
 -        goto out_free;
