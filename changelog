@@ -1,4 +1,4 @@
-xorg-server (2:1.13.3-0ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.13.3-0ubuntu3) raring; urgency=low
 
   * Refresh autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
     - Unbind offload sink and render slave simultaneously.
@@ -10,7 +10,7 @@ xorg-server (2:1.13.3-0ubuntu3) UNRELEASED; urgency=low
       reopen LP #982889, but I do not think spinning here
      :is the correct answer.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 20 Mar 2013 15:36:15 +0000
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 21 Mar 2013 15:40:42 +0100
 
 xorg-server (2:1.13.3-0ubuntu2) raring; urgency=low
 
