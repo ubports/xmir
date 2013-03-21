@@ -1,3 +1,17 @@
+xorg-server (2:1.13.3-0ubuntu3) UNRELEASED; urgency=low
+
+  * Refresh autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
+    - Unbind offload sink and render slave simultaneously.
+      This prevents a use-after-free bug.
+  * Add config-add-no-removal.patch (LP: #1157614)
+    - Do not call device_remove when a device is hotplugged.
+  * Refresh drm_device_keep_trying.patch
+    - There is no need for drm master here. This might
+      reopen LP #982889, but I do not think spinning here
+     :is the correct answer.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 20 Mar 2013 15:36:15 +0000
+
 xorg-server (2:1.13.3-0ubuntu2) raring; urgency=low
 
   * Add patch to improve backtraces in the Xorg log.

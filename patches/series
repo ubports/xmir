@@ -49,3 +49,4 @@ dix-allow-pixmap-dirty-helper-to-be-used-for-non-sha.patch
 xserver-call-CSR-for-gpus.patch
 xf86-actually-set-the-compat-output-in-the-failure-c.patch
 autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
+config-add-no-removal.patch
