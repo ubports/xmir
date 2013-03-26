@@ -29,6 +29,8 @@
 233-xf86events-valgrind.patch
 236-use-fbdev-for-poulsbo-oaktrail-medfield.patch
 drm_device_keep_trying.patch
+xfree86-no-xv-for-gpuscreens.patch
+xephyr-glx-register.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
