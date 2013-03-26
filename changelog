@@ -1,11 +1,11 @@
-xorg-server (2:1.13.3-0ubuntu4) UNRELEASED; urgency=low
+xorg-server (2:1.13.3-0ubuntu4) raring; urgency=low
 
   * Do not bother registering xv/xvmc on gpu screens.
     - xfree86-no-xv-for-gpuscreens.patch
   * Re-enable GLX on Xephyr. (LP: #1079096)
     - xephyr-glx-register.patch
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 26 Mar 2013 14:24:27 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 26 Mar 2013 16:16:14 +0100
 
 xorg-server (2:1.13.3-0ubuntu3) raring; urgency=low
 
