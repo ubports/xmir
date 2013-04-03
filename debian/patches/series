@@ -31,6 +31,7 @@
 drm_device_keep_trying.patch
 xfree86-no-xv-for-gpuscreens.patch
 xephyr-glx-register.patch
+no-nv.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch

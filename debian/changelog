@@ -1,3 +1,9 @@
+xorg-server (2:1.13.3-0ubuntu5) UNRELEASED; urgency=low
+
+  * Add no-nv.patch:  Don't autoprobe -nv on linux.
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Wed, 03 Apr 2013 13:39:50 -0700
+
 xorg-server (2:1.13.3-0ubuntu4) raring; urgency=low
 
   * Do not bother registering xv/xvmc on gpu screens.
