@@ -1,6 +1,10 @@
 xorg-server (2:1.13.3-0ubuntu5) UNRELEASED; urgency=low
 
   * Add no-nv.patch:  Don't autoprobe -nv on linux.
+  * Refresh drm_device_keep_trying.patch
+    - Make platform devices work correctly, try to obtain busid from
+      path if possible. Fallback if not possible (tegra). (LP: #1161981)
+    - Set empty busid for usb devices, and parse pci path more strictly.
 
  -- Bryce Harrington <bryce@ubuntu.com>  Wed, 03 Apr 2013 13:39:50 -0700
 
