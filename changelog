@@ -1,3 +1,12 @@
+xorg-server (2:1.13.3-0ubuntu6) raring; urgency=low
+
+  * SECURITY UPDATE: input event leak via inactive VT
+    - debian/patches/CVE-2013-1940.patch: fix flush input to work with
+      Linux evdev devices in hw/xfree86/os-support/shared/posix_tty.c.
+    - CVE-2013-1940
+
+ -- Jamie Strandboge <jamie@ubuntu.com>  Wed, 17 Apr 2013 09:41:17 -0500
+
 xorg-server (2:1.13.3-0ubuntu5) raring; urgency=low
 
   [ Bryce Harrington ]
