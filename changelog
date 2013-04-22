@@ -45,6 +45,103 @@ xorg-server (2:1.14.1-1) UNRELEASED; urgency=low
 
  -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
 
+xorg-server (2:1.13.3-0ubuntu6) raring; urgency=low
+
+  * SECURITY UPDATE: input event leak via inactive VT
+    - debian/patches/CVE-2013-1940.patch: fix flush input to work with
+      Linux evdev devices in hw/xfree86/os-support/shared/posix_tty.c.
+    - CVE-2013-1940
+
+ -- Jamie Strandboge <jamie@ubuntu.com>  Wed, 17 Apr 2013 09:41:17 -0500
+
+xorg-server (2:1.13.3-0ubuntu5) raring; urgency=low
+
+  [ Bryce Harrington ]
+  * Add no-nv.patch:  Don't autoprobe -nv on linux.
+  * Refresh drm_device_keep_trying.patch (LP: #1161981)
+    - Set empty busid for usb devices
+    - Parse pci path more strictly.
+    - Make platform devices work correctly, try to obtain busid from
+      path if possible.
+    - Fallback if not possible (tegra).
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 08 Apr 2013 11:40:26 +0200
+
+xorg-server (2:1.13.3-0ubuntu4) raring; urgency=low
+
+  * Do not bother registering xv/xvmc on gpu screens.
+    - xfree86-no-xv-for-gpuscreens.patch
+  * Re-enable GLX on Xephyr. (LP: #1079096)
+    - xephyr-glx-register.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 26 Mar 2013 16:16:14 +0100
+
+xorg-server (2:1.13.3-0ubuntu3) raring; urgency=low
+
+  * Refresh autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
+    - Unbind offload sink and render slave simultaneously.
+      This prevents a use-after-free bug.
+  * Add config-add-no-removal.patch (LP: #1157614)
+    - Do not call device_remove when a device is hotplugged.
+  * Refresh drm_device_keep_trying.patch
+    - There is no need for drm master here. This might
+      reopen LP #982889, but I do not think spinning here
+     :is the correct answer.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 21 Mar 2013 15:40:42 +0100
+
+xorg-server (2:1.13.3-0ubuntu2) raring; urgency=low
+
+  * Add patch to improve backtraces in the Xorg log.
+    - os-use-libunwind-to-generate-backtraces.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 14 Mar 2013 16:12:16 +0100
+
+xorg-server (2:1.13.3-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+  * Drop patches applied upstream.
+    - 237_dix_save_touchpoint_last_coords_before_transform.patch
+    - randr-cleanup-provider-properly.patch
+  * Rework drm_device_keep_trying.patch (LP: #982889)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 14 Mar 2013 08:41:51 +0100
+
+xorg-server (2:1.13.2-0ubuntu3) raring; urgency=low
+
+  * Add drm_device_keep_trying.patch: When kernel reports drm device is
+    not available, don't give up immediately, but keep retrying for a
+    little bit.  Fixes boot failures due to a race condition with plymouth
+    or the kernel.  Typical symptom is xserver error exit, "Cannot run in
+    framebuffer mode" and Xorg.0.log messages about "setversion 1.4
+    failed".
+    (LP: #982889)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 19 Feb 2013 07:58:24 -0800
+
+xorg-server (2:1.13.2-0ubuntu2) raring; urgency=low
+
+  * Restore selinux support now that audit has been promoted to main.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sat, 09 Feb 2013 00:03:45 -0700
+
+xorg-server (2:1.13.2-0ubuntu1) raring; urgency=low
+
+  * New upstream release.
+  * control: Mark xvfb M-A: foreign.
+  * Refresh autobind patch from fedora, and cherry-pick some fixes from them for
+    reverse-optimus and hotplugging.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 29 Jan 2013 17:23:44 +0200
+
+xorg-server (2:1.13.1.901-0ubuntu2) raring; urgency=low
+
+  * Add 237_dix_save_touchpoint_last_coords_before_transform.patch:
+    Fix sensitive touch settings on Nexus 7 when input is transformed.
+    (LP: #1075415, #1076567, #1076627)
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Tue, 22 Jan 2013 13:51:16 -0800
+
 xorg-server (2:1.13.1.901-0ubuntu1) raring; urgency=low
 
   * Merge from unreleased debian git.

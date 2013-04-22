@@ -13,11 +13,13 @@
 190_cache-xkbcomp_output_for_fast_start_up.patch
 191-Xorg-add-an-extra-module-path.patch
 226_fall_back_to_autoconfiguration.patch
-# drop after desktop support arrives
-228_autobind_gpu.patch
 
 ## send upstream
 232-xf86compatoutput-valgrind.patch
+drm_device_keep_trying.patch
+xfree86-no-xv-for-gpuscreens.patch
+xephyr-glx-register.patch
+no-nv.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
@@ -34,4 +36,17 @@
 #   https://bugs.freedesktop.org/show_bug.cgi?id=24181
 #   Probably is just papering over issue; needs further analysis
 
-## from upstream, drop when rebasing to a new version
+## upstream patches
+os-use-libunwind-to-generate-backtraces.patch
+
+# hybrid graphics fixes for xserver 1.13
+228_autobind_gpu.patch
+
+# hotplug fixes
+xf86crtc-don-t-use-display-for-vx-vy-for-gpu-screens.patch
+
+# fixes for reverse optimus, cherry-picked from fedora X
+dix-allow-pixmap-dirty-helper-to-be-used-for-non-sha.patch
+xserver-call-CSR-for-gpus.patch
+autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
+config-add-no-removal.patch
