@@ -16,7 +16,6 @@
 
 ## send upstream
 232-xf86compatoutput-valgrind.patch
-drm_device_keep_trying.patch
 xfree86-no-xv-for-gpuscreens.patch
 xephyr-glx-register.patch
 no-nv.patch
