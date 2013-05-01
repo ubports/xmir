@@ -34,9 +34,9 @@ xephyr-glx-register.patch
 no-nv.patch
 
 ## waiting for review by upstream
+xf86-dont-enable-gpuscreens.patch
 111_armel-drv-fallbacks.patch
 500_pointer_barrier_thresholds.diff
-
 ## upstream patches
 os-use-libunwind-to-generate-backtraces.patch
 
