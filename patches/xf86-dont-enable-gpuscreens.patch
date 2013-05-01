@@ -1,0 +1,64 @@
+From: Aaron Plattner <aplattner@nvidia.com>
+To: <xorg-devel@lists.x.org>
+Subject: [PATCH] xfree86: don't enable anything in xf86InitialConfiguration
+	for GPU screens
+Date: Tue, 30 Apr 2013 14:30:18 -0700
+
+There's no point in turning on outputs connected to GPU screens during initial
+configuration.  Not only does this cause them to just display black, it also
+confuses clients when these screens are attached to a master screen and RandR
+reports that the outputs are already on.
+
+Also, don't print the warning about no outputs being found on GPU screens,
+since that's expected.
+
+Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+---
+Dave, this fixes the black screen problem with "gpu: call CreateScreenResources
+for GPU screens"
+
+ hw/xfree86/modes/xf86Crtc.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/hw/xfree86/modes/xf86Crtc.c b/hw/xfree86/modes/xf86Crtc.c
+index 4a490c6..35845e8 100644
+--- a/hw/xfree86/modes/xf86Crtc.c
++++ b/hw/xfree86/modes/xf86Crtc.c
+@@ -1997,6 +1997,14 @@ xf86CollectEnabledOutputs(ScrnInfoPtr scrn, xf86CrtcConfigPtr config,
+     Bool any_enabled = FALSE;
+     int o;
+ 
++    /*
++     * Don't bother enabling outputs on GPU screens: a client needs to attach
++     * it to a source provider before setting a mode that scans out a shared
++     * pixmap.
++     */
++    if (scrn->is_gpu)
++        return FALSE;
++
+     for (o = 0; o < config->num_output; o++)
+         any_enabled |= enabled[o] = xf86OutputEnabled(config->output[o], TRUE);
+ 
+@@ -2466,9 +2474,11 @@ xf86InitialConfiguration(ScrnInfoPtr scrn, Bool canGrow)
+ 
+     ret = xf86CollectEnabledOutputs(scrn, config, enabled);
+     if (ret == FALSE && canGrow) {
+-        xf86DrvMsg(i, X_WARNING,
+-                   "Unable to find connected outputs - setting %dx%d initial framebuffer\n",
+-                   NO_OUTPUT_DEFAULT_WIDTH, NO_OUTPUT_DEFAULT_HEIGHT);
++        if (!scrn->is_gpu)
++            xf86DrvMsg(i, X_WARNING,
++		       "Unable to find connected outputs - setting %dx%d "
++                       "initial framebuffer\n",
++                       NO_OUTPUT_DEFAULT_WIDTH, NO_OUTPUT_DEFAULT_HEIGHT);
+         have_outputs = FALSE;
+     }
+     else {
+-- 
+1.8.2.2
+
+_______________________________________________
+xorg-devel@lists.x.org: X.Org development
+Archives: http://lists.x.org/archives/xorg-devel
+Info: http://lists.x.org/mailman/listinfo/xorg-devel
+
