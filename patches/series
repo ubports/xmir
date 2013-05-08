@@ -54,3 +54,4 @@ xf86-actually-set-the-compat-output-in-the-failure-c.patch
 autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
 config-add-no-removal.patch
 CVE-2013-1940.patch
+include-selection-h.patch
