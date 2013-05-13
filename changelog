@@ -1,3 +1,10 @@
+xorg-server (2:1.13.3-0ubuntu9) saucy; urgency=low
+
+  * Cherry-pick patch from 1.14 to fix DRI1 regression. (LP: #1083032)
+    - dri1-fix-dri1-startup-since-459c6da0f907ba33d733c7e6.patch
+
+ -- Tormod Volden <debian.tormod@gmail.com>  Sun, 12 May 2013 11:30:46 +0200
+
 xorg-server (2:1.13.3-0ubuntu8) saucy; urgency=low
 
   * Fixup build error on saucy.

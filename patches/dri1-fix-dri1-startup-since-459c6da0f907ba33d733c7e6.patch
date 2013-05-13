@@ -1,0 +1,52 @@
+From 785af88ab0120036e0ce3d0139f3c560ff71e10b Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Wed, 26 Sep 2012 16:16:40 +1000
+Subject: [PATCH] dri1: fix dri1 startup since
+ 459c6da0f907ba33d733c7e62a116184ba2f14e5
+
+This commit regresses dri1 since it moves the drmSetServerInfo from being
+called at module load time to extension init time. However DRIScreenInit
+relies on this being called before it gets control.
+
+This patches moves the call into DRIScreenInit and seems to work here.
+
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+---
+ hw/xfree86/dri/dri.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/hw/xfree86/dri/dri.c b/hw/xfree86/dri/dri.c
+index 398178e..6292e87 100644
+--- a/hw/xfree86/dri/dri.c
++++ b/hw/xfree86/dri/dri.c
+@@ -320,6 +320,7 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
+     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
+     DRIContextFlags flags = 0;
+     DRIContextPrivPtr pDRIContextPriv;
++    static Bool drm_server_inited;
+ 
+     /* If the DRI extension is disabled, do not initialize the DRI */
+     if (noXFree86DRIExtension) {
+@@ -345,6 +346,10 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
+         return FALSE;
+     }
+ #endif
++    if (drm_server_inited == FALSE) {
++        drmSetServerInfo(&DRIDRMServerInfo);
++        drm_server_inited = TRUE;
++    }
+ 
+     if (!DRIOpenDRMMaster(pScrn, pDRIInfo->SAREASize,
+                           pDRIInfo->busIdString, pDRIInfo->drmDriverName))
+@@ -791,8 +796,6 @@ DRIExtensionInit(void)
+ 
+     RegisterBlockAndWakeupHandlers(DRIBlockHandler, DRIWakeupHandler, NULL);
+ 
+-    drmSetServerInfo(&DRIDRMServerInfo);
+-
+     return TRUE;
+ }
+ 
+-- 
+1.7.10.4
+

@@ -39,6 +39,7 @@ xf86-dont-enable-gpuscreens.patch
 500_pointer_barrier_thresholds.diff
 ## upstream patches
 os-use-libunwind-to-generate-backtraces.patch
+dri1-fix-dri1-startup-since-459c6da0f907ba33d733c7e6.patch
 
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
