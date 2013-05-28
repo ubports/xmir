@@ -40,6 +40,7 @@ xf86-dont-enable-gpuscreens.patch
 ## upstream patches
 os-use-libunwind-to-generate-backtraces.patch
 dri1-fix-dri1-startup-since-459c6da0f907ba33d733c7e6.patch
+include-GPU-screens-in-DPMS-code.patch
 
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
@@ -56,3 +57,4 @@ autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
 config-add-no-removal.patch
 CVE-2013-1940.patch
 include-selection-h.patch
+xf86-detach-scanout.patch
