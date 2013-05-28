@@ -60,6 +60,35 @@ xorg-server (2:1.14.1-1) UNRELEASED; urgency=low
 
  -- Robert Hooker <sarvatt@ubuntu.com>  Wed, 22 Aug 2012 11:12:17 -0400
 
+xorg-server (2:1.13.3-0ubuntu10) UNRELEASED; urgency=low
+
+  * Add patch to fix DPMS. (LP: #1184999)
+    - include-GPU-screens-in-DPMS-code.patch
+  * Add patch to fix crash on hybrid systems during shutdown. (LP: #1185035)
+    - xf86-detach-scanout.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 28 May 2013 14:22:10 +0200
+
+xorg-server (2:1.13.3-0ubuntu9) saucy; urgency=low
+
+  * Cherry-pick patch from 1.14 to fix DRI1 regression. (LP: #1083032)
+    - dri1-fix-dri1-startup-since-459c6da0f907ba33d733c7e6.patch
+
+ -- Tormod Volden <debian.tormod@gmail.com>  Sun, 12 May 2013 11:30:46 +0200
+
+xorg-server (2:1.13.3-0ubuntu8) saucy; urgency=low
+
+  * Fixup build error on saucy.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 08 May 2013 14:02:12 +0200
+
+xorg-server (2:1.13.3-0ubuntu7) saucy; urgency=low
+
+  * Add patch to fixup optimus again.
+    - xf86-dont-enable-gpuscreens.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 01 May 2013 10:35:55 +0200
+
 xorg-server (2:1.13.3-0ubuntu6) raring; urgency=low
 
   * SECURITY UPDATE: input event leak via inactive VT
