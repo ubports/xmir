@@ -1,11 +1,11 @@
-xorg-server (2:1.13.3-0ubuntu10) UNRELEASED; urgency=low
+xorg-server (2:1.13.3-0ubuntu10) saucy; urgency=low
 
   * Add patch to fix DPMS. (LP: #1184999)
     - include-GPU-screens-in-DPMS-code.patch
   * Add patch to fix crash on hybrid systems during shutdown. (LP: #1185035)
     - xf86-detach-scanout.patch
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 28 May 2013 14:22:10 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 28 May 2013 16:12:12 +0200
 
 xorg-server (2:1.13.3-0ubuntu9) saucy; urgency=low
 
