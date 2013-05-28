@@ -1,0 +1,75 @@
+From: Aaron Plattner <aplattner@nvidia.com>
+To: <xorg-devel@lists.x.org>
+Subject: [PATCH] xfree86: detach scanout pixmaps when detaching output GPUs
+Date: Tue, 30 Apr 2013 14:14:23 -0700
+
+Commit 8f4640bdb9d3988148e09a08d2c7e3bab1d538d6 fixed a bit of a
+chicken-and-egg problem by detaching GPU screens when their providers
+are destroyed, which happens before CloseScreen is called.  However,
+this created a new problem: the GPU screen tears down its RandR crtc
+objects during CloseScreen and if one of them is active, it tries to
+detach the scanout pixmap then.  This crashes because
+RRCrtcDetachScanoutPixmap tries to get the master screen's screen
+pixmap, but crtc->pScreen->current_master is already NULL at that
+point.
+
+It doesn't make sense for an unbound GPU screen to still be scanning
+out its former master screen's pixmap, so detach them first when the
+provider is destroyed.
+
+Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+---
+Dave, does this seem like a reasonable way to work around this particular crash?
+
+ hw/xfree86/modes/xf86RandR12.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+--- a/hw/xfree86/modes/xf86RandR12.c
++++ b/hw/xfree86/modes/xf86RandR12.c
+@@ -1770,6 +1770,19 @@
+     return RRGetInfo(pScreen, TRUE);    /* force a re-probe of outputs and notify clients about changes */
+ }
+ 
++static void
++xf86DetachOutputGPU(ScreenPtr pScreen)
++{
++    rrScrPrivPtr rp = rrGetScrPriv(pScreen);
++    int i;
++
++    /* make sure there are no attached shared scanout pixmaps first */
++    for (i = 0; i < rp->numCrtcs; i++)
++        RRCrtcDetachScanoutPixmap(rp->crtcs[i]);
++
++    DetachOutputGPU(pScreen);
++}
++
+ static Bool
+ xf86RandR14ProviderSetOutputSource(ScreenPtr pScreen,
+                                    RRProviderPtr provider,
+@@ -1779,7 +1792,7 @@
+         if (provider->output_source) {
+             ScreenPtr cmScreen = pScreen->current_master;
+ 
+-            DetachOutputGPU(pScreen);
++            xf86DetachOutputGPU(pScreen);
+             AttachUnboundGPU(cmScreen, pScreen);
+         }
+         provider->output_source = NULL;
+@@ -1807,7 +1820,7 @@
+     if (!sink_provider) {
+         if (provider->offload_sink) {
+             ScreenPtr cmScreen = pScreen->current_master;
+-            DetachOutputGPU(pScreen);
++            xf86DetachOutputGPU(pScreen);
+             AttachUnboundGPU(cmScreen, pScreen);
+         }
+ 
+@@ -1900,7 +1913,7 @@
+             detached = TRUE;
+         }
+         if (config->randr_provider->output_source) {
+-            DetachOutputGPU(screen);
++            xf86DetachOutputGPU(screen);
+             config->randr_provider->output_source = NULL;
+             RRSetChanged(screen);
+             detached = TRUE;
