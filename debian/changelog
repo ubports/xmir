@@ -1,3 +1,12 @@
+xorg-server (2:1.14.1-0ubuntu0.4) raring; urgency=low
+
+  * Add patch to fix crash on hybrid systems during shutdown. (LP: #1185035)
+    - xf86-detach-scanout.patch
+  * Add patch to fix build error on saucy.
+    - include-selection-h.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 28 May 2013 16:13:24 +0200
+
 xorg-server (2:1.14.1-0ubuntu0.3) raring; urgency=low
 
   * Add patch to fixup optimus again.
