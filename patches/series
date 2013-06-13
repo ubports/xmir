@@ -42,6 +42,7 @@ xf86-dont-enable-gpuscreens.patch
 
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
+xf86-fixup-detection.patch
 
 # hotplug fixes
 xf86crtc-don-t-use-display-for-vx-vy-for-gpu-screens.patch
