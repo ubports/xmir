@@ -1,3 +1,10 @@
+xorg-server (2:1.13.3-0ubuntu11) saucy; urgency=low
+
+  * Add patch to fix device enumeration with nvidia drivers. (LP: #1190546)
+    - xf86-fixup-detection.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 13 Jun 2013 13:00:58 +0200
+
 xorg-server (2:1.13.3-0ubuntu10) saucy; urgency=low
 
   * Add patch to fix DPMS. (LP: #1184999)
