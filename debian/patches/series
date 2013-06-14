@@ -44,7 +44,7 @@ include-GPU-screens-in-DPMS-code.patch
 
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
-xf86-fixup-detection.patch
+#xf86-fixup-detection.patch
 
 # hotplug fixes
 xfree86-hotplug-cleanup-properly-if-the-screen-fails.patch
