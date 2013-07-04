@@ -1,3 +1,17 @@
+xorg-server (2:1.14.1-0ubuntu0.8) saucy; urgency=low
+
+  * Use correct version for libxfixes3.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 03 Jul 2013 12:03:57 +0200
+
+xorg-server (2:1.14.1-0ubuntu0.7) saucy; urgency=low
+
+  * Add build-depends on recent enough libxi-dev and libxfixes-dev
+    for the new pointer barriers.
+  * Add breaks on old libxi6, libxfixes3, unity.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 03 Jul 2013 10:37:30 +0200
+
 xorg-server (2:1.14.1-0ubuntu0.6) saucy; urgency=low
 
   * Add patch to fix nvidia regression.
