@@ -1,3 +1,9 @@
+xorg-server (2:1.14.1-0ubuntu1) saucy; urgency=low
+
+  * Fix null pointer deref on logout. (LP: #1194343)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Jul 2013 16:52:28 +0200
+
 xorg-server (2:1.14.1-0ubuntu0.8) saucy; urgency=low
 
   * Use correct version for libxfixes3.
