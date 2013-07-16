@@ -1,3 +1,11 @@
+xorg-server (2:1.14.2-0ubuntu1) saucy; urgency=low
+
+  * New upstream release. (LP: #1156498)
+  * Remove upstreamed patch.
+    - xf86setdesired-hybrid.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 16 Jul 2013 09:36:06 +0200
+
 xorg-server (2:1.14.2-1) UNRELEASED; urgency=low
 
   [ Maarten Lankhorst ]
