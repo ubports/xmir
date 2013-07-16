@@ -19,7 +19,6 @@
 xfree86-no-xv-for-gpuscreens.patch
 xephyr-glx-register.patch
 no-nv.patch
-xf86setdesired-hybrid.patch
 
 ## waiting for review by upstream
 111_armel-drv-fallbacks.patch
