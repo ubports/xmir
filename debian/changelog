@@ -1,3 +1,9 @@
+xorg-server (2:1.14.2-0ubuntu3) saucy; urgency=low
+
+  * Oops, refresh xf86-detach-scanout, embarassing bug in the for check.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 30 Jul 2013 12:51:40 +0200
+
 xorg-server (2:1.14.2-0ubuntu2) saucy; urgency=low
 
   * Add support for Aarch64.
