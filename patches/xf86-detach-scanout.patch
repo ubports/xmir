@@ -37,7 +37,7 @@ Dave, does this seem like a reasonable way to work around this particular crash?
 +    int i;
 +
 +    /* make sure there are no attached shared scanout pixmaps first */
-+    for (i = 0; i < rp && rp->numCrtcs; i++)
++    for (i = 0; rp && i < rp->numCrtcs; i++)
 +        RRCrtcDetachScanoutPixmap(rp->crtcs[i]);
 +
 +    DetachOutputGPU(pScreen);
