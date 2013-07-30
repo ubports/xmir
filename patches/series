@@ -54,3 +54,5 @@ autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
 config-add-no-removal.patch
 include-selection-h.patch
 xf86-detach-scanout.patch
+
+aarch64.patch

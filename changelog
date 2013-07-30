@@ -1,3 +1,9 @@
+xorg-server (2:1.14.2-0ubuntu2) saucy; urgency=low
+
+  * Add support for Aarch64.
+
+ -- Matthias Klose <doko@ubuntu.com>  Wed, 24 Jul 2013 14:24:25 +0200
+
 xorg-server (2:1.14.2-0ubuntu1) saucy; urgency=low
 
   * New upstream release. (LP: #1156498)
