@@ -80,6 +80,8 @@ Build-Depends:
 # unit tests
  xkb-data,
  x11-xkb-utils,
+# XMir
+ libmirclient-dev,
 Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
@@ -184,6 +186,7 @@ Depends:
  libpciaccess-dev,
  libpixman-1-dev (>= 0.21.8),
  mesa-common-dev,
+ libmirclient-dev,
  ${misc:Depends},
 Description: Xorg X server - development files
  This package provides development files for the X.Org ('Xorg') X server.
@@ -355,3 +358,13 @@ Recommends:
 Replaces: xserver-xorg-core (<< 2:1.5.2)
 Description: common files used by various X servers
  This package provides files necessary for all X.Org based X servers.
+
+Package: xserver-xorg-xmir
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ xserver-xorg-core (= ${binary:Version}),
+Description: Xorg - the X.Org X server (module for running nested in Mir)
+ xserver-xorg-xmir provides an extension module to support running an
+ Xorg as a client of an existing Mir compositor.

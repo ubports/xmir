@@ -1,3 +1,9 @@
+xorg-server (2:1.14.2-0ubuntu4) saucy; urgency=low
+
+  * Add xmir.patch; First upload with XMir support.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Thu, 01 Aug 2013 13:00:41 +1000
+
 xorg-server (2:1.14.2-0ubuntu3) saucy; urgency=low
 
   * Oops, refresh xf86-detach-scanout, embarassing bug in the for check.

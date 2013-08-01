@@ -1,0 +1,1579 @@
+diff --git a/configure.ac b/configure.ac
+index c6ecba4..cbba229 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -635,6 +635,7 @@ AC_ARG_ENABLE(windowswm,      AS_HELP_STRING([--enable-windowswm], [Build XWin w
+ AC_ARG_ENABLE(libdrm,         AS_HELP_STRING([--enable-libdrm], [Build Xorg with libdrm support (default: enabled)]), [DRM=$enableval],[DRM=yes])
+ AC_ARG_ENABLE(clientids,      AS_HELP_STRING([--disable-clientids], [Build Xorg with client ID tracking (default: enabled)]), [CLIENTIDS=$enableval], [CLIENTIDS=yes])
+ AC_ARG_ENABLE(pciaccess, AS_HELP_STRING([--enable-pciaccess], [Build Xorg with pciaccess library (default: enabled)]), [PCI=$enableval], [PCI=yes])
++AC_ARG_ENABLE(xmir,           AS_HELP_STRING([--enable-xmir], [Build support for nesting in Mir (default: auto)]), [XMIR=$enableval], [XMIR=auto])
+ 
+ dnl DDXes.
+ AC_ARG_ENABLE(xorg,    	      AS_HELP_STRING([--enable-xorg], [Build Xorg server (default: auto)]), [XORG=$enableval], [XORG=auto])
+@@ -1148,6 +1149,15 @@ if test "x$XINERAMA" = xyes; then
+ 	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES $XINERAMAPROTO"
+ fi
+ 
++if test "x$XMIR" != xno; then
++	PKG_CHECK_MODULES([XMIR], [mirclient], [XMIR=yes], [XMIR=no])
++	AC_SUBST([XMIR_LIBS])
++        AC_SUBST([XMIR_CFLAGS])
++        AC_DEFINE(XMIR, 1, [Support Mir nested mode])
++	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES mirclient"
++fi	      
++AM_CONDITIONAL(XMIR, [test "x$XMIR" = xyes])
++
+ AM_CONDITIONAL(XACE, [test "x$XACE" = xyes])
+ if test "x$XACE" = xyes; then
+ 	AC_DEFINE(XACE, 1, [Build X-ACE extension])
+@@ -2299,6 +2309,7 @@ hw/xfree86/utils/Makefile
+ hw/xfree86/utils/man/Makefile
+ hw/xfree86/utils/cvt/Makefile
+ hw/xfree86/utils/gtf/Makefile
++hw/xfree86/xmir/Makefile
+ hw/dmx/config/Makefile
+ hw/dmx/config/man/Makefile
+ hw/dmx/doc/Makefile
+diff --git a/hw/xfree86/Makefile.am b/hw/xfree86/Makefile.am
+index c3899b5..6821198 100644
+--- a/hw/xfree86/Makefile.am
++++ b/hw/xfree86/Makefile.am
+@@ -25,15 +25,20 @@ if INT10MODULE
+ INT10_SUBDIR = int10
+ endif
+ 
++if XMIR
++XMIR_SUBDIR = xmir
++endif
++
+ SUBDIRS = common ddc x86emu $(INT10_SUBDIR) os-support parser \
+ 	  ramdac $(VGAHW_SUBDIR) loader modes $(DRI_SUBDIR) \
+ 	  $(DRI2_SUBDIR) . $(VBE_SUBDIR) i2c dixmods \
+-	  fbdevhw shadowfb exa $(XF86UTILS_SUBDIR) doc man
++	  fbdevhw shadowfb exa $(XF86UTILS_SUBDIR) doc man \
++	  $(XMIR_SUBDIR)
+ 
+ DIST_SUBDIRS = common ddc i2c x86emu int10 fbdevhw os-support \
+                parser ramdac shadowfb vbe vgahw \
+                loader dixmods dri dri2 exa modes \
+-	       utils doc man
++	       utils doc man xmir
+ 
+ bin_PROGRAMS = Xorg
+ nodist_Xorg_SOURCES = sdksyms.c
+diff --git a/hw/xfree86/common/xf86Config.c b/hw/xfree86/common/xf86Config.c
+index 74d5ed3..538ba4b 100644
+--- a/hw/xfree86/common/xf86Config.c
++++ b/hw/xfree86/common/xf86Config.c
+@@ -118,6 +118,7 @@ static ModuleDefault ModuleDefaults[] = {
+     {.name = "fb",.toLoad = TRUE,.load_opt = NULL},
+     {.name = "shadow",.toLoad = TRUE,.load_opt = NULL},
+ #endif
++    {.name = "xmir", .toLoad = FALSE, .load_opt = NULL},
+     {.name = NULL,.toLoad = FALSE,.load_opt = NULL}
+ };
+ 
+@@ -260,6 +261,17 @@ xf86ModulelistFromConfig(pointer **optlist)
+         return NULL;
+     }
+ 
++    /*
++     * Set the xmir module to autoload if requested.
++     */
++    if (xorgMir) {
++        for (i=0 ; ModuleDefaults[i].name != NULL ; i++) {
++            if (strcmp(ModuleDefaults[i].name, "xmir") == 0) {
++                ModuleDefaults[i].toLoad = TRUE;
++            }
++        }
++    }
++
+     if (xf86configptr->conf_modules) {
+         /* Walk the disable list and let people know what we've parsed to
+          * not be loaded 
+diff --git a/hw/xfree86/common/xf86Globals.c b/hw/xfree86/common/xf86Globals.c
+index 7df7a80..17ed7c6 100644
+--- a/hw/xfree86/common/xf86Globals.c
++++ b/hw/xfree86/common/xf86Globals.c
+@@ -204,3 +204,6 @@ Bool xf86VidModeAllowNonLocal = FALSE;
+ #endif
+ RootWinPropPtr *xf86RegisteredPropertiesTable = NULL;
+ Bool xorgHWAccess = FALSE;
++Bool xorgMir = FALSE;
++const char *mirID = NULL;
++const char *mirSocket = NULL;
+diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
+index 91ec4c8..1e5415b 100644
+--- a/hw/xfree86/common/xf86Init.c
++++ b/hw/xfree86/common/xf86Init.c
+@@ -541,6 +541,13 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+                                               GET_REQUIRED_HW_INTERFACES,
+                                               &flags);
+ 
++            if (xorgMir &&
++                (NEED_IO_ENABLED(flags) || !(flags & HW_SKIP_CONSOLE))) {
++                ErrorF("Driver needs flags %lu, incompatible with nested, deleting.\n", flags);
++                xf86DeleteDriver(i);
++                continue;
++            }
++
+             if (NEED_IO_ENABLED(flags))
+                 want_hw_access = TRUE;
+ 
+@@ -1454,6 +1461,17 @@ ddxProcessArgument(int argc, char **argv, int i)
+         xf86Info.ShareVTs = TRUE;
+         return 1;
+     }
++    if (!strcmp(argv[i], "-mir")) {
++        CHECK_FOR_REQUIRED_ARGUMENT();
++        mirID = argv[++i];
++        xorgMir = TRUE;
++        return 2;
++    }
++    if (!strcmp(argv[i], "-mirSocket")) {
++        CHECK_FOR_REQUIRED_ARGUMENT();
++        mirSocket = argv[++i];
++        return 2;
++    }
+ 
+     /* OS-specific processing */
+     return xf86ProcessArgument(argc, argv, i);
+@@ -1527,6 +1545,8 @@ ddxUseMsg(void)
+     ErrorF
+         ("-novtswitch            don't automatically switch VT at reset & exit\n");
+     ErrorF("-sharevts              share VTs with another X server\n");
++    ErrorF
++        ("-mir MirID             run nested in a Mir compositor with app id MirID\n");
+     /* OS-specific usage */
+     xf86UseMsg();
+     ErrorF("\n");
+diff --git a/hw/xfree86/common/xf86Priv.h b/hw/xfree86/common/xf86Priv.h
+index 58cfe0a..4630e9e 100644
+--- a/hw/xfree86/common/xf86Priv.h
++++ b/hw/xfree86/common/xf86Priv.h
+@@ -91,6 +91,9 @@ extern _X_EXPORT int xf86NumScreens;
+ extern _X_EXPORT const char *xf86VisualNames[];
+ extern _X_EXPORT int xf86Verbose;       /* verbosity level */
+ extern _X_EXPORT int xf86LogVerbose;    /* log file verbosity level */
++extern _X_EXPORT Bool xorgMir;
++extern _X_EXPORT const char *mirID;
++extern _X_EXPORT const char *mirSocket;
+ 
+ extern _X_EXPORT RootWinPropPtr *xf86RegisteredPropertiesTable;
+ 
+diff --git a/hw/xfree86/xmir/Makefile.am b/hw/xfree86/xmir/Makefile.am
+new file mode 100644
+index 0000000..80715f8
+--- /dev/null
++++ b/hw/xfree86/xmir/Makefile.am
+@@ -0,0 +1,26 @@
++INCLUDES =					\
++	$(XORG_INCS)                            \
++        -I$(srcdir)/../ddc                      \
++        -I$(srcdir)/../ramdac                   \
++        -I$(srcdir)/../i2c                      \
++        -I$(srcdir)/../parser                   \
++        -I$(srcdir)/../modes
++
++libxmir_la_LTLIBRARIES = libxmir.la
++libxmir_la_CFLAGS = \
++	-DHAVE_XORG_CONFIG_H \
++	$(DRI_CFLAGS) \
++	$(DIX_CFLAGS) $(XORG_CFLAGS) $(LIBDRM_CFLAGS) \
++	$(XMIR_CFLAGS)
++
++libxmir_la_LDFLAGS = -module -avoid-version $(LIBDRM_LIBS) $(XMIR_LIBS)
++libxmir_ladir = $(moduledir)/extensions
++libxmir_la_SOURCES = \
++	xmir.c \
++	xmir-window.c \
++	xmir-output.c \
++	xmir-thread-proxy.c \
++	xmir.h \
++	xmir-private.h
++
++sdk_HEADERS = xmir.h
+diff --git a/hw/xfree86/xmir/xmir-output.c b/hw/xfree86/xmir/xmir-output.c
+new file mode 100644
+index 0000000..e62c7fb
+--- /dev/null
++++ b/hw/xfree86/xmir/xmir-output.c
+@@ -0,0 +1,225 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#include <stdlib.h>
++
++#include "xmir-private.h"
++#include "xf86Crtc.h"
++
++static void
++crtc_dpms(xf86CrtcPtr drmmode_crtc, int mode)
++{
++}
++
++static Bool
++crtc_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
++		    Rotation rotation, int x, int y)  
++{
++	return TRUE;
++}
++
++static void
++crtc_set_cursor_colors (xf86CrtcPtr crtc, int bg, int fg)
++{
++}
++
++static void
++crtc_set_cursor_position (xf86CrtcPtr crtc, int x, int y)
++{
++}
++
++static void
++crtc_show_cursor (xf86CrtcPtr crtc)
++{
++}
++
++static void
++crtc_hide_cursor (xf86CrtcPtr crtc)
++{
++}
++
++static void
++crtc_load_cursor_argb (xf86CrtcPtr crtc, CARD32 *image)
++{
++}
++
++static PixmapPtr
++crtc_shadow_create(xf86CrtcPtr crtc, void *data, int width, int height)
++{
++	return NULL;
++}
++
++static void *
++crtc_shadow_allocate(xf86CrtcPtr crtc, int width, int height)
++{
++	return NULL;
++}
++
++static void
++crtc_shadow_destroy(xf86CrtcPtr crtc, PixmapPtr rotate_pixmap, void *data)
++{
++}
++
++static const xf86CrtcFuncsRec crtc_funcs = {
++    .dpms                = crtc_dpms,
++    .set_mode_major      = crtc_set_mode_major,
++    .set_cursor_colors   = crtc_set_cursor_colors,
++    .set_cursor_position = crtc_set_cursor_position,
++    .show_cursor         = crtc_show_cursor,
++    .hide_cursor         = crtc_hide_cursor,
++    .load_cursor_argb    = crtc_load_cursor_argb,
++    .shadow_create       = crtc_shadow_create,
++    .shadow_allocate     = crtc_shadow_allocate,
++    .shadow_destroy      = crtc_shadow_destroy,
++    .destroy             = NULL, /* XXX */
++};
++
++static void
++output_dpms(xf86OutputPtr output, int mode)
++{
++	return;
++}
++
++static xf86OutputStatus
++output_detect(xf86OutputPtr output)
++{
++	return XF86OutputStatusConnected;
++}
++
++static Bool
++output_mode_valid(xf86OutputPtr output, DisplayModePtr pModes)
++{
++	return MODE_OK;
++}
++
++struct mir_output {
++    int width;
++    int height;
++    xf86Monitor monitor;
++};
++
++static DisplayModePtr
++output_get_modes(xf86OutputPtr xf86output)
++{
++    struct mir_output *output = xf86output->driver_private;
++    struct monitor_ranges *ranges;
++    DisplayModePtr modes;
++
++    modes = xf86CVTMode(output->width, output->height, 60, TRUE, FALSE);
++    /* And now, because CVT the CVT standard doesn't support such common resolutions as 1366x768... */
++    /* TODO: We should really get Mir to just send us an EDID or at least enough info to generate one */
++    modes->VDisplay = output->height;
++    modes->HDisplay = output->width;
++
++    output->monitor.det_mon[0].type = DS_RANGES;
++    ranges = &output->monitor.det_mon[0].section.ranges;
++    ranges->min_h = modes->HSync - 10;
++    ranges->max_h = modes->HSync + 10;
++    ranges->min_v = modes->VRefresh - 10;
++    ranges->max_v = modes->VRefresh + 10;
++    ranges->max_clock = modes->Clock + 100;
++    output->monitor.det_mon[1].type = DT;
++    output->monitor.det_mon[2].type = DT;
++    output->monitor.det_mon[3].type = DT;
++    output->monitor.no_sections = 0;
++    modes->type = M_T_PREFERRED | M_T_DRIVER;
++
++    modes->name = strdup("XMIR mode of death");
++
++    xf86output->MonInfo = &output->monitor;
++
++    return modes;
++}
++
++static void
++output_destroy(xf86OutputPtr xf86output)
++{
++    struct mir_output *output = xf86output->driver_private;
++    
++    free(output);
++}
++
++static const xf86OutputFuncsRec output_funcs = {
++    .dpms	    = output_dpms,
++    .detect	    = output_detect,
++    .mode_valid	= output_mode_valid,
++    .get_modes	= output_get_modes,
++    .destroy	= output_destroy
++};
++
++static Bool
++resize(ScrnInfoPtr scrn, int width, int height)
++{
++    if (scrn->virtualX == width && scrn->virtualY == height)
++        return TRUE;
++    /* We don't handle resize at all, we must match the compositor size */
++    return FALSE;
++}
++
++static const xf86CrtcConfigFuncsRec config_funcs = {
++    resize
++};
++
++Bool
++xmir_mode_pre_init(ScrnInfoPtr scrn, xmir_screen *xmir)
++{
++    MirDisplayInfo display_info;
++    xf86OutputPtr xf86output;
++    xf86CrtcPtr xf86crtc;
++    struct mir_output *output;
++
++    mir_connection_get_display_info(xmir_connection_get(), &display_info);
++    
++    /* Set up CRTC config functions */
++    xf86CrtcConfigInit(scrn, &config_funcs);
++
++    /* We don't support resizing whatsoever */
++    xf86CrtcSetSizeRange(scrn,
++                         320, 320,
++                         8192, 8192);
++
++    output = malloc(sizeof *output);
++    output->width = display_info.width;
++    output->height = display_info.height;
++    
++    xf86output = xf86OutputCreate(scrn, &output_funcs, "XMIR-1");
++    xf86output->possible_crtcs = 1;
++    xf86output->possible_clones = 1;
++    xf86output->driver_private = output;
++
++    xf86crtc = xf86CrtcCreate(scrn, &crtc_funcs);
++    xf86crtc->driver_private = NULL;
++
++    xf86InitialConfiguration(scrn, TRUE);
++  
++    return TRUE;
++}
+diff --git a/hw/xfree86/xmir/xmir-private.h b/hw/xfree86/xmir/xmir-private.h
+new file mode 100644
+index 0000000..7a518a4
+--- /dev/null
++++ b/hw/xfree86/xmir/xmir-private.h
+@@ -0,0 +1,90 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#ifndef _XMIR_PRIVATE_H
++#define _XMIR_PRIVATE_H
++
++#include <mir_toolkit/mir_client_library.h>
++#include "xmir.h"
++#include "xf86str.h"
++#include "list.h"
++#include "scrnintstr.h"
++#include "regionstr.h"
++
++#define MIR_MAX_BUFFER_AGE 3
++
++typedef struct xmir_marshall_handler xmir_marshall_handler;
++
++struct xmir_screen {
++    CreateWindowProcPtr    CreateWindow;
++    DestroyWindowProcPtr   DestroyWindow;
++    xmir_driver *          driver;
++    xmir_marshall_handler *submit_rendering_handler;
++    struct xorg_list       damage_list;
++};
++
++typedef struct {
++    WindowPtr           win;
++    MirSurface         *surface;
++    DamagePtr           damage;
++    RegionRec           past_damage[MIR_MAX_BUFFER_AGE];
++    int                 damage_index;
++    struct xorg_list    link_damage;
++    unsigned int        has_free_buffer:1;
++    unsigned int        damaged:1;
++} xmir_window;
++
++MirConnection *
++xmir_connection_get(void);
++
++xmir_screen *
++xmir_screen_get(ScreenPtr screen);
++
++Bool
++xmir_screen_init_window(ScreenPtr screen, xmir_screen *xmir);
++
++Bool
++xmir_mode_pre_init(ScrnInfoPtr scrn, xmir_screen *xmir);
++
++void
++xmir_init_thread_to_eventloop(void);
++
++xmir_marshall_handler *
++xmir_register_handler(void (*msg_handler)(void *msg), size_t msg_size);
++
++void
++xmir_post_to_eventloop(xmir_marshall_handler *handler, void *msg);
++
++void
++xmir_process_from_eventloop(void);
++
++ #endif /* _MIR_PRIVATE_H */
+diff --git a/hw/xfree86/xmir/xmir-thread-proxy.c b/hw/xfree86/xmir/xmir-thread-proxy.c
+new file mode 100644
+index 0000000..7464644
+--- /dev/null
++++ b/hw/xfree86/xmir/xmir-thread-proxy.c
+@@ -0,0 +1,117 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#include <stdint.h>
++#include <string.h>
++#include <unistd.h>
++#include <fcntl.h>
++
++#include "xmir-private.h"
++
++struct xmir_marshall_handler {
++	void (*msg_handler)(void *msg);
++	size_t msg_size;
++	char msg[];
++};
++
++static int pipefds[2];
++
++static void
++xmir_wakeup_handler(pointer data, int err, pointer read_mask)
++{
++    if (err >= 0 && FD_ISSET(pipefds[0], (fd_set *)read_mask))
++        xmir_process_from_eventloop();
++}
++
++void
++xmir_init_thread_to_eventloop(void)
++{
++	pipe(pipefds);
++
++	/* Set the read end to not block; we'll pull from this in the event loop
++	 * We don't need to care about the write end, as that'll be written to
++	 * from its own thread
++	 */
++	fcntl(pipefds[0], F_SETFL, O_NONBLOCK);
++
++	AddGeneralSocket(pipefds[0]);
++	RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
++				       xmir_wakeup_handler,
++				       NULL);
++}
++
++xmir_marshall_handler *
++xmir_register_handler(void (*msg_handler)(void *msg), size_t msg_size)
++{
++	xmir_marshall_handler *handler;
++
++	if (msg_size + sizeof *handler > PIPE_BUF)
++		return NULL;
++
++	handler = malloc(sizeof *handler + msg_size);
++	if (!handler)
++		return NULL;
++
++	handler->msg_handler = msg_handler;
++	handler->msg_size = msg_size;
++	return handler;
++}
++
++void
++xmir_post_to_eventloop(xmir_marshall_handler *handler, void *msg) 
++{
++	const int total_size = sizeof *handler + handler->msg_size;
++	/* We require the total size to be less than PIPE_BUF to ensure an atomic write */
++	assert(total_size < PIPE_BUF);
++
++	memcpy(handler->msg, msg, handler->msg_size);
++	write(pipefds[1], handler, total_size);
++}
++
++void
++xmir_process_from_eventloop(void)
++{
++	xmir_marshall_handler handler;
++	void *msg;
++
++	for (;;) {
++		if (read(pipefds[0], &handler, sizeof handler) < 0) {
++			return;
++		}
++
++		msg = malloc(handler.msg_size);
++		if(read(pipefds[0], msg, handler.msg_size) == handler.msg_size)
++			(*handler.msg_handler)(msg);
++		free(msg);
++	}
++}
++
+diff --git a/hw/xfree86/xmir/xmir-window.c b/hw/xfree86/xmir/xmir-window.c
+new file mode 100644
+index 0000000..0c906e2
+--- /dev/null
++++ b/hw/xfree86/xmir/xmir-window.c
+@@ -0,0 +1,324 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#ifdef HAVE_XORG_CONFIG_H
++#include "xorg-config.h"
++#endif
++#include <xorg-server.h>
++#include "windowstr.h"
++#include "regionstr.h"
++#include "damagestr.h"
++
++#include "xmir.h"
++#include "xmir-private.h"
++
++#include "xf86.h"
++
++#include <stdlib.h>
++
++static DevPrivateKeyRec xmir_window_private_key;
++static const RegionRec xmir_empty_region = { {0, 0, 0, 0}, &RegionBrokenData };
++
++static xmir_window *
++xmir_window_get(WindowPtr win)
++{
++    return dixGetPrivate(&win->devPrivates, &xmir_window_private_key);
++}
++
++_X_EXPORT int
++xmir_prime_fd_for_window(WindowPtr win)
++{
++    xmir_window *xmir_win = xmir_window_get(win);
++    MirBufferPackage *package;
++
++    assert(mir_platform_type_gbm == mir_surface_get_platform_type(xmir_win->surface));
++
++    mir_surface_get_current_buffer(xmir_win->surface, &package);
++    assert(package->fd_items == 1);
++
++    return package->fd[0];
++}
++
++static void
++xmir_handle_buffer_available(void *ctx)
++{
++    WindowPtr win = *(WindowPtr *)ctx;
++    xmir_window *mir_win = xmir_window_get(win);
++    xmir_screen *xmir = xmir_screen_get(win->drawable.pScreen);
++
++    mir_win->has_free_buffer = TRUE;
++    mir_win->damage_index = (mir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
++
++    (*xmir->driver->BufferAvailableForWindow)(win);
++}
++
++static void
++handle_buffer_received(MirSurface *surf, void *ctx)
++{
++    WindowPtr win = ctx;
++    xmir_screen *xmir = xmir_screen_get(win->drawable.pScreen);
++
++    xmir_post_to_eventloop(xmir->submit_rendering_handler, &win);
++}
++
++static inline int
++index_in_damage_buffer(int current_index, int age)
++{
++    int index = (current_index - age) % MIR_MAX_BUFFER_AGE;
++
++    return index < 0 ? MIR_MAX_BUFFER_AGE + index : index;
++}
++
++static RegionPtr
++damage_region_for_current_buffer(xmir_window *xmir_win)
++{
++    MirBufferPackage *package;
++    int age;
++
++    mir_surface_get_current_buffer(xmir_win->surface, &package);
++    age = package->age;
++
++    return &xmir_win->past_damage[index_in_damage_buffer(xmir_win->damage_index, age)];
++}
++
++/* Submit rendering for @window to Mir
++ * @region is an (optional) damage region, to hint the compositor as to what
++ * region has changed. It can be NULL to indicate the whole window should be
++ * considered dirty.
++ */
++_X_EXPORT int
++xmir_submit_rendering_for_window(WindowPtr win,
++                                 RegionPtr region)
++{
++    xmir_window *mir_win = xmir_window_get(win);
++    RegionPtr tracking;
++
++    mir_win->has_free_buffer = FALSE;
++    mir_surface_swap_buffers(mir_win->surface, &handle_buffer_received, win);
++
++    xorg_list_del(&mir_win->link_damage);
++
++    tracking = damage_region_for_current_buffer(mir_win);
++    if (region == NULL)
++        RegionEmpty(tracking);
++    else
++        RegionSubtract(tracking, tracking, region);
++
++    return Success;
++}
++
++_X_EXPORT Bool
++xmir_window_has_free_buffer(WindowPtr win)
++{
++    xmir_window *xmir_win = xmir_window_get(win);
++
++    return xmir_win->has_free_buffer;
++}
++
++_X_EXPORT RegionPtr
++xmir_window_get_dirty(WindowPtr win)
++{
++    xmir_window *xmir_win = xmir_window_get(win);
++
++    if (xorg_list_is_empty(&xmir_win->link_damage))
++	    return (RegionPtr)&xmir_empty_region;
++
++    if (xmir_win->damaged) {
++	    RegionPtr damage = DamageRegion(xmir_win->damage);
++	    int i;
++
++	    for (i = 0; i < MIR_MAX_BUFFER_AGE; i++)
++		    RegionUnion(&xmir_win->past_damage[i],
++				&xmir_win->past_damage[i],
++				damage);
++
++	    DamageEmpty(xmir_win->damage);
++	    xmir_win->damaged = 0;
++    }
++
++    return damage_region_for_current_buffer(xmir_win);
++}
++
++_X_EXPORT Bool
++xmir_window_is_dirty(WindowPtr win)
++{
++    return RegionNotEmpty(xmir_window_get_dirty(win));
++}
++
++static void
++damage_report(DamagePtr damage, RegionPtr region, void *ctx)
++{
++    xmir_window *xmir_win = ctx;
++
++    xmir_win->damaged = 1;
++    xorg_list_move(&xmir_win->link_damage,
++		   &xmir_screen_get(damage->pScreen)->damage_list);
++}
++
++static void
++damage_destroy(DamagePtr damage, void *ctx)
++{
++    xmir_window *xmir_win = ctx;
++    xorg_list_del(&xmir_win->link_damage);
++}
++
++static void
++xmir_window_enable_damage_tracking(WindowPtr win)
++{
++    xmir_window *xmir_win = xmir_window_get(win);
++
++    xorg_list_init(&xmir_win->link_damage);
++    xmir_win->damage = DamageCreate(damage_report, damage_destroy,
++                                    DamageReportNonEmpty, TRUE,
++                                    win->drawable.pScreen, xmir_win);
++    DamageRegister(&win->drawable, xmir_win->damage);
++
++    for (int i = 0; i < MIR_MAX_BUFFER_AGE; i++) {
++        RegionNull(&xmir_win->past_damage[i]);
++    }
++    xmir_win->damage_index = 0;
++    xmir_win->damaged = 0;
++}
++/*
++static void
++xmir_window_disable_damage_tracking(WindowPtr win)
++{
++    xmir_window *xmir_win = xmir_window_get(win);
++
++    xorg_list_del(&xmir_win->link_damage);
++    DamageUnregister(&win->drawable, xmir_win->damage);
++    DamageDestroy(xmir_win->damage);
++}
++*/
++static void
++handle_surface_create(MirSurface *surface, void *ctx)
++{
++    xmir_window *mir_win = ctx;
++    mir_win->surface = surface;
++}
++
++static Bool
++xmir_create_window(WindowPtr win)
++{
++    ScreenPtr screen = win->drawable.pScreen;
++    xmir_screen *xmir = xmir_screen_get(screen);
++    Bool ret;
++
++    screen->CreateWindow = xmir->CreateWindow;
++    ret = (*screen->CreateWindow)(win);
++    screen->CreateWindow = xmir_create_window;
++
++    /* Until we support rootless operation, we care only for the root
++     * window, which has no parent.
++     */
++    if (win->parent == NULL) {
++        MirSurfaceParameters params;
++        xmir_window *mir_win = calloc(1, sizeof *mir_win);
++
++        if (mir_win == NULL)
++            return FALSE;
++
++        mir_win->win = win;
++
++        params.name = "Xorg";
++        params.width = win->drawable.width;
++        params.height = win->drawable.height;
++        /* 
++         * We'll need to do something smarter here when we're rootless -
++         * we'll need to distinguish between ARGB and RGB Visuals.
++         */
++        params.pixel_format = mir_pixel_format_xrgb_8888;
++        params.buffer_usage = mir_buffer_usage_hardware;
++
++        mir_wait_for(mir_connection_create_surface(xmir_connection_get(),
++                                                   &params,
++                                                   &handle_surface_create,
++                                                   mir_win));
++        if (mir_win->surface == NULL) {
++            free (mir_win);
++            return FALSE;
++        }
++        dixSetPrivate(&win->devPrivates, &xmir_window_private_key, mir_win);
++        /* This window now has a buffer available */
++        xmir_post_to_eventloop(xmir->submit_rendering_handler, &win);
++        xmir_window_enable_damage_tracking(win);
++    }
++    return ret;
++}
++
++static Bool
++xmir_destroy_window(WindowPtr win)
++{
++    ScreenPtr screen = win->drawable.pScreen;
++    xmir_screen *xmir = xmir_screen_get(screen);
++    Bool ret;
++
++    screen->DestroyWindow = xmir->DestroyWindow;
++    ret = (*screen->DestroyWindow)(win);
++    screen->DestroyWindow = xmir_destroy_window;
++
++    /* Until we support rootless operation, we care only for the root
++     * window, which has no parent.
++     */
++    if (win->parent == NULL) {
++        xmir_window *mir_win = xmir_window_get(win);
++
++	/* We cannot use xmir_window_disable_damage_tracking here because
++	 * the Damage extension will also clean it up on window destruction
++	 */
++	xorg_list_del(&mir_win->link_damage);
++	free(mir_win);
++    }
++
++    return ret;
++}
++
++Bool
++xmir_screen_init_window(ScreenPtr screen, xmir_screen *xmir)
++{
++    if (!dixRegisterPrivateKey(&xmir_window_private_key, PRIVATE_WINDOW, 0))
++        return FALSE;
++
++    xmir->CreateWindow = screen->CreateWindow;
++    screen->CreateWindow = xmir_create_window;
++    xmir->DestroyWindow = screen->DestroyWindow;
++    screen->DestroyWindow = xmir_destroy_window;
++
++    xmir->submit_rendering_handler = 
++        xmir_register_handler(&xmir_handle_buffer_available,
++                              sizeof (WindowPtr));
++
++    if (xmir->submit_rendering_handler == NULL)
++        return FALSE;
++
++    return TRUE;
++}
+diff --git a/hw/xfree86/xmir/xmir.c b/hw/xfree86/xmir/xmir.c
+new file mode 100644
+index 0000000..6e2ebb8
+--- /dev/null
++++ b/hw/xfree86/xmir/xmir.c
+@@ -0,0 +1,217 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#ifdef HAVE_XORG_CONFIG_H
++#include <xorg-config.h>
++#endif
++
++#include "xmir.h"
++#include "xmir-private.h"
++
++#include "list.h"
++#include "xf86.h"
++#include "xf86Priv.h"
++
++#include <xf86drm.h>
++#include <string.h>
++
++#include <mir_toolkit/mir_client_library.h>
++#include <mir_toolkit/mir_client_library_drm.h>
++
++static DevPrivateKeyRec xmir_screen_private_key;
++/* 
++ * We have only a single Mir connection, regardless of how many
++ * drivers load.
++ */
++static MirConnection *conn;
++
++MirConnection *
++xmir_connection_get(void)
++{
++    return conn;
++}
++
++xmir_screen *
++xmir_screen_get(ScreenPtr screen)
++{
++    return dixLookupPrivate(&screen->devPrivates, &xmir_screen_private_key);
++}
++
++_X_EXPORT int
++xmir_get_drm_fd(const char *busid)
++{
++    MirPlatformPackage platform;
++    int i, fd = -1;
++
++    mir_connection_get_platform(conn, &platform);
++
++    for (i = 0; i < platform.fd_items; ++i) {
++        char *fd_busid = drmGetBusid(platform.fd[i]);
++        if (!strcasecmp(busid, fd_busid))
++            fd = platform.fd[i];
++        drmFreeBusid(fd_busid);
++    }
++    return fd;
++}
++
++static void
++handle_auth_magic(int status, void *ctx)
++{
++    int *retVal = ctx;
++    *retVal = status;
++}
++
++_X_EXPORT int
++xmir_auth_drm_magic(xmir_screen *xmir, uint32_t magic)
++{
++    int status;
++    mir_wait_for(mir_connection_drm_auth_magic(xmir_connection_get(),
++                                               magic,
++                                               &handle_auth_magic,
++                                               &status));
++    return status;
++}
++
++_X_EXPORT xmir_screen *
++xmir_screen_create(ScrnInfoPtr scrn)
++{
++    xmir_screen *xmir = calloc (1, sizeof *xmir);
++    if (xmir == NULL)
++        return NULL;
++
++    return xmir;
++}
++
++_X_EXPORT Bool
++xmir_screen_pre_init(ScrnInfoPtr scrn, xmir_screen *xmir, xmir_driver *driver)
++{
++    xmir->driver = driver;
++    xorg_list_init(&xmir->damage_list);
++
++    if (!xmir_mode_pre_init(scrn, xmir))
++        return FALSE;
++
++    return TRUE;
++}
++
++_X_EXPORT Bool
++xmir_screen_init(ScreenPtr screen, xmir_screen *xmir)
++{
++    if (!dixRegisterPrivateKey(&xmir_screen_private_key, PRIVATE_SCREEN, 0))
++        return FALSE;
++    dixSetPrivate(&screen->devPrivates, &xmir_screen_private_key, xmir);
++
++    if (!xmir_screen_init_window(screen, xmir))
++        return FALSE;
++
++    return TRUE;
++}
++
++_X_EXPORT void
++xmir_screen_close(ScreenPtr screen, xmir_screen *xmir)
++{
++
++}
++
++_X_EXPORT void
++xmir_screen_destroy(xmir_screen *xmir)
++{
++    
++}
++
++_X_EXPORT void
++xmir_screen_for_each_damaged_window(xmir_screen *xmir, xmir_handle_window_damage_proc callback)
++{
++    xmir_window *xmir_win, *tmp_win;
++    xorg_list_for_each_entry_safe(xmir_win, tmp_win, &xmir->damage_list, link_damage) {
++        (*callback)(xmir_win->win);
++        if(!xmir_window_is_dirty(xmir_win->win))
++            xorg_list_del(&xmir_win->link_damage);
++    }
++}
++
++static MODULESETUPPROTO(xMirSetup);
++static MODULETEARDOWNPROTO(xMirTeardown);
++
++static XF86ModuleVersionInfo VersRec = {
++    "xmir",
++    MODULEVENDORSTRING,
++    MODINFOSTRING1,
++    MODINFOSTRING2,
++    XORG_VERSION_CURRENT,
++    1, 0, 0,
++    ABI_CLASS_EXTENSION,
++    ABI_EXTENSION_VERSION,
++    MOD_CLASS_NONE,
++    {0, 0, 0, 0}
++};
++
++_X_EXPORT XF86ModuleData xmirModuleData = { &VersRec, xMirSetup, xMirTeardown };
++
++static pointer
++xMirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
++{
++    static Bool setupDone = FALSE;
++    const char *socket = "/tmp/mir_socket";
++    
++    if (setupDone) {
++        if (errmaj)
++            *errmaj = LDR_ONCEONLY;
++        return NULL;
++    }
++
++
++    if (mirSocket != NULL)
++        socket = mirSocket;
++
++    conn = mir_connect_sync(socket, mirID);
++
++    if (!mir_connection_is_valid(conn)) {
++        if (errmaj)
++            *errmaj = LDR_MODSPECIFIC;
++        xf86Msg(X_ERROR,
++                "Failed to connect to Mir: %s\n",
++                mir_connection_get_error_message(conn));
++        return NULL;
++    }
++
++    xmir_init_thread_to_eventloop();    
++
++    setupDone = TRUE;
++
++    return module;
++}
++
++static void
++xMirTeardown(pointer module)
++{
++}
+diff --git a/hw/xfree86/xmir/xmir.h b/hw/xfree86/xmir/xmir.h
+new file mode 100644
+index 0000000..573309d
+--- /dev/null
++++ b/hw/xfree86/xmir/xmir.h
+@@ -0,0 +1,95 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#ifndef _XMIR_H
++#define _XMIR_H
++
++#include <stdint.h>
++#include <mir_toolkit/mir_client_library.h>
++
++#include "xf86str.h"
++#include "scrnintstr.h"
++#include "window.h"
++
++typedef void (*xmir_buffer_available_proc)(WindowPtr win);
++
++typedef struct xmir_screen xmir_screen;
++
++#define XMIR_DRIVER_VERSION 1
++typedef struct {
++    int version;
++    xmir_buffer_available_proc BufferAvailableForWindow;
++} xmir_driver;
++
++_X_EXPORT int
++xmir_get_drm_fd(const char *busid);
++
++_X_EXPORT int
++xmir_auth_drm_magic(xmir_screen *xmir, uint32_t magic);
++
++_X_EXPORT xmir_screen *
++xmir_screen_create(ScrnInfoPtr scrn);
++
++_X_EXPORT Bool
++xmir_screen_pre_init(ScrnInfoPtr scrn, xmir_screen *xmir, xmir_driver *driver);
++
++_X_EXPORT Bool
++xmir_screen_init(ScreenPtr screen, xmir_screen *xmir);
++
++_X_EXPORT void
++xmir_screen_close(ScreenPtr screen, xmir_screen *xmir);
++
++_X_EXPORT void
++xmir_screen_destroy(xmir_screen *xmir);
++
++_X_EXPORT int
++xmir_prime_fd_for_window(WindowPtr win);
++
++_X_EXPORT int
++xmir_submit_rendering_for_window(WindowPtr win,
++                                 RegionPtr region);
++
++_X_EXPORT Bool
++xmir_window_has_free_buffer(WindowPtr win);
++
++_X_EXPORT RegionPtr
++xmir_window_get_dirty(WindowPtr win);
++
++_X_EXPORT Bool
++xmir_window_is_dirty(WindowPtr win);
++
++typedef void (*xmir_handle_window_damage_proc)(WindowPtr win);
++
++_X_EXPORT void
++xmir_screen_for_each_damaged_window(xmir_screen *xmir, xmir_handle_window_damage_proc callback);
++
++#endif /* _XMIR_H */
+diff --git a/include/list.h b/include/list.h
+index 11de7c5..59f0233 100644
+--- a/include/list.h
++++ b/include/list.h
+@@ -184,6 +184,14 @@ __xorg_list_del(struct xorg_list *prev, struct xorg_list *next)
+     prev->next = next;
+ }
+ 
++static inline void
++xorg_list_move(struct xorg_list *entry, struct xorg_list *head)
++{
++    __xorg_list_del(entry->prev, entry->next);
++    __xorg_list_add(entry, head->prev, head);
++}
++
++
+ /**
+  * Remove the element from the list it is in. Using this function will reset
+  * the pointers to/from this element so it is removed from the list. It does
+diff --git a/include/xorg-server.h.in b/include/xorg-server.h.in
+index 81935be..c9cd4e8 100644
+--- a/include/xorg-server.h.in
++++ b/include/xorg-server.h.in
+@@ -212,4 +212,7 @@
+ #define _XSERVER64 1
+ #endif
+ 
++/* Build XMIR nested server */
++#undef XMIR
++
+ #endif /* _XORG_SERVER_H_ */
+diff --git a/miext/damage/damage.c b/miext/damage/damage.c
+index a98c20e..a1daebb 100644
+--- a/miext/damage/damage.c
++++ b/miext/damage/damage.c
+@@ -123,18 +123,14 @@ static void
+ damageReportDamagePostRendering(DamagePtr pDamage, RegionPtr pOldDamage,
+                                 RegionPtr pDamageRegion)
+ {
+-    BoxRec tmpBox;
+-    RegionRec tmpRegion, newDamage;
+-    Bool was_empty;
+-
+-    RegionUnion(&newDamage, pOldDamage, pDamageRegion);
+-
+     switch (pDamage->damageLevel) {
+     case DamageReportRawRegion:
+         (*pDamage->damageReportPostRendering) (pDamage, pDamageRegion,
+                                                pDamage->closure);
+         break;
+     case DamageReportDeltaRegion:
++    {
++        RegionRec tmpRegion;
+         RegionNull(&tmpRegion);
+         RegionSubtract(&tmpRegion, pDamageRegion, pOldDamage);
+         if (RegionNotEmpty(&tmpRegion)) {
+@@ -143,25 +139,31 @@ damageReportDamagePostRendering(DamagePtr pDamage, RegionPtr pOldDamage,
+         }
+         RegionUninit(&tmpRegion);
+         break;
++    }
+     case DamageReportBoundingBox:
++    {
++        BoxRec tmpBox;
++        RegionRec newDamage;
+         tmpBox = *RegionExtents(pOldDamage);
++        RegionUnion(&newDamage, pOldDamage, pDamageRegion);
+         if (!BOX_SAME(&tmpBox, RegionExtents(&newDamage))) {
+             (*pDamage->damageReportPostRendering) (pDamage, &newDamage,
+                                                    pDamage->closure);
+         }
+         break;
++    }
+     case DamageReportNonEmpty:
+-        was_empty = !RegionNotEmpty(pOldDamage);
+-        if (was_empty && RegionNotEmpty(&newDamage)) {
+-            (*pDamage->damageReportPostRendering) (pDamage, &newDamage,
++        if (RegionNotEmpty(pOldDamage))
++            break;
++
++        if (RegionNotEmpty(pDamageRegion)) {
++            (*pDamage->damageReportPostRendering) (pDamage, pDamageRegion,
+                                                    pDamage->closure);
+         }
+         break;
+     case DamageReportNone:
+         break;
+     }
+-
+-    RegionUninit(&newDamage);
+ }
+ 
+ #if DAMAGE_DEBUG_ENABLE
+diff --git a/test/Makefile.am b/test/Makefile.am
+index 34f53fc..d1a0f27 100644
+--- a/test/Makefile.am
++++ b/test/Makefile.am
+@@ -6,7 +6,12 @@ if XORG
+ # For now, requires xf86 ddx, could be adjusted to use another
+ SUBDIRS += xi2
+ noinst_PROGRAMS += xkb input xtest misc fixes xfree86 hashtabletest os signal-logging
+-endif
++
++if XMIR
++noinst_PROGRAMS += xmir-thread-proxy
++endif #XMIR
++
++endif #XORG
+ check_LTLIBRARIES = libxservertest.la
+ 
+ TESTS=$(noinst_PROGRAMS)
+@@ -38,6 +43,8 @@ touch_LDADD=$(TEST_LDADD)
+ signal_logging_LDADD=$(TEST_LDADD)
+ hashtabletest_LDADD=$(TEST_LDADD) $(top_srcdir)/Xext/hashtable.c
+ os_LDADD=$(TEST_LDADD)
++xmir_thread_proxy_LDADD=$(TEST_LDADD) $(top_srcdir)/hw/xfree86/xmir/xmir-thread-proxy.c -lpthread
++xmir_thread_proxy_CFLAGS=$(AM_CFLAGS) $(XMIR_CFLAGS) -I$(top_srcdir)/hw/xfree86/xmir -I$(top_srcdir)/hw/xfree86/common
+ 
+ libxservertest_la_LIBADD = $(XSERVER_LIBS)
+ if XORG
+diff --git a/test/xmir-thread-proxy.c b/test/xmir-thread-proxy.c
+new file mode 100644
+index 0000000..7cf19cf
+--- /dev/null
++++ b/test/xmir-thread-proxy.c
+@@ -0,0 +1,154 @@
++/*
++ * Copyright © 2012 Canonical, Inc
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Soft-
++ * ware"), to deal in the Software without restriction, including without
++ * limitation the rights to use, copy, modify, merge, publish, distribute,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, provided that the above copyright
++ * notice(s) and this permission notice appear in all copies of the Soft-
++ * ware and that both the above copyright notice(s) and this permission
++ * notice appear in supporting documentation.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
++ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
++ * ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY
++ * RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN
++ * THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSE-
++ * QUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFOR-
++ * MANCE OF THIS SOFTWARE.
++ *
++ * Except as contained in this notice, the name of a copyright holder shall
++ * not be used in advertising or otherwise to promote the sale, use or
++ * other dealings in this Software without prior written authorization of
++ * the copyright holder.
++ *
++ * Authors:
++ *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ */
++
++#ifdef HAVE_DIX_CONFIG_H
++#include <dix-config.h>
++#endif
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <pthread.h>
++#include <unistd.h>
++
++#include "xmir-private.h"
++
++struct test_content {
++	int *variable;
++	int value;
++};
++
++static void
++_test_callback(void *msg_content)
++{
++	struct test_content *content = msg_content;
++	*content->variable = content->value;
++}
++
++static void
++xmir_test_marshall_to_eventloop(void)
++{
++	xmir_marshall_handler *test_marshaller;
++	struct test_content msg;
++	int check = 0;
++
++	xmir_init_thread_to_eventloop();
++
++	test_marshaller = xmir_register_handler(&_test_callback, sizeof msg);
++
++	msg.variable = &check;
++	msg.value = 1;
++
++	xmir_post_to_eventloop(test_marshaller, &msg);
++	xmir_process_from_eventloop();
++
++	assert(check == 1);
++}
++
++static void
++_racy_test_callback(void *msg_content)
++{
++	struct test_content *content = msg_content;
++	int new_value = *content->variable + 1;
++	/* Ensure the other threads get to run and see the old value of content->variable */
++	usleep(100);
++	*content->variable = new_value;
++}
++
++struct thread_context {
++	xmir_marshall_handler *marshaller;
++	struct test_content *msg;
++};
++
++static void *
++_post_racy_msg(void *thread_ctx)
++{
++	struct thread_context *ctx = thread_ctx;
++
++	xmir_post_to_eventloop(ctx->marshaller, ctx->msg);
++
++	return NULL;
++}
++
++#define NUM_THREADS 10
++
++static void
++xmir_test_many_threads_to_eventloop(void)
++{
++	pthread_t threads[NUM_THREADS];
++	pthread_attr_t attr;
++	xmir_marshall_handler *test_marshaller;
++	struct thread_context ctx;
++	struct test_content msg;
++	int check = 0, i;
++
++	pthread_attr_init(&attr);
++	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
++
++	xmir_init_thread_to_eventloop();
++
++	test_marshaller = xmir_register_handler(&_racy_test_callback, sizeof msg);
++
++	msg.variable = &check;
++
++	ctx.marshaller = test_marshaller;
++	ctx.msg = &msg;
++
++	for (i = 0; i < NUM_THREADS; i++) {
++		pthread_create(&threads[i], &attr, _post_racy_msg, (void *)&ctx);
++	}
++
++	pthread_attr_destroy(&attr);
++
++	for (i = 0; i < NUM_THREADS; i++) {
++		pthread_join(threads[i], NULL);
++	}
++
++	xmir_process_from_eventloop();
++
++	assert(check == NUM_THREADS);	
++}
++
++static void
++xmir_test_refuses_to_marshall_too_large_msg(void)
++{
++	xmir_init_thread_to_eventloop();
++
++	assert(xmir_register_handler(&_test_callback, PIPE_BUF) == NULL);
++}
++
++int
++main(int argc, char **argv)
++{
++	xmir_test_marshall_to_eventloop();
++	xmir_test_many_threads_to_eventloop();
++	xmir_test_refuses_to_marshall_too_large_msg();
++}

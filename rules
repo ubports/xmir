@@ -63,6 +63,7 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	build_xfbdev = --enable-xfbdev
 	selinux = --enable-xselinux
 	xkbrules = --with-default-xkb-rules=evdev
+	build_xmir = --enable-xmir
 else
 	build_xfbdev = --disable-xfbdev
 	selinux = --disable-xselinux
@@ -159,6 +160,7 @@ confflags_main = \
 	--enable-kdrive \
 	--enable-xephyr \
 	$(build_xfbdev) \
+	$(build_xmir) \
 	--with-sha1=libgcrypt \
 	--enable-xcsecurity \
 	$(config_backend_main) \
@@ -191,6 +193,7 @@ confflags_udeb = \
 	--disable-kdrive \
 	--disable-xephyr \
 	--disable-xfbdev \
+	--disable-xmir \
 	--with-sha1=libnettle \
 	$(config_backend_udeb) \
 	$(void)
