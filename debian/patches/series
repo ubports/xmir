@@ -56,3 +56,4 @@ include-selection-h.patch
 xf86-detach-scanout.patch
 
 aarch64.patch
+xmir.patch
