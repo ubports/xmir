@@ -1,8 +1,8 @@
-diff --git a/configure.ac b/configure.ac
-index c6ecba4..cbba229 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -635,6 +635,7 @@ AC_ARG_ENABLE(windowswm,      AS_HELP_STRING([--enable-windowswm], [Build XWin w
+Index: xserver/configure.ac
+===================================================================
+--- xserver.orig/configure.ac	2013-08-02 15:09:08.852352007 +1000
++++ xserver/configure.ac	2013-08-02 15:09:08.832352006 +1000
+@@ -639,6 +639,7 @@
  AC_ARG_ENABLE(libdrm,         AS_HELP_STRING([--enable-libdrm], [Build Xorg with libdrm support (default: enabled)]), [DRM=$enableval],[DRM=yes])
  AC_ARG_ENABLE(clientids,      AS_HELP_STRING([--disable-clientids], [Build Xorg with client ID tracking (default: enabled)]), [CLIENTIDS=$enableval], [CLIENTIDS=yes])
  AC_ARG_ENABLE(pciaccess, AS_HELP_STRING([--enable-pciaccess], [Build Xorg with pciaccess library (default: enabled)]), [PCI=$enableval], [PCI=yes])
@@ -10,7 +10,7 @@ index c6ecba4..cbba229 100644
  
  dnl DDXes.
  AC_ARG_ENABLE(xorg,    	      AS_HELP_STRING([--enable-xorg], [Build Xorg server (default: auto)]), [XORG=$enableval], [XORG=auto])
-@@ -1148,6 +1149,15 @@ if test "x$XINERAMA" = xyes; then
+@@ -1152,6 +1153,15 @@
  	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES $XINERAMAPROTO"
  fi
  
@@ -26,7 +26,7 @@ index c6ecba4..cbba229 100644
  AM_CONDITIONAL(XACE, [test "x$XACE" = xyes])
  if test "x$XACE" = xyes; then
  	AC_DEFINE(XACE, 1, [Build X-ACE extension])
-@@ -2299,6 +2309,7 @@ hw/xfree86/utils/Makefile
+@@ -2300,6 +2310,7 @@
  hw/xfree86/utils/man/Makefile
  hw/xfree86/utils/cvt/Makefile
  hw/xfree86/utils/gtf/Makefile
@@ -34,11 +34,11 @@ index c6ecba4..cbba229 100644
  hw/dmx/config/Makefile
  hw/dmx/config/man/Makefile
  hw/dmx/doc/Makefile
-diff --git a/hw/xfree86/Makefile.am b/hw/xfree86/Makefile.am
-index c3899b5..6821198 100644
---- a/hw/xfree86/Makefile.am
-+++ b/hw/xfree86/Makefile.am
-@@ -25,15 +25,20 @@ if INT10MODULE
+Index: xserver/hw/xfree86/Makefile.am
+===================================================================
+--- xserver.orig/hw/xfree86/Makefile.am	2013-08-02 15:09:08.852352007 +1000
++++ xserver/hw/xfree86/Makefile.am	2013-08-02 15:09:08.836352006 +1000
+@@ -25,15 +25,20 @@
  INT10_SUBDIR = int10
  endif
  
@@ -61,11 +61,11 @@ index c3899b5..6821198 100644
  
  bin_PROGRAMS = Xorg
  nodist_Xorg_SOURCES = sdksyms.c
-diff --git a/hw/xfree86/common/xf86Config.c b/hw/xfree86/common/xf86Config.c
-index 74d5ed3..538ba4b 100644
---- a/hw/xfree86/common/xf86Config.c
-+++ b/hw/xfree86/common/xf86Config.c
-@@ -118,6 +118,7 @@ static ModuleDefault ModuleDefaults[] = {
+Index: xserver/hw/xfree86/common/xf86Config.c
+===================================================================
+--- xserver.orig/hw/xfree86/common/xf86Config.c	2013-08-02 15:09:08.852352007 +1000
++++ xserver/hw/xfree86/common/xf86Config.c	2013-08-02 15:09:08.836352006 +1000
+@@ -117,6 +117,7 @@
      {.name = "fb",.toLoad = TRUE,.load_opt = NULL},
      {.name = "shadow",.toLoad = TRUE,.load_opt = NULL},
  #endif
@@ -73,7 +73,7 @@ index 74d5ed3..538ba4b 100644
      {.name = NULL,.toLoad = FALSE,.load_opt = NULL}
  };
  
-@@ -260,6 +261,17 @@ xf86ModulelistFromConfig(pointer **optlist)
+@@ -259,6 +260,17 @@
          return NULL;
      }
  
@@ -91,22 +91,31 @@ index 74d5ed3..538ba4b 100644
      if (xf86configptr->conf_modules) {
          /* Walk the disable list and let people know what we've parsed to
           * not be loaded 
-diff --git a/hw/xfree86/common/xf86Globals.c b/hw/xfree86/common/xf86Globals.c
-index 7df7a80..17ed7c6 100644
---- a/hw/xfree86/common/xf86Globals.c
-+++ b/hw/xfree86/common/xf86Globals.c
-@@ -204,3 +204,6 @@ Bool xf86VidModeAllowNonLocal = FALSE;
+Index: xserver/hw/xfree86/common/xf86Globals.c
+===================================================================
+--- xserver.orig/hw/xfree86/common/xf86Globals.c	2013-08-02 15:09:08.852352007 +1000
++++ xserver/hw/xfree86/common/xf86Globals.c	2013-08-02 15:09:08.836352006 +1000
+@@ -206,3 +206,6 @@
  #endif
  RootWinPropPtr *xf86RegisteredPropertiesTable = NULL;
  Bool xorgHWAccess = FALSE;
 +Bool xorgMir = FALSE;
 +const char *mirID = NULL;
 +const char *mirSocket = NULL;
-diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
-index 91ec4c8..1e5415b 100644
---- a/hw/xfree86/common/xf86Init.c
-+++ b/hw/xfree86/common/xf86Init.c
-@@ -541,6 +541,13 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+Index: xserver/hw/xfree86/common/xf86Init.c
+===================================================================
+--- xserver.orig/hw/xfree86/common/xf86Init.c	2013-08-02 15:09:08.852352007 +1000
++++ xserver/hw/xfree86/common/xf86Init.c	2013-08-02 15:11:54.768358939 +1000
+@@ -554,7 +554,7 @@
+          * needed at this early stage.
+          */
+ 
+-        for (i = 0; i < xf86NumDrivers; i++) {
++        for (i = 0; i < xf86NumDrivers; ) {
+             xorgHWFlags flags = HW_IO;
+ 
+             if (xf86DriverList[i]->Identify != NULL)
+@@ -565,11 +565,20 @@
                                                GET_REQUIRED_HW_INTERFACES,
                                                &flags);
  
@@ -120,7 +129,27 @@ index 91ec4c8..1e5415b 100644
              if (NEED_IO_ENABLED(flags))
                  want_hw_access = TRUE;
  
-@@ -1454,6 +1461,17 @@ ddxProcessArgument(int argc, char **argv, int i)
+             if (!(flags & HW_SKIP_CONSOLE))
+                 xorgHWOpenConsole = TRUE;
++
++            i++;
+         }
+ 
+         if (xorgHWOpenConsole)
+@@ -662,9 +671,11 @@
+         }
+ 
+         /* Remove (unload) drivers that are not required */
+-        for (i = 0; i < xf86NumDrivers; i++)
++        for (i = 0; i < xf86NumDrivers; )
+             if (xf86DriverList[i] && xf86DriverList[i]->refCount <= 0)
+                 xf86DeleteDriver(i);
++            else
++                i++;
+ 
+         /*
+          * At this stage we know how many screens there are.
+@@ -1490,6 +1501,17 @@
          xf86Info.ShareVTs = TRUE;
          return 1;
      }
@@ -138,7 +167,7 @@ index 91ec4c8..1e5415b 100644
  
      /* OS-specific processing */
      return xf86ProcessArgument(argc, argv, i);
-@@ -1527,6 +1545,8 @@ ddxUseMsg(void)
+@@ -1563,6 +1585,8 @@
      ErrorF
          ("-novtswitch            don't automatically switch VT at reset & exit\n");
      ErrorF("-sharevts              share VTs with another X server\n");
@@ -147,11 +176,11 @@ index 91ec4c8..1e5415b 100644
      /* OS-specific usage */
      xf86UseMsg();
      ErrorF("\n");
-diff --git a/hw/xfree86/common/xf86Priv.h b/hw/xfree86/common/xf86Priv.h
-index 58cfe0a..4630e9e 100644
---- a/hw/xfree86/common/xf86Priv.h
-+++ b/hw/xfree86/common/xf86Priv.h
-@@ -91,6 +91,9 @@ extern _X_EXPORT int xf86NumScreens;
+Index: xserver/hw/xfree86/common/xf86Priv.h
+===================================================================
+--- xserver.orig/hw/xfree86/common/xf86Priv.h	2013-08-02 15:09:08.852352007 +1000
++++ xserver/hw/xfree86/common/xf86Priv.h	2013-08-02 15:09:08.836352006 +1000
+@@ -93,6 +93,9 @@
  extern _X_EXPORT const char *xf86VisualNames[];
  extern _X_EXPORT int xf86Verbose;       /* verbosity level */
  extern _X_EXPORT int xf86LogVerbose;    /* log file verbosity level */
@@ -161,11 +190,10 @@ index 58cfe0a..4630e9e 100644
  
  extern _X_EXPORT RootWinPropPtr *xf86RegisteredPropertiesTable;
  
-diff --git a/hw/xfree86/xmir/Makefile.am b/hw/xfree86/xmir/Makefile.am
-new file mode 100644
-index 0000000..80715f8
---- /dev/null
-+++ b/hw/xfree86/xmir/Makefile.am
+Index: xserver/hw/xfree86/xmir/Makefile.am
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/Makefile.am	2013-08-02 15:09:08.836352006 +1000
 @@ -0,0 +1,26 @@
 +INCLUDES =					\
 +	$(XORG_INCS)                            \
@@ -193,11 +221,10 @@ index 0000000..80715f8
 +	xmir-private.h
 +
 +sdk_HEADERS = xmir.h
-diff --git a/hw/xfree86/xmir/xmir-output.c b/hw/xfree86/xmir/xmir-output.c
-new file mode 100644
-index 0000000..e62c7fb
---- /dev/null
-+++ b/hw/xfree86/xmir/xmir-output.c
+Index: xserver/hw/xfree86/xmir/xmir-output.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/xmir-output.c	2013-08-02 15:09:08.840352007 +1000
 @@ -0,0 +1,225 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -424,11 +451,10 @@ index 0000000..e62c7fb
 +  
 +    return TRUE;
 +}
-diff --git a/hw/xfree86/xmir/xmir-private.h b/hw/xfree86/xmir/xmir-private.h
-new file mode 100644
-index 0000000..7a518a4
---- /dev/null
-+++ b/hw/xfree86/xmir/xmir-private.h
+Index: xserver/hw/xfree86/xmir/xmir-private.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/xmir-private.h	2013-08-02 15:09:08.840352007 +1000
 @@ -0,0 +1,90 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -520,11 +546,10 @@ index 0000000..7a518a4
 +xmir_process_from_eventloop(void);
 +
 + #endif /* _MIR_PRIVATE_H */
-diff --git a/hw/xfree86/xmir/xmir-thread-proxy.c b/hw/xfree86/xmir/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..7464644
---- /dev/null
-+++ b/hw/xfree86/xmir/xmir-thread-proxy.c
+Index: xserver/hw/xfree86/xmir/xmir-thread-proxy.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/xmir-thread-proxy.c	2013-08-02 15:09:08.840352007 +1000
 @@ -0,0 +1,117 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -643,11 +668,10 @@ index 0000000..7464644
 +	}
 +}
 +
-diff --git a/hw/xfree86/xmir/xmir-window.c b/hw/xfree86/xmir/xmir-window.c
-new file mode 100644
-index 0000000..0c906e2
---- /dev/null
-+++ b/hw/xfree86/xmir/xmir-window.c
+Index: xserver/hw/xfree86/xmir/xmir-window.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/xmir-window.c	2013-08-02 15:09:08.840352007 +1000
 @@ -0,0 +1,324 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -973,11 +997,10 @@ index 0000000..0c906e2
 +
 +    return TRUE;
 +}
-diff --git a/hw/xfree86/xmir/xmir.c b/hw/xfree86/xmir/xmir.c
-new file mode 100644
-index 0000000..6e2ebb8
---- /dev/null
-+++ b/hw/xfree86/xmir/xmir.c
+Index: xserver/hw/xfree86/xmir/xmir.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/xmir.c	2013-08-02 15:09:08.840352007 +1000
 @@ -0,0 +1,217 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -1196,11 +1219,10 @@ index 0000000..6e2ebb8
 +xMirTeardown(pointer module)
 +{
 +}
-diff --git a/hw/xfree86/xmir/xmir.h b/hw/xfree86/xmir/xmir.h
-new file mode 100644
-index 0000000..573309d
---- /dev/null
-+++ b/hw/xfree86/xmir/xmir.h
+Index: xserver/hw/xfree86/xmir/xmir.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/xfree86/xmir/xmir.h	2013-08-02 15:09:08.840352007 +1000
 @@ -0,0 +1,95 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -1297,11 +1319,11 @@ index 0000000..573309d
 +xmir_screen_for_each_damaged_window(xmir_screen *xmir, xmir_handle_window_damage_proc callback);
 +
 +#endif /* _XMIR_H */
-diff --git a/include/list.h b/include/list.h
-index 11de7c5..59f0233 100644
---- a/include/list.h
-+++ b/include/list.h
-@@ -184,6 +184,14 @@ __xorg_list_del(struct xorg_list *prev, struct xorg_list *next)
+Index: xserver/include/list.h
+===================================================================
+--- xserver.orig/include/list.h	2013-08-02 15:09:08.852352007 +1000
++++ xserver/include/list.h	2013-08-02 15:09:08.840352007 +1000
+@@ -184,6 +184,14 @@
      prev->next = next;
  }
  
@@ -1316,10 +1338,10 @@ index 11de7c5..59f0233 100644
  /**
   * Remove the element from the list it is in. Using this function will reset
   * the pointers to/from this element so it is removed from the list. It does
-diff --git a/include/xorg-server.h.in b/include/xorg-server.h.in
-index 81935be..c9cd4e8 100644
---- a/include/xorg-server.h.in
-+++ b/include/xorg-server.h.in
+Index: xserver/include/xorg-server.h.in
+===================================================================
+--- xserver.orig/include/xorg-server.h.in	2013-08-02 15:09:08.852352007 +1000
++++ xserver/include/xorg-server.h.in	2013-08-02 15:09:08.840352007 +1000
 @@ -212,4 +212,7 @@
  #define _XSERVER64 1
  #endif
@@ -1328,11 +1350,11 @@ index 81935be..c9cd4e8 100644
 +#undef XMIR
 +
  #endif /* _XORG_SERVER_H_ */
-diff --git a/miext/damage/damage.c b/miext/damage/damage.c
-index a98c20e..a1daebb 100644
---- a/miext/damage/damage.c
-+++ b/miext/damage/damage.c
-@@ -123,18 +123,14 @@ static void
+Index: xserver/miext/damage/damage.c
+===================================================================
+--- xserver.orig/miext/damage/damage.c	2013-08-02 15:09:08.852352007 +1000
++++ xserver/miext/damage/damage.c	2013-08-02 15:09:08.844352007 +1000
+@@ -123,18 +123,14 @@
  damageReportDamagePostRendering(DamagePtr pDamage, RegionPtr pOldDamage,
                                  RegionPtr pDamageRegion)
  {
@@ -1353,7 +1375,7 @@ index a98c20e..a1daebb 100644
          RegionNull(&tmpRegion);
          RegionSubtract(&tmpRegion, pDamageRegion, pOldDamage);
          if (RegionNotEmpty(&tmpRegion)) {
-@@ -143,25 +139,31 @@ damageReportDamagePostRendering(DamagePtr pDamage, RegionPtr pOldDamage,
+@@ -143,25 +139,31 @@
          }
          RegionUninit(&tmpRegion);
          break;
@@ -1390,11 +1412,11 @@ index a98c20e..a1daebb 100644
  }
  
  #if DAMAGE_DEBUG_ENABLE
-diff --git a/test/Makefile.am b/test/Makefile.am
-index 34f53fc..d1a0f27 100644
---- a/test/Makefile.am
-+++ b/test/Makefile.am
-@@ -6,7 +6,12 @@ if XORG
+Index: xserver/test/Makefile.am
+===================================================================
+--- xserver.orig/test/Makefile.am	2013-08-02 15:09:08.852352007 +1000
++++ xserver/test/Makefile.am	2013-08-02 15:09:08.844352007 +1000
+@@ -6,7 +6,12 @@
  # For now, requires xf86 ddx, could be adjusted to use another
  SUBDIRS += xi2
  noinst_PROGRAMS += xkb input xtest misc fixes xfree86 hashtabletest os signal-logging
@@ -1408,7 +1430,7 @@ index 34f53fc..d1a0f27 100644
  check_LTLIBRARIES = libxservertest.la
  
  TESTS=$(noinst_PROGRAMS)
-@@ -38,6 +43,8 @@ touch_LDADD=$(TEST_LDADD)
+@@ -38,6 +43,8 @@
  signal_logging_LDADD=$(TEST_LDADD)
  hashtabletest_LDADD=$(TEST_LDADD) $(top_srcdir)/Xext/hashtable.c
  os_LDADD=$(TEST_LDADD)
@@ -1417,11 +1439,10 @@ index 34f53fc..d1a0f27 100644
  
  libxservertest_la_LIBADD = $(XSERVER_LIBS)
  if XORG
-diff --git a/test/xmir-thread-proxy.c b/test/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..7cf19cf
---- /dev/null
-+++ b/test/xmir-thread-proxy.c
+Index: xserver/test/xmir-thread-proxy.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/test/xmir-thread-proxy.c	2013-08-02 15:09:08.844352007 +1000
 @@ -0,0 +1,154 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
@@ -1577,3 +1598,23 @@ index 0000000..7cf19cf
 +	xmir_test_many_threads_to_eventloop();
 +	xmir_test_refuses_to_marshall_too_large_msg();
 +}
+Index: xserver/hw/xfree86/common/xf86Helper.c
+===================================================================
+--- xserver.orig/hw/xfree86/common/xf86Helper.c	2013-08-02 15:09:07.884351967 +1000
++++ xserver/hw/xfree86/common/xf86Helper.c	2013-08-02 15:11:54.768358939 +1000
+@@ -100,7 +100,14 @@
+         if (xf86DriverList[drvIndex]->module)
+             UnloadModule(xf86DriverList[drvIndex]->module);
+         free(xf86DriverList[drvIndex]);
+-        xf86DriverList[drvIndex] = NULL;
++
++        /* Compact xf86DriverList array, update xf86NumDrivers */
++        xf86NumDrivers--;
++        if(drvIndex != xf86NumDrivers)
++            memmove(xf86DriverList + drvIndex,
++                    xf86DriverList + drvIndex + 1,
++                    sizeof(DriverPtr) * (xf86NumDrivers - drvIndex));
++        xf86DriverList = realloc(xf86DriverList, xf86NumDrivers * sizeof(DriverPtr));
+     }
+ }
+ 
