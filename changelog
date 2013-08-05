@@ -1,3 +1,9 @@
+xorg-server (2:1.14.2-0ubuntu5) saucy; urgency=low
+
+  * rules,control: Restrict XMir build to !powerpc, as we don't build Mir there
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 05 Aug 2013 18:46:43 +1000
+
 xorg-server (2:1.14.2-0ubuntu4) saucy; urgency=low
 
   * Add xmir.patch; First upload with XMir support.
