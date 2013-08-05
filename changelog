@@ -1,3 +1,10 @@
+xorg-server (2:1.14.2-0ubuntu6) saucy; urgency=low
+
+  * As we don't build XMir on PPC we should not try to build the
+    xserver-xorg-xmir package, either.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Mon, 05 Aug 2013 19:09:47 +1000
+
 xorg-server (2:1.14.2-0ubuntu5) saucy; urgency=low
 
   * rules,control: Restrict XMir build to !powerpc, as we don't build Mir there

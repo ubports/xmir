@@ -360,7 +360,7 @@ Description: common files used by various X servers
  This package provides files necessary for all X.Org based X servers.
 
 Package: xserver-xorg-xmir
-Architecture: any
+Architecture: amd64 armhf i386
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
