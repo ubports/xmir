@@ -70,7 +70,7 @@ else
 endif
 
 # Mir isn't built on PPC
-ifeq ($(DEB_HOST_ARCH), powerpc)
+ifneq (,$(filter $(DEB_HOST_ARCH), arm64 powerpc))
 	build_xmir = --disable-xmir
 endif
 
