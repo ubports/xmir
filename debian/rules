@@ -69,6 +69,11 @@ else
 	selinux = --disable-xselinux
 endif
 
+# Mir isn't built on PPC
+ifeq ($(DEB_HOST_ARCH), powerpc)
+	build_xmir = --disable-xmir
+endif
+
 ifeq ($(DEB_HOST_ARCH_OS), hurd)
 	dri = --disable-dri --disable-dri2
 else
