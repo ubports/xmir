@@ -1,6 +1,12 @@
 xorg-server (2:1.14.2-0ubuntu9) saucy; urgency=low
 
-  * Fix damage reporting (LP: 1206744)?
+  [ Maarten Lankhorst ]
+  * Fix crash in RRCrtcDetachScanoutPixmap.
+  * Add xmir module to xserver-xorg-core-dbg.
+  * Fix xf86DeleteDriver infinite loop. (LP: 1208715)
+
+  [ Christopher James Halse Rogers ]
+  * Fix damage reporting (LP: 1206744)
 
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 06 Aug 2013 16:11:47 +1000
 
