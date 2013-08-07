@@ -73,3 +73,15 @@ Dave, does this seem like a reasonable way to work around this particular crash?
              config->randr_provider->output_source = NULL;
              RRSetChanged(screen);
              detached = TRUE;
+--- a/randr/rrcrtc.c
++++ b/randr/rrcrtc.c
+@@ -367,6 +367,9 @@
+     PixmapPtr mscreenpix;
+     rrScrPriv(crtc->pScreen);
+ 
++   if (!crtc->scanout_pixmap)
++        return;
++
+     mscreenpix = master->GetScreenPixmap(master);
+ 
+     ret = pScrPriv->rrCrtcSetScanoutPixmap(crtc, NULL);
