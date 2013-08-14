@@ -40,7 +40,6 @@ no-nv.patch
 
 ## upstream patches
 os-use-libunwind-to-generate-backtraces.patch
-xf86-dont-enable-gpuscreens.patch
 
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
@@ -48,11 +47,8 @@ xf86-fixup-detection.patch
 xf86-inactive-gpuscreen.patch
 
 # hotplug fixes
-xf86crtc-don-t-use-display-for-vx-vy-for-gpu-screens.patch
 
 # fixes for reverse optimus, cherry-picked from fedora X
-dix-allow-pixmap-dirty-helper-to-be-used-for-non-sha.patch
-xserver-call-CSR-for-gpus.patch
 autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
 config-add-no-removal.patch
 include-selection-h.patch

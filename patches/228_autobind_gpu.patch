@@ -10,32 +10,11 @@ v2: fix if config or slave config is NULL
 v3: fix multi useful slaves
 DO NOT UPSTREAM.
 ---
- dix/dispatch.c                      |  2 --
  hw/xfree86/common/xf86Init.c        | 12 ++++++++++++
  hw/xfree86/common/xf86platformBus.c |  3 +++
  hw/xfree86/modes/xf86Crtc.c         | 32 ++++++++++++++++++++++++++++++++
- 4 files changed, 47 insertions(+), 2 deletions(-)
+ 3 files changed, 47 insertions(+), 0 deletions(-)
 
-diff --git a/dix/dispatch.c b/dix/dispatch.c
-index 0ce10c2..c2ab8f9 100644
---- a/dix/dispatch.c
-+++ b/dix/dispatch.c
-@@ -3933,7 +3933,6 @@ void
- AttachOutputGPU(ScreenPtr pScreen, ScreenPtr new)
- {
-     assert(new->isGPU);
--    assert(!new->current_master);
-     xorg_list_add(&new->output_head, &pScreen->output_slave_list);
-     new->current_master = pScreen;
- }
-@@ -3950,7 +3949,6 @@ void
- AttachOffloadGPU(ScreenPtr pScreen, ScreenPtr new)
- {
-     assert(new->isGPU);
--    assert(!new->current_master);
-     xorg_list_add(&new->offload_head, &pScreen->offload_slave_list);
-     new->current_master = pScreen;
- }
 diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
 index d231ced..89629c1 100644
 --- a/hw/xfree86/common/xf86Init.c
