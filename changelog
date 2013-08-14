@@ -1,11 +1,11 @@
-xorg-server (2:1.14.2.901-2ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.14.2.901-2ubuntu1) saucy; urgency=low
 
   * Merge from released debian-experimental.
   * Drop upstreamed prime patches.
   * Refresh 228_autobind_gpu.patch.
   * Pick up some more input fixes from upstream.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 14 Aug 2013 10:22:46 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 14 Aug 2013 10:52:17 +0200
 
 xorg-server (2:1.14.2.901-2) experimental; urgency=low
 
