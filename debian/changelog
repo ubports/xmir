@@ -1,3 +1,9 @@
+xorg-server (2:1.14.2.901-2ubuntu2) saucy; urgency=low
+
+  * xmir.patch: Update for new API
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Thu, 22 Aug 2013 14:23:40 +1000
+
 xorg-server (2:1.14.2.901-2ubuntu1) saucy; urgency=low
 
   * Merge from released debian-experimental.
