@@ -1,3 +1,10 @@
+xorg-server (2:1.14.2.901-2ubuntu4) saucy; urgency=low
+
+  * xmir.patch: Add XRandR support
+  * Bump serverminver for XMir API changes
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Thu, 29 Aug 2013 19:42:41 +1000
+
 xorg-server (2:1.14.2.901-2ubuntu3) saucy; urgency=low
 
   * xmir.patch: Use the API we have, not the API we've documented
