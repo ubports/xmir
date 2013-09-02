@@ -1,5 +1,5 @@
 diff --git a/configure.ac b/configure.ac
-index c6ecba4..cbba229 100644
+index c6ecba4..07d02d0 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -635,6 +635,7 @@ AC_ARG_ENABLE(windowswm,      AS_HELP_STRING([--enable-windowswm], [Build XWin w
@@ -15,11 +15,11 @@ index c6ecba4..cbba229 100644
  fi
  
 +if test "x$XMIR" != xno; then
-+	PKG_CHECK_MODULES([XMIR], [mirclient], [XMIR=yes], [XMIR=no])
++	PKG_CHECK_MODULES([XMIR], [mirclient atomic_ops], [XMIR=yes], [XMIR=no])
 +	AC_SUBST([XMIR_LIBS])
 +        AC_SUBST([XMIR_CFLAGS])
 +        AC_DEFINE(XMIR, 1, [Support Mir nested mode])
-+	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES mirclient"
++	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES mirclient atomic_ops"
 +fi	      
 +AM_CONDITIONAL(XMIR, [test "x$XMIR" = xyes])
 +
@@ -91,6 +91,46 @@ index 74d5ed3..538ba4b 100644
      if (xf86configptr->conf_modules) {
          /* Walk the disable list and let people know what we've parsed to
           * not be loaded 
+diff --git a/hw/xfree86/common/xf86Events.c b/hw/xfree86/common/xf86Events.c
+index 7a949fd..4d416b4 100644
+--- a/hw/xfree86/common/xf86Events.c
++++ b/hw/xfree86/common/xf86Events.c
+@@ -105,8 +105,6 @@ extern fd_set EnabledDevices;
+ extern void (*xf86OSPMClose) (void);
+ #endif
+ 
+-static void xf86VTSwitch(void);
+-
+ /*
+  * Allow arbitrary drivers or other XFree86 code to register with our main
+  * Wakeup handler.
+@@ -410,7 +408,7 @@ xf86ReleaseKeys(DeviceIntPtr pDev)
+  * xf86VTSwitch --
+  *      Handle requests for switching the vt.
+  */
+-static void
++_X_EXPORT void
+ xf86VTSwitch(void)
+ {
+     int i;
+@@ -466,7 +464,7 @@ xf86VTSwitch(void)
+ 
+         xf86AccessLeave();      /* We need this here, otherwise */
+ 
+-        if (!xf86VTSwitchAway()) {
++        if (!xorgMir && !xf86VTSwitchAway()) {
+             /*
+              * switch failed
+              */
+@@ -522,7 +520,7 @@ xf86VTSwitch(void)
+     }
+     else {
+         DebugF("xf86VTSwitch: Entering\n");
+-        if (!xf86VTSwitchTo())
++        if (!xorgMir && !xf86VTSwitchTo())
+             return;
+ 
+ #ifdef XF86PM
 diff --git a/hw/xfree86/common/xf86Globals.c b/hw/xfree86/common/xf86Globals.c
 index 7df7a80..17ed7c6 100644
 --- a/hw/xfree86/common/xf86Globals.c
@@ -200,7 +240,7 @@ index 91ec4c8..0508e8d 100644
      xf86UseMsg();
      ErrorF("\n");
 diff --git a/hw/xfree86/common/xf86Priv.h b/hw/xfree86/common/xf86Priv.h
-index 58cfe0a..4630e9e 100644
+index 58cfe0a..96372fa 100644
 --- a/hw/xfree86/common/xf86Priv.h
 +++ b/hw/xfree86/common/xf86Priv.h
 @@ -91,6 +91,9 @@ extern _X_EXPORT int xf86NumScreens;
@@ -213,6 +253,16 @@ index 58cfe0a..4630e9e 100644
  
  extern _X_EXPORT RootWinPropPtr *xf86RegisteredPropertiesTable;
  
+@@ -147,6 +150,9 @@ xf86HandlePMEvents(int fd, pointer data);
+ extern _X_EXPORT int (*xf86PMGetEventFromOs) (int fd, pmEvent * events,
+                                               int num);
+ extern _X_EXPORT pmWait (*xf86PMConfirmEventToOs) (int fd, pmEvent event);
++extern _X_EXPORT void
++xf86VTSwitch(void);
++
+ 
+ /* xf86Helper.c */
+ extern _X_EXPORT void
 diff --git a/hw/xfree86/ramdac/xf86Cursor.c b/hw/xfree86/ramdac/xf86Cursor.c
 index 860704e..5277c94 100644
 --- a/hw/xfree86/ramdac/xf86Cursor.c
@@ -278,10 +328,10 @@ index 0000000..80715f8
 +sdk_HEADERS = xmir.h
 diff --git a/hw/xfree86/xmir/xmir-output.c b/hw/xfree86/xmir/xmir-output.c
 new file mode 100644
-index 0000000..b461651
+index 0000000..41696b5
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-output.c
-@@ -0,0 +1,559 @@
+@@ -0,0 +1,571 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -322,6 +372,7 @@ index 0000000..b461651
 +#include "xmir.h"
 +#include "xmir-private.h"
 +#include "xf86Crtc.h"
++#include "xf86Priv.h"
 +
 +struct xmir_crtc {
 +    xmir_screen             *xmir;
@@ -453,6 +504,18 @@ index 0000000..b461651
 +    }
 +}
 +
++static void
++xmir_crtc_surface_created(MirSurface *surface, void *ctx)
++{
++    xf86CrtcPtr crtc = ctx;
++    struct xmir_crtc *xmir_crtc = crtc->driver_private;
++
++    if (xmir_crtc->root_fragment->surface != NULL)
++        mir_surface_release(xmir_crtc->root_fragment->surface, xmir_stupid_callback, NULL);
++
++    xmir_crtc->root_fragment->surface = surface;
++}
++
 +static Bool
 +xmir_crtc_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
 +                         Rotation rotation, int x, int y)
@@ -473,7 +536,6 @@ index 0000000..b461651
 +    };
 +    struct xmir_crtc *xmir_crtc = crtc->driver_private;
 +    uint32_t output_id = mir_display_output_id_invalid;
-+    MirSurface *surface;
 +    const char *error_msg;
 +
 +    if (mode->HDisplay == 0 || mode->VDisplay == 0)
@@ -504,26 +566,27 @@ index 0000000..b461651
 +    xf86Msg(X_INFO, "Post-modeset config:\n");
 +    xmir_dump_config(xmir_crtc->config);
 +
-+    if (xmir_crtc->root_fragment->surface != NULL)
-+        mir_wait_for(mir_surface_release(xmir_crtc->root_fragment->surface, xmir_stupid_callback, NULL));
-+
 +    if (output_id == mir_display_output_id_invalid) {
++      if (xmir_crtc->root_fragment->surface != NULL)
++        mir_wait_for(mir_surface_release(xmir_crtc->root_fragment->surface, xmir_stupid_callback, NULL));
 +        xmir_crtc->root_fragment->surface = NULL;
 +        return TRUE;
 +    }
 +
 +    params.output_id = output_id;
 +    xf86Msg(X_INFO, "Putting surface on output %d\n", output_id);
-+    surface = mir_connection_create_surface_sync(xmir_connection_get(),
-+                                                 &params);
-+    if (!mir_surface_is_valid(surface)) {
++    mir_wait_for(mir_connection_create_surface(xmir_connection_get(),
++					       &params,
++					       xmir_crtc_surface_created,
++					       crtc));
++    if (!mir_surface_is_valid(xmir_crtc->root_fragment->surface)) {
 +        xf86Msg(X_ERROR,
 +                "[xmir] Failed to create surface for %dx%d mode: %s\n",
 +                mode->HDisplay, mode->VDisplay,
-+                mir_surface_get_error_message(surface));
++                mir_surface_get_error_message(xmir_crtc->root_fragment->surface));
 +        return FALSE;
 +    }
-+    xmir_crtc->root_fragment->surface = surface;
++
 +
 +    /* During X server init this will be NULL.
 +       This is fixed up in xmir_window_create */
@@ -783,7 +846,6 @@ index 0000000..b461651
 +                         320, 320,
 +                         INT16_MAX, INT16_MAX);
 +
-+
 +    /* Hook up hotplug notification */
 +    xmir->hotplug_event_handler =
 +        xmir_register_handler(&xmir_handle_hotplug,
@@ -843,10 +905,10 @@ index 0000000..b461651
 +}
 diff --git a/hw/xfree86/xmir/xmir-private.h b/hw/xfree86/xmir/xmir-private.h
 new file mode 100644
-index 0000000..a24afbf
+index 0000000..9b144eb
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-private.h
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,107 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -882,6 +944,7 @@ index 0000000..a24afbf
 +#ifndef _XMIR_PRIVATE_H
 +#define _XMIR_PRIVATE_H
 +
++#include <atomic_ops.h>
 +#include <mir_toolkit/mir_client_library.h>
 +#include "xmir.h"
 +#include "xf86str.h"
@@ -900,6 +963,8 @@ index 0000000..a24afbf
 +    xmir_driver *          driver;
 +    xmir_marshall_handler *submit_rendering_handler;
 +    xmir_marshall_handler *hotplug_event_handler;
++    xmir_marshall_handler *focus_event_handler;
++    AO_t                   focus_count;
 +    struct xorg_list       damage_list;
 +    struct xmir_window   **root_window_fragments; /* NULL terminated array of xmir_window * */
 +};
@@ -1422,10 +1487,10 @@ index 0000000..89c5448
 +}
 diff --git a/hw/xfree86/xmir/xmir.c b/hw/xfree86/xmir/xmir.c
 new file mode 100644
-index 0000000..8479424
+index 0000000..a294793
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.c
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,267 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1554,6 +1619,40 @@ index 0000000..8479424
 +    return TRUE;
 +}
 +
++static void xmir_handle_focus_event(void *ctx)
++{
++    Bool new_focus = *(Bool *)ctx;
++    xf86Msg(X_INFO, "[XMir] Handling focus event, new_focus = %s\n", new_focus ? "TRUE" : "FALSE");
++
++    /* TODO: Split xf86VTSwitch out so that we don't need to check xf86VTOwner*/
++    /* TODO: Disable input on startup until we receive a usc ACK */
++    if (new_focus && !xf86VTOwner())
++        xf86VTSwitch();
++
++    if (!new_focus && xf86VTOwner())
++        xf86VTSwitch();
++}
++
++static void xmir_handle_lifecycle_event(MirConnection *unused, MirLifecycleState state, void *ctx)
++{
++    (void)unused;
++    xmir_screen *xmir = ctx;
++    Bool new_focus;
++    switch(state)
++    {
++    case mir_lifecycle_state_will_suspend:
++        new_focus = FALSE;
++        break;
++    case mir_lifecycle_state_resumed:
++        new_focus = TRUE;
++        break;
++    default:
++        xf86Msg(X_ERROR, "Received unknown Mir lifetime event\n");
++        return;
++    }
++    xmir_post_to_eventloop(xmir->focus_event_handler, &new_focus);
++}
++
 +_X_EXPORT Bool
 +xmir_screen_init(ScreenPtr screen, xmir_screen *xmir)
 +{
@@ -1566,6 +1665,17 @@ index 0000000..8479424
 +
 +    if (!xf86_cursors_init(screen, 0,0,0))
 +        xf86Msg(X_WARNING, "xf86Cursor initialisation failed\n");
++
++    /* Hook up focus -> VT switch proxy */
++    xmir->focus_event_handler = 
++        xmir_register_handler(&xmir_handle_focus_event,
++                              sizeof(Bool));
++    if (xmir->focus_event_handler == NULL)
++        return FALSE;
++
++    mir_connection_set_lifecycle_event_callback(xmir_connection_get(),
++                                                &xmir_handle_lifecycle_event,
++                                                xmir);
 +
 +    return TRUE;
 +}

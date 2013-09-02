@@ -85,6 +85,7 @@ Build-Depends:
  libbsd-dev [kfreebsd-any],
 # XMir
  libmirclient-dev (>= 0.0.8+13.10.20130803) [!arm64 !powerpc],
+ libatomic-ops-dev,
 Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
