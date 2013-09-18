@@ -328,10 +328,10 @@ index 0000000..80715f8
 +sdk_HEADERS = xmir.h
 diff --git a/hw/xfree86/xmir/xmir-output.c b/hw/xfree86/xmir/xmir-output.c
 new file mode 100644
-index 0000000..41696b5
+index 0000000..8fd8640
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-output.c
-@@ -0,0 +1,571 @@
+@@ -0,0 +1,678 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -380,9 +380,86 @@ index 0000000..41696b5
 +    MirDisplayConfiguration *config;
 +};
 +
-+static void
-+crtc_dpms(xf86CrtcPtr drmmode_crtc, int mode)
++static const char *
++xmir_mir_dpms_mode_description(MirPowerMode mode)
 +{
++    switch (mode)
++    {
++    case mir_power_mode_on:
++        return "mir_power_mode_on";
++    case mir_power_mode_standby:
++        return "mir_power_mode_standby";
++    case mir_power_mode_suspend:
++        return "mir_power_mode_suspend";
++    case mir_power_mode_off:
++        return "mir_power_mode_off";
++    default:
++        return "OMGUNKNOWN!";
++    }
++}
++
++static void
++xmir_crtc_dpms(xf86CrtcPtr crtc, int mode)
++{
++    xf86CrtcConfigPtr crtc_cfg = XF86_CRTC_CONFIG_PTR(crtc->scrn);
++    struct xmir_crtc *xmir_crtc = crtc->driver_private;
++
++    for (int i = 0; i < crtc_cfg->num_output; i++) {
++        /* If this output should be driven by our "CRTC", set DPMS mode */
++        MirDisplayOutput *output = crtc_cfg->output[i]->driver_private;
++        if (crtc_cfg->output[i]->crtc == crtc) {
++            xf86Msg(X_INFO, "Setting DPMS mode for output %d to %d\n", i, mode);
++            switch (mode) {
++            case DPMSModeOn:
++                output->power_mode = mir_power_mode_on;
++                xmir_crtc->xmir->dpms_on = TRUE;
++                break;
++            case DPMSModeStandby:
++                output->power_mode = mir_power_mode_standby;
++                xmir_crtc->xmir->dpms_on = FALSE;
++                break;
++            case DPMSModeSuspend:
++                output->power_mode = mir_power_mode_suspend;
++                xmir_crtc->xmir->dpms_on = FALSE;
++                break;
++            case DPMSModeOff:
++                output->power_mode = mir_power_mode_off;
++                xmir_crtc->xmir->dpms_on = FALSE;
++                break;
++            }
++        }
++    }
++    mir_wait_for(mir_connection_apply_display_config(xmir_connection_get(),
++                                                     xmir_crtc->config));
++}
++
++static const char*
++xmir_get_output_type_str(MirDisplayOutput *mir_output)
++{
++    const char *str = "Invalid";
++
++    switch(mir_output->type)
++    {
++    case mir_display_output_type_vga: str = "VGA"; break;
++    case mir_display_output_type_dvii: str = "DVI"; break;
++    case mir_display_output_type_dvid: str = "DVI"; break;
++    case mir_display_output_type_dvia: str = "DVI"; break;
++    case mir_display_output_type_composite: str = "Composite"; break;
++    case mir_display_output_type_svideo: str = "TV"; break;
++    case mir_display_output_type_lvds: str = "LVDS"; break;
++    case mir_display_output_type_component: str = "CTV"; break;
++    case mir_display_output_type_ninepindin: str = "DIN"; break;
++    case mir_display_output_type_displayport: str = "DP"; break;
++    case mir_display_output_type_hdmia: str = "HDMI"; break;
++    case mir_display_output_type_hdmib: str = "HDMI"; break;
++    case mir_display_output_type_tv: str = "TV"; break;
++    case mir_display_output_type_edp: str = "eDP"; break;
++
++    case mir_display_output_type_unknown: str = "None"; break;
++    default: break;
++    }
++
++    return str;
 +}
 +
 +static void
@@ -402,12 +479,33 @@ index 0000000..41696b5
 +    xf86output->subpixel_order = SubPixelUnknown;
 +}
 +
-+static Bool
-+xmir_mir_mode_matches(MirDisplayMode *mir_mode, DisplayModePtr X_mode)
++static DisplayModePtr
++xmir_create_xf86mode(const struct MirDisplayMode *mir_mode)
 +{
-+    return (mir_mode->vertical_resolution == X_mode->VDisplay &&
-+            mir_mode->horizontal_resolution == X_mode->HDisplay /*&&
-+            fabs(mir_mode->refresh_rate - X_mode->VRefresh) < 0.01*/);
++    DisplayModePtr mode;
++
++    mode = xf86CVTMode(mir_mode->horizontal_resolution,
++                       mir_mode->vertical_resolution,
++                       mir_mode->refresh_rate,
++                       FALSE, FALSE);
++
++    /*
++     * And now, because the CVT standard doesn't support such common
++     * resolutions as 1366x768...
++     */
++    mode->VDisplay = mir_mode->vertical_resolution;
++    mode->HDisplay = mir_mode->horizontal_resolution;
++
++    xf86SetModeDefaultName(mode);
++
++    return mode;
++}
++
++static void
++xmir_free_xf86mode(DisplayModePtr mode)
++{
++    free(mode->name);
++    free(mode);
 +}
 +
 +static Bool
@@ -415,10 +513,18 @@ index 0000000..41696b5
 +                         DisplayModePtr mode)
 +{
 +    for (int i = 0; i < output->num_modes; i++) {
-+        xf86Msg(X_INFO, "Checking against mode (%dx%d)\n",
++        Bool modes_equal = FALSE;
++        DisplayModePtr mir_mode = NULL;
++        xf86Msg(X_INFO, "Checking against mode (%dx%d)@%.2f\n",
 +                output->modes[i].horizontal_resolution,
-+                output->modes[i].vertical_resolution);
-+        if (xmir_mir_mode_matches(&output->modes[i], mode)) {
++                output->modes[i].vertical_resolution,
++                output->modes[i].refresh_rate);
++
++        mir_mode = xmir_create_xf86mode(&output->modes[i]);
++        modes_equal = xf86ModesEqual(mode, mir_mode);
++        xmir_free_xf86mode(mir_mode);
++
++        if (modes_equal) {
 +            output->current_mode = i;
 +            output->used = 1;
 +            xf86Msg(X_INFO, "Matched mode %d\n", i);
@@ -468,7 +574,7 @@ index 0000000..41696b5
 +{
 +  for (int i = 0; i < config->num_outputs; i++)
 +    {
-+      xf86Msg(X_INFO, "Output %d (%s, %s) has mode %d (%d x %d @ %.2f), position (%d,%d)\n",
++      xf86Msg(X_INFO, "Output %d (%s, %s) has mode %d (%d x %d @ %.2f), position (%d,%d), dpms: %s\n",
 +	      config->outputs[i].output_id,
 +	      config->outputs[i].connected ? "connected" : "disconnected",
 +	      config->outputs[i].used ? "enabled" : "disabled",
@@ -477,7 +583,17 @@ index 0000000..41696b5
 +          config->outputs[i].used ? config->outputs[i].modes[config->outputs[i].current_mode].vertical_resolution : 0,
 +          config->outputs[i].used ? config->outputs[i].modes[config->outputs[i].current_mode].refresh_rate : 0,
 +	      config->outputs[i].position_x,
-+	      config->outputs[i].position_y);
++	      config->outputs[i].position_y,
++          xmir_mir_dpms_mode_description(config->outputs[i].power_mode));
++      for (int m = 0; m < config->outputs[i].num_modes; m++)
++      {
++        xf86Msg(X_INFO, "  mode %d: (%d x %d @ %.2f)\n",
++                m,
++                config->outputs[i].modes[m].horizontal_resolution,
++
++                config->outputs[i].modes[m].vertical_resolution,
++                config->outputs[i].modes[m].refresh_rate);
++      }
 +    }
 +}
 +
@@ -502,6 +618,8 @@ index 0000000..41696b5
 +        /* TODO: Ensure that the order actually matches up */
 +        xmir_output_populate(crtc_cfg->output[i], new_config->outputs + i);
 +    }
++    xf86Msg(X_INFO, "Recieved updated config from Mir:\n");
++    xmir_dump_config(new_config);
 +}
 +
 +static void
@@ -541,10 +659,10 @@ index 0000000..41696b5
 +    if (mode->HDisplay == 0 || mode->VDisplay == 0)
 +        return FALSE;    
 +
-+    xf86Msg(X_INFO, "Initial configuration:\n");
++    xf86Msg(X_INFO, "Initial configuration for crtc %p:\n", crtc);
 +    xmir_dump_config(xmir_crtc->config);
 +
-+    xf86Msg(X_INFO, "Setting mode to %dx%d (%.2f)", mode->HDisplay, mode->VDisplay, mode->VRefresh);
++    xf86Msg(X_INFO, "Setting mode to %dx%d (%.2f)\n", mode->HDisplay, mode->VDisplay, mode->VRefresh);
 +    output_id = xmir_update_outputs_for_crtc(crtc, mode, x, y);
 +    xmir_disable_unused_outputs(crtc);
 +
@@ -561,10 +679,8 @@ index 0000000..41696b5
 +        /* TODO: Restore correct config cache */
 +    }
 +
-+    xmir_update_config(XF86_CRTC_CONFIG_PTR(crtc->scrn));
-+
 +    xf86Msg(X_INFO, "Post-modeset config:\n");
-+    xmir_dump_config(xmir_crtc->config);
++    xmir_update_config(XF86_CRTC_CONFIG_PTR(crtc->scrn));
 +
 +    if (output_id == mir_display_output_id_invalid) {
 +      if (xmir_crtc->root_fragment->surface != NULL)
@@ -652,7 +768,7 @@ index 0000000..41696b5
 +}
 +
 +static const xf86CrtcFuncsRec crtc_funcs = {
-+    .dpms                = crtc_dpms,
++    .dpms                = xmir_crtc_dpms,
 +    .set_mode_major      = xmir_crtc_set_mode_major,
 +    .set_cursor_colors   = crtc_set_cursor_colors,
 +    .set_cursor_position = crtc_set_cursor_position,
@@ -688,31 +804,15 @@ index 0000000..41696b5
 +xmir_output_get_modes(xf86OutputPtr xf86output)
 +{
 +    MirDisplayOutput *mir_output = xf86output->driver_private;
-+    DisplayModePtr modes = NULL, mode = NULL;
++    DisplayModePtr modes = NULL;
 +
 +    for (int i = 0; i < mir_output->num_modes; i++) {
-+        /* Check if mode differs only by refresh rate from previous mode and reject */
-+        /* TODO: Remove this check and instead handle refresh rate correctly */
-+        if (mode != NULL)
-+            if (xmir_mir_mode_matches((mir_output->modes + i), mode))
-+                continue;
-+
-+        char *mode_name = malloc(32);
-+        mode = xf86CVTMode(mir_output->modes[i].horizontal_resolution,
-+                           mir_output->modes[i].vertical_resolution,
-+                           60.0f,
-+                           FALSE, FALSE);
-+        /* And now, because the CVT standard doesn't support such common resolutions as 1366x768... */
-+        mode->VDisplay = mir_output->modes[i].vertical_resolution;
-+        mode->HDisplay = mir_output->modes[i].horizontal_resolution;
++        DisplayModePtr mode = xmir_create_xf86mode(&mir_output->modes[i]);
 +
 +        mode->type = M_T_DRIVER;
-+        /* TODO: Get preferred mode from Mir, or get a guarantee that the first mode is preferred */
-+        if (i == 0)
++        if (i == mir_output->preferred_mode)
 +            mode->type |= M_T_PREFERRED;
 +
-+        snprintf(mode_name, 32, "%dx%d", mode->HDisplay, mode->VDisplay);
-+        mode->name = mode_name;
 +        modes = xf86ModesAdd(modes, mode);
 +    }
 +    /* TODO: Get Mir to send us the EDID blob and add that */
@@ -837,6 +937,9 @@ index 0000000..41696b5
 +    int i;
 +    MirDisplayConfiguration *display_config;
 +    xf86CrtcPtr xf86crtc;
++    int output_type_count[mir_display_output_type_edp + 1];
++
++    memset(output_type_count, 0, sizeof output_type_count);
 +
 +    /* Set up CRTC config functions */
 +    xf86CrtcConfigInit(scrn, &config_funcs);
@@ -858,9 +961,9 @@ index 0000000..41696b5
 +    display_config =
 +        mir_connection_create_display_config(xmir_connection_get());
 +
-+    xmir->root_window_fragments = malloc((display_config->num_outputs + 1) *
++    xmir->root_window_fragments = malloc((display_config->cards[0].max_simultaneous_outputs + 1) *
 +                                         sizeof(xmir_window *));
-+    xmir->root_window_fragments[display_config->num_outputs] = NULL;
++    xmir->root_window_fragments[display_config->cards[0].max_simultaneous_outputs] = NULL;
 +
 +    if (xmir->root_window_fragments == NULL)
 +        return FALSE;
@@ -868,16 +971,20 @@ index 0000000..41696b5
 +    for (i = 0; i < display_config->num_outputs; i++) {
 +        xf86OutputPtr xf86output;
 +        char name[32];
++        MirDisplayOutput *mir_output = &display_config->outputs[i];
++        const char* output_type_str = xmir_get_output_type_str(mir_output);
++        int type_count = i;
 +
-+        snprintf(name, sizeof name, "XMIR-%d", i);
++        if (mir_output->type >= 0 && mir_output->type <= mir_display_output_type_edp)
++            type_count = output_type_count[mir_output->type]++;
 +
++        snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
 +        xf86output = xf86OutputCreate(scrn, &xmir_output_funcs, name);
 +
-+        xmir_output_populate(xf86output, display_config->outputs + i);
++        xmir_output_populate(xf86output, mir_output);
 +    }
 +
-+    /* TODO: Get the number of CRTCs from Mir */
-+    for (i = 0; i < display_config->num_outputs; i++) {
++    for (i = 0; i < display_config->cards[0].max_simultaneous_outputs; i++) {
 +        struct xmir_crtc *xmir_crtc = malloc(sizeof *xmir_crtc);
 +        if (xmir_crtc == NULL)
 +            return FALSE;
@@ -905,10 +1012,10 @@ index 0000000..41696b5
 +}
 diff --git a/hw/xfree86/xmir/xmir-private.h b/hw/xfree86/xmir/xmir-private.h
 new file mode 100644
-index 0000000..9b144eb
+index 0000000..15d89f0
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-private.h
-@@ -0,0 +1,107 @@
+@@ -0,0 +1,106 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -944,7 +1051,6 @@ index 0000000..9b144eb
 +#ifndef _XMIR_PRIVATE_H
 +#define _XMIR_PRIVATE_H
 +
-+#include <atomic_ops.h>
 +#include <mir_toolkit/mir_client_library.h>
 +#include "xmir.h"
 +#include "xf86str.h"
@@ -964,9 +1070,9 @@ index 0000000..9b144eb
 +    xmir_marshall_handler *submit_rendering_handler;
 +    xmir_marshall_handler *hotplug_event_handler;
 +    xmir_marshall_handler *focus_event_handler;
-+    AO_t                   focus_count;
 +    struct xorg_list       damage_list;
 +    struct xmir_window   **root_window_fragments; /* NULL terminated array of xmir_window * */
++    unsigned int           dpms_on:1;             /* Until Mir is less stupid about DPMS */
 +};
 +
 +struct xmir_window {
@@ -1018,10 +1124,10 @@ index 0000000..9b144eb
 + #endif /* _MIR_PRIVATE_H */
 diff --git a/hw/xfree86/xmir/xmir-thread-proxy.c b/hw/xfree86/xmir/xmir-thread-proxy.c
 new file mode 100644
-index 0000000..7464644
+index 0000000..e0acceb
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-thread-proxy.c
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,124 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1058,7 +1164,9 @@ index 0000000..7464644
 +#include <string.h>
 +#include <unistd.h>
 +#include <fcntl.h>
++#include <errno.h>
 +
++#include "xf86.h"
 +#include "xmir-private.h"
 +
 +struct xmir_marshall_handler {
@@ -1079,7 +1187,9 @@ index 0000000..7464644
 +void
 +xmir_init_thread_to_eventloop(void)
 +{
-+	pipe(pipefds);
++	int err = pipe(pipefds);
++	if (err == -1)
++		FatalError("[XMIR] Failed to create thread-proxy pipes: %s\n", strerror(errno));
 +
 +	/* Set the read end to not block; we'll pull from this in the event loop
 +	 * We don't need to care about the write end, as that'll be written to
@@ -1113,12 +1223,15 @@ index 0000000..7464644
 +void
 +xmir_post_to_eventloop(xmir_marshall_handler *handler, void *msg) 
 +{
++	ssize_t written;
 +	const int total_size = sizeof *handler + handler->msg_size;
 +	/* We require the total size to be less than PIPE_BUF to ensure an atomic write */
 +	assert(total_size < PIPE_BUF);
 +
 +	memcpy(handler->msg, msg, handler->msg_size);
-+	write(pipefds[1], handler, total_size);
++	written = write(pipefds[1], handler, total_size);
++	if (written != total_size)
++		xf86Msg(X_ERROR, "[XMIR] Failed to proxy message to mainloop\n");
 +}
 +
 +void
@@ -1141,10 +1254,10 @@ index 0000000..7464644
 +
 diff --git a/hw/xfree86/xmir/xmir-window.c b/hw/xfree86/xmir/xmir-window.c
 new file mode 100644
-index 0000000..89c5448
+index 0000000..6fe2cfe
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-window.c
-@@ -0,0 +1,340 @@
+@@ -0,0 +1,343 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1223,13 +1336,13 @@ index 0000000..89c5448
 +static void
 +xmir_handle_buffer_available(void *ctx)
 +{
++    xmir_screen *xmir;
 +    xmir_window *mir_win = *(xmir_window **)ctx;
 +
 +    if (mir_win->surface == NULL)
 +        return;
 +
-+    xmir_screen *xmir =
-+        xmir_screen_get(xmir_window_to_windowptr(mir_win)->drawable.pScreen);
++    xmir = xmir_screen_get(xmir_window_to_windowptr(mir_win)->drawable.pScreen);
 +
 +    mir_win->has_free_buffer = TRUE;
 +    mir_win->damage_index = (mir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
@@ -1288,9 +1401,12 @@ index 0000000..89c5448
 +{
 +    RegionPtr tracking;
 +
++    if (!xmir_screen_get(xmir_win->win->drawable.pScreen)->dmps_on)
++        return;
++
 +    xmir_win->has_free_buffer = FALSE;
-+    mir_surface_swap_buffers(xmir_win->surface, &handle_buffer_received, xmir_win);
 +    tracking = damage_region_for_current_buffer(xmir_win);
++    mir_surface_swap_buffers(xmir_win->surface, &handle_buffer_received, xmir_win);
 +
 +    if (region == NULL)
 +        RegionEmpty(tracking);
@@ -1316,9 +1432,9 @@ index 0000000..89c5448
 +        return (RegionPtr)&xmir_empty_region;
 +
 +    if (xmir_win->damaged) {
++        int i;
 +        RegionPtr damage = DamageRegion(xmir_win->damage);
 +        RegionIntersect(damage, damage, &xmir_win->region);
-+        int i;
 +
 +        for (i = 0; i < MIR_MAX_BUFFER_AGE; i++) {
 +            RegionUnion(&xmir_win->past_damage[i],
@@ -1487,10 +1603,10 @@ index 0000000..89c5448
 +}
 diff --git a/hw/xfree86/xmir/xmir.c b/hw/xfree86/xmir/xmir.c
 new file mode 100644
-index 0000000..a294793
+index 0000000..569044e
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.c
-@@ -0,0 +1,267 @@
+@@ -0,0 +1,262 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1725,7 +1841,6 @@ index 0000000..a294793
 +xMirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 +{
 +    static Bool setupDone = FALSE;
-+    const char *socket = "/tmp/mir_socket";
 +    
 +    if (setupDone) {
 +        if (errmaj)
@@ -1733,11 +1848,7 @@ index 0000000..a294793
 +        return NULL;
 +    }
 +
-+
-+    if (mirSocket != NULL)
-+        socket = mirSocket;
-+
-+    conn = mir_connect_sync(socket, mirID);
++    conn = mir_connect_sync(mirSocket, mirID);
 +
 +    if (!mir_connection_is_valid(conn)) {
 +        if (errmaj)
