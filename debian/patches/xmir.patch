@@ -1254,7 +1254,7 @@ index 0000000..e0acceb
 +
 diff --git a/hw/xfree86/xmir/xmir-window.c b/hw/xfree86/xmir/xmir-window.c
 new file mode 100644
-index 0000000..6fe2cfe
+index 0000000..a5e97c7
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-window.c
 @@ -0,0 +1,343 @@
@@ -1401,8 +1401,8 @@ index 0000000..6fe2cfe
 +{
 +    RegionPtr tracking;
 +
-+    if (!xmir_screen_get(xmir_win->win->drawable.pScreen)->dmps_on)
-+        return;
++    if (!xmir_screen_get(xmir_win->win->drawable.pScreen)->dpms_on)
++        return Success;
 +
 +    xmir_win->has_free_buffer = FALSE;
 +    tracking = damage_region_for_current_buffer(xmir_win);
@@ -1603,10 +1603,10 @@ index 0000000..6fe2cfe
 +}
 diff --git a/hw/xfree86/xmir/xmir.c b/hw/xfree86/xmir/xmir.c
 new file mode 100644
-index 0000000..569044e
+index 0000000..bb2bd59
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.c
-@@ -0,0 +1,262 @@
+@@ -0,0 +1,263 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1719,6 +1719,7 @@ index 0000000..569044e
 +        return NULL;
 +
 +    xmir->scrn = scrn;
++    xmir->dpms_on = TRUE;
 +
 +    return xmir;
 +}
