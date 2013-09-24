@@ -4,8 +4,11 @@ xorg-server (2:1.14.2.901-2ubuntu5) saucy; urgency=low
     passwords to IRC when I switch to a VT" with associated 
     unity-system-compositor change. (LP: #1192843)
   * xmir.patch: Add DPMS support (LP: #1193222)
+  * Drop os-use-libunwind-to-generate-backtraces.patch; this was not enabled
+    due to libunwind8-dev not shipping a pkg-config file. Now that it does,
+    this causes FTBFS on armhf.
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 18 Sep 2013 10:19:51 -0400
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 24 Sep 2013 08:58:45 -0700
 
 xorg-server (2:1.14.2.901-2ubuntu4) saucy; urgency=low
 

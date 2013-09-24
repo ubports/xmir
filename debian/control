@@ -54,7 +54,6 @@ Build-Depends:
  libdbus-1-dev [kfreebsd-any],
  libhal-dev [kfreebsd-any],
  libudev-dev (>= 151-3) [linux-any],
- libunwind8-dev,
  libselinux1-dev (>= 2.0.80) [linux-any],
  libaudit-dev [linux-any],
  x11proto-xf86dri-dev (>= 2.1.0),
