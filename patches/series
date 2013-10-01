@@ -53,5 +53,9 @@ config-add-no-removal.patch
 include-selection-h.patch
 xf86-detach-scanout.patch
 
+glx-remove-current-context-cache.patch
+glx-fix-memory-leak.patch
+glx-corner-case-drawablegone.patch
+glx-link-against-glapi.patch
 aarch64.patch
 xmir.patch
