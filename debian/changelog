@@ -1,9 +1,9 @@
-xorg-server (2:1.14.2.901-2ubuntu7) UNRELEASED; urgency=low
+xorg-server (2:1.14.2.901-2ubuntu7) saucy; urgency=low
 
   * Make glx link against glapi for the dispatch table symbols. (LP: #1232000)
   * Cherry pick a few related glx fixes from upstream.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 30 Sep 2013 16:54:11 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 01 Oct 2013 13:30:59 +0200
 
 xorg-server (2:1.14.2.901-2ubuntu6) saucy; urgency=low
 
