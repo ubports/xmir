@@ -54,7 +54,6 @@ autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
 rrcrtc-brackets-are-hard.patch
 
 config-add-no-removal.patch
-include-selection-h.patch
 
 glx-remove-current-context-cache.patch
 glx-fix-memory-leak.patch
