@@ -1,3 +1,36 @@
+xorg-server (2:1.14.3-4) UNRELEASED; urgency=low
+
+  * rules: Drop defoma support from the font path. (Closes: #689233,
+    LP: #986061)
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Wed, 25 Sep 2013 15:53:06 +0300
+
+xorg-server (2:1.14.3-3) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 22 Sep 2013 16:32:19 +0200
+
+xorg-server (2:1.14.3-2) experimental; urgency=low
+
+  * Delete test-driver on clean.
+  * Add a couple patches to fix FTBFS on hurd (closes: #720736).  Thanks, Pino
+    Toscano!
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 20 Sep 2013 00:21:41 +0200
+
+xorg-server (2:1.14.3-1) experimental; urgency=low
+
+  [ Julien Cristau ]
+  * Remove the Replaces: xdmx from xdmx-tools, that was before lenny.  That
+    change was done in the 1.10.x timeframe and then lost when moving to
+    1.11.x.
+
+  [ Michele Cane ]
+  * New upstream release.
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 15 Sep 2013 23:57:26 +0200
+
 xorg-server (2:1.14.2.901-2ubuntu4) saucy; urgency=low
 
   * xmir.patch: Add XRandR support
@@ -66,6 +99,8 @@ xorg-server (2:1.14.2.901-1) experimental; urgency=low
   * Drop old --disable-builddocs, --disable-xcalibrate configure options from
     d/rules.
   * Make build-deps match xserver-xorg-dev dependencies and configure checks.
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 27 Jul 2013 13:18:28 +0200
 
 xorg-server (2:1.14.2-0ubuntu9) saucy; urgency=low
 
@@ -551,6 +586,15 @@ xorg-server (2:1.12.99.902-0ubuntu1) quantal-proposed; urgency=low
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 25 Jul 2012 16:54:16 +1000
 
  -- Julien Cristau <jcristau@debian.org>  Sat, 27 Jul 2013 13:18:28 +0200
+
+xorg-server (2:1.12.4-6.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Cherry-pick Julien Cristau’s commits from debian-experimental:
+    Use libbsd-overlay to get missing declarations on kfreebsd and fix FTBFS.
+    02_improve-posix-saved-ids-check.diff
+
+ -- Michael Stapelberg <stapelberg@debian.org>  Thu, 22 Aug 2013 18:34:21 +0200
 
 xorg-server (2:1.12.4-6.1) unstable; urgency=low
 
