@@ -41,7 +41,6 @@ no-nv.patch
 #   Probably is just papering over issue; needs further analysis
 
 ## upstream patches
-os-use-libunwind-to-generate-backtraces.patch
 
 # hybrid graphics fixes for xserver 1.13
 228_autobind_gpu.patch
@@ -56,5 +55,9 @@ config-add-no-removal.patch
 include-selection-h.patch
 xf86-detach-scanout.patch
 
+glx-remove-current-context-cache.patch
+glx-fix-memory-leak.patch
+glx-corner-case-drawablegone.patch
+glx-link-against-glapi.patch
 aarch64.patch
 xmir.patch

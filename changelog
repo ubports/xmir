@@ -37,6 +37,32 @@ xorg-server (2:1.14.3-1) experimental; urgency=low
 
  -- Julien Cristau <jcristau@debian.org>  Sun, 15 Sep 2013 23:57:26 +0200
 
+xorg-server (2:1.14.2.901-2ubuntu7) saucy; urgency=low
+
+  * Make glx link against glapi for the dispatch table symbols. (LP: #1232000)
+  * Cherry pick a few related glx fixes from upstream.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 01 Oct 2013 13:30:59 +0200
+
+xorg-server (2:1.14.2.901-2ubuntu6) saucy; urgency=low
+
+  * xmir.patch: Drop vestigial libatomic-ops dependency, fixing
+    driver FTBFS.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Thu, 26 Sep 2013 08:29:44 -0700
+
+xorg-server (2:1.14.2.901-2ubuntu5) saucy; urgency=low
+
+  * xmir.patch: Drop input on loss of focus. Fixes "I'm sending all my
+    passwords to IRC when I switch to a VT" with associated 
+    unity-system-compositor change. (LP: #1192843)
+  * xmir.patch: Add DPMS support (LP: #1193222)
+  * Drop os-use-libunwind-to-generate-backtraces.patch; this was not enabled
+    due to libunwind8-dev not shipping a pkg-config file. Now that it does,
+    this causes FTBFS on armhf.
+
+ -- Christopher James Halse Rogers <raof@ubuntu.com>  Tue, 24 Sep 2013 08:58:45 -0700
+
 xorg-server (2:1.14.2.901-2ubuntu4) saucy; urgency=low
 
   * xmir.patch: Add XRandR support
@@ -592,15 +618,6 @@ xorg-server (2:1.12.99.902-0ubuntu1) quantal-proposed; urgency=low
  -- Christopher James Halse Rogers <raof@ubuntu.com>  Wed, 25 Jul 2012 16:54:16 +1000
 
  -- Julien Cristau <jcristau@debian.org>  Sat, 27 Jul 2013 13:18:28 +0200
-
-xorg-server (2:1.12.4-6.2) unstable; urgency=low
-
-  * Non-maintainer upload.
-  * Cherry-pick Julien Cristau’s commits from debian-experimental:
-    Use libbsd-overlay to get missing declarations on kfreebsd and fix FTBFS.
-    02_improve-posix-saved-ids-check.diff
-
- -- Michael Stapelberg <stapelberg@debian.org>  Thu, 22 Aug 2013 18:34:21 +0200
 
 xorg-server (2:1.12.4-6.1) unstable; urgency=low
 
