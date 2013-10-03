@@ -1,17 +1,12 @@
-xorg-server (2:1.14.3-3ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.14.3-3ubuntu1) saucy; urgency=low
 
+  * Merge from unreleased debian git.
   * rrcrtc-brackets-are-hard.patch: Replace xf86-detach-scanout.patch
     with this patch from Fedora. Should fix crashers on hybrid systems
     (LP: #1210025)
   * Drop include-selection-h.patch, not needed anymore.
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 03 Oct 2013 15:30:22 +0300
-
-xorg-server (2:1.14.3-3ubuntu1) saucy; urgency=low
-
-  * Merge from unreleased debian git.
-
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Thu, 03 Oct 2013 12:54:24 +0300
 
 xorg-server (2:1.14.3-4) UNRELEASED; urgency=low
 
