@@ -125,7 +125,7 @@ confflags += \
 	     --enable-gestures
 
 confflags_main = \
-	--with-default-font-path="/usr/share/fonts/X11/misc,/usr/share/fonts/X11/cyrillic,/usr/share/fonts/X11/100dpi/:unscaled,/usr/share/fonts/X11/75dpi/:unscaled,/usr/share/fonts/X11/Type1,/usr/share/fonts/X11/100dpi,/usr/share/fonts/X11/75dpi,/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType,built-ins" \
+	--with-default-font-path="/usr/share/fonts/X11/misc,/usr/share/fonts/X11/cyrillic,/usr/share/fonts/X11/100dpi/:unscaled,/usr/share/fonts/X11/75dpi/:unscaled,/usr/share/fonts/X11/Type1,/usr/share/fonts/X11/100dpi,/usr/share/fonts/X11/75dpi,built-ins" \
 	--enable-aiglx \
 	--enable-glx-tls \
 	--enable-registry \
@@ -230,7 +230,6 @@ build-indep: build
 
 clean: unpatch abibumpcheck
 	dh_testdir
-
 	rm -rf $(STAMP_DIR)
 	rm -f config.cache config.log config.status
 	rm -f */config.cache */config.log */config.status
@@ -242,7 +241,7 @@ clean: unpatch abibumpcheck
 	rm -f include/do-not-use-config.h.in
 	rm -f m4/lt*.m4 m4/libtool.m4
 	find -name Makefile.in -delete
-
+	rm -f test-driver
 	dh_clean
 
 install: build
