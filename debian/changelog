@@ -1,3 +1,9 @@
+xorg-server (2:1.14.3-3ubuntu2) saucy-proposed; urgency=low
+
+  * avoid-use-after-free.diff: Fix CVE-2013-4396.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 15 Oct 2013 12:05:48 +0300
+
 xorg-server (2:1.14.3-3ubuntu1) saucy; urgency=low
 
   * Merge from unreleased debian git.
