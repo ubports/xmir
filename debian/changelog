@@ -1,3 +1,9 @@
+xorg-server (2:1.14.3-3ubuntu3) trusty; urgency=low
+
+  * pixman-validate.patch: Do not render invalid trapezoids. (LP: #1197921)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 23 Oct 2013 12:11:27 +0200
+
 xorg-server (2:1.14.3-3ubuntu2) saucy-proposed; urgency=low
 
   * avoid-use-after-free.diff: Fix CVE-2013-4396.
