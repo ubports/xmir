@@ -1,3 +1,9 @@
+xorg-server (2:1.14.3-3ubuntu4) trusty; urgency=low
+
+  * No-change rebuild for xmir to use the new Mir ABI.
+
+ -- Mathieu Trudel-Lapierre <mathieu-tl@ubuntu.com>  Mon, 28 Oct 2013 13:36:02 -0400
+
 xorg-server (2:1.14.3-3ubuntu3) trusty; urgency=low
 
   * pixman-validate.patch: Do not render invalid trapezoids. (LP: #1197921)
