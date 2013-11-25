@@ -61,5 +61,4 @@ glx-corner-case-drawablegone.patch
 glx-link-against-glapi.patch
 aarch64.patch
 xmir.patch
-avoid-use-after-free.diff
 pixman-validate.patch

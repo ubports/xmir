@@ -1,3 +1,10 @@
+xorg-server (2:1.14.3-5ubuntu1) trusty; urgency=low
+
+  * Merge released debian-unstable to fix mesa-10 loading.
+  * Drop avoid-use-after-free.diff, upstreamed.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 25 Nov 2013 16:17:49 +0100
+
 xorg-server (2:1.14.3-5) unstable; urgency=low
 
   * Cherry-pick a upstream commit to fix mesa-10 driver loading.
