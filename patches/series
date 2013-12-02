@@ -47,6 +47,5 @@ xf86-inactive-gpuscreen.patch
 rrcrtc-brackets-are-hard.patch
 config-add-no-removal.patch
 
-aarch64.patch
 xmir.patch
 pixman-validate.patch
