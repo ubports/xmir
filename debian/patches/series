@@ -44,9 +44,7 @@ xf86-inactive-gpuscreen.patch
 # hotplug fixes
 
 # fixes for reverse optimus, cherry-picked from fedora X
-autoconfig-fixup-tell-changed-so-randr-clients-can-t.patch
 rrcrtc-brackets-are-hard.patch
-
 config-add-no-removal.patch
 
 glx-remove-current-context-cache.patch
