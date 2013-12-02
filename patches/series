@@ -17,7 +17,6 @@
 ## send upstream
 232-xf86compatoutput-valgrind.patch
 xfree86-no-xv-for-gpuscreens.patch
-xephyr-glx-register.patch
 no-nv.patch
 
 ## waiting for review by upstream
