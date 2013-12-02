@@ -1,16 +1,14 @@
-diff --git a/configure.ac b/configure.ac
-index c6ecba4..07d02d0 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -635,6 +635,7 @@ AC_ARG_ENABLE(windowswm,      AS_HELP_STRING([--enable-windowswm], [Build XWin w
+@@ -631,6 +631,7 @@
  AC_ARG_ENABLE(libdrm,         AS_HELP_STRING([--enable-libdrm], [Build Xorg with libdrm support (default: enabled)]), [DRM=$enableval],[DRM=yes])
  AC_ARG_ENABLE(clientids,      AS_HELP_STRING([--disable-clientids], [Build Xorg with client ID tracking (default: enabled)]), [CLIENTIDS=$enableval], [CLIENTIDS=yes])
  AC_ARG_ENABLE(pciaccess, AS_HELP_STRING([--enable-pciaccess], [Build Xorg with pciaccess library (default: enabled)]), [PCI=$enableval], [PCI=yes])
 +AC_ARG_ENABLE(xmir,           AS_HELP_STRING([--enable-xmir], [Build support for nesting in Mir (default: auto)]), [XMIR=$enableval], [XMIR=auto])
+ AC_ARG_ENABLE(linux_acpi, AC_HELP_STRING([--disable-linux-acpi], [Disable building ACPI support on Linux (if available).]), [enable_linux_acpi=$enableval], [enable_linux_acpi=yes])
+ AC_ARG_ENABLE(linux_apm, AC_HELP_STRING([--disable-linux-apm], [Disable building APM support on Linux (if available).]), [enable_linux_apm=$enableval], [enable_linux_apm=yes])
  
- dnl DDXes.
- AC_ARG_ENABLE(xorg,    	      AS_HELP_STRING([--enable-xorg], [Build Xorg server (default: auto)]), [XORG=$enableval], [XORG=auto])
-@@ -1148,6 +1149,15 @@ if test "x$XINERAMA" = xyes; then
+@@ -1275,6 +1276,15 @@
  	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES $XINERAMAPROTO"
  fi
  
@@ -20,13 +18,13 @@ index c6ecba4..07d02d0 100644
 +        AC_SUBST([XMIR_CFLAGS])
 +        AC_DEFINE(XMIR, 1, [Support Mir nested mode])
 +	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES mirclient"
-+fi	      
++fi
 +AM_CONDITIONAL(XMIR, [test "x$XMIR" = xyes])
 +
  AM_CONDITIONAL(XACE, [test "x$XACE" = xyes])
  if test "x$XACE" = xyes; then
  	AC_DEFINE(XACE, 1, [Build X-ACE extension])
-@@ -2299,6 +2309,7 @@ hw/xfree86/utils/Makefile
+@@ -2439,6 +2449,7 @@
  hw/xfree86/utils/man/Makefile
  hw/xfree86/utils/cvt/Makefile
  hw/xfree86/utils/gtf/Makefile
@@ -34,11 +32,9 @@ index c6ecba4..07d02d0 100644
  hw/dmx/config/Makefile
  hw/dmx/config/man/Makefile
  hw/dmx/doc/Makefile
-diff --git a/hw/xfree86/Makefile.am b/hw/xfree86/Makefile.am
-index c3899b5..6821198 100644
 --- a/hw/xfree86/Makefile.am
 +++ b/hw/xfree86/Makefile.am
-@@ -25,15 +25,20 @@ if INT10MODULE
+@@ -30,15 +30,20 @@
  INT10_SUBDIR = int10
  endif
  
@@ -61,11 +57,9 @@ index c3899b5..6821198 100644
  
  bin_PROGRAMS = Xorg
  nodist_Xorg_SOURCES = sdksyms.c
-diff --git a/hw/xfree86/common/xf86Config.c b/hw/xfree86/common/xf86Config.c
-index 74d5ed3..538ba4b 100644
 --- a/hw/xfree86/common/xf86Config.c
 +++ b/hw/xfree86/common/xf86Config.c
-@@ -118,6 +118,7 @@ static ModuleDefault ModuleDefaults[] = {
+@@ -118,6 +118,7 @@
      {.name = "fb",.toLoad = TRUE,.load_opt = NULL},
      {.name = "shadow",.toLoad = TRUE,.load_opt = NULL},
  #endif
@@ -73,7 +67,7 @@ index 74d5ed3..538ba4b 100644
      {.name = NULL,.toLoad = FALSE,.load_opt = NULL}
  };
  
-@@ -260,6 +261,17 @@ xf86ModulelistFromConfig(pointer **optlist)
+@@ -260,6 +261,17 @@
          return NULL;
      }
  
@@ -91,11 +85,9 @@ index 74d5ed3..538ba4b 100644
      if (xf86configptr->conf_modules) {
          /* Walk the disable list and let people know what we've parsed to
           * not be loaded 
-diff --git a/hw/xfree86/common/xf86Events.c b/hw/xfree86/common/xf86Events.c
-index 7a949fd..4d416b4 100644
 --- a/hw/xfree86/common/xf86Events.c
 +++ b/hw/xfree86/common/xf86Events.c
-@@ -105,8 +105,6 @@ extern fd_set EnabledDevices;
+@@ -105,8 +105,6 @@
  extern void (*xf86OSPMClose) (void);
  #endif
  
@@ -104,7 +96,7 @@ index 7a949fd..4d416b4 100644
  /*
   * Allow arbitrary drivers or other XFree86 code to register with our main
   * Wakeup handler.
-@@ -410,7 +408,7 @@ xf86ReleaseKeys(DeviceIntPtr pDev)
+@@ -411,7 +409,7 @@
   * xf86VTSwitch --
   *      Handle requests for switching the vt.
   */
@@ -113,7 +105,7 @@ index 7a949fd..4d416b4 100644
  xf86VTSwitch(void)
  {
      int i;
-@@ -466,7 +464,7 @@ xf86VTSwitch(void)
+@@ -471,7 +469,7 @@
  
          xf86AccessLeave();      /* We need this here, otherwise */
  
@@ -122,7 +114,7 @@ index 7a949fd..4d416b4 100644
              /*
               * switch failed
               */
-@@ -522,7 +520,7 @@ xf86VTSwitch(void)
+@@ -530,7 +528,7 @@
      }
      else {
          DebugF("xf86VTSwitch: Entering\n");
@@ -131,22 +123,18 @@ index 7a949fd..4d416b4 100644
              return;
  
  #ifdef XF86PM
-diff --git a/hw/xfree86/common/xf86Globals.c b/hw/xfree86/common/xf86Globals.c
-index 7df7a80..17ed7c6 100644
 --- a/hw/xfree86/common/xf86Globals.c
 +++ b/hw/xfree86/common/xf86Globals.c
-@@ -204,3 +204,6 @@ Bool xf86VidModeAllowNonLocal = FALSE;
+@@ -206,3 +206,6 @@
  #endif
  RootWinPropPtr *xf86RegisteredPropertiesTable = NULL;
  Bool xorgHWAccess = FALSE;
 +Bool xorgMir = FALSE;
 +const char *mirID = NULL;
 +const char *mirSocket = NULL;
-diff --git a/hw/xfree86/common/xf86Helper.c b/hw/xfree86/common/xf86Helper.c
-index 721159d..d319e0c 100644
 --- a/hw/xfree86/common/xf86Helper.c
 +++ b/hw/xfree86/common/xf86Helper.c
-@@ -100,7 +100,14 @@ xf86DeleteDriver(int drvIndex)
+@@ -100,7 +100,14 @@
          if (xf86DriverList[drvIndex]->module)
              UnloadModule(xf86DriverList[drvIndex]->module);
          free(xf86DriverList[drvIndex]);
@@ -162,11 +150,9 @@ index 721159d..d319e0c 100644
      }
  }
  
-diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
-index 91ec4c8..0508e8d 100644
 --- a/hw/xfree86/common/xf86Init.c
 +++ b/hw/xfree86/common/xf86Init.c
-@@ -530,7 +530,7 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+@@ -554,7 +554,7 @@
           * needed at this early stage.
           */
  
@@ -175,7 +161,7 @@ index 91ec4c8..0508e8d 100644
              xorgHWFlags flags = HW_IO;
  
              if (xf86DriverList[i]->Identify != NULL)
-@@ -541,11 +541,20 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+@@ -565,11 +565,20 @@
                                                GET_REQUIRED_HW_INTERFACES,
                                                &flags);
  
@@ -196,7 +182,7 @@ index 91ec4c8..0508e8d 100644
          }
  
          if (xorgHWOpenConsole)
-@@ -631,9 +640,13 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+@@ -662,9 +671,13 @@
          }
  
          /* Remove (unload) drivers that are not required */
@@ -212,7 +198,7 @@ index 91ec4c8..0508e8d 100644
  
          /*
           * At this stage we know how many screens there are.
-@@ -1454,6 +1467,17 @@ ddxProcessArgument(int argc, char **argv, int i)
+@@ -1490,6 +1503,17 @@
          xf86Info.ShareVTs = TRUE;
          return 1;
      }
@@ -230,7 +216,7 @@ index 91ec4c8..0508e8d 100644
  
      /* OS-specific processing */
      return xf86ProcessArgument(argc, argv, i);
-@@ -1527,6 +1551,8 @@ ddxUseMsg(void)
+@@ -1563,6 +1587,8 @@
      ErrorF
          ("-novtswitch            don't automatically switch VT at reset & exit\n");
      ErrorF("-sharevts              share VTs with another X server\n");
@@ -239,11 +225,9 @@ index 91ec4c8..0508e8d 100644
      /* OS-specific usage */
      xf86UseMsg();
      ErrorF("\n");
-diff --git a/hw/xfree86/common/xf86Priv.h b/hw/xfree86/common/xf86Priv.h
-index 58cfe0a..96372fa 100644
 --- a/hw/xfree86/common/xf86Priv.h
 +++ b/hw/xfree86/common/xf86Priv.h
-@@ -91,6 +91,9 @@ extern _X_EXPORT int xf86NumScreens;
+@@ -93,6 +93,9 @@
  extern _X_EXPORT const char *xf86VisualNames[];
  extern _X_EXPORT int xf86Verbose;       /* verbosity level */
  extern _X_EXPORT int xf86LogVerbose;    /* log file verbosity level */
@@ -253,7 +237,7 @@ index 58cfe0a..96372fa 100644
  
  extern _X_EXPORT RootWinPropPtr *xf86RegisteredPropertiesTable;
  
-@@ -147,6 +150,9 @@ xf86HandlePMEvents(int fd, pointer data);
+@@ -149,6 +152,9 @@
  extern _X_EXPORT int (*xf86PMGetEventFromOs) (int fd, pmEvent * events,
                                                int num);
  extern _X_EXPORT pmWait (*xf86PMConfirmEventToOs) (int fd, pmEvent event);
@@ -263,17 +247,15 @@ index 58cfe0a..96372fa 100644
  
  /* xf86Helper.c */
  extern _X_EXPORT void
-diff --git a/hw/xfree86/ramdac/xf86Cursor.c b/hw/xfree86/ramdac/xf86Cursor.c
-index 860704e..5277c94 100644
 --- a/hw/xfree86/ramdac/xf86Cursor.c
 +++ b/hw/xfree86/ramdac/xf86Cursor.c
-@@ -58,7 +58,12 @@ xf86InitCursor(ScreenPtr pScreen, xf86CursorInfoPtr infoPtr)
+@@ -58,7 +58,12 @@
      xf86CursorScreenPtr ScreenPriv;
      miPointerScreenPtr PointPriv;
  
 -    if (!xf86InitHardwareCursor(pScreen, infoPtr))
 +    infoPtr->pScrn = xf86ScreenToScrn(pScreen);
-+    
++
 +    /* If we can't create a hardware cursor don't bother initialising HW cursor support */
 +    if (infoPtr->MaxWidth != 0 &&
 +        infoPtr->MaxHeight != 0 &&
@@ -281,11 +263,9 @@ index 860704e..5277c94 100644
          return FALSE;
  
      if (!dixRegisterPrivateKey(&xf86CursorScreenKeyRec, PRIVATE_SCREEN, 0))
-diff --git a/hw/xfree86/ramdac/xf86HWCurs.c b/hw/xfree86/ramdac/xf86HWCurs.c
-index 197abff..399bfb9 100644
 --- a/hw/xfree86/ramdac/xf86HWCurs.c
 +++ b/hw/xfree86/ramdac/xf86HWCurs.c
-@@ -114,8 +114,6 @@ xf86InitHardwareCursor(ScreenPtr pScreen, xf86CursorInfoPtr infoPtr)
+@@ -114,8 +114,6 @@
          infoPtr->RealizeCursor = RealizeCursorInterleave0;
      }
  
@@ -294,9 +274,6 @@ index 197abff..399bfb9 100644
      return TRUE;
  }
  
-diff --git a/hw/xfree86/xmir/Makefile.am b/hw/xfree86/xmir/Makefile.am
-new file mode 100644
-index 0000000..80715f8
 --- /dev/null
 +++ b/hw/xfree86/xmir/Makefile.am
 @@ -0,0 +1,26 @@
@@ -326,9 +303,6 @@ index 0000000..80715f8
 +	xmir-private.h
 +
 +sdk_HEADERS = xmir.h
-diff --git a/hw/xfree86/xmir/xmir-output.c b/hw/xfree86/xmir/xmir-output.c
-new file mode 100644
-index 0000000..8fd8640
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-output.c
 @@ -0,0 +1,678 @@
@@ -657,7 +631,7 @@ index 0000000..8fd8640
 +    const char *error_msg;
 +
 +    if (mode->HDisplay == 0 || mode->VDisplay == 0)
-+        return FALSE;    
++        return FALSE;
 +
 +    xf86Msg(X_INFO, "Initial configuration for crtc %p:\n", crtc);
 +    xmir_dump_config(xmir_crtc->config);
@@ -823,7 +797,7 @@ index 0000000..8fd8640
 +static void
 +xmir_output_destroy(xf86OutputPtr xf86output)
 +{
-+    /* The MirDisplayOutput* in driver_private gets cleaned up by 
++    /* The MirDisplayOutput* in driver_private gets cleaned up by
 +       mir_display_config_destroy() */
 +}
 +
@@ -920,7 +894,7 @@ index 0000000..8fd8640
 +    xmir_update_config(crtc_config);
 +
 +    /* Trigger RANDR refresh */
-+    RRGetInfo(xf86ScrnToScreen(scrn), TRUE);   
++    RRGetInfo(xf86ScrnToScreen(scrn), TRUE);
 +}
 +
 +static void
@@ -1007,12 +981,9 @@ index 0000000..8fd8640
 +
 +    /* TODO: Use initial Mir state rather than setting up our own */
 +    xf86InitialConfiguration(scrn, TRUE);
-+  
++
 +    return TRUE;
 +}
-diff --git a/hw/xfree86/xmir/xmir-private.h b/hw/xfree86/xmir/xmir-private.h
-new file mode 100644
-index 0000000..15d89f0
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-private.h
 @@ -0,0 +1,106 @@
@@ -1122,9 +1093,6 @@ index 0000000..15d89f0
 +xmir_process_from_eventloop(void);
 +
 + #endif /* _MIR_PRIVATE_H */
-diff --git a/hw/xfree86/xmir/xmir-thread-proxy.c b/hw/xfree86/xmir/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..e0acceb
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-thread-proxy.c
 @@ -0,0 +1,124 @@
@@ -1221,7 +1189,7 @@ index 0000000..e0acceb
 +}
 +
 +void
-+xmir_post_to_eventloop(xmir_marshall_handler *handler, void *msg) 
++xmir_post_to_eventloop(xmir_marshall_handler *handler, void *msg)
 +{
 +	ssize_t written;
 +	const int total_size = sizeof *handler + handler->msg_size;
@@ -1252,9 +1220,6 @@ index 0000000..e0acceb
 +	}
 +}
 +
-diff --git a/hw/xfree86/xmir/xmir-window.c b/hw/xfree86/xmir/xmir-window.c
-new file mode 100644
-index 0000000..a5e97c7
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-window.c
 @@ -0,0 +1,343 @@
@@ -1593,7 +1558,7 @@ index 0000000..a5e97c7
 +    xmir->DestroyWindow = screen->DestroyWindow;
 +    screen->DestroyWindow = xmir_destroy_window;
 +
-+    xmir->submit_rendering_handler = 
++    xmir->submit_rendering_handler =
 +        xmir_register_handler(&xmir_handle_buffer_available,
 +                              sizeof (xmir_window *));
 +    if (xmir->submit_rendering_handler == NULL)
@@ -1601,9 +1566,6 @@ index 0000000..a5e97c7
 +
 +    return TRUE;
 +}
-diff --git a/hw/xfree86/xmir/xmir.c b/hw/xfree86/xmir/xmir.c
-new file mode 100644
-index 0000000..bb2bd59
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.c
 @@ -0,0 +1,263 @@
@@ -1658,7 +1620,7 @@ index 0000000..bb2bd59
 +#include <mir_toolkit/mir_client_library_drm.h>
 +
 +static DevPrivateKeyRec xmir_screen_private_key;
-+/* 
++/*
 + * We have only a single Mir connection, regardless of how many
 + * drivers load.
 + */
@@ -1784,7 +1746,7 @@ index 0000000..bb2bd59
 +        xf86Msg(X_WARNING, "xf86Cursor initialisation failed\n");
 +
 +    /* Hook up focus -> VT switch proxy */
-+    xmir->focus_event_handler = 
++    xmir->focus_event_handler =
 +        xmir_register_handler(&xmir_handle_focus_event,
 +                              sizeof(Bool));
 +    if (xmir->focus_event_handler == NULL)
@@ -1806,7 +1768,7 @@ index 0000000..bb2bd59
 +_X_EXPORT void
 +xmir_screen_destroy(xmir_screen *xmir)
 +{
-+    
++
 +}
 +
 +_X_EXPORT void
@@ -1842,7 +1804,7 @@ index 0000000..bb2bd59
 +xMirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 +{
 +    static Bool setupDone = FALSE;
-+    
++
 +    if (setupDone) {
 +        if (errmaj)
 +            *errmaj = LDR_ONCEONLY;
@@ -1859,7 +1821,7 @@ index 0000000..bb2bd59
 +        return NULL;
 +    }
 +
-+    xmir_init_thread_to_eventloop();    
++    xmir_init_thread_to_eventloop();
 +
 +    setupDone = TRUE;
 +
@@ -1870,9 +1832,6 @@ index 0000000..bb2bd59
 +xMirTeardown(pointer module)
 +{
 +}
-diff --git a/hw/xfree86/xmir/xmir.h b/hw/xfree86/xmir/xmir.h
-new file mode 100644
-index 0000000..78396a3
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.h
 @@ -0,0 +1,103 @@
@@ -1946,7 +1905,7 @@ index 0000000..78396a3
 +
 +_X_EXPORT void
 +xmir_screen_close(ScreenPtr screen, xmir_screen *xmir);
-+	
++
 +_X_EXPORT void
 +xmir_screen_destroy(xmir_screen *xmir);
 +
@@ -1979,11 +1938,9 @@ index 0000000..78396a3
 +xmir_screen_for_each_damaged_window(xmir_screen *xmir, xmir_window_proc callback);
 +
 +#endif /* _XMIR_H */
-diff --git a/include/list.h b/include/list.h
-index 11de7c5..59f0233 100644
 --- a/include/list.h
 +++ b/include/list.h
-@@ -184,6 +184,14 @@ __xorg_list_del(struct xorg_list *prev, struct xorg_list *next)
+@@ -184,6 +184,14 @@
      prev->next = next;
  }
  
@@ -1998,99 +1955,29 @@ index 11de7c5..59f0233 100644
  /**
   * Remove the element from the list it is in. Using this function will reset
   * the pointers to/from this element so it is removed from the list. It does
-diff --git a/include/xorg-server.h.in b/include/xorg-server.h.in
-index 81935be..c9cd4e8 100644
 --- a/include/xorg-server.h.in
 +++ b/include/xorg-server.h.in
-@@ -212,4 +212,7 @@
- #define _XSERVER64 1
- #endif
+@@ -224,4 +224,7 @@
+ /* Use XTrans FD passing support */
+ #undef XTRANS_SEND_FDS
  
 +/* Build XMIR nested server */
 +#undef XMIR
 +
  #endif /* _XORG_SERVER_H_ */
-diff --git a/miext/damage/damage.c b/miext/damage/damage.c
-index a98c20e..a1daebb 100644
---- a/miext/damage/damage.c
-+++ b/miext/damage/damage.c
-@@ -123,18 +123,14 @@ static void
- damageReportDamagePostRendering(DamagePtr pDamage, RegionPtr pOldDamage,
-                                 RegionPtr pDamageRegion)
- {
--    BoxRec tmpBox;
--    RegionRec tmpRegion, newDamage;
--    Bool was_empty;
--
--    RegionUnion(&newDamage, pOldDamage, pDamageRegion);
--
-     switch (pDamage->damageLevel) {
-     case DamageReportRawRegion:
-         (*pDamage->damageReportPostRendering) (pDamage, pDamageRegion,
-                                                pDamage->closure);
-         break;
-     case DamageReportDeltaRegion:
-+    {
-+        RegionRec tmpRegion;
-         RegionNull(&tmpRegion);
-         RegionSubtract(&tmpRegion, pDamageRegion, pOldDamage);
-         if (RegionNotEmpty(&tmpRegion)) {
-@@ -143,25 +139,31 @@ damageReportDamagePostRendering(DamagePtr pDamage, RegionPtr pOldDamage,
-         }
-         RegionUninit(&tmpRegion);
-         break;
-+    }
-     case DamageReportBoundingBox:
-+    {
-+        BoxRec tmpBox;
-+        RegionRec newDamage;
-         tmpBox = *RegionExtents(pOldDamage);
-+        RegionUnion(&newDamage, pOldDamage, pDamageRegion);
-         if (!BOX_SAME(&tmpBox, RegionExtents(&newDamage))) {
-             (*pDamage->damageReportPostRendering) (pDamage, &newDamage,
-                                                    pDamage->closure);
-         }
-         break;
-+    }
-     case DamageReportNonEmpty:
--        was_empty = !RegionNotEmpty(pOldDamage);
--        if (was_empty && RegionNotEmpty(&newDamage)) {
--            (*pDamage->damageReportPostRendering) (pDamage, &newDamage,
-+        if (RegionNotEmpty(pOldDamage))
-+            break;
-+
-+        if (RegionNotEmpty(pDamageRegion)) {
-+            (*pDamage->damageReportPostRendering) (pDamage, pDamageRegion,
-                                                    pDamage->closure);
-         }
-         break;
-     case DamageReportNone:
-         break;
-     }
--
--    RegionUninit(&newDamage);
- }
- 
- #if DAMAGE_DEBUG_ENABLE
-diff --git a/test/Makefile.am b/test/Makefile.am
-index 34f53fc..d1a0f27 100644
 --- a/test/Makefile.am
 +++ b/test/Makefile.am
-@@ -6,7 +6,12 @@ if XORG
+@@ -6,6 +6,9 @@
  # For now, requires xf86 ddx, could be adjusted to use another
  SUBDIRS += xi2
- noinst_PROGRAMS += xkb input xtest misc fixes xfree86 hashtabletest os signal-logging
--endif
-+
+ noinst_PROGRAMS += xkb input xtest misc fixes xfree86 hashtabletest os signal-logging touch
 +if XMIR
 +noinst_PROGRAMS += xmir-thread-proxy
 +endif #XMIR
-+
-+endif #XORG
+ endif
  check_LTLIBRARIES = libxservertest.la
  
- TESTS=$(noinst_PROGRAMS)
-@@ -38,6 +43,8 @@ touch_LDADD=$(TEST_LDADD)
+@@ -38,6 +41,8 @@
  signal_logging_LDADD=$(TEST_LDADD)
  hashtabletest_LDADD=$(TEST_LDADD) $(top_srcdir)/Xext/hashtable.c
  os_LDADD=$(TEST_LDADD)
@@ -2099,9 +1986,6 @@ index 34f53fc..d1a0f27 100644
  
  libxservertest_la_LIBADD = $(XSERVER_LIBS)
  if XORG
-diff --git a/test/xmir-thread-proxy.c b/test/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..7cf19cf
 --- /dev/null
 +++ b/test/xmir-thread-proxy.c
 @@ -0,0 +1,154 @@
@@ -2241,7 +2125,7 @@ index 0000000..7cf19cf
 +
 +	xmir_process_from_eventloop();
 +
-+	assert(check == NUM_THREADS);	
++	assert(check == NUM_THREADS);
 +}
 +
 +static void
