@@ -49,10 +49,6 @@
 #include "glxdricommon.h"
 #include <GL/glxtokens.h>
 
-#include "glapitable.h"
-#include "glapi.h"
-#include "glthread.h"
-#include "dispatch.h"
 #include "extension_string.h"
 
 typedef struct __GLXDRIscreen __GLXDRIscreen;
@@ -375,6 +371,7 @@ __glXDRIscreenDestroy(__GLXscreen * baseScreen)
 {
     int i;
 
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(baseScreen->pScreen);
     __GLXDRIscreen *screen = (__GLXDRIscreen *) baseScreen;
 
     (*screen->core->destroyScreen) (screen->driScreen);
@@ -388,6 +385,9 @@ __glXDRIscreenDestroy(__GLXscreen * baseScreen)
             free((__DRIconfig **) screen->driConfigs[i]);
         free(screen->driConfigs);
     }
+
+    pScrn->EnterVT = screen->enterVT;
+    pScrn->LeaveVT = screen->leaveVT;
 
     free(screen);
 }
@@ -845,6 +845,11 @@ glxDRILeaveVT(ScrnInfoPtr scrn)
     scrn->LeaveVT = glxDRILeaveVT;
 }
 
+/**
+ * Initialize extension flags in glx_enable_bits when a new screen is created
+ *
+ * @param screen The screen where glx_enable_bits are to be set.
+ */
 static void
 initializeExtensions(__GLXDRIscreen * screen)
 {
@@ -857,8 +862,6 @@ initializeExtensions(__GLXDRIscreen * screen)
     __glXEnableExtension(screen->glx_enable_bits, "GLX_MESA_copy_sub_buffer");
     LogMessage(X_INFO, "AIGLX: enabled GLX_MESA_copy_sub_buffer\n");
 
-    __glXEnableExtension(screen->glx_enable_bits, "GLX_INTEL_swap_event");
-    LogMessage(X_INFO, "AIGLX: enabled GLX_INTEL_swap_event\n");
 
 #if __DRI_DRI2_VERSION >= 3
     if (screen->dri2->base.version >= 3) {
@@ -876,10 +879,25 @@ initializeExtensions(__GLXDRIscreen * screen)
 #endif
 
     if (DRI2HasSwapControl(pScreen)) {
+        __glXEnableExtension(screen->glx_enable_bits, "GLX_INTEL_swap_event");
         __glXEnableExtension(screen->glx_enable_bits, "GLX_SGI_swap_control");
         __glXEnableExtension(screen->glx_enable_bits, "GLX_MESA_swap_control");
+        LogMessage(X_INFO, "AIGLX: enabled GLX_INTEL_swap_event\n");
         LogMessage(X_INFO,
                    "AIGLX: enabled GLX_SGI_swap_control and GLX_MESA_swap_control\n");
+    }
+
+    /* enable EXT_framebuffer_sRGB extension (even if there are no sRGB capable fbconfigs) */
+    {
+        __glXEnableExtension(screen->glx_enable_bits,
+                 "GLX_EXT_framebuffer_sRGB");
+        LogMessage(X_INFO, "AIGLX: enabled GLX_EXT_framebuffer_sRGB\n");
+    }
+
+    /* enable ARB_fbconfig_float extension (even if there are no float fbconfigs) */
+    {
+        __glXEnableExtension(screen->glx_enable_bits, "GLX_ARB_fbconfig_float");
+        LogMessage(X_INFO, "AIGLX: enabled GLX_ARB_fbconfig_float\n");
     }
 
     for (i = 0; extensions[i]; i++) {
@@ -934,12 +952,11 @@ __glXDRIscreenProbe(ScreenPtr pScreen)
     if (screen == NULL)
         return NULL;
 
-    if (!xf86LoaderCheckSymbol("DRI2Connect") ||
-        !DRI2Connect(serverClient, pScreen, DRI2DriverDRI,
+    if (!DRI2Connect(serverClient, pScreen, DRI2DriverDRI,
                      &screen->fd, &driverName, &deviceName)) {
         LogMessage(X_INFO,
                    "AIGLX: Screen %d is not DRI2 capable\n", pScreen->myNum);
-        return NULL;
+        goto handle_error;
     }
 
     screen->base.destroy = __glXDRIscreenDestroy;

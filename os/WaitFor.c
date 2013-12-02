@@ -72,6 +72,7 @@ SOFTWARE.
 #ifdef DPMSExtension
 #include "dpmsproc.h"
 #endif
+#include "busfault.h"
 
 #ifdef WIN32
 /* Error codes from windows sockets differ from fileio error codes  */
@@ -161,6 +162,10 @@ WaitForSomething(int *pClientsReady)
     if (nready)
         SmartScheduleStopTimer();
     nready = 0;
+
+#ifdef BUSFAULT
+    busfault_check();
+#endif
 
     /* We need a while loop here to handle 
        crashed connections and the screen saver timeout */
@@ -561,7 +566,7 @@ NextDPMSTimeout(INT32 timeout)
 static CARD32
 ScreenSaverTimeoutExpire(OsTimerPtr timer, CARD32 now, pointer arg)
 {
-    INT32 timeout = now - lastDeviceEventTime[XIAllDevices].milliseconds;
+    INT32 timeout = now - LastEventTime(XIAllDevices).milliseconds;
     CARD32 nextTimeout = 0;
 
 #ifdef DPMSExtension

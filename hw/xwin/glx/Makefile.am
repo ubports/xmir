@@ -23,7 +23,7 @@ endif
 
 DEFS =  $(DEFS_MULTIWINDOW) $(DEFS_MULTIWINDOWEXTWM) $(DEFS_GLX_WINDOWS)
 
-INCLUDES = -I$(top_srcdir)/miext/rootless
+AM_CPPFLAGS = -I$(top_srcdir)/miext/rootless
 
 AM_CFLAGS = -DHAVE_XWIN_CONFIG_H $(DIX_CFLAGS) \
             $(XWINMODULES_CFLAGS) \
@@ -33,10 +33,10 @@ AM_CFLAGS = -DHAVE_XWIN_CONFIG_H $(DIX_CFLAGS) \
 if XWIN_GLX_WINDOWS
 
 generated_gl_wrappers.c: gen_gl_wrappers.py $(KHRONOS_SPEC_DIR)/gl.spec $(KHRONOS_SPEC_DIR)/gl.tm
-	$(AM_V_GEN)$(srcdir)/gen_gl_wrappers.py --spec=$(KHRONOS_SPEC_DIR)/gl.spec --typemap=$(KHRONOS_SPEC_DIR)/gl.tm --dispatch-header=$(top_srcdir)/glx/dispatch.h --staticwrappers >generated_gl_wrappers.c
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/gen_gl_wrappers.py --spec=$(KHRONOS_SPEC_DIR)/gl.spec --typemap=$(KHRONOS_SPEC_DIR)/gl.tm --dispatch-header=$(top_srcdir)/glx/dispatch.h --staticwrappers >generated_gl_wrappers.c
 
 generated_wgl_wrappers.c: gen_gl_wrappers.py $(KHRONOS_SPEC_DIR)/wglext.spec $(KHRONOS_SPEC_DIR)/wgl.tm
-	$(AM_V_GEN)$(srcdir)/gen_gl_wrappers.py --spec=$(KHRONOS_SPEC_DIR)/wglext.spec --typemap=$(KHRONOS_SPEC_DIR)/wgl.tm --prefix=wgl --preresolve >generated_wgl_wrappers.c
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/gen_gl_wrappers.py --spec=$(KHRONOS_SPEC_DIR)/wglext.spec --typemap=$(KHRONOS_SPEC_DIR)/wgl.tm --prefix=wgl --preresolve >generated_wgl_wrappers.c
 endif
 
 BUILT_SOURCES = generated_gl_wrappers.c generated_wgl_wrappers.c

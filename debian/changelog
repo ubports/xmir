@@ -1,3 +1,33 @@
+xorg-server (2:1.14.99.903-1) UNRELEASED; urgency=low
+
+  * New upstream snapshot.
+  * Point to http://www.debian.org/support instead of the uploader's email
+    address in the Xorg log.
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 23 Nov 2013 16:43:13 +0100
+
+xorg-server (2:1.14.99.3-1) experimental; urgency=low
+
+  * New upstream snapshot.
+  * Drop patches applied upstream:
+    - 02_improve-posix-saved-ids-check.diff
+    - 04_hashtabletest-s390x.diff
+    - 10_Include-missing-selection-h.diff
+    - os-move-arpa-inet.h-for-any-win32-system.patch
+    - xfree86-hurd-include-hurd.h.patch
+  * Update build-deps:
+    - bump libx11-dev to 2:1.6 for _XEatDataWords
+    - require xcb bits for Xephyr
+    - xserver-xorg-dev depends on x11proto-xf86bigfont-dev
+  * Bump ABI versions (should have been done upstream, but hasn't yet).
+  * Stop building Xfbdev.
+  * Reduce noise from dh_install --list-missing by deleting some files from the
+    udeb build after make install.
+  * Run abibumpcheck on build instead of clean so it's done on a patched tree.
+  * Remove Drew and Cyril from Uploaders.
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 21 Oct 2013 23:46:34 +0200
+
 xorg-server (2:1.14.3-5ubuntu1) trusty; urgency=low
 
   * Merge released debian-unstable to fix mesa-10 loading.

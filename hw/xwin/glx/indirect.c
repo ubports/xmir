@@ -386,7 +386,9 @@ fbConfigsDump(unsigned int n, __GLXconfig * c)
                c->accumAlphaBits, c->sampleBuffers, c->samples,
                (c->drawableType & GLX_WINDOW_BIT) ? "y" : ".",
                (c->drawableType & GLX_PIXMAP_BIT) ? "y" : ".",
-               (c->drawableType & GLX_PBUFFER_BIT) ? "y" : ".", ".",
+               (c->drawableType & GLX_PBUFFER_BIT) ? "y" : ".",
+               (c->renderType & (GLX_RGBA_FLOAT_BIT_ARB |
+                   GLX_RGBA_UNSIGNED_FLOAT_BIT_EXT)) ? "y" : ".",
                (c->transparentPixel != GLX_NONE_EXT) ? "y" : ".",
                c->visualSelectGroup,
                (c->visualRating == GLX_SLOW_VISUAL_EXT) ? "*" : " ");
@@ -1715,7 +1717,6 @@ fbConfigToPixelFormat(__GLXconfig * mode, PIXELFORMATDESCRIPTOR * pfdret,
     pfd.cAuxBuffers = mode->numAuxBuffers;
 
     /* mode->level ? */
-    /* mode->pixmapMode ? */
 
     *pfdret = pfd;
 
@@ -1925,7 +1926,6 @@ glxWinCreateConfigs(HDC hdc, glxWinScreen * screen)
         // pfd.dwLayerMask; // ignored
         // pfd.dwDamageMask;  // ignored
 
-        c->base.pixmapMode = 0;
         c->base.visualID = -1;  // will be set by __glXScreenInit()
 
         /* EXT_visual_rating / GLX 1.2 */
@@ -2016,15 +2016,13 @@ glxWinCreateConfigs(HDC hdc, glxWinScreen * screen)
         else
             c->base.swapMethod = GLX_SWAP_UNDEFINED_OML;
 
-        /* EXT_import_context */
-        c->base.screen = screen->base.pScreen->myNum;
-
         /* EXT_texture_from_pixmap */
         c->base.bindToTextureRgb = -1;
         c->base.bindToTextureRgba = -1;
         c->base.bindToMipmapTexture = -1;
         c->base.bindToTextureTargets = -1;
         c->base.yInverted = -1;
+        c->base.sRGBCapable = 0;
 
         n++;
 
@@ -2262,7 +2260,6 @@ glxWinCreateConfigsExt(HDC hdc, glxWinScreen * screen)
         }
         c->base.level = 0;
 
-        c->base.pixmapMode = 0; // ???
         c->base.visualID = -1;  // will be set by __glXScreenInit()
 
         /* EXT_visual_rating / GLX 1.2 */
@@ -2395,9 +2392,6 @@ glxWinCreateConfigsExt(HDC hdc, glxWinScreen * screen)
             c->base.swapMethod = GLX_SWAP_UNDEFINED_OML;
         }
 
-        /* EXT_import_context */
-        c->base.screen = screen->base.pScreen->myNum;
-
         /* EXT_texture_from_pixmap */
         /*
            Mesa's DRI configs always have bindToTextureRgb/Rgba TRUE (see driCreateConfigs(), so setting
@@ -2419,6 +2413,7 @@ glxWinCreateConfigsExt(HDC hdc, glxWinScreen * screen)
             GLX_TEXTURE_1D_BIT_EXT | GLX_TEXTURE_2D_BIT_EXT |
             GLX_TEXTURE_RECTANGLE_BIT_EXT;
         c->base.yInverted = -1;
+        c->base.sRGBCapable = 0;
 
         n++;
 

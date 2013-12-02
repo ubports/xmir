@@ -39,7 +39,7 @@ RRCrtcChanged(RRCrtcPtr crtc, Bool layoutChanged)
     if (pScreen) {
         rrScrPriv(pScreen);
 
-        pScrPriv->changed = TRUE;
+        RRSetChanged(pScreen);
         /*
          * Send ConfigureNotify on any layout change
          */
@@ -101,6 +101,8 @@ RRCrtcCreate(ScreenPtr pScreen, void *devPrivate)
     /* attach the screen and crtc together */
     crtc->pScreen = pScreen;
     pScrPriv->crtcs[pScrPriv->numCrtcs++] = crtc;
+
+    RRResourcesChanged(pScreen);
 
     return crtc;
 }
@@ -363,13 +365,12 @@ void
 RRCrtcDetachScanoutPixmap(RRCrtcPtr crtc)
 {
     ScreenPtr master = crtc->pScreen->current_master;
-    int ret;
     PixmapPtr mscreenpix;
     rrScrPriv(crtc->pScreen);
 
     mscreenpix = master->GetScreenPixmap(master);
 
-    ret = pScrPriv->rrCrtcSetScanoutPixmap(crtc, NULL);
+    pScrPriv->rrCrtcSetScanoutPixmap(crtc, NULL);
     if (crtc->scanout_pixmap) {
         master->StopPixmapTracking(mscreenpix, crtc->scanout_pixmap);
         /*
@@ -442,7 +443,7 @@ rrCheckPixmapBounding(ScreenPtr pScreen,
                       RRCrtcPtr rr_crtc, int x, int y, int w, int h)
 {
     RegionRec root_pixmap_region, total_region, new_crtc_region;
-    int i, c;
+    int c;
     BoxRec newbox;
     BoxPtr newsize;
     ScreenPtr slave;
@@ -502,10 +503,8 @@ rrCheckPixmapBounding(ScreenPtr pScreen,
         new_height == screen_pixmap->drawable.height) {
         ErrorF("adjust shatters %d %d\n", newsize->x1, newsize->x2);
     } else {
-        int ret;
         rrScrPriv(pScreen);
-        ret = pScrPriv->rrScreenSetSize(pScreen,
-                                           new_width, new_height, 0, 0);
+        pScrPriv->rrScreenSetSize(pScreen, new_width, new_height, 0, 0);
     }
 
     /* set shatters TODO */
@@ -672,6 +671,8 @@ RRCrtcDestroyResource(pointer value, XID pid)
                 break;
             }
         }
+
+        RRResourcesChanged(pScreen);
     }
 
     if (crtc->scanout_pixmap)
