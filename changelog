@@ -1,3 +1,9 @@
+xorg-server (2:1.14.4-1ubuntu1) UNRELEASED; urgency=low
+
+  * Merge released debian-unstable. (LP: #1238410)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 04 Dec 2013 13:37:50 +0100
+
 xorg-server (2:1.14.4-1) unstable; urgency=low
 
   * New upstream release.
