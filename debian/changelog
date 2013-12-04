@@ -1,6 +1,7 @@
 xorg-server (2:1.14.4-1ubuntu1) UNRELEASED; urgency=low
 
-  * Merge released debian-unstable. (LP: #1238410)
+  * Merge released debian-unstable.
+  * Cherry-pick fix to sync code. (LP: #1238410)
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 04 Dec 2013 13:37:50 +0100
 
