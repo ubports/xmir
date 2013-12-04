@@ -1,3 +1,13 @@
+xorg-server (2:1.14.4-1) unstable; urgency=low
+
+  * New upstream release.
+  * Drop upstreamed patches.
+    - 02_improve-posix-saved-ids-check.diff
+    - 04_hashtabletest-s390x.diff
+    - 10_Include-missing-selection-h.diff
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 04 Dec 2013 13:09:36 +0100
+
 xorg-server (2:1.14.3-5ubuntu1) trusty; urgency=low
 
   * Merge released debian-unstable to fix mesa-10 loading.
