@@ -1,8 +1,8 @@
-xorg-server (2:1.14.4.901-0ubuntu2) UNRELEASED; urgency=low
+xorg-server (2:1.14.4.901-0ubuntu2) trusty; urgency=low
 
   * Re-apply security update again.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 10 Dec 2013 15:24:16 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 10 Dec 2013 15:25:04 +0100
 
 xorg-server (2:1.14.4.901-0ubuntu1) trusty; urgency=low
 
