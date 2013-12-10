@@ -1,9 +1,9 @@
-xorg-server (2:1.14.4.901-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.14.4.901-0ubuntu1) trusty; urgency=low
 
   * New upstream release with some optimus fixes.
   * Include a patch to fix gpu screen output hotplugging. (LP: #1259561)
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 05 Dec 2013 10:20:54 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 10 Dec 2013 15:09:07 +0100
 
 xorg-server (2:1.14.4-1ubuntu1) trusty; urgency=low
 
