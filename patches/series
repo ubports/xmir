@@ -39,14 +39,11 @@ no-nv.patch
 
 ## upstream patches
 
-# hybrid graphics fixes for xserver 1.13
+# hybrid graphics fixes
 228_autobind_gpu.patch
 xf86-fixup-detection.patch
 xf86-inactive-gpuscreen.patch
-
-# hotplug fixes
-
-# fixes for reverse optimus, cherry-picked from fedora X
+xrandr-rroutputchanged-main.patch
 rrcrtc-brackets-are-hard.patch
 
 config-add-no-removal.patch

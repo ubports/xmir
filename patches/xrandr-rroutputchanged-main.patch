@@ -1,0 +1,62 @@
+From: Alberto Milone <alberto.milone@canonical.com>
+Subject: [PATCH 1/1] randr: make RROutputChanged change the main protocol screen not the gpu screen
+Date: Sun,  8 Dec 2013 12:08:41 +0100
+Message-Id: <1386500921-20165-1-git-send-email-alberto.milone@canonical.com>
+
+We only set changes on the main protocol screen as, for example
+in RRSetChanged() and RRTellChanged(), therefore we should follow
+the same logic when reporting that an output changed in
+RROutputChanged().
+
+This means that RRTellChanged() will then update the relevant
+timestamps also when events come from gpu screens.
+
+Signed-off-by: Alberto Milone <alberto.milone@canonical.com>
+---
+ randr/rroutput.c |   26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/randr/rroutput.c b/randr/rroutput.c
+index 2b0b82f..8229046 100644
+--- a/randr/rroutput.c
++++ b/randr/rroutput.c
+@@ -31,15 +31,31 @@ RESTYPE RROutputType;
+ void
+ RROutputChanged(RROutputPtr output, Bool configChanged)
+ {
++    /* set changed bits on the master screen only */
+     ScreenPtr pScreen = output->pScreen;
+ 
+     output->changed = TRUE;
+-    if (pScreen) {
+-        rrScrPriv(pScreen);
+-        RRSetChanged(pScreen);
+-        if (configChanged)
+-            pScrPriv->configChanged = TRUE;
++    if (!pScreen)
++        return;
++
++    ScreenPtr master;
++    rrScrPriv(pScreen);
++    rrScrPrivPtr mastersp;
++
++    if (pScreen->isGPU) {
++        master = pScreen->current_master;
++        if (!master)
++            return;
++        mastersp = rrGetScrPriv(master);
+     }
++    else {
++        master = pScreen;
++        mastersp = pScrPriv;
++    }
++
++    RRSetChanged(pScreen);
++    if (configChanged)
++        mastersp->configChanged = TRUE;
+ }
+ 
+ /*
+-- 
+1.7.9.5
+
