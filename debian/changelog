@@ -1,9 +1,25 @@
+xorg-server (2:1.14.4.901-0ubuntu2) UNRELEASED; urgency=low
+
+  * Re-apply security update again.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 10 Dec 2013 15:24:16 +0100
+
 xorg-server (2:1.14.4.901-0ubuntu1) trusty; urgency=low
 
   * New upstream release with some optimus fixes.
   * Include a patch to fix gpu screen output hotplugging. (LP: #1259561)
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 10 Dec 2013 15:09:07 +0100
+
+xorg-server (2:1.14.4-1ubuntu2) trusty; urgency=low
+
+  * SECURITY UPDATE: unsafe use of xkb cache files
+    - debian/patches/190_cache-xkbcomp_output_for_fast_start_up.patch:
+      updated to not use xkb cache files in /tmp when running a non-root
+      server.
+    - CVE-2013-1056
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Fri, 06 Dec 2013 11:15:23 -0500
 
 xorg-server (2:1.14.4-1ubuntu1) trusty; urgency=low
 
