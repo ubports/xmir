@@ -57,9 +57,15 @@ ifneq (,$(filter $(DEB_HOST_ARCH), arm64 powerpc))
 endif
 
 ifeq ($(DEB_HOST_ARCH_OS), hurd)
-	dri = --disable-dri --disable-dri2
+	dri = --disable-dri --disable-dri2 --disable-dri3
 else
 	dri = --enable-dri --enable-dri2
+ifeq ($(DEB_HOST_ARCH_OS), linux)
+	dri += --enable-dri3
+else
+	# disable dri3 on kbsd until xtrans fd passing is enabled
+	dri += --disable-dri3
+endif
 endif
 
 config_backend = --disable-config-dbus
@@ -139,6 +145,7 @@ confflags_main =	 \
 	--enable-xdm-auth-1 \
 	--enable-glx \
 	$(dri) \
+	--enable-present \
 	--enable-xinerama \
 	--enable-xf86vidmode \
 	--enable-xace \
@@ -216,7 +223,7 @@ $(STAMP_DIR)/build-%: $(STAMP_DIR)/configure-%
 	>$@
 
 $(STAMP_DIR)/tests-%: $(STAMP_DIR)/build-%
-	cd build-$* && $(MAKE) check
+	cd build-$* && $(MAKE) check VERBOSE=1
 	>$@
 
 build: abibumpcheck
