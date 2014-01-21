@@ -205,6 +205,16 @@ $(STAMP_DIR)/autoreconf: $(STAMP_DIR)/stampdir $(QUILT_STAMPFN)
 	autoreconf -vfi
 	>$@
 
+$(STAMP_DIR)/build-source: $(STAMP_DIR)/autoreconf
+	mkdir -p build-source
+	tar \
+	--owner=0 --group=0 \
+        --transform 's,^,xorg-server/,' \
+        --exclude=stampdir --exclude=debian \
+        --exclude=build-* --exclude=autom4te.cache \
+        -cf - * | xz > build-source/xorg-server.tar.xz
+	>$@
+
 $(STAMP_DIR)/configure-%: $(STAMP_DIR)/autoreconf
 	dh_testdir
 	mkdir -p build-$*
@@ -237,7 +247,7 @@ build: $(STAMP_DIR)/build-udeb
 build: $(STAMP_DIR)/tests-udeb
 endif
 build-arch: build
-build-indep: build
+build-indep: $(STAMP_DIR)/build-source build
 
 clean: unpatch
 	dh_testdir
@@ -344,7 +354,7 @@ binary-arch: build install
 
 	dh_installdocs -s
 	dh_installchangelogs -s
-	dh_install $(DH_INSTALL_OPTIONS) -s --sourcedir=debian/tmp --list-missing
+	dh_install $(DH_INSTALL_OPTIONS) -s --list-missing
 	$(INSTALL) -d $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg
 	# Extract only the major ABI version:
 	abi_videodrv=`PKG_CONFIG_PATH=debian/tmp/main/usr/lib/pkgconfig pkg-config --variable=abi_videodrv xorg-server|cut -d . -f 1`; \
@@ -376,9 +386,9 @@ endif
 
 
 # Build architecture-independent files here
-binary-indep: build install check
+binary-indep: build-indep install check
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-initial
-	dh_install -i --sourcedir=debian/tmp
+	dh_install -i
 	dh_installdocs -i
 	dh_installchangelogs -i ChangeLog
 
