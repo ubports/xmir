@@ -1,3 +1,9 @@
+xorg-server (2:1.15.0-1ubuntu2) trusty; urgency=medium
+
+  * No-change rebuild against latest Mir
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 04 Feb 2014 20:35:47 -0200
+
 xorg-server (2:1.15.0-1ubuntu1) trusty; urgency=low
 
   * New upstream release.
