@@ -1,7 +1,6 @@
 xorg-server (2:1.15.0-1ubuntu1) UNRELEASED; urgency=low
 
   * New upstream release.
-  * Add a workaround for a linker crash bug. (LP: #1266492)
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 06 Jan 2014 12:53:32 +0100
 
