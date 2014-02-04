@@ -68,6 +68,18 @@ xorg-server (2:1.14.99.3-1) experimental; urgency=low
 
  -- Julien Cristau <jcristau@debian.org>  Mon, 21 Oct 2013 23:46:34 +0200
 
+xorg-server (2:1.14.5-1ubuntu4) trusty; urgency=medium
+
+  * Build xserver-xorg-core-udeb on arm64 and ppc64el.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon, 03 Feb 2014 15:44:50 +0000
+
+xorg-server (2:1.14.5-1ubuntu3) trusty; urgency=low
+
+  * Add a workaround for a linker crash bug. (LP: #1266492)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 29 Jan 2014 16:13:36 +0100
+
 xorg-server (2:1.14.5-1ubuntu2) trusty; urgency=medium
 
   * Don't build XMir on ppc64el.

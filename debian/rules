@@ -100,6 +100,9 @@ SOURCE_VERSION := $(shell dpkg-parsechangelog | awk -F': ' '/^Version: / {print 
 # Add a workaround for LP: #1266492
 confflags += lt_cv_prog_compiler_static_works=no
 
+# Add a workaround for LP: #1266492
+confflags += lt_cv_prog_compiler_static_works=no
+
 # disable-static is so we don't get libfoo.a for modules.  now if only we could
 # kill the .las.
 confflags += \
