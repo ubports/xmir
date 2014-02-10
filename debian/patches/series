@@ -43,6 +43,7 @@ xf86-inactive-gpuscreen.patch
 xrandr-rroutputchanged-main.patch
 rrcrtc-brackets-are-hard.patch
 config-add-no-removal.patch
+xf86-ignore-conflicting-rr-caps.patch
 
 xmir.patch
 pixman-validate.patch

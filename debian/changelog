@@ -1,3 +1,9 @@
+xorg-server (2:1.15.0-1ubuntu4) UNRELEASED; urgency=low
+
+  * Only set RR caps that are appropriate to main/gpu screen. (LP: #1277014)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 10 Feb 2014 16:45:13 +0100
+
 xorg-server (2:1.15.0-1ubuntu3) trusty; urgency=low
 
   * No-change rebuild against correct libgcrypt.
