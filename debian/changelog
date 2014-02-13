@@ -1,3 +1,16 @@
+xorg-server (2:1.15.0-1ubuntu6) trusty; urgency=low
+
+  * Add a small patch to hopefully fix FTBFS on ppc64el.
+  * Add breaks/replaces on xserver-common-lts-* to fix upgrades from precise.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 13 Feb 2014 14:06:11 +0100
+
+xorg-server (2:1.15.0-1ubuntu5) trusty; urgency=medium
+
+  * Another no-change rebuild against latest Mir
+
+ -- Łukasz 'sil2100' Zemczak <lukasz.zemczak@canonical.com>  Wed, 12 Feb 2014 18:33:20 +0100
+
 xorg-server (2:1.15.0-1ubuntu4) trusty; urgency=low
 
   * Only set RR caps that are appropriate to main/gpu screen. (LP: #1277014)

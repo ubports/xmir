@@ -45,5 +45,6 @@ rrcrtc-brackets-are-hard.patch
 config-add-no-removal.patch
 xf86-ignore-conflicting-rr-caps.patch
 
-xmir.patch
 pixman-validate.patch
+fix-ftbfs-ppc64el.patch
+xmir.patch
