@@ -36,7 +36,7 @@ Build-Depends:
  x11proto-xf86vidmode-dev (>= 2.2.99.1),
  x11proto-present-dev,
  x11proto-dri3-dev,
- xtrans-dev (>= 1.3.2),
+ xtrans-dev (>= 1.3.3),
  libxau-dev (>= 1:1.0.5-2),
  x11proto-input-dev (>= 2.3),
  x11proto-dri2-dev (>= 2.8),
@@ -45,6 +45,7 @@ Build-Depends:
  libxkbfile-dev (>= 1:0.99.1),
  libpixman-1-dev (>= 0.27.2),
  libpciaccess-dev (>= 0.12.901),
+ libepoxy-dev,
  libgcrypt-dev,
  nettle-dev,
  libdbus-1-dev [kfreebsd-any],
@@ -140,6 +141,8 @@ Breaks:
  unity (<< 7.0.2),
  libxfixes3 (<< 1:5.0.1),
  libxi6 (<< 2:1.7.1.901),
+ xserver-xorg-glamoregl,
+ xserver-xorg-video-glamoregl,
 Conflicts:
  xserver-xorg-input-evtouch,
 Provides:

@@ -162,6 +162,7 @@ confflags_main =	 \
 	--enable-xnest \
 	--enable-kdrive \
 	--enable-xephyr \
+	--enable-glamor \
 	$(build_xfbdev) \
 	$(build_xmir) \
 	--with-sha1=libgcrypt \
@@ -195,6 +196,7 @@ confflags_udeb = \
 	--disable-xnest \
 	--disable-kdrive \
 	--disable-xephyr \
+	--disable-glamor \
 	--disable-xfbdev \
 	--disable-xmir \
 	--with-sha1=libnettle \
