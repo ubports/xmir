@@ -12,22 +12,22 @@ Signed-off-by: Dave Airlie <airlied@redhat.com>
  randr/rrcrtc.c | 7 ++++---
  1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/randr/rrcrtc.c b/randr/rrcrtc.c
-index 2f76b62..40b01f0 100644
---- a/randr/rrcrtc.c
-+++ b/randr/rrcrtc.c
-@@ -474,7 +474,7 @@ rrCheckPixmapBounding(ScreenPtr pScreen,
+Index: xorg-server/randr/rrcrtc.c
+===================================================================
+--- xorg-server.orig/randr/rrcrtc.c	2014-03-05 15:25:13.634526931 +0000
++++ xorg-server/randr/rrcrtc.c	2014-03-05 15:25:22.938653390 +0000
+@@ -476,7 +476,7 @@
  
      xorg_list_for_each_entry(slave, &pScreen->output_slave_list, output_head) {
-         rrScrPriv(slave);
--        for (c = 0; c < pScrPriv->numCrtcs; c++)
-+        for (c = 0; c < pScrPriv->numCrtcs; c++) {
-             if (pScrPriv->crtcs[c] == rr_crtc) {
+         rrScrPrivPtr    slave_priv = rrGetScrPriv(slave);
+-        for (c = 0; c < slave_priv->numCrtcs; c++)
++        for (c = 0; c < slave_priv->numCrtcs; c++) {
+             if (slave_priv->crtcs[c] == rr_crtc) {
                  newbox.x1 = x;
                  newbox.x2 = x + w;
-@@ -489,8 +489,9 @@ rrCheckPixmapBounding(ScreenPtr pScreen,
-                 newbox.y1 = pScrPriv->crtcs[c]->y;
-                 newbox.y2 = pScrPriv->crtcs[c]->y + pScrPriv->crtcs[c]->mode->mode.height;
+@@ -491,8 +491,9 @@
+                 newbox.y1 = slave_priv->crtcs[c]->y;
+                 newbox.y2 = slave_priv->crtcs[c]->y + slave_priv->crtcs[c]->mode->mode.height;
              }
 -        RegionInit(&new_crtc_region, &newbox, 1);
 -        RegionUnion(&total_region, &total_region, &new_crtc_region);
@@ -37,6 +37,3 @@ index 2f76b62..40b01f0 100644
      }
  
      newsize = RegionExtents(&total_region);
--- 
-1.8.2.1
-

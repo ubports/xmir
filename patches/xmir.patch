@@ -1,14 +1,14 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -631,6 +631,7 @@
+@@ -628,6 +628,7 @@
  AC_ARG_ENABLE(libdrm,         AS_HELP_STRING([--enable-libdrm], [Build Xorg with libdrm support (default: enabled)]), [DRM=$enableval],[DRM=yes])
  AC_ARG_ENABLE(clientids,      AS_HELP_STRING([--disable-clientids], [Build Xorg with client ID tracking (default: enabled)]), [CLIENTIDS=$enableval], [CLIENTIDS=yes])
  AC_ARG_ENABLE(pciaccess, AS_HELP_STRING([--enable-pciaccess], [Build Xorg with pciaccess library (default: enabled)]), [PCI=$enableval], [PCI=yes])
 +AC_ARG_ENABLE(xmir,           AS_HELP_STRING([--enable-xmir], [Build support for nesting in Mir (default: auto)]), [XMIR=$enableval], [XMIR=auto])
- AC_ARG_ENABLE(linux_acpi, AC_HELP_STRING([--disable-linux-acpi], [Disable building ACPI support on Linux (if available).]), [enable_linux_acpi=$enableval], [enable_linux_acpi=yes])
- AC_ARG_ENABLE(linux_apm, AC_HELP_STRING([--disable-linux-apm], [Disable building APM support on Linux (if available).]), [enable_linux_apm=$enableval], [enable_linux_apm=yes])
+ AC_ARG_ENABLE(linux_acpi, AS_HELP_STRING([--disable-linux-acpi], [Disable building ACPI support on Linux (if available).]), [enable_linux_acpi=$enableval], [enable_linux_acpi=yes])
+ AC_ARG_ENABLE(linux_apm, AS_HELP_STRING([--disable-linux-apm], [Disable building APM support on Linux (if available).]), [enable_linux_apm=$enableval], [enable_linux_apm=yes])
  
-@@ -1275,6 +1276,15 @@
+@@ -1317,6 +1318,15 @@
  	SDK_REQUIRED_MODULES="$SDK_REQUIRED_MODULES $XINERAMAPROTO"
  fi
  
@@ -24,7 +24,7 @@
  AM_CONDITIONAL(XACE, [test "x$XACE" = xyes])
  if test "x$XACE" = xyes; then
  	AC_DEFINE(XACE, 1, [Build X-ACE extension])
-@@ -2439,6 +2449,7 @@
+@@ -2504,6 +2514,7 @@
  hw/xfree86/utils/man/Makefile
  hw/xfree86/utils/cvt/Makefile
  hw/xfree86/utils/gtf/Makefile
@@ -96,7 +96,25 @@
  /*
   * Allow arbitrary drivers or other XFree86 code to register with our main
   * Wakeup handler.
-@@ -411,7 +409,7 @@
+@@ -469,7 +467,7 @@
+ 
+     xf86AccessLeave();      /* We need this here, otherwise */
+ 
+-    if (!xf86VTSwitchAway())
++    if (!xorgMir && !xf86VTSwitchAway())
+         goto switch_failed;
+ 
+ #ifdef XF86PM
+@@ -528,7 +526,7 @@
+     IHPtr ih;
+ 
+     DebugF("xf86VTSwitch: Entering\n");
+-    if (!xf86VTSwitchTo())
++    if (!xorgMir && !xf86VTSwitchTo())
+         return;
+ 
+ #ifdef XF86PM
+@@ -576,7 +574,7 @@
   * xf86VTSwitch --
   *      Handle requests for switching the vt.
   */
@@ -104,25 +122,7 @@
 +_X_EXPORT void
  xf86VTSwitch(void)
  {
-     int i;
-@@ -471,7 +469,7 @@
- 
-         xf86AccessLeave();      /* We need this here, otherwise */
- 
--        if (!xf86VTSwitchAway()) {
-+        if (!xorgMir && !xf86VTSwitchAway()) {
-             /*
-              * switch failed
-              */
-@@ -530,7 +528,7 @@
-     }
-     else {
-         DebugF("xf86VTSwitch: Entering\n");
--        if (!xf86VTSwitchTo())
-+        if (!xorgMir && !xf86VTSwitchTo())
-             return;
- 
- #ifdef XF86PM
+     DebugF("xf86VTSwitch()\n");
 --- a/hw/xfree86/common/xf86Globals.c
 +++ b/hw/xfree86/common/xf86Globals.c
 @@ -206,3 +206,6 @@
@@ -152,7 +152,7 @@
  
 --- a/hw/xfree86/common/xf86Init.c
 +++ b/hw/xfree86/common/xf86Init.c
-@@ -554,7 +554,7 @@
+@@ -557,7 +557,7 @@
           * needed at this early stage.
           */
  
@@ -161,7 +161,7 @@
              xorgHWFlags flags = HW_IO;
  
              if (xf86DriverList[i]->Identify != NULL)
-@@ -565,11 +565,20 @@
+@@ -568,12 +568,21 @@
                                                GET_REQUIRED_HW_INTERFACES,
                                                &flags);
  
@@ -175,14 +175,15 @@
              if (NEED_IO_ENABLED(flags))
                  want_hw_access = TRUE;
  
-             if (!(flags & HW_SKIP_CONSOLE))
+             /* Non-seat0 X servers should not open console */
+             if (!(flags & HW_SKIP_CONSOLE) && !ServerIsNotSeat0())
                  xorgHWOpenConsole = TRUE;
 +
 +            i++;
          }
  
          if (xorgHWOpenConsole)
-@@ -662,9 +671,13 @@
+@@ -668,9 +677,13 @@
          }
  
          /* Remove (unload) drivers that are not required */
@@ -198,7 +199,7 @@
  
          /*
           * At this stage we know how many screens there are.
-@@ -1490,6 +1503,17 @@
+@@ -1498,6 +1511,17 @@
          xf86Info.ShareVTs = TRUE;
          return 1;
      }
@@ -216,7 +217,7 @@
  
      /* OS-specific processing */
      return xf86ProcessArgument(argc, argv, i);
-@@ -1563,6 +1587,8 @@
+@@ -1571,6 +1595,8 @@
      ErrorF
          ("-novtswitch            don't automatically switch VT at reset & exit\n");
      ErrorF("-sharevts              share VTs with another X server\n");
@@ -1957,9 +1958,9 @@
   * the pointers to/from this element so it is removed from the list. It does
 --- a/include/xorg-server.h.in
 +++ b/include/xorg-server.h.in
-@@ -224,4 +224,7 @@
- /* Use XTrans FD passing support */
- #undef XTRANS_SEND_FDS
+@@ -227,4 +227,7 @@
+ /* Ask fontsproto to make font path element names const */
+ #define FONT_PATH_ELEMENT_NAME_CONST    1
  
 +/* Build XMIR nested server */
 +#undef XMIR
@@ -1979,7 +1980,7 @@
  
 @@ -38,6 +41,8 @@
  signal_logging_LDADD=$(TEST_LDADD)
- hashtabletest_LDADD=$(TEST_LDADD) $(top_srcdir)/Xext/hashtable.c
+ hashtabletest_LDADD=$(TEST_LDADD)
  os_LDADD=$(TEST_LDADD)
 +xmir_thread_proxy_LDADD=$(TEST_LDADD) $(top_srcdir)/hw/xfree86/xmir/xmir-thread-proxy.c -lpthread
 +xmir_thread_proxy_CFLAGS=$(AM_CFLAGS) $(XMIR_CFLAGS) -I$(top_srcdir)/hw/xfree86/xmir -I$(top_srcdir)/hw/xfree86/common
