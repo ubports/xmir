@@ -816,7 +816,7 @@
 +};
 +
 +static int
-+xmir_visit_set_window_pixmap(WindowPtr window, pointer data)
++xmir_visit_set_window_pixmap(WindowPtr window, void *data)
 +{
 +    struct xmir_visit_set_pixmap_window *visit = data;
 +
@@ -1147,7 +1147,7 @@
 +static int pipefds[2];
 +
 +static void
-+xmir_wakeup_handler(pointer data, int err, pointer read_mask)
++xmir_wakeup_handler(void *data, int err, void *read_mask)
 +{
 +    if (err >= 0 && FD_ISSET(pipefds[0], (fd_set *)read_mask))
 +        xmir_process_from_eventloop();
@@ -1801,8 +1801,8 @@
 +
 +_X_EXPORT XF86ModuleData xmirModuleData = { &VersRec, xMirSetup, xMirTeardown };
 +
-+static pointer
-+xMirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
++static void *
++xMirSetup(void *module, void *opts, int *errmaj, int *errmin)
 +{
 +    static Bool setupDone = FALSE;
 +
@@ -1830,7 +1830,7 @@
 +}
 +
 +static void
-+xMirTeardown(pointer module)
++xMirTeardown(void *module)
 +{
 +}
 --- /dev/null
