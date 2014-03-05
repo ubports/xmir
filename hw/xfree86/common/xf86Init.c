@@ -53,6 +53,7 @@
 #include "scrnintstr.h"
 #include "site.h"
 #include "mi.h"
+#include "dbus-core.h"
 
 #include "compiler.h"
 
@@ -309,7 +310,7 @@ xf86CreateRootWindow(WindowPtr pWin)
     int err = Success;
     ScreenPtr pScreen = pWin->drawable.pScreen;
     RootWinPropPtr pProp;
-    CreateWindowProcPtr CreateWindow = (CreateWindowProcPtr)
+    CreateWindowProcPtr create_window = (CreateWindowProcPtr)
         dixLookupPrivate(&pScreen->devPrivates, xf86CreateRootWindowKey);
 
     DebugF("xf86CreateRootWindow(%p)\n", pWin);
@@ -323,7 +324,7 @@ xf86CreateRootWindow(WindowPtr pWin)
     }
 
     /* Unhook this function ... */
-    pScreen->CreateWindow = CreateWindow;
+    pScreen->CreateWindow = create_window;
     dixSetPrivate(&pScreen->devPrivates, xf86CreateRootWindowKey, NULL);
 
     /* ... and call the previous CreateWindow fuction, if any */
@@ -395,8 +396,8 @@ void
 InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 {
     int i, j, k, scr_index;
-    char **modulelist;
-    pointer *optionlist;
+    const char **modulelist;
+    void **optionlist;
     Pix24Flags screenpix24, pix24;
     MessageType pix24From = X_DEFAULT;
     Bool pix24Fail = FALSE;
@@ -455,6 +456,8 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 
         if (xf86DoShowOptions)
             DoShowOptions();
+
+        dbus_core_init();
 
         /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
         xf86BusProbe();
@@ -544,7 +547,8 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
             if (NEED_IO_ENABLED(flags))
                 want_hw_access = TRUE;
 
-            if (!(flags & HW_SKIP_CONSOLE))
+            /* Non-seat0 X servers should not open console */
+            if (!(flags & HW_SKIP_CONSOLE) && !ServerIsNotSeat0())
                 xorgHWOpenConsole = TRUE;
         }
 
@@ -623,7 +627,9 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 
         for (i = 0; i < xf86NumScreens; i++) {
             if (xf86Screens[i]->name == NULL) {
-                XNFasprintf(&xf86Screens[i]->name, "screen%d", i);
+                char *tmp;
+                XNFasprintf(&tmp, "screen%d", i);
+                xf86Screens[i]->name = tmp;
                 xf86MsgVerb(X_WARNING, 0,
                             "Screen driver %d has no name set, using `%s'.\n",
                             i, xf86Screens[i]->name);
@@ -1055,6 +1061,8 @@ ddxGiveUp(enum ExitCode error)
 
     if (xorgHWOpenConsole)
         xf86CloseConsole();
+
+    dbus_core_fini();
 
     xf86CloseLog(error);
 
@@ -1536,10 +1544,10 @@ ddxUseMsg(void)
  * xf86LoadModules iterates over a list that is being passed in.
  */
 Bool
-xf86LoadModules(char **list, pointer *optlist)
+xf86LoadModules(const char **list, void **optlist)
 {
     int errmaj, errmin;
-    pointer opt;
+    void *opt;
     int i;
     char *name;
     Bool failed = FALSE;

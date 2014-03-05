@@ -1302,7 +1302,7 @@ RetrieveTouchDeliveryData(DeviceIntPtr dev, TouchPointInfoPtr ti,
         *mask = (*grab)->xi2mask;
     }
     else {
-        rc = dixLookupResourceByType((pointer *) win, listener->listener,
+        rc = dixLookupResourceByType((void **) win, listener->listener,
                                      listener->resource_type,
                                      serverClient, DixSendAccess);
         if (rc != Success)
@@ -1735,7 +1735,7 @@ ProcessDeviceEvent(InternalEvent *ev, DeviceIntPtr device)
 
         eventinfo.device = device;
         eventinfo.event = ev;
-        CallCallbacks(&DeviceEventCallback, (pointer) &eventinfo);
+        CallCallbacks(&DeviceEventCallback, (void *) &eventinfo);
     }
 
     grab = device->deviceGrab.grab;
@@ -1783,8 +1783,25 @@ ProcessDeviceEvent(InternalEvent *ev, DeviceIntPtr device)
         DeliverDeviceEvents(GetSpriteWindow(device), (InternalEvent *) event,
                             NullGrab, NullWindow, device);
 
-    if (deactivateDeviceGrab == TRUE)
+    if (deactivateDeviceGrab == TRUE) {
         (*device->deviceGrab.DeactivateGrab) (device);
+
+        if (!IsMaster (device) && !IsFloating (device)) {
+            int flags, num_events = 0;
+            InternalEvent dce;
+
+            flags = (IsPointerDevice (device)) ?
+                DEVCHANGE_POINTER_EVENT : DEVCHANGE_KEYBOARD_EVENT;
+            UpdateFromMaster (&dce, device, flags, &num_events);
+            BUG_WARN(num_events > 1);
+
+            if (num_events == 1)
+                ChangeMasterDeviceClasses(GetMaster (device, MASTER_ATTACHED),
+                                          &dce.changed_event);
+        }
+
+    }
+
     event->detail.key = key;
 }
 
@@ -2166,7 +2183,8 @@ CheckGrabValues(ClientPtr client, GrabParameters *param)
         return BadValue;
     }
 
-    if (param->grabtype != XI2 && (param->modifiers != AnyModifier) &&
+    if (param->modifiers != AnyModifier &&
+        param->modifiers != XIAnyModifier &&
         (param->modifiers & ~AllModifiersMask)) {
         client->errorValue = param->modifiers;
         return BadValue;
@@ -2204,7 +2222,7 @@ GrabButton(ClientPtr client, DeviceIntPtr dev, DeviceIntPtr modifier_device,
     if (param->cursor == None)
         cursor = NullCursor;
     else {
-        rc = dixLookupResourceByType((pointer *) &cursor, param->cursor,
+        rc = dixLookupResourceByType((void **) &cursor, param->cursor,
                                      RT_CURSOR, client, DixUseAccess);
         if (rc != Success) {
             client->errorValue = param->cursor;
@@ -2303,7 +2321,7 @@ GrabWindow(ClientPtr client, DeviceIntPtr dev, int type,
     if (param->cursor == None)
         cursor = NullCursor;
     else {
-        rc = dixLookupResourceByType((pointer *) &cursor, param->cursor,
+        rc = dixLookupResourceByType((void **) &cursor, param->cursor,
                                      RT_CURSOR, client, DixUseAccess);
         if (rc != Success) {
             client->errorValue = param->cursor;
@@ -2446,7 +2464,7 @@ AddExtensionClient(WindowPtr pWin, ClientPtr client, Mask mask, int mskidx)
     others->resource = FakeClientID(client->index);
     others->next = pWin->optional->inputMasks->inputClients;
     pWin->optional->inputMasks->inputClients = others;
-    if (!AddResource(others->resource, RT_INPUTCLIENT, (pointer) pWin))
+    if (!AddResource(others->resource, RT_INPUTCLIENT, (void *) pWin))
         goto bail;
     return Success;
 
@@ -2548,7 +2566,7 @@ InputClientGone(WindowPtr pWin, XID id)
                 else {
                     other->resource = FakeClientID(0);
                     if (!AddResource(other->resource, RT_INPUTCLIENT,
-                                     (pointer) pWin))
+                                     (void *) pWin))
                         return BadAlloc;
                 }
             }

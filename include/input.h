@@ -95,8 +95,8 @@ SOFTWARE.
 
 #define NO_AXIS_LIMITS -1
 
-#define MAP_LENGTH	256
-#define DOWN_LENGTH	32      /* 256/8 => number of bytes to hold 256 bits */
+#define MAP_LENGTH	MAX_BUTTONS
+#define DOWN_LENGTH	(MAX_BUTTONS/8)      /* 256/8 => number of bytes to hold 256 bits */
 #define NullGrab ((GrabPtr)NULL)
 #define PointerRootWin ((WindowPtr)PointerRoot)
 #define NoneWin ((WindowPtr)None)
@@ -163,7 +163,7 @@ typedef Bool (*PointerAccelSchemeInitProc) (DeviceIntPtr /*dev */ ,
                                             /*protoScheme */ );
 
 typedef struct _DeviceRec {
-    pointer devicePrivate;
+    void *devicePrivate;
     ProcessInputProc processInputProc;  /* current */
     ProcessInputProc realInputProc;     /* deliver */
     ProcessInputProc enqueueInputProc;  /* enqueue */
@@ -316,7 +316,7 @@ extern _X_EXPORT Bool InitTouchClassDeviceStruct(DeviceIntPtr /*device */ ,
 
 typedef void (*BellProcPtr) (int /*percent */ ,
                              DeviceIntPtr /*device */ ,
-                             pointer /*ctrl */ ,
+                             void */*ctrl */ ,
                              int);
 
 typedef void (*KbdCtrlProcPtr) (DeviceIntPtr /*device */ ,

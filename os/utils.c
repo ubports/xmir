@@ -490,7 +490,7 @@ GetTimeInMicros(void)
 #endif
 
 void
-AdjustWaitForDelay(pointer waitTime, unsigned long newdelay)
+AdjustWaitForDelay(void *waitTime, unsigned long newdelay)
 {
     static struct timeval delay_val;
     struct timeval **wt = (struct timeval **) waitTime;
@@ -600,6 +600,10 @@ UseMsg(void)
 static int
 VerifyDisplayName(const char *d)
 {
+    int i;
+    int period_found = FALSE;
+    int after_period = 0;
+
     if (d == (char *) 0)
         return 0;               /*  null  */
     if (*d == '\0')
@@ -610,6 +614,29 @@ VerifyDisplayName(const char *d)
         return 0;               /*  must not equal "." or ".."  */
     if (strchr(d, '/') != (char *) 0)
         return 0;               /*  very important!!!  */
+
+    /* Since we run atoi() on the display later, only allow
+       for digits, or exception of :0.0 and similar (two decimal points max)
+       */
+    for (i = 0; i < strlen(d); i++) {
+        if (!isdigit(d[i])) {
+            if (d[i] != '.' || period_found)
+                return 0;
+            period_found = TRUE;
+        } else if (period_found)
+            after_period++;
+
+        if (after_period > 2)
+            return 0;
+    }
+
+    /* don't allow for :0. */
+    if (period_found && after_period == 0)
+        return 0;
+
+    if (atol(d) > INT_MAX)
+        return 0;
+
     return 1;
 }
 
@@ -986,7 +1013,7 @@ ProcessCommandLine(int argc, char *argv[])
 /* Implement a simple-minded font authorization scheme.  The authorization
    name is "hp-hostname-1", the contents are simply the host name. */
 int
-set_font_authorizations(char **authorizations, int *authlen, pointer client)
+set_font_authorizations(char **authorizations, int *authlen, void *client)
 {
 #define AUTHORIZATION_NAME "hp-hostname-1"
 #if defined(TCPCONN) || defined(STREAMSCONN)
@@ -1385,7 +1412,7 @@ static struct pid {
 
 OsSigHandlerPtr old_alarm = NULL;       /* XXX horrible awful hack */
 
-pointer
+void *
 Popen(const char *command, const char *type)
 {
     struct pid *cur;
@@ -1473,7 +1500,7 @@ Popen(const char *command, const char *type)
 }
 
 /* fopen that drops privileges */
-pointer
+void *
 Fopen(const char *file, const char *type)
 {
     FILE *iop;
@@ -1568,7 +1595,7 @@ Fopen(const char *file, const char *type)
 }
 
 int
-Pclose(pointer iop)
+Pclose(void *iop)
 {
     struct pid *cur, *last;
     int pstat;
@@ -1605,7 +1632,7 @@ Pclose(pointer iop)
 }
 
 int
-Fclose(pointer iop)
+Fclose(void *iop)
 {
 #ifdef HAS_SAVED_IDS_AND_SETEUID
     return fclose(iop);

@@ -281,7 +281,7 @@ extern _X_EXPORT DevPrivateKeyRec xkbDevicePrivateKeyRec;
 
 #define XKBDEVICEINFO(dev) ((xkbDeviceInfoPtr)dixLookupPrivate(&(dev)->devPrivates, xkbDevicePrivateKey))
 
-extern void xkbUnwrapProc(DeviceIntPtr, DeviceHandleProc, pointer);
+extern void xkbUnwrapProc(DeviceIntPtr, DeviceHandleProc, void *);
 
 /***====================================================================***/
 
@@ -600,7 +600,7 @@ extern _X_EXPORT void XkbHandleBell(BOOL /* force */ ,
                                     BOOL /* eventOnly */ ,
                                     DeviceIntPtr /* kbd */ ,
                                     CARD8 /* percent */ ,
-                                    pointer /* ctrl */ ,
+                                    void */* ctrl */ ,
                                     CARD8 /* class */ ,
                                     Atom /* name */ ,
                                     WindowPtr /* pWin */ ,
@@ -738,6 +738,14 @@ extern _X_EXPORT void XkbClearAllLatchesAndLocks(DeviceIntPtr /* dev */ ,
                                                  XkbEventCausePtr       /* cause */
     );
 
+extern _X_EXPORT void XkbInitRules(XkbRMLVOSet * /* rmlvo   */,
+                                   const char *  /* rules   */,
+                                   const char *  /* model   */,
+                                   const char *  /* layout  */,
+                                   const char *  /* variant */,
+                                   const char *  /* options */
+    ) ;
+
 extern _X_EXPORT void XkbGetRulesDflts(XkbRMLVOSet *    /* rmlvo */
     );
 
@@ -852,7 +860,7 @@ extern _X_EXPORT unsigned int XkbDDXLoadKeymapByNames(DeviceIntPtr /* keybd */ ,
     );
 
 extern _X_EXPORT Bool XkbDDXNamesFromRules(DeviceIntPtr /* keybd */ ,
-                                           char * /* rules */ ,
+                                           const char * /* rules */ ,
                                            XkbRF_VarDefsPtr /* defs */ ,
                                            XkbComponentNamesPtr /* names */
     );

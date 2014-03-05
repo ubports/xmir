@@ -341,7 +341,7 @@ ephyrInternalDamageRedisplay(ScreenPtr pScreen)
 }
 
 static void
-ephyrInternalDamageBlockHandler(pointer data, OSTimePtr pTimeout, pointer pRead)
+ephyrInternalDamageBlockHandler(void *data, OSTimePtr pTimeout, void *pRead)
 {
     ScreenPtr pScreen = (ScreenPtr) data;
 
@@ -349,7 +349,7 @@ ephyrInternalDamageBlockHandler(pointer data, OSTimePtr pTimeout, pointer pRead)
 }
 
 static void
-ephyrInternalDamageWakeupHandler(pointer data, int i, pointer LastSelectMask)
+ephyrInternalDamageWakeupHandler(void *data, int i, void *LastSelectMask)
 {
     /* FIXME: Not needed ? */
 }
@@ -368,7 +368,7 @@ ephyrSetInternalDamage(ScreenPtr pScreen)
 
     if (!RegisterBlockAndWakeupHandlers(ephyrInternalDamageBlockHandler,
                                         ephyrInternalDamageWakeupHandler,
-                                        (pointer) pScreen))
+                                        (void *) pScreen))
         return FALSE;
 
     pPixmap = (*pScreen->GetScreenPixmap) (pScreen);
@@ -389,7 +389,7 @@ ephyrUnsetInternalDamage(ScreenPtr pScreen)
 
     RemoveBlockAndWakeupHandlers(ephyrInternalDamageBlockHandler,
                                  ephyrInternalDamageWakeupHandler,
-                                 (pointer) pScreen);
+                                 (void *) pScreen);
 }
 
 #ifdef RANDR
@@ -1008,6 +1008,29 @@ ephyrProcessButtonRelease(xcb_generic_event_t *xev)
     KdEnqueuePointerEvent(ephyrMouse, mouseState | KD_MOUSE_DELTA, 0, 0, 0);
 }
 
+/* Xephyr wants ctrl+shift to grab the window, but that conflicts with
+   ctrl+alt+shift key combos. Remember the modifier state on key presses and
+   releases, if mod1 is pressed, we need ctrl, shift and mod1 released
+   before we allow a shift-ctrl grab activation.
+
+   note: a key event contains the mask _before_ the current key takes
+   effect, so mod1_was_down will be reset on the first key press after all
+   three were released, not on the last release. That'd require some more
+   effort.
+ */
+static int
+ephyrUpdateGrabModifierState(int state)
+{
+    static int mod1_was_down = 0;
+
+    if ((state & (XCB_MOD_MASK_CONTROL|XCB_MOD_MASK_SHIFT|XCB_MOD_MASK_1)) == 0)
+        mod1_was_down = 0;
+    else if (state & XCB_MOD_MASK_1)
+        mod1_was_down = 1;
+
+    return mod1_was_down;
+}
+
 static void
 ephyrProcessKeyPress(xcb_generic_event_t *xev)
 {
@@ -1018,6 +1041,7 @@ ephyrProcessKeyPress(xcb_generic_event_t *xev)
         return;
     }
 
+    ephyrUpdateGrabModifierState(key->state);
     ephyrUpdateModifierState(key->state);
     KdEnqueueKeyboardEvent(ephyrKbd, key->detail, FALSE);
 }
@@ -1029,6 +1053,7 @@ ephyrProcessKeyRelease(xcb_generic_event_t *xev)
     xcb_key_release_event_t *key = (xcb_key_release_event_t *)xev;
     static xcb_key_symbols_t *keysyms;
     static int grabbed_screen = -1;
+    int mod1_down = ephyrUpdateGrabModifierState(key->state);
 
     if (!keysyms)
         keysyms = xcb_key_symbols_alloc(conn);
@@ -1049,7 +1074,7 @@ ephyrProcessKeyRelease(xcb_generic_event_t *xev)
             hostx_set_win_title(screen,
                                 "(ctrl+shift grabs mouse and keyboard)");
         }
-        else {
+        else if (!mod1_down) {
             /* Attempt grab */
             xcb_grab_keyboard_cookie_t kbgrabc =
                 xcb_grab_keyboard(conn,
@@ -1207,6 +1232,9 @@ ephyrGetColors(ScreenPtr pScreen, int n, xColorItem * pdefs)
 void
 ephyrPutColors(ScreenPtr pScreen, int n, xColorItem * pdefs)
 {
+    KdScreenPriv(pScreen);
+    KdScreenInfo *screen = pScreenPriv->screen;
+    EphyrScrPriv *scrpriv = screen->driver;
     int min, max, p;
 
     /* XXX Not sure if this is right */
@@ -1225,6 +1253,18 @@ ephyrPutColors(ScreenPtr pScreen, int n, xColorItem * pdefs)
                              pdefs->red >> 8,
                              pdefs->green >> 8, pdefs->blue >> 8);
         pdefs++;
+    }
+    if (scrpriv->pDamage) {
+        BoxRec box;
+        RegionRec region;
+
+        box.x1 = 0;
+        box.y1 = 0;
+        box.x2 = pScreen->width;
+        box.y2 = pScreen->height;
+        RegionInit(&region, &box, 1);
+        DamageReportDamage(scrpriv->pDamage, &region);
+        RegionUninit(&region);
     }
 }
 

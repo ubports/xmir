@@ -164,7 +164,7 @@ __glXAddContext(__GLXcontext * cx)
 {
     /* Register this context as a resource.
      */
-    if (!AddResource(cx->id, __glXContextRes, (pointer)cx)) {
+    if (!AddResource(cx->id, __glXContextRes, (void *)cx)) {
 	return False;
     }
 
@@ -278,7 +278,7 @@ glxGetClient(ClientPtr pClient)
 }
 
 static void
-glxClientCallback(CallbackListPtr *list, pointer closure, pointer data)
+glxClientCallback(CallbackListPtr *list, void *closure, void *data)
 {
     NewClientInfoRec *clientinfo = (NewClientInfoRec *) data;
     ClientPtr pClient = clientinfo->client;
@@ -554,9 +554,9 @@ __glXsetGetProcAddress(glx_gpa_proc get_proc_address)
 
 void *__glGetProcAddress(const char *proc)
 {
-    void *ret = _get_proc_address(proc);
+    void *ret = (void *) _get_proc_address(proc);
 
-    return ret ? ret : NoopDDA;
+    return ret ? ret : (void *) NoopDDA;
 }
 
 /*

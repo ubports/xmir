@@ -83,8 +83,8 @@ xf86OpenConsole(void)
     struct vt_mode VT;
     struct vt_stat vts;
     MessageType from = X_PROBED;
-    char *tty0[] = { "/dev/tty0", "/dev/vc/0", NULL };
-    char *vcs[] = { "/dev/vc/%d", "/dev/tty%d", NULL };
+    const char *tty0[] = { "/dev/tty0", "/dev/vc/0", NULL };
+    const char *vcs[] = { "/dev/vc/%d", "/dev/tty%d", NULL };
 
     if (serverGeneration == 1) {
 
@@ -155,6 +155,7 @@ xf86OpenConsole(void)
 
         i = 0;
         while (vcs[i] != NULL) {
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
             snprintf(vtname, sizeof(vtname), vcs[i], xf86Info.vtno);    /* /dev/tty1-64 */
             if ((xf86Info.consoleFd = open(vtname, O_RDWR | O_NDELAY, 0)) >= 0)
                 break;

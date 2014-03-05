@@ -832,7 +832,7 @@ glxWinCopyWindow(WindowPtr pWindow, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 
     GLWIN_TRACE_MSG("glxWinCopyWindow pWindow %p", pWindow);
 
-    dixLookupResourceByType((pointer) &pGlxDraw, pWindow->drawable.id,
+    dixLookupResourceByType((void *) &pGlxDraw, pWindow->drawable.id,
                             __glXDrawableRes, NullClient, DixUnknownAccess);
 
     /*
@@ -1613,7 +1613,7 @@ glxWinCreateContext(__GLXscreen * screen,
         glxWinReleaseTexImage
     };
 
-    context = (__GLXWinContext *) calloc(1, sizeof(__GLXWinContext));
+    context = calloc(1, sizeof(__GLXWinContext));
 
     if (!context)
         return NULL;

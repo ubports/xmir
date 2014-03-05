@@ -142,7 +142,7 @@ XkbFreeRMLVOSet(XkbRMLVOSet * rmlvo, Bool freeRMLVO)
 }
 
 static Bool
-XkbWriteRulesProp(ClientPtr client, pointer closure)
+XkbWriteRulesProp(ClientPtr client, void *closure)
 {
     int len, out;
     Atom name;
@@ -204,6 +204,21 @@ XkbWriteRulesProp(ClientPtr client, pointer closure)
                             XA_STRING, 8, PropModeReplace, len, pval, TRUE);
     free(pval);
     return TRUE;
+}
+
+void
+XkbInitRules(XkbRMLVOSet *rmlvo,
+             const char *rules,
+             const char *model,
+             const char *layout,
+             const char *variant,
+             const char *options)
+{
+    rmlvo->rules = rules ? xnfstrdup(rules) : NULL;
+    rmlvo->model = model ? xnfstrdup(model) : NULL;
+    rmlvo->layout = layout ? xnfstrdup(layout) : NULL;
+    rmlvo->variant = variant ? xnfstrdup(variant) : NULL;
+    rmlvo->options = options ? xnfstrdup(options) : NULL;
 }
 
 static void
