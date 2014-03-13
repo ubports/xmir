@@ -1,3 +1,9 @@
+xorg-server (2:1.15.0-1ubuntu7) UNRELEASED; urgency=medium
+
+  * Fix crash in RRCrtcDetachScanoutPixmap. (LP: #1280743)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 13 Mar 2014 12:32:19 +0100
+
 xorg-server (2:1.15.0-1ubuntu6) trusty; urgency=low
 
   * Add a small patch to hopefully fix FTBFS on ppc64el.
