@@ -1,14 +1,14 @@
+xorg-server (2:1.15.1-0ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from unreleased debian unstable.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 09 Apr 2014 15:31:23 +0200
+
 xorg-server (2:1.15.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 14 Apr 2014 12:52:18 +0200
-
-xorg-server (2:1.15.0.901-1ubuntu1) UNRELEASED; urgency=low
-
-  * Merge rc1 from released debian unstable.
-
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 09 Apr 2014 15:31:23 +0200
 
 xorg-server (2:1.15.0.901-1) unstable; urgency=medium
 
