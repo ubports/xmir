@@ -1,3 +1,9 @@
+xorg-server (2:1.15.1-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 14 Apr 2014 12:52:18 +0200
+
 xorg-server (2:1.15.0.901-1) unstable; urgency=medium
 
   [ Robert Millan ]
