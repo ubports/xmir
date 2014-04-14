@@ -1,8 +1,9 @@
-xorg-server (2:1.15.1-0ubuntu1) UNRELEASED; urgency=low
+xorg-server (2:1.15.1-0ubuntu1) trusty; urgency=medium
 
   * Merge from unreleased debian unstable.
+    - Unbreaks KDE desktop effects on IVB+. (LP: #1294666)
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 09 Apr 2014 15:31:23 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 14 Apr 2014 12:57:12 +0200
 
 xorg-server (2:1.15.1-1) UNRELEASED; urgency=low
 
