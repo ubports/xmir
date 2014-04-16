@@ -1,3 +1,10 @@
+xorg-server (2:1.15.1-0ubuntu2) trusty; urgency=medium
+
+  * Disable support for rotations and transforms
+    on gpu screens for now. (LP: #1308515)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 16 Apr 2014 10:14:39 +0200
+
 xorg-server (2:1.15.1-0ubuntu1) trusty; urgency=medium
 
   * Merge from unreleased debian unstable.
