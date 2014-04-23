@@ -1,13 +1,16 @@
-From fe5802680b5ecf5ecef55b839f2f555882207d41 Mon Sep 17 00:00:00 2001
-From: Bryce Harrington <bryce@canonical.com>
-Date: Wed, 13 Feb 2013 11:39:34 -0800
-Subject: [PATCH] If drm device couldn't be opened, keep trying for a sec.
+From: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+Subject: [PATCH] do not use drmGetBusid to grab the pci-id name
 
 The kernel returns EACCES or EAGAIN on drm open when the drm device is
 currently unavailable, such as if it is in use by another process
 (e.g. plymouth), or hasn't finished initializing (e.g. on a really fast
-SSD).  Check for errors when trying to open the device, and continue
-retrying for a short period before giving up.
+SSD). Because the probing is done before a vt switch is completed,
+we have no way to ensure that we can own DRM master. This results
+in failing to boot.
+
+Also attrib->unowned is not initialized, always initialize it to fix
+a valgrind warning, and to prevent adding the same device a second time
+after a vt switch.
 
 Fixes: https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/982889
 
@@ -144,7 +147,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
      ret = xf86platformAddDevice(index);
      if (ret == -1)
          xf86_remove_platform_device(index);
-@@ -145,18 +102,12 @@
+@@ -145,18 +102,10 @@
  
      LogMessage(X_INFO, "xfree86: Adding drm device (%s)\n", path);
  
@@ -159,11 +162,10 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 -    ret = get_drm_info(attribs, path, -1);
 -    if (ret == FALSE)
 -        goto out_free;
-+    if (!xf86VTOwner())
-+        /* if we don't currently own the VT then don't probe the device,
-+           just mark it as unowned for later use */
-+        attribs->unowned = TRUE;
- 
+-
++    /* if we don't currently own the VT then don't probe the device,
++       just mark it as unowned for later use */
++    attribs->unowned = !xf86VTOwner();
 +    xf86_add_platform_device(attribs);
      return;
  
