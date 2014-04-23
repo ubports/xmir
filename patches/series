@@ -51,3 +51,4 @@ disable-rotation-transform-gpuscreens.patch
 pixman-validate.patch
 fix-ftbfs-ppc64el.patch
 xmir.patch
+drm_device_keep_trying.patch

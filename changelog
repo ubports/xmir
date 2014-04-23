@@ -1,3 +1,10 @@
+xorg-server (2:1.15.1-0ubuntu3) UNRELEASED; urgency=low
+
+  * Revive the old drm_device_keep_trying.patch.
+    - Removing the call to get_drm_info fixes switching to guest sessions.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 23 Apr 2014 11:24:30 +0200
+
 xorg-server (2:1.15.1-0ubuntu2) trusty; urgency=medium
 
   * Disable support for rotations and transforms
