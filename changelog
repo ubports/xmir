@@ -1,9 +1,9 @@
-xorg-server (2:1.15.1-0ubuntu3) UNRELEASED; urgency=low
+xorg-server (2:1.15.1-0ubuntu3) utopic; urgency=medium
 
   * Revive the old drm_device_keep_trying.patch.
     - Removing the call to get_drm_info fixes switching to guest sessions.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 23 Apr 2014 11:24:30 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 28 Apr 2014 10:06:21 +0200
 
 xorg-server (2:1.15.1-0ubuntu2) trusty; urgency=medium
 
