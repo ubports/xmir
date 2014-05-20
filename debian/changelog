@@ -1,11 +1,11 @@
-xorg-server (2:1.15.1-0ubuntu5) UNRELEASED; urgency=low
+xorg-server (2:1.15.1-0ubuntu5) utopic; urgency=low
 
   * Add upstream patch to fix some valgrind issues.
     - xi-dont-copy-too-much.patch
   * Fix crash related to suspend/shutdown. (LP: #1208473)
     - mi-dont-process-disabled.patch
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 20 May 2014 10:49:07 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 20 May 2014 11:32:41 +0200
 
 xorg-server (2:1.15.1-0ubuntu4) utopic; urgency=low
 
