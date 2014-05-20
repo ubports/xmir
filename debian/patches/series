@@ -53,3 +53,5 @@ fix-ftbfs-ppc64el.patch
 xmir.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
+xi-dont-copy-too-much.patch
+mi-dont-process-disabled.patch
