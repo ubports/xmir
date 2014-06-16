@@ -1,3 +1,63 @@
+xorg-server (2:1.15.1-0ubuntu5) utopic; urgency=low
+
+  * Add upstream patch to fix some valgrind issues.
+    - xi-dont-copy-too-much.patch
+  * Fix crash related to suspend/shutdown. (LP: #1208473)
+    - mi-dont-process-disabled.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 20 May 2014 11:32:41 +0200
+
+xorg-server (2:1.15.1-0ubuntu4) utopic; urgency=low
+
+  * Resize touch event history if the array is filled up.
+    - xi2-resize-touch.patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 07 May 2014 13:52:59 +0200
+
+xorg-server (2:1.15.1-0ubuntu3) utopic; urgency=medium
+
+  * Revive the old drm_device_keep_trying.patch.
+    - Removing the call to get_drm_info fixes switching to guest sessions.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 28 Apr 2014 10:06:21 +0200
+
+xorg-server (2:1.15.1-0ubuntu2) trusty; urgency=medium
+
+  * Disable support for rotations and transforms
+    on gpu screens for now. (LP: #1308515)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 16 Apr 2014 10:14:39 +0200
+
+xorg-server (2:1.15.1-0ubuntu1) trusty; urgency=medium
+
+  * Merge from unreleased debian unstable.
+    - Unbreaks KDE desktop effects on IVB+. (LP: #1294666)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 14 Apr 2014 12:57:12 +0200
+
+xorg-server (2:1.15.1-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 14 Apr 2014 12:52:18 +0200
+
+xorg-server (2:1.15.0.901-1) unstable; urgency=medium
+
+  [ Robert Millan ]
+  * Add devd input backend for kFreeBSD, and use it instead of hal (closes:
+    #736765, #710196, #683833)
+
+  [ Julien Cristau ]
+  * New upstream release
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 31 Mar 2014 12:19:57 +0200
+
+xorg-server (2:1.15.0-1ubuntu7) trusty; urgency=medium
+
+  * Fix crash in RRCrtcDetachScanoutPixmap. (LP: #1280743)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 13 Mar 2014 13:10:52 +0100
+
 xorg-server (2:1.15.0-1ubuntu6) trusty; urgency=low
 
   * Add a small patch to hopefully fix FTBFS on ppc64el.
@@ -35,17 +95,18 @@ xorg-server (2:1.15.0-1ubuntu1) trusty; urgency=low
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 04 Feb 2014 15:45:00 +0000
 
-xorg-server (2:1.15.0-2) UNRELEASED; urgency=medium
+xorg-server (2:1.15.0-2) unstable; urgency=medium
 
   [ Julien Cristau ]
   * Bump debhelper compat level to 7.
+  * Upload to unstable.
 
   [ Yaroslav Halchenko ]
   * Adding xorg-server-source binary package to provide a tarball with
     original (patched, autoreconfed) sources of the xserver (Closes:
     #730552)
 
- -- Julien Cristau <jcristau@debian.org>  Tue, 07 Jan 2014 00:51:53 +0100
+ -- Julien Cristau <jcristau@debian.org>  Thu, 06 Feb 2014 16:14:15 +0100
 
 xorg-server (2:1.15.0-1) experimental; urgency=low
 
