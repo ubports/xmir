@@ -1,0 +1,172 @@
+From: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+Subject: [PATCH] do not use drmGetBusid to grab the pci-id name
+
+The kernel returns EACCES or EAGAIN on drm open when the drm device is
+currently unavailable, such as if it is in use by another process
+(e.g. plymouth), or hasn't finished initializing (e.g. on a really fast
+SSD). Because the probing is done before a vt switch is completed,
+we have no way to ensure that we can own DRM master. This results
+in failing to boot.
+
+Also attrib->unowned is not initialized, always initialize it to fix
+a valgrind warning, and to prevent adding the same device a second time
+after a vt switch.
+
+Fixes: https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/982889
+
+Signed-off-by: Bryce Harrington <bryce@canonical.com>
+---
+ hw/xfree86/os-support/linux/lnx_platform.c |   29 +++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+--- a/config/udev.c
++++ b/config/udev.c
+@@ -98,7 +98,7 @@
+         if (strncmp(sysname, "card", 4) != 0)
+             return;
+ 
+-        LogMessage(X_INFO, "config/udev: Adding drm device (%s)\n", path);
++        LogMessage(X_INFO, "config/udev: Adding drm device (%s) %s %s\n", path, sysname, syspath);
+ 
+         config_udev_odev_setup_attribs(path, syspath, NewGPUDeviceRequest);
+         return;
+@@ -430,11 +430,23 @@
+ #ifdef CONFIG_UDEV_KMS
+ 
+ static Bool
++get_pci_busid(const char *in, char *pci_str)
++{
++    int ret, domain, bus, dev, func;
++    ret = sscanf(in, "/%04x:%02x:%02x.%d/drm/card%*d", &domain, &bus, &dev, &func);
++    if (ret != 4)
++        return FALSE;
++    sprintf(pci_str, "pci:%04x:%02x:%02x.%d", domain, bus, dev, func);
++    return TRUE;
++}
++
++static Bool
+ config_udev_odev_setup_attribs(const char *path, const char *syspath,
+                                config_odev_probe_proc_ptr probe_callback)
+ {
+     struct OdevAttributes *attribs = config_odev_allocate_attribute_list();
+     int ret;
++    const char *platform;
+ 
+     if (!attribs)
+         return FALSE;
+@@ -447,6 +459,33 @@
+     if (ret == FALSE)
+         goto fail;
+ 
++    if (strstr(syspath, "/devices/pci")) {
++        char pci_str[17];
++        const char *end = strstr(syspath, "/drm/card");
++        if (strstr(syspath, "/usb"))
++            ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, "");
++        else if (get_pci_busid(end - 13, pci_str))
++            ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, pci_str);
++    } else if ((platform = strstr(syspath, "/devices/platform/"))) {
++        /* OMAP relies on this, modesetting doesn't use it */
++        const char *end;
++        platform += 18;
++        end = strchr(platform, '.');
++        if (end) {
++            char *busid;
++            ret = asprintf(&busid, "platform:%.*s:%02li",
++                           (int)(end - platform), platform, strtol(end + 1, NULL, 10));
++            if (ret >= 0) {
++                ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, busid);
++                free(busid);
++            }
++            else
++                ret = TRUE;
++        }
++    }
++    if (ret == FALSE)
++        goto fail;
++
+     /* ownership of attribs is passed to probe layer */
+     probe_callback(attribs);
+     return TRUE;
+--- a/hw/xfree86/os-support/linux/lnx_platform.c
++++ b/hw/xfree86/os-support/linux/lnx_platform.c
+@@ -19,44 +19,6 @@
+ 
+ #include "hotplug.h"
+ 
+-static Bool
+-get_drm_info(struct OdevAttributes *attribs, char *path, int delayed_index)
+-{
+-    drmSetVersion sv;
+-    char *buf;
+-    int fd;
+-    int err = 0;
+-
+-    fd = open(path, O_RDWR, O_CLOEXEC);
+-    if (fd == -1)
+-        return FALSE;
+-
+-    sv.drm_di_major = 1;
+-    sv.drm_di_minor = 4;
+-    sv.drm_dd_major = -1;       /* Don't care */
+-    sv.drm_dd_minor = -1;       /* Don't care */
+-
+-    err = drmSetInterfaceVersion(fd, &sv);
+-    if (err) {
+-        ErrorF("setversion 1.4 failed: %s\n", strerror(-err));
+-	goto out;
+-    }
+-
+-    /* for a delayed probe we've already added the device */
+-    if (delayed_index == -1) {
+-            xf86_add_platform_device(attribs);
+-            delayed_index = xf86_num_platform_devices - 1;
+-    }
+-
+-    buf = drmGetBusid(fd);
+-    xf86_add_platform_device_attrib(delayed_index,
+-                                    ODEV_ATTRIB_BUSID, buf);
+-    drmFreeBusid(buf);
+-out:
+-    close(fd);
+-    return (err == 0);
+-}
+-
+ Bool
+ xf86PlatformDeviceCheckBusID(struct xf86_platform_device *device, const char *busid)
+ {
+@@ -105,11 +67,6 @@
+     char *dpath;
+     dpath = xf86_get_platform_attrib(index, ODEV_ATTRIB_PATH);
+ 
+-    ret = get_drm_info(attribs, dpath, index);
+-    if (ret == FALSE) {
+-        xf86_remove_platform_device(index);
+-        return;
+-    }
+     ret = xf86platformAddDevice(index);
+     if (ret == -1)
+         xf86_remove_platform_device(index);
+@@ -145,18 +102,10 @@
+ 
+     LogMessage(X_INFO, "xfree86: Adding drm device (%s)\n", path);
+ 
+-    if (!xf86VTOwner()) {
+-            /* if we don't currently own the VT then don't probe the device,
+-               just mark it as unowned for later use */
+-            attribs->unowned = TRUE;
+-            xf86_add_platform_device(attribs);
+-            return;
+-    }
+-
+-    ret = get_drm_info(attribs, path, -1);
+-    if (ret == FALSE)
+-        goto out_free;
+-
++    /* if we don't currently own the VT then don't probe the device,
++       just mark it as unowned for later use */
++    attribs->unowned = !xf86VTOwner();
++    xf86_add_platform_device(attribs);
+     return;
+ 
+ out_free:

@@ -1,0 +1,22 @@
+--- a/hw/xfree86/modes/xf86RandR12.c
++++ b/hw/xfree86/modes/xf86RandR12.c
+@@ -932,6 +932,9 @@
+     if (xf86RandR12Key == NULL)
+         return;
+ 
++    if (pScreen->isGPU)
++        rotations = RR_Rotate_0;
++
+     randrp = XF86RANDRINFO(pScreen);
+ #if RANDR_12_INTERFACE
+     for (c = 0; c < config->num_crtc; c++) {
+@@ -954,6 +957,9 @@
+     xf86CrtcConfigPtr config = XF86_CRTC_CONFIG_PTR(pScrn);
+ #endif
+ 
++    if (pScreen->isGPU)
++        transforms = FALSE;
++
+     if (xf86RandR12Key == NULL)
+         return;
+ 
