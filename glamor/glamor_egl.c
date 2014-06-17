@@ -50,12 +50,9 @@
 
 #include "glamor.h"
 #include "glamor_priv.h"
+#include "dri3.h"
 
 static const char glamor_name[] = "glamor";
-
-static DevPrivateKeyRec glamor_egl_pixmap_private_key_index;
-DevPrivateKey glamor_egl_pixmap_private_key =
-    &glamor_egl_pixmap_private_key_index;
 
 static void
 glamor_identify(int flags)
@@ -68,6 +65,7 @@ struct glamor_egl_screen_private {
     EGLDisplay display;
     EGLContext context;
     EGLint major, minor;
+    char *device_path;
 
     CreateScreenResourcesProcPtr CreateScreenResources;
     CloseScreenProcPtr CloseScreen;
@@ -97,30 +95,22 @@ glamor_egl_get_screen_private(ScrnInfoPtr scrn)
 }
 
 static void
-glamor_egl_get_context(struct glamor_context *glamor_ctx)
+glamor_egl_make_current(struct glamor_context *glamor_ctx)
 {
-    if (glamor_ctx->get_count++)
-        return;
-
-    if (glamor_ctx->ctx != eglGetCurrentContext()) {
-        eglMakeCurrent(glamor_ctx->display, EGL_NO_SURFACE,
-                       EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        if (!eglMakeCurrent(glamor_ctx->display,
-                            EGL_NO_SURFACE, EGL_NO_SURFACE,
-                            glamor_ctx->ctx)) {
-            FatalError("Failed to make EGL context current\n");
-        }
-    }
-}
-
-static void
-glamor_egl_put_context(struct glamor_context *glamor_ctx)
-{
-    if (--glamor_ctx->get_count)
-        return;
-
+    /* There's only a single global dispatch table in Mesa.  EGL, GLX,
+     * and AIGLX's direct dispatch table manipulation don't talk to
+     * each other.  We need to set the context to NULL first to avoid
+     * EGL's no-op context change fast path when switching back to
+     * EGL.
+     */
     eglMakeCurrent(glamor_ctx->display, EGL_NO_SURFACE,
                    EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+    if (!eglMakeCurrent(glamor_ctx->display,
+                        EGL_NO_SURFACE, EGL_NO_SURFACE,
+                        glamor_ctx->ctx)) {
+        FatalError("Failed to make EGL context current\n");
+    }
 }
 
 static EGLImageKHR
@@ -168,10 +158,14 @@ glamor_get_flink_name(int fd, int handle, int *name)
 }
 
 static Bool
-glamor_create_texture_from_image(struct glamor_egl_screen_private
-                                 *glamor_egl,
+glamor_create_texture_from_image(ScreenPtr screen,
                                  EGLImageKHR image, GLuint * texture)
 {
+    struct glamor_screen_private *glamor_priv =
+        glamor_get_screen_private(screen);
+
+    glamor_make_current(glamor_priv);
+
     glGenTextures(1, texture);
     glBindTexture(GL_TEXTURE_2D, *texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -179,6 +173,7 @@ glamor_create_texture_from_image(struct glamor_egl_screen_private
 
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     return TRUE;
 }
 
@@ -213,7 +208,7 @@ glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h)
     gbm_bo_destroy(bo);
     if (image == EGL_NO_IMAGE_KHR)
         return 0;
-    glamor_create_texture_from_image(glamor_egl, image, &texture);
+    glamor_create_texture_from_image(screen, image, &texture);
     eglDestroyImageKHR(glamor_egl->display, image);
 
     return texture;
@@ -226,11 +221,13 @@ Bool
 glamor_egl_create_textured_screen(ScreenPtr screen, int handle, int stride)
 {
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
+    struct glamor_pixmap_private *pixmap_priv;
     struct glamor_egl_screen_private *glamor_egl;
     PixmapPtr screen_pixmap;
 
     glamor_egl = glamor_egl_get_screen_private(scrn);
     screen_pixmap = screen->GetScreenPixmap(screen);
+    pixmap_priv = glamor_get_pixmap_private(screen_pixmap);
 
     if (!glamor_egl_create_textured_pixmap(screen_pixmap, handle, stride)) {
         xf86DrvMsg(scrn->scrnIndex, X_ERROR,
@@ -238,8 +235,7 @@ glamor_egl_create_textured_screen(ScreenPtr screen, int handle, int stride)
         return FALSE;
     }
 
-    glamor_egl->front_image = dixLookupPrivate(&screen_pixmap->devPrivates,
-                                               glamor_egl_pixmap_private_key);
+    glamor_egl->front_image = pixmap_priv->base.image;
     glamor_set_screen_pixmap(screen_pixmap, glamor_egl->back_pixmap);
     return TRUE;
 }
@@ -280,6 +276,8 @@ glamor_egl_create_textured_pixmap(PixmapPtr pixmap, int handle, int stride)
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
     struct glamor_screen_private *glamor_priv =
         glamor_get_screen_private(screen);
+    struct glamor_pixmap_private *pixmap_priv =
+        glamor_get_pixmap_private(pixmap);
     struct glamor_egl_screen_private *glamor_egl;
     EGLImageKHR image;
     GLuint texture;
@@ -288,7 +286,7 @@ glamor_egl_create_textured_pixmap(PixmapPtr pixmap, int handle, int stride)
 
     glamor_egl = glamor_egl_get_screen_private(scrn);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     if (glamor_egl->has_gem) {
         if (!glamor_get_flink_name(glamor_egl->fd, handle, &name)) {
             xf86DrvMsg(scrn->scrnIndex, X_ERROR,
@@ -311,14 +309,13 @@ glamor_egl_create_textured_pixmap(PixmapPtr pixmap, int handle, int stride)
         glamor_set_pixmap_type(pixmap, GLAMOR_DRM_ONLY);
         goto done;
     }
-    glamor_create_texture_from_image(glamor_egl, image, &texture);
+    glamor_create_texture_from_image(screen, image, &texture);
     glamor_set_pixmap_type(pixmap, GLAMOR_TEXTURE_DRM);
     glamor_set_pixmap_texture(pixmap, texture);
-    dixSetPrivate(&pixmap->devPrivates, glamor_egl_pixmap_private_key, image);
+    pixmap_priv->base.image = image;
     ret = TRUE;
 
  done:
-    glamor_put_context(glamor_priv);
     return ret;
 }
 
@@ -329,6 +326,8 @@ glamor_egl_create_textured_pixmap_from_gbm_bo(PixmapPtr pixmap, void *bo)
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
     struct glamor_screen_private *glamor_priv =
         glamor_get_screen_private(screen);
+    struct glamor_pixmap_private *pixmap_priv =
+        glamor_get_pixmap_private(pixmap);
     struct glamor_egl_screen_private *glamor_egl;
     EGLImageKHR image;
     GLuint texture;
@@ -336,7 +335,7 @@ glamor_egl_create_textured_pixmap_from_gbm_bo(PixmapPtr pixmap, void *bo)
 
     glamor_egl = glamor_egl_get_screen_private(scrn);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     image = eglCreateImageKHR(glamor_egl->display,
                               glamor_egl->context,
@@ -345,14 +344,13 @@ glamor_egl_create_textured_pixmap_from_gbm_bo(PixmapPtr pixmap, void *bo)
         glamor_set_pixmap_type(pixmap, GLAMOR_DRM_ONLY);
         goto done;
     }
-    glamor_create_texture_from_image(glamor_egl, image, &texture);
+    glamor_create_texture_from_image(screen, image, &texture);
     glamor_set_pixmap_type(pixmap, GLAMOR_TEXTURE_DRM);
     glamor_set_pixmap_texture(pixmap, texture);
-    dixSetPrivate(&pixmap->devPrivates, glamor_egl_pixmap_private_key, image);
+    pixmap_priv->base.image = image;
     ret = TRUE;
 
  done:
-    glamor_put_context(glamor_priv);
     return ret;
 }
 
@@ -393,6 +391,8 @@ glamor_egl_dri3_fd_name_from_tex(ScreenPtr screen,
 {
 #ifdef GLAMOR_HAS_GBM
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
+    struct glamor_pixmap_private *pixmap_priv =
+        glamor_get_pixmap_private(pixmap);
     struct glamor_screen_private *glamor_priv =
         glamor_get_screen_private(screen);
     struct glamor_egl_screen_private *glamor_egl;
@@ -408,12 +408,10 @@ glamor_egl_dri3_fd_name_from_tex(ScreenPtr screen,
 
     glamor_egl = glamor_egl_get_screen_private(scrn);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
-    image = dixLookupPrivate(&pixmap->devPrivates,
-                             glamor_egl_pixmap_private_key);
-
-    if (image == EGL_NO_IMAGE_KHR || image == NULL) {
+    image = pixmap_priv->base.image;
+    if (!image) {
         image = eglCreateImageKHR(glamor_egl->display,
                                   glamor_egl->context,
                                   EGL_GL_TEXTURE_2D_KHR,
@@ -422,8 +420,7 @@ glamor_egl_dri3_fd_name_from_tex(ScreenPtr screen,
         if (image == EGL_NO_IMAGE_KHR)
             goto failure;
 
-        dixSetPrivate(&pixmap->devPrivates,
-                      glamor_egl_pixmap_private_key, image);
+        pixmap_priv->base.image = image;
         glamor_set_pixmap_type(pixmap, GLAMOR_TEXTURE_DRM);
     }
 
@@ -439,26 +436,25 @@ glamor_egl_dri3_fd_name_from_tex(ScreenPtr screen,
     }
     else {
         if (glamor_get_fd_from_bo(glamor_egl->fd, bo, &fd)) {
-            *stride = pixmap->devKind;
-            *size = pixmap->devKind * gbm_bo_get_height(bo);
         }
     }
+    *stride = pixmap->devKind;
+    *size = pixmap->devKind * gbm_bo_get_height(bo);
 
     gbm_bo_destroy(bo);
  failure:
-    glamor_put_context(glamor_priv);
     return fd;
 #else
     return -1;
 #endif
 }
 
-PixmapPtr
-glamor_egl_dri3_pixmap_from_fd(ScreenPtr screen,
-                               int fd,
-                               CARD16 width,
-                               CARD16 height,
-                               CARD16 stride, CARD8 depth, CARD8 bpp)
+_X_EXPORT PixmapPtr
+glamor_pixmap_from_fd(ScreenPtr screen,
+                      int fd,
+                      CARD16 width,
+                      CARD16 height,
+                      CARD16 stride, CARD8 depth, CARD8 bpp)
 {
 #ifdef GLAMOR_HAS_GBM
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
@@ -528,20 +524,18 @@ static void
 _glamor_egl_destroy_pixmap_image(PixmapPtr pixmap)
 {
     ScrnInfoPtr scrn = xf86ScreenToScrn(pixmap->drawable.pScreen);
-    EGLImageKHR image;
     struct glamor_egl_screen_private *glamor_egl =
         glamor_egl_get_screen_private(scrn);
+    struct glamor_pixmap_private *pixmap_priv =
+        glamor_get_pixmap_private(pixmap);
 
-    image = dixLookupPrivate(&pixmap->devPrivates,
-                             glamor_egl_pixmap_private_key);
-    if (image != EGL_NO_IMAGE_KHR && image != NULL) {
+    if (pixmap_priv->base.image) {
         /* Before destroy an image which was attached to
          * a texture. we must call glFlush to make sure the
          * operation on that texture has been done.*/
         glamor_block_handler(pixmap->drawable.pScreen);
-        eglDestroyImageKHR(glamor_egl->display, image);
-        dixSetPrivate(&pixmap->devPrivates, glamor_egl_pixmap_private_key,
-                      NULL);
+        eglDestroyImageKHR(glamor_egl->display, pixmap_priv->base.image);
+        pixmap_priv->base.image = NULL;
     }
 }
 
@@ -551,21 +545,21 @@ glamor_egl_exchange_buffers(PixmapPtr front, PixmapPtr back)
     ScrnInfoPtr scrn = xf86ScreenToScrn(front->drawable.pScreen);
     struct glamor_egl_screen_private *glamor_egl =
         glamor_egl_get_screen_private(scrn);
-    EGLImageKHR old_front_image;
-    EGLImageKHR new_front_image;
+    EGLImageKHR temp;
+    struct glamor_pixmap_private *front_priv =
+        glamor_get_pixmap_private(front);
+    struct glamor_pixmap_private *back_priv =
+        glamor_get_pixmap_private(back);
 
     glamor_pixmap_exchange_fbos(front, back);
-    new_front_image =
-        dixLookupPrivate(&back->devPrivates, glamor_egl_pixmap_private_key);
-    old_front_image =
-        dixLookupPrivate(&front->devPrivates, glamor_egl_pixmap_private_key);
-    dixSetPrivate(&front->devPrivates, glamor_egl_pixmap_private_key,
-                  new_front_image);
-    dixSetPrivate(&back->devPrivates, glamor_egl_pixmap_private_key,
-                  old_front_image);
+
+    temp = back_priv->base.image;
+    back_priv->base.image = front_priv->base.image;
+    front_priv->base.image = temp;
+
     glamor_set_pixmap_type(front, GLAMOR_TEXTURE_DRM);
     glamor_set_pixmap_type(back, GLAMOR_TEXTURE_DRM);
-    glamor_egl->front_image = new_front_image;
+    glamor_egl->front_image = front_priv->base.image;
 
 }
 
@@ -582,24 +576,23 @@ glamor_egl_close_screen(ScreenPtr screen)
 {
     ScrnInfoPtr scrn;
     struct glamor_egl_screen_private *glamor_egl;
+    struct glamor_pixmap_private *pixmap_priv;
     PixmapPtr screen_pixmap;
-    EGLImageKHR back_image;
 
     scrn = xf86ScreenToScrn(screen);
     glamor_egl = glamor_egl_get_screen_private(scrn);
     screen_pixmap = screen->GetScreenPixmap(screen);
+    pixmap_priv = glamor_get_pixmap_private(screen_pixmap);
 
-    eglDestroyImageKHR(glamor_egl->display,glamor_egl->front_image);
-    dixSetPrivate(&screen_pixmap->devPrivates, glamor_egl_pixmap_private_key,
-                  NULL);
+    eglDestroyImageKHR(glamor_egl->display, glamor_egl->front_image);
+    pixmap_priv->base.image = NULL;
     glamor_egl->front_image = NULL;
+
     if (glamor_egl->back_pixmap && *glamor_egl->back_pixmap) {
-        back_image = dixLookupPrivate(&(*glamor_egl->back_pixmap)->devPrivates,
-                                      glamor_egl_pixmap_private_key);
-        if (back_image != NULL && back_image != EGL_NO_IMAGE_KHR) {
-            eglDestroyImageKHR(glamor_egl->display, back_image);
-            dixSetPrivate(&(*glamor_egl->back_pixmap)->devPrivates,
-                          glamor_egl_pixmap_private_key, NULL);
+        pixmap_priv = glamor_get_pixmap_private(*glamor_egl->back_pixmap);
+        if (pixmap_priv->base.image) {
+            eglDestroyImageKHR(glamor_egl->display, pixmap_priv->base.image);
+            pixmap_priv->base.image = NULL;
         }
     }
 
@@ -608,29 +601,68 @@ glamor_egl_close_screen(ScreenPtr screen)
     return screen->CloseScreen(screen);
 }
 
-static Bool
-glamor_egl_has_extension(struct glamor_egl_screen_private *glamor_egl,
-                         const char *extension)
+static int
+glamor_dri3_open_client(ClientPtr client,
+                        ScreenPtr screen,
+                        RRProviderPtr provider,
+                        int *fdp)
 {
-    const char *pext;
-    int ext_len;
+    ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
+    struct glamor_egl_screen_private *glamor_egl =
+        glamor_egl_get_screen_private(scrn);
+    int fd;
+    drm_magic_t magic;
 
-    ext_len = strlen(extension);
-    pext = (const char *) eglQueryString(glamor_egl->display, EGL_EXTENSIONS);
-    if (pext == NULL || extension == NULL)
-        return FALSE;
-    while ((pext = strstr(pext, extension)) != NULL) {
-        if (pext[ext_len] == ' ' || pext[ext_len] == '\0')
-            return TRUE;
-        pext += ext_len;
+    fd = open(glamor_egl->device_path, O_RDWR|O_CLOEXEC);
+    if (fd < 0)
+        return BadAlloc;
+
+    /* Before FD passing in the X protocol with DRI3 (and increased
+     * security of rendering with per-process address spaces on the
+     * GPU), the kernel had to come up with a way to have the server
+     * decide which clients got to access the GPU, which was done by
+     * each client getting a unique (magic) number from the kernel,
+     * passing it to the server, and the server then telling the
+     * kernel which clients were authenticated for using the device.
+     *
+     * Now that we have FD passing, the server can just set up the
+     * authentication on its own and hand the prepared FD off to the
+     * client.
+     */
+    if (drmGetMagic(fd, &magic) < 0) {
+        if (errno == EACCES) {
+            /* Assume that we're on a render node, and the fd is
+             * already as authenticated as it should be.
+             */
+            *fdp = fd;
+            return Success;
+        } else {
+            close(fd);
+            return BadMatch;
+        }
     }
-    return FALSE;
+
+    if (drmAuthMagic(glamor_egl->fd, magic) < 0) {
+        close(fd);
+        return BadMatch;
+    }
+
+    *fdp = fd;
+    return Success;
 }
+
+static dri3_screen_info_rec glamor_dri3_info = {
+    .version = 1,
+    .open_client = glamor_dri3_open_client,
+    .pixmap_from_fd = glamor_pixmap_from_fd,
+    .fd_from_pixmap = glamor_fd_from_pixmap,
+};
 
 void
 glamor_egl_screen_init(ScreenPtr screen, struct glamor_context *glamor_ctx)
 {
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
+    glamor_screen_private *glamor_priv = glamor_get_screen_private(screen);
     struct glamor_egl_screen_private *glamor_egl =
         glamor_egl_get_screen_private(scrn);
 
@@ -640,8 +672,31 @@ glamor_egl_screen_init(ScreenPtr screen, struct glamor_context *glamor_ctx)
     glamor_ctx->ctx = glamor_egl->context;
     glamor_ctx->display = glamor_egl->display;
 
-    glamor_ctx->get_context = glamor_egl_get_context;
-    glamor_ctx->put_context = glamor_egl_put_context;
+    glamor_ctx->make_current = glamor_egl_make_current;
+
+    if (glamor_egl->dri3_capable) {
+        /* Tell the core that we have the interfaces for import/export
+         * of pixmaps.
+         */
+        glamor_enable_dri3(screen);
+
+        /* If the driver wants to do its own auth dance (e.g. Xwayland
+         * on pre-3.15 kernels that don't have render nodes and thus
+         * has the wayland compositor as a master), then it needs us
+         * to stay out of the way and let it init DRI3 on its own.
+         */
+        if (!(glamor_priv->flags & GLAMOR_NO_DRI3)) {
+            /* To do DRI3 device FD generation, we need to open a new fd
+             * to the same device we were handed in originally.
+             */
+            glamor_egl->device_path = drmGetDeviceNameFromFd(glamor_egl->fd);
+
+            if (!dri3_screen_init(screen, &glamor_dri3_info)) {
+                xf86DrvMsg(scrn->scrnIndex, X_ERROR,
+                           "Failed to initialize DRI3.\n");
+            }
+        }
+    }
 }
 
 static void
@@ -658,6 +713,8 @@ glamor_egl_free_screen(ScrnInfoPtr scrn)
         if (glamor_egl->gbm)
             gbm_device_destroy(glamor_egl->gbm);
 #endif
+        free(glamor_egl->device_path);
+
         scrn->FreeScreen = glamor_egl->saved_free_screen;
         free(glamor_egl);
         scrn->FreeScreen(scrn);
@@ -714,14 +771,14 @@ glamor_egl_init(ScrnInfoPtr scrn, int fd)
     xf86Msg(X_INFO, "%s: EGL version %s:\n", glamor_name, version);
 
 #define GLAMOR_CHECK_EGL_EXTENSION(EXT)  \
-	if (!glamor_egl_has_extension(glamor_egl, "EGL_" #EXT)) {  \
+	if (!epoxy_has_egl_extension(glamor_egl->display, "EGL_" #EXT)) {  \
 		ErrorF("EGL_" #EXT " required.\n");  \
 		return FALSE;  \
 	}
 
 #define GLAMOR_CHECK_EGL_EXTENSIONS(EXT1, EXT2)	 \
-	if (!glamor_egl_has_extension(glamor_egl, "EGL_" #EXT1) &&  \
-	    !glamor_egl_has_extension(glamor_egl, "EGL_" #EXT2)) {  \
+	if (!epoxy_has_egl_extension(glamor_egl->display, "EGL_" #EXT1) &&  \
+	    !epoxy_has_egl_extension(glamor_egl->display, "EGL_" #EXT2)) {  \
 		ErrorF("EGL_" #EXT1 " or EGL_" #EXT2 " required.\n");  \
 		return FALSE;  \
 	}
@@ -736,8 +793,10 @@ glamor_egl_init(ScrnInfoPtr scrn, int fd)
 #endif
 
 #ifdef GLAMOR_HAS_GBM
-    if (glamor_egl_has_extension(glamor_egl, "EGL_KHR_gl_texture_2D_image") &&
-        glamor_egl_has_extension(glamor_egl, "EGL_EXT_image_dma_buf_import"))
+    if (epoxy_has_egl_extension(glamor_egl->display,
+                                "EGL_KHR_gl_texture_2D_image") &&
+        epoxy_has_egl_extension(glamor_egl->display,
+                                "EGL_EXT_image_dma_buf_import"))
         glamor_egl->dri3_capable = TRUE;
 #endif
 
@@ -766,20 +825,9 @@ glamor_egl_init(ScrnInfoPtr scrn, int fd)
     return TRUE;
 }
 
+/** Stub to retain compatibility with pre-server-1.16 ABI. */
 Bool
 glamor_egl_init_textured_pixmap(ScreenPtr screen)
 {
-    ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
-    struct glamor_egl_screen_private *glamor_egl =
-        glamor_egl_get_screen_private(scrn);
-    if (!dixRegisterPrivateKey
-        (glamor_egl_pixmap_private_key, PRIVATE_PIXMAP, 0)) {
-        LogMessage(X_WARNING,
-                   "glamor%d: Failed to allocate egl pixmap private\n",
-                   screen->myNum);
-        return FALSE;
-    }
-    if (glamor_egl->dri3_capable)
-        glamor_enable_dri3(screen);
     return TRUE;
 }

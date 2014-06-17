@@ -66,12 +66,10 @@ void
 glamor_set_destination_pixmap_fbo(glamor_pixmap_fbo *fbo, int x0, int y0,
                                   int width, int height)
 {
-    glamor_get_context(fbo->glamor_priv);
+    glamor_make_current(fbo->glamor_priv);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->fb);
     glViewport(x0, y0, width, height);
-
-    glamor_put_context(fbo->glamor_priv);
 }
 
 void
@@ -283,8 +281,6 @@ glamor_get_tex_format_type_from_pictformat_gl(PictFormatShort format,
         break;
 
     default:
-        LogMessageVerb(X_INFO, 0,
-                       "fail to get matched format for %x \n", format);
         return -1;
     }
     return 0;
@@ -697,7 +693,6 @@ glamor_color_convert_to_bits(void *src_bits, void *dst_bits, int w, int h,
  * Upload pixmap to a specified texture.
  * This texture may not be the one attached to it.
  **/
-int in_restore = 0;
 static void
 __glamor_upload_pixmap_to_texture(PixmapPtr pixmap, unsigned int *tex,
                                   GLenum format,
@@ -710,7 +705,7 @@ __glamor_upload_pixmap_to_texture(PixmapPtr pixmap, unsigned int *tex,
     int non_sub = 0;
     unsigned int iformat = 0;
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     if (*tex == 0) {
         glGenTextures(1, tex);
         if (glamor_priv->gl_flavor == GLAMOR_GL_DESKTOP)
@@ -726,8 +721,11 @@ __glamor_upload_pixmap_to_texture(PixmapPtr pixmap, unsigned int *tex,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-    if (bits == NULL)
+    assert(pbo || bits != 0);
+    if (bits == NULL) {
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    }
     if (non_sub)
         glTexImage2D(GL_TEXTURE_2D, 0, iformat, w, h, 0, format, type, bits);
     else
@@ -735,7 +733,6 @@ __glamor_upload_pixmap_to_texture(PixmapPtr pixmap, unsigned int *tex,
 
     if (bits == NULL)
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    glamor_put_context(glamor_priv);
 }
 
 static Bool
@@ -832,7 +829,7 @@ _glamor_upload_bits_to_pixmap_texture(PixmapPtr pixmap, GLenum format,
                                  x + w, y + h,
                                  glamor_priv->yInverted, vertices);
     /* Slow path, we need to flip y or wire alpha to 1. */
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glVertexAttribPointer(GLAMOR_VERTEX_POS, 2, GL_FLOAT,
                           GL_FALSE, 2 * sizeof(float), vertices);
     glEnableVertexAttribArray(GLAMOR_VERTEX_POS);
@@ -854,13 +851,10 @@ _glamor_upload_bits_to_pixmap_texture(PixmapPtr pixmap, GLenum format,
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glUseProgram(0);
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
     glDeleteTextures(1, &tex);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glamor_put_context(glamor_priv);
 
     if (need_free_bits)
         free(bits);
@@ -887,7 +881,7 @@ glamor_pixmap_upload_prepare(PixmapPtr pixmap, GLenum format, int no_alpha,
     pixmap_priv = glamor_get_pixmap_private(pixmap);
     glamor_priv = glamor_get_screen_private(pixmap->drawable.pScreen);
 
-    if (pixmap_priv->base.gl_fbo)
+    if (pixmap_priv->base.gl_fbo != GLAMOR_FBO_UNATTACHED)
         return 0;
 
     if (pixmap_priv->base.fbo
@@ -979,7 +973,7 @@ glamor_upload_sub_pixmap_to_texture(PixmapPtr pixmap, int x, int y, int w,
                                                &no_alpha,
                                                &revert, &swap_rb, 1)) {
         glamor_fallback("Unknown pixmap depth %d.\n", pixmap->drawable.depth);
-        return TRUE;
+        return FALSE;
     }
     if (glamor_pixmap_upload_prepare(pixmap, format, no_alpha, revert, swap_rb))
         return FALSE;
@@ -1012,10 +1006,9 @@ glamor_upload_sub_pixmap_to_texture(PixmapPtr pixmap, int x, int y, int w,
             clipped_regions =
                 glamor_compute_clipped_regions_ext(pixmap_priv, &region,
                                                    &n_region,
-                                                   pixmap_priv->base.
-                                                   glamor_priv->max_fbo_size,
-                                                   pixmap_priv->base.
-                                                   glamor_priv->max_fbo_size, 0,
+                                                   pixmap_priv->large.block_w,
+                                                   pixmap_priv->large.block_h,
+                                                   0,
                                                    0);
         DEBUGF("prepare upload %dx%d to a large pixmap %p\n", w, h, pixmap);
         for (i = 0; i < n_region; i++) {
@@ -1142,7 +1135,7 @@ glamor_es2_pixmap_read_prepare(PixmapPtr source, int x, int y, int w, int h,
     if (temp_fbo == NULL)
         return NULL;
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     temp_xscale = 1.0 / w;
     temp_yscale = 1.0 / h;
 
@@ -1179,8 +1172,6 @@ glamor_es2_pixmap_read_prepare(PixmapPtr source, int x, int y, int w, int h,
 
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-    glUseProgram(0);
-    glamor_put_context(glamor_priv);
     return temp_fbo;
 }
 
@@ -1217,8 +1208,6 @@ _glamor_download_sub_pixmap_to_cpu(PixmapPtr pixmap, GLenum format,
         gl_access = GL_READ_ONLY;
         gl_usage = GL_STREAM_READ;
         break;
-    case GLAMOR_ACCESS_WO:
-        return bits;
     case GLAMOR_ACCESS_RW:
         gl_access = GL_READ_WRITE;
         gl_usage = GL_DYNAMIC_DRAW;
@@ -1228,6 +1217,7 @@ _glamor_download_sub_pixmap_to_cpu(PixmapPtr pixmap, GLenum format,
         assert(0);
     }
 
+    glamor_make_current(glamor_priv);
     glamor_set_destination_pixmap_priv_nc(pixmap_priv);
 
     need_post_conversion = (revert > REVERT_NORMAL);
@@ -1260,7 +1250,6 @@ _glamor_download_sub_pixmap_to_cpu(PixmapPtr pixmap, GLenum format,
         fbo_y_off = 0;
     }
 
-    glamor_get_context(glamor_priv);
     glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
     if (glamor_priv->has_pack_invert || glamor_priv->yInverted) {
@@ -1291,7 +1280,7 @@ _glamor_download_sub_pixmap_to_cpu(PixmapPtr pixmap, GLenum format,
         unsigned int temp_pbo;
         int yy;
 
-        glamor_get_context(glamor_priv);
+        glamor_make_current(glamor_priv);
         glGenBuffers(1, &temp_pbo);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, temp_pbo);
         glBufferData(GL_PIXEL_PACK_BUFFER, stride * h, NULL, GL_STREAM_READ);
@@ -1306,7 +1295,6 @@ _glamor_download_sub_pixmap_to_cpu(PixmapPtr pixmap, GLenum format,
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glamor_put_context(glamor_priv);
 
     if (need_post_conversion) {
         /* As OpenGL desktop version never enters here.
@@ -1376,10 +1364,9 @@ glamor_download_sub_pixmap_to_cpu(PixmapPtr pixmap, int x, int y, int w, int h,
             clipped_regions =
                 glamor_compute_clipped_regions_ext(pixmap_priv, &region,
                                                    &n_region,
-                                                   pixmap_priv->base.
-                                                   glamor_priv->max_fbo_size,
-                                                   pixmap_priv->base.
-                                                   glamor_priv->max_fbo_size, 0,
+                                                   pixmap_priv->large.block_w,
+                                                   pixmap_priv->large.block_h,
+                                                   0,
                                                    0);
 
         DEBUGF("start download large pixmap %p %dx%d \n", pixmap, w, h);
@@ -1473,17 +1460,15 @@ glamor_download_pixmap_to_cpu(PixmapPtr pixmap, glamor_access_t access)
 
     stride = pixmap->devKind;
 
-    if (access == GLAMOR_ACCESS_WO
-        || glamor_priv->gl_flavor == GLAMOR_GL_ES2
+    if (glamor_priv->gl_flavor == GLAMOR_GL_ES2
         || (!glamor_priv->has_pack_invert && !glamor_priv->yInverted)
         || pixmap_priv->type == GLAMOR_TEXTURE_LARGE) {
         data = malloc(stride * pixmap->drawable.height);
     }
     else {
-        glamor_get_context(glamor_priv);
+        glamor_make_current(glamor_priv);
         if (pixmap_priv->base.fbo->pbo == 0)
             glGenBuffers(1, &pixmap_priv->base.fbo->pbo);
-        glamor_put_context(glamor_priv);
         pbo = pixmap_priv->base.fbo->pbo;
     }
 
@@ -1529,7 +1514,7 @@ glamor_fixup_pixmap_priv(ScreenPtr screen, glamor_pixmap_private *pixmap_priv)
 
     drawable = &pixmap_priv->base.pixmap->drawable;
 
-    if (!GLAMOR_PIXMAP_FBO_NOT_EAXCT_SIZE(pixmap_priv))
+    if (!GLAMOR_PIXMAP_FBO_NOT_EXACT_SIZE(pixmap_priv))
         return TRUE;
 
     old_fbo = pixmap_priv->base.fbo;
@@ -1604,12 +1589,6 @@ glamor_get_sub_pixmap(PixmapPtr pixmap, int x, int y, int w, int h,
         return NULL;
     w = (x + w) > pixmap->drawable.width ? (pixmap->drawable.width - x) : w;
     h = (y + h) > pixmap->drawable.height ? (pixmap->drawable.height - y) : h;
-    if (access == GLAMOR_ACCESS_WO) {
-        sub_pixmap = glamor_create_pixmap(pixmap->drawable.pScreen, w, h,
-                                          pixmap->drawable.depth,
-                                          GLAMOR_CREATE_PIXMAP_CPU);
-        return sub_pixmap;
-    }
 
     glamor_priv = glamor_get_screen_private(pixmap->drawable.pScreen);
     pixmap_priv = glamor_get_pixmap_private(pixmap);

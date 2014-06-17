@@ -416,6 +416,8 @@ EnableDevice(DeviceIntPtr dev, BOOL sendevent)
         XISendDeviceHierarchyEvent(flags);
     }
 
+    if (!IsMaster(dev))
+        XkbPushLockedStateToSlaves(GetMaster(dev, MASTER_KEYBOARD), 0, 0);
     RecalculateMasterButtons(dev);
 
     /* initialise an idle timer for this device*/
@@ -944,8 +946,9 @@ CloseDevice(DeviceIntPtr dev)
     if (dev->inited)
         (void) (*dev->deviceProc) (dev, DEVICE_CLOSE);
 
-    /* free sprite memory */
-    if (IsMaster(dev) && dev->spriteInfo->sprite)
+    FreeSprite(dev);
+
+    if (IsMaster(dev))
         screen->DeviceCursorCleanup(dev, screen);
 
     /* free acceleration info */
@@ -965,8 +968,6 @@ CloseDevice(DeviceIntPtr dev)
         FreeAllDeviceClasses(classes);
         free(classes);
     }
-
-    FreeSprite(dev);
 
     /* a client may have the device set as client pointer */
     for (j = 0; j < currentMaxClients; j++) {
@@ -1473,7 +1474,6 @@ InitPtrFeedbackClassDeviceStruct(DeviceIntPtr dev, PtrCtrlProcPtr controlProc)
     PtrFeedbackPtr feedc;
 
     BUG_RETURN_VAL(dev == NULL, FALSE);
-    BUG_RETURN_VAL(dev->ptrfeed != NULL, FALSE);
 
     feedc = malloc(sizeof(PtrFeedbackClassRec));
     if (!feedc)
@@ -1517,7 +1517,6 @@ InitStringFeedbackClassDeviceStruct(DeviceIntPtr dev,
     StringFeedbackPtr feedc;
 
     BUG_RETURN_VAL(dev == NULL, FALSE);
-    BUG_RETURN_VAL(dev->stringfeed != NULL, FALSE);
 
     feedc = malloc(sizeof(StringFeedbackClassRec));
     if (!feedc)
@@ -1554,7 +1553,6 @@ InitBellFeedbackClassDeviceStruct(DeviceIntPtr dev, BellProcPtr bellProc,
     BellFeedbackPtr feedc;
 
     BUG_RETURN_VAL(dev == NULL, FALSE);
-    BUG_RETURN_VAL(dev->bell != NULL, FALSE);
 
     feedc = malloc(sizeof(BellFeedbackClassRec));
     if (!feedc)
@@ -1576,7 +1574,6 @@ InitLedFeedbackClassDeviceStruct(DeviceIntPtr dev, LedCtrlProcPtr controlProc)
     LedFeedbackPtr feedc;
 
     BUG_RETURN_VAL(dev == NULL, FALSE);
-    BUG_RETURN_VAL(dev->leds != NULL, FALSE);
 
     feedc = malloc(sizeof(LedFeedbackClassRec));
     if (!feedc)
@@ -1599,7 +1596,6 @@ InitIntegerFeedbackClassDeviceStruct(DeviceIntPtr dev,
     IntegerFeedbackPtr feedc;
 
     BUG_RETURN_VAL(dev == NULL, FALSE);
-    BUG_RETURN_VAL(dev->intfeed != NULL, FALSE);
 
     feedc = malloc(sizeof(IntegerFeedbackClassRec));
     if (!feedc)
@@ -2649,6 +2645,7 @@ AttachDevice(ClientPtr client, DeviceIntPtr dev, DeviceIntPtr master)
         dev->spriteInfo->paired = master;
         dev->spriteInfo->spriteOwner = FALSE;
 
+        XkbPushLockedStateToSlaves(GetMaster(dev, MASTER_KEYBOARD), 0, 0);
         RecalculateMasterButtons(master);
     }
 

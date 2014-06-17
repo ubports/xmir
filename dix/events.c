@@ -2835,7 +2835,7 @@ DeliverEvents(WindowPtr pWin, xEvent *xE, int count, WindowPtr otherParent)
     return deliveries;
 }
 
-static Bool
+Bool
 PointInBorderSize(WindowPtr pWin, int x, int y)
 {
     BoxRec box;
@@ -2876,49 +2876,9 @@ PointInBorderSize(WindowPtr pWin, int x, int y)
 WindowPtr
 XYToWindow(SpritePtr pSprite, int x, int y)
 {
-    WindowPtr pWin;
-    BoxRec box;
+    ScreenPtr pScreen = RootWindow(pSprite)->drawable.pScreen;
 
-    pSprite->spriteTraceGood = 1;       /* root window still there */
-    pWin = RootWindow(pSprite)->firstChild;
-    while (pWin) {
-        if ((pWin->mapped) &&
-            (x >= pWin->drawable.x - wBorderWidth(pWin)) &&
-            (x < pWin->drawable.x + (int) pWin->drawable.width +
-             wBorderWidth(pWin)) &&
-            (y >= pWin->drawable.y - wBorderWidth(pWin)) &&
-            (y < pWin->drawable.y + (int) pWin->drawable.height +
-             wBorderWidth(pWin))
-            /* When a window is shaped, a further check
-             * is made to see if the point is inside
-             * borderSize
-             */
-            && (!wBoundingShape(pWin) || PointInBorderSize(pWin, x, y))
-            && (!wInputShape(pWin) ||
-                RegionContainsPoint(wInputShape(pWin),
-                                    x - pWin->drawable.x,
-                                    y - pWin->drawable.y, &box))
-#ifdef ROOTLESS
-            /* In rootless mode windows may be offscreen, even when
-             * they're in X's stack. (E.g. if the native window system
-             * implements some form of virtual desktop system).
-             */
-            && !pWin->rootlessUnhittable
-#endif
-            ) {
-            if (pSprite->spriteTraceGood >= pSprite->spriteTraceSize) {
-                pSprite->spriteTraceSize += 10;
-                pSprite->spriteTrace = realloc(pSprite->spriteTrace,
-                                               pSprite->spriteTraceSize *
-                                               sizeof(WindowPtr));
-            }
-            pSprite->spriteTrace[pSprite->spriteTraceGood++] = pWin;
-            pWin = pWin->firstChild;
-        }
-        else
-            pWin = pWin->nextSib;
-    }
-    return DeepestSpriteWin(pSprite);
+    return (*pScreen->XYToWindow)(pScreen, pSprite, x, y);
 }
 
 /**
@@ -3277,7 +3237,7 @@ InitializeSprite(DeviceIntPtr pDev, WindowPtr pWin)
     pCursor = RefCursor(pCursor);
     if (pSprite->current)
         FreeCursor(pSprite->current, None);
-    pSprite->current = RefCursor(pCursor);
+    pSprite->current = pCursor;
 
     if (pScreen) {
         (*pScreen->RealizeCursor) (pDev, pScreen, pSprite->current);
@@ -4300,12 +4260,6 @@ DeliverGrabbedEvent(InternalEvent *event, DeviceIntPtr thisDev,
                                              thisDev);
     }
     if (!deliveries) {
-        /* XXX: In theory, we could pass the internal events through to
-         * everything and only convert just before hitting the wire. We can't
-         * do that yet, so DGE is the last stop for internal events. From here
-         * onwards, we deal with core/XI events.
-         */
-
         sendCore = (IsMaster(thisDev) && thisDev->coreEvents);
         /* try core event */
         if ((sendCore && grab->grabtype == CORE) || grab->grabtype != CORE)

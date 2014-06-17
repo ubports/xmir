@@ -51,10 +51,12 @@ extern _X_EXPORT int defaultScreenSaverBlanking;
 extern _X_EXPORT int defaultScreenSaverAllowExposures;
 extern _X_EXPORT const char *display;
 extern _X_EXPORT int displayfd;
+extern _X_EXPORT Bool explicit_display;
 
 extern _X_EXPORT int defaultBackingStore;
 extern _X_EXPORT Bool disableBackingStore;
 extern _X_EXPORT Bool enableBackingStore;
+extern _X_EXPORT Bool enableIndirectGLX;
 extern _X_EXPORT Bool PartialNetwork;
 extern _X_EXPORT Bool RunFromSigStopParent;
 
@@ -74,5 +76,6 @@ extern _X_EXPORT Bool whiteRoot;
 extern _X_EXPORT Bool bgNoneRoot;
 
 extern _X_EXPORT Bool CoreDump;
+extern _X_EXPORT Bool NoListenAll;
 
 #endif                          /* OPAQUE_H */

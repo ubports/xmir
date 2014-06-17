@@ -53,7 +53,7 @@
     *(_pyscale_) = 1.0 / (_pixmap_priv_)->base.fbo->height;			\
   } while(0)
 
-#define GLAMOR_PIXMAP_FBO_NOT_EAXCT_SIZE(priv)			\
+#define GLAMOR_PIXMAP_FBO_NOT_EXACT_SIZE(priv)			\
    (priv->base.fbo->width != priv->base.pixmap->drawable.width 	\
       || priv->base.fbo->height != priv->base.pixmap->drawable.height)	\
 
@@ -1177,7 +1177,7 @@ glamor_dump_pixmap(PixmapPtr pixmap, int x, int y, int w, int h)
     default:
         ErrorF("dump depth %d, not implemented.\n", pixmap->drawable.depth);
     }
-    glamor_finish_access(&pixmap->drawable, GLAMOR_ACCESS_RO);
+    glamor_finish_access(&pixmap->drawable);
 }
 
 static inline void
@@ -1318,13 +1318,12 @@ glamor_compare_pixmaps(PixmapPtr pixmap1, PixmapPtr pixmap2,
 {
     assert(pixmap1->drawable.depth == pixmap2->drawable.depth);
 
-    glamor_prepare_access(&pixmap1->drawable, GLAMOR_ACCESS_RO);
-    glamor_prepare_access(&pixmap2->drawable, GLAMOR_ACCESS_RO);
-
-    _glamor_compare_pixmaps(pixmap1, pixmap2, x, y, w, h, -1, all, diffs);
-
-    glamor_finish_access(&pixmap1->drawable, GLAMOR_ACCESS_RO);
-    glamor_finish_access(&pixmap2->drawable, GLAMOR_ACCESS_RO);
+    if (glamor_prepare_access(&pixmap1->drawable, GLAMOR_ACCESS_RO) &&
+        glamor_prepare_access(&pixmap2->drawable, GLAMOR_ACCESS_RO)) {
+        _glamor_compare_pixmaps(pixmap1, pixmap2, x, y, w, h, -1, all, diffs);
+    }
+    glamor_finish_access(&pixmap1->drawable);
+    glamor_finish_access(&pixmap2->drawable);
 }
 
 /* This function is used to compare two pictures.
@@ -1432,9 +1431,6 @@ glamor_compare_pictures(ScreenPtr screen,
         return;
     }
 
-    glamor_prepare_access(&fst_pixmap->drawable, GLAMOR_ACCESS_RO);
-    glamor_prepare_access(&snd_pixmap->drawable, GLAMOR_ACCESS_RO);
-
     if ((fst_type == SourcePictTypeLinear) ||
         (fst_type == SourcePictTypeRadial) ||
         (fst_type == SourcePictTypeConical) ||
@@ -1444,12 +1440,15 @@ glamor_compare_pictures(ScreenPtr screen,
         x_source = y_source = 0;
     }
 
-    _glamor_compare_pixmaps(fst_pixmap, snd_pixmap,
-                            x_source, y_source,
-                            width, height, fst_picture->format, all, diffs);
-
-    glamor_finish_access(&fst_pixmap->drawable, GLAMOR_ACCESS_RO);
-    glamor_finish_access(&snd_pixmap->drawable, GLAMOR_ACCESS_RO);
+    if (glamor_prepare_access(&fst_pixmap->drawable, GLAMOR_ACCESS_RO) &&
+        glamor_prepare_access(&snd_pixmap->drawable, GLAMOR_ACCESS_RO)) {
+        _glamor_compare_pixmaps(fst_pixmap, snd_pixmap,
+                                x_source, y_source,
+                                width, height, fst_picture->format,
+                                all, diffs);
+    }
+    glamor_finish_access(&fst_pixmap->drawable);
+    glamor_finish_access(&snd_pixmap->drawable);
 
     if (fst_generated)
         glamor_destroy_picture(fst_picture);
@@ -1500,15 +1499,12 @@ __fls(unsigned long x)
 #endif
 
 static inline void
-glamor_get_context(glamor_screen_private * glamor_priv)
+glamor_make_current(glamor_screen_private *glamor_priv)
 {
-    glamor_priv->ctx.get_context(&glamor_priv->ctx);
-}
-
-static inline void
-glamor_put_context(glamor_screen_private * glamor_priv)
-{
-    glamor_priv->ctx.put_context(&glamor_priv->ctx);
+    if (lastGLContext != &glamor_priv->ctx) {
+        lastGLContext = &glamor_priv->ctx;
+        glamor_priv->ctx.make_current(&glamor_priv->ctx);
+    }
 }
 
 #endif

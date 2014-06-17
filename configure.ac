@@ -26,9 +26,9 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 AC_PREREQ(2.60)
-AC_INIT([xorg-server], 1.15.99.901, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
-RELEASE_DATE="2014-02-24"
-RELEASE_NAME="Szechuan Hot Pot"
+AC_INIT([xorg-server], 1.15.99.903, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
+RELEASE_DATE="2014-06-04"
+RELEASE_NAME="Strawberry Shortcake"
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
@@ -133,7 +133,8 @@ AM_CONDITIONAL(SPECIAL_DTRACE_OBJECTS, [test "x$SPECIAL_DTRACE_OBJECTS" = "xyes"
 
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h dlfcn.h stropts.h fnmatch.h sys/utsname.h])
+AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h dlfcn.h stropts.h \
+ fnmatch.h sys/mkdev.h sys/utsname.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -324,6 +325,7 @@ case $host_cpu in
 	;;
   arm*)
 	ARM_VIDEO=yes
+	DEFAULT_INT10="stub"
 	;;
   i*86)
 	I386_VIDEO=yes
@@ -491,17 +493,14 @@ XORG_FONTSUBDIR(FONTTYPE1DIR, fonttype1dir, Type1)
 XORG_FONTSUBDIR(FONT75DPIDIR, font75dpidir, 75dpi)
 XORG_FONTSUBDIR(FONT100DPIDIR, font100dpidir, 100dpi)
 
-dnl Uses --default-font-path if set, otherwise checks for /etc/X11/fontpath.d,
-dnl otherwise uses standard subdirectories of FONTROOTDIR. When cross
-dnl compiling, assume default font path uses standard FONTROOTDIR directories.
+dnl Uses --with-default-font-path if set, otherwise uses standard
+dnl subdirectories of FONTROOTDIR. Some distros set the default font path to
+dnl "catalogue:/etc/X11/fontpath.d,built-ins"
 DEFAULT_FONT_PATH="${FONTMISCDIR}/,${FONTTTFDIR}/,${FONTOTFDIR}/,${FONTTYPE1DIR}/,${FONT100DPIDIR}/,${FONT75DPIDIR}/"
-if test "$cross_compiling" != yes; then
-	AC_CHECK_FILE([${sysconfdir}/X11/fontpath.d],
-		[DEFAULT_FONT_PATH='catalogue:${sysconfdir}/X11/fontpath.d'],
-		[case $host_os in
-			darwin*) DEFAULT_FONT_PATH="${DEFAULT_FONT_PATH},/Library/Fonts,/System/Library/Fonts" ;;
-		esac])
-fi
+case $host_os in
+    darwin*) DEFAULT_FONT_PATH="${DEFAULT_FONT_PATH},/Library/Fonts,/System/Library/Fonts" ;;
+esac
+
 AC_ARG_WITH(default-font-path, AS_HELP_STRING([--with-default-font-path=PATH], [Comma separated list of font dirs]),
 				[ FONTPATH="$withval" ],
 				[ FONTPATH="${DEFAULT_FONT_PATH}" ])
@@ -626,13 +625,16 @@ AC_ARG_ENABLE(clientids,      AS_HELP_STRING([--disable-clientids], [Build Xorg 
 AC_ARG_ENABLE(pciaccess, AS_HELP_STRING([--enable-pciaccess], [Build Xorg with pciaccess library (default: enabled)]), [PCI=$enableval], [PCI=yes])
 AC_ARG_ENABLE(linux_acpi, AS_HELP_STRING([--disable-linux-acpi], [Disable building ACPI support on Linux (if available).]), [enable_linux_acpi=$enableval], [enable_linux_acpi=yes])
 AC_ARG_ENABLE(linux_apm, AS_HELP_STRING([--disable-linux-apm], [Disable building APM support on Linux (if available).]), [enable_linux_apm=$enableval], [enable_linux_apm=yes])
+AC_ARG_ENABLE(systemd-logind, AS_HELP_STRING([--enable-systemd-logind], [Build systemd-logind support (default: auto)]), [SYSTEMD_LOGIND=$enableval], [SYSTEMD_LOGIND=auto])
+AC_ARG_ENABLE(suid-wrapper, AS_HELP_STRING([--enable-suid-wrapper], [Build suid-root wrapper for legacy driver support on rootless xserver systems (default: no)]), [SUID_WRAPPER=$enableval], [SUID_WRAPPER=no])
 
 dnl DDXes.
 AC_ARG_ENABLE(xorg,    	      AS_HELP_STRING([--enable-xorg], [Build Xorg server (default: auto)]), [XORG=$enableval], [XORG=auto])
-AC_ARG_ENABLE(dmx,    	      AS_HELP_STRING([--enable-dmx], [Build DMX server (default: auto)]), [DMX=$enableval], [DMX=no])
+AC_ARG_ENABLE(dmx,    	      AS_HELP_STRING([--enable-dmx], [Build DMX server (default: no)]), [DMX=$enableval], [DMX=no])
 AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server (default: yes)]), [XVFB=$enableval], [XVFB=yes])
 AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
 AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
+AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
 AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
 AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
 AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: no)]), [GLAMOR=$enableval], [GLAMOR=no])
@@ -751,6 +753,7 @@ case $host_os in
 			XQUARTZ=yes
 			XVFB=no
 			XNEST=no
+			XWAYLAND=no
 
 			COMPOSITE=no
 			DGA=no
@@ -787,13 +790,13 @@ APPLEWMPROTO="applewmproto >= 1.4"
 XSHMFENCE="xshmfence >= 1.1"
 
 dnl Required modules
-XPROTO="xproto >= 7.0.22"
+XPROTO="xproto >= 7.0.26"
 RANDRPROTO="randrproto >= 1.4.0"
 RENDERPROTO="renderproto >= 0.11"
 XEXTPROTO="xextproto >= 7.2.99.901"
 INPUTPROTO="inputproto >= 2.3"
 KBPROTO="kbproto >= 1.0.3"
-FONTSPROTO="fontsproto"
+FONTSPROTO="fontsproto >= 2.1.3"
 FIXESPROTO="fixesproto >= 5.0"
 DAMAGEPROTO="damageproto >= 1.1"
 XCMISCPROTO="xcmiscproto >= 1.2.0"
@@ -806,6 +809,8 @@ LIBAPPLEWM="applewm >= 1.4"
 LIBDMX="dmx >= 1.0.99.1"
 LIBDRI="dri >= 7.8.0"
 LIBDRM="libdrm >= 2.3.0"
+LIBEGL="egl"
+LIBGBM="gbm >= 9"
 LIBGL="gl >= 7.1.0"
 LIBXEXT="xext >= 1.0.99.4"
 LIBXFONT="xfont >= 1.4.2"
@@ -900,6 +905,36 @@ if test "x$CONFIG_HAL" = xyes; then
 	NEED_DBUS="yes"
 fi
 AM_CONDITIONAL(CONFIG_HAL, [test "x$CONFIG_HAL" = xyes])
+
+if test "x$SYSTEMD_LOGIND" = xauto; then
+        if test "x$HAVE_DBUS" = xyes -a "x$CONFIG_UDEV" = xyes ; then
+                SYSTEMD_LOGIND=yes
+        else
+                SYSTEMD_LOGIND=no
+        fi
+fi
+if test "x$SYSTEMD_LOGIND" = xyes; then
+        if ! test "x$HAVE_DBUS" = xyes; then
+                AC_MSG_ERROR([systemd-logind requested, but D-Bus is not installed.])
+        fi
+        if ! test "x$CONFIG_UDEV" = xyes ; then
+                AC_MSG_ERROR([systemd-logind is only supported in combination with udev configuration.])
+        fi
+
+        AC_DEFINE(SYSTEMD_LOGIND, 1, [Enable systemd-logind integration])
+        NEED_DBUS="yes"
+fi
+AM_CONDITIONAL(SYSTEMD_LOGIND, [test "x$SYSTEMD_LOGIND" = xyes])
+
+if test "x$SUID_WRAPPER" = xyes; then
+        dnl The wrapper uses libdrm headers, so ensure they are available
+        PKG_CHECK_MODULES([LIBDRM], $LIBDRM)
+        dnl This is a define so that if some platforms want to put the wrapper
+        dnl somewhere else this can be easily changed
+        AC_DEFINE_DIR(SUID_WRAPPER_DIR, libexecdir, [Where to install Xorg.bin and Xorg.wrap])
+        SETUID="no"
+fi
+AM_CONDITIONAL(SUID_WRAPPER, [test "x$SUID_WRAPPER" = xyes])
 
 if test "x$NEED_DBUS" = xyes; then
         AC_DEFINE(NEED_DBUS, 1, [Enable D-Bus core])
@@ -2010,7 +2045,9 @@ if test "x$XORG" = xyes; then
 	XF86CONFIGDIR="xorg.conf.d"
 	AC_SUBST(XF86CONFIGDIR)
 	CONFIGFILE="$sysconfdir/$XF86CONFIGFILE"
-	LOGPREFIX="$logdir/Xorg."
+	LOGPREFIX="Xorg."
+	XDG_DATA_HOME=".local/share"
+	XDG_DATA_HOME_LOGDIR="xorg"
 	AC_DEFINE(XORG_SERVER, 1, [Building Xorg server])
 	AC_DEFINE(XORGSERVER, 1, [Building Xorg server])
 	AC_DEFINE(XFree86Server, 1, [Building XFree86 server])
@@ -2023,7 +2060,10 @@ if test "x$XORG" = xyes; then
 	AC_DEFINE_DIR(__XCONFIGDIR__, XF86CONFIGDIR, [Name of configuration directory])
 	AC_DEFINE_DIR(DEFAULT_MODULE_PATH, moduledir, [Default module search path])
 	AC_DEFINE_DIR(DEFAULT_LIBRARY_PATH, libdir, [Default library install path])
-	AC_DEFINE_DIR(DEFAULT_LOGPREFIX, LOGPREFIX, [Default log location])
+	AC_DEFINE_DIR(DEFAULT_LOGDIR, logdir, [Default log location])
+	AC_DEFINE_DIR(DEFAULT_LOGPREFIX, LOGPREFIX, [Default logfile prefix])
+	AC_DEFINE_DIR(DEFAULT_XDG_DATA_HOME, XDG_DATA_HOME, [Default XDG_DATA dir under HOME])
+	AC_DEFINE_DIR(DEFAULT_XDG_DATA_HOME_LOGDIR, XDG_DATA_HOME_LOGDIR, [Default log dir under XDG_DATA_HOME])
 	AC_DEFINE_UNQUOTED(__VENDORDWEBSUPPORT__, ["$VENDOR_WEB"], [Vendor web address for support])
 	if test "x$VGAHW" = xyes; then
 		AC_DEFINE(WITH_VGAHW, 1, [Building vgahw module])
@@ -2070,7 +2110,15 @@ AM_CONDITIONAL([GLAMOR], [test "x$GLAMOR" = xyes])
 if test "x$GLAMOR" = xyes; then
 	AC_DEFINE(GLAMOR, 1, [Build glamor])
 	PKG_CHECK_MODULES([GLAMOR], [epoxy])
+
+	PKG_CHECK_MODULES(GBM, "$LIBGBM", [GBM=yes], [GBM=no])
+	if test "x$GBM" = xyes; then
+		AC_DEFINE(GLAMOR_HAS_GBM, 1,
+			  [Build glamor with GBM-based EGL support])
+	fi
+
 fi
+AM_CONDITIONAL([GLAMOR_EGL], [test "x$GBM" = xyes])
 
 dnl XWin DDX
 
@@ -2085,7 +2133,6 @@ fi
 AC_MSG_RESULT([$XWIN])
 
 if test "x$XWIN" = xyes; then
-	AC_DEFINE_DIR(SYSCONFDIR, sysconfdir, [Location of system.XWinrc])
 	AC_DEFINE_DIR(DEFAULT_LOGDIR, logdir, [Default log location])
 	AC_DEFINE_UNQUOTED(XORG_VERSION_CURRENT, [$VENDOR_RELEASE], [Current Xorg version])
 	AC_DEFINE_UNQUOTED(__VENDORDWEBSUPPORT__, ["$VENDOR_WEB"], [Vendor web address for support])
@@ -2319,6 +2366,9 @@ if test "$KDRIVE" = yes; then
     if test "x$DRI" = xyes && test "x$GLX" = xyes; then
         XEPHYR_REQUIRED_LIBS="$XEPHYR_REQUIRED_LIBS libdrm xcb-glx xcb-xf86dri > 1.6"
     fi
+    if test "x$GLAMOR" = xyes; then
+        XEPHYR_REQUIRED_LIBS="$XEPHYR_REQUIRED_LIBS x11-xcb"
+    fi
 
     if test "x$XEPHYR" = xauto; then
         PKG_CHECK_MODULES(XEPHYR, $XEPHYR_REQUIRED_LIBS, [XEPHYR="yes"], [XEPHYR="no"])
@@ -2366,8 +2416,7 @@ if test "$KDRIVE" = yes; then
 	    fi
 	    ;;
     esac
-    KDRIVE_STUB_LIB='$(top_builddir)/hw/kdrive/src/libkdrivestubs.la'
-    KDRIVE_LOCAL_LIBS="$MAIN_LIB $DIX_LIB $KDRIVE_LIB $KDRIVE_STUB_LIB"
+    KDRIVE_LOCAL_LIBS="$MAIN_LIB $DIX_LIB $KDRIVE_LIB"
     KDRIVE_LOCAL_LIBS="$KDRIVE_LOCAL_LIBS $FB_LIB $MI_LIB $KDRIVE_PURE_LIBS"
     KDRIVE_LOCAL_LIBS="$KDRIVE_LOCAL_LIBS $KDRIVE_OS_LIB"
     KDRIVE_LIBS="$KDRIVE_LOCAL_LIBS $XSERVER_SYS_LIBS $GLX_SYS_LIBS $DLOPEN_LIBS $TSLIB_LIBS"
@@ -2391,6 +2440,28 @@ AM_CONDITIONAL(XEPHYR, [test "x$KDRIVE" = xyes && test "x$XEPHYR" = xyes])
 AM_CONDITIONAL(BUILD_KDRIVEFBDEVLIB, [test "x$KDRIVE" = xyes && test "x$KDRIVEFBDEVLIB" = xyes])
 AM_CONDITIONAL(XFAKESERVER, [test "x$KDRIVE" = xyes && test "x$XFAKE" = xyes])
 
+dnl Xwayland DDX
+
+PKG_CHECK_MODULES(XWAYLANDMODULES, [wayland-client >= 1.3.0 libdrm epoxy], [have_xwayland=yes], [have_xwayland=no])
+AC_MSG_CHECKING([whether to build Xwayland DDX])
+if test "x$XWAYLAND" = xauto; then
+   XWAYLAND="$have_xwayland"
+fi
+AC_MSG_RESULT([$XWAYLAND])
+AM_CONDITIONAL(XWAYLAND, [test "x$XWAYLAND" = xyes])
+
+if test "x$XWAYLAND" = xyes; then
+	if test "x$have_xwayland" = xno; then
+		AC_MSG_ERROR([Xwayland build explicitly requested, but required modules not found.])
+	fi
+
+	XWAYLAND_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $DRI3_LIB $PRESENT_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $MAIN_LIB $DIX_LIB $OS_LIB"
+	XWAYLAND_SYS_LIBS="$XWAYLANDMODULES_LIBS $GLX_SYS_LIBS"
+	AC_SUBST([XWAYLAND_LIBS])
+	AC_SUBST([XWAYLAND_SYS_LIBS])
+fi
+
+
 dnl and the rest of these are generic, so they're in config.h
 dnl 
 dnl though, thanks to the passing of some significant amount of time, the
@@ -2406,6 +2477,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 	[ Enable GNU and other extensions to the C environment for glibc])])
 
 AC_DEFINE_DIR(PROJECTROOT, prefix, [Overall prefix])
+AC_DEFINE_DIR(SYSCONFDIR, sysconfdir, [sysconfdir])
 
 AC_SUBST([RELEASE_DATE])
 BUILD_DATE="`date +'%Y%m%d'`"
@@ -2465,6 +2537,7 @@ dri3/Makefile
 present/Makefile
 hw/Makefile
 hw/xfree86/Makefile
+hw/xfree86/Xorg.sh
 hw/xfree86/common/Makefile
 hw/xfree86/common/xf86Build.h
 hw/xfree86/ddc/Makefile
@@ -2476,6 +2549,7 @@ hw/xfree86/exa/Makefile
 hw/xfree86/exa/man/Makefile
 hw/xfree86/fbdevhw/Makefile
 hw/xfree86/fbdevhw/man/Makefile
+hw/xfree86/glamor_egl/Makefile
 hw/xfree86/i2c/Makefile
 hw/xfree86/int10/Makefile
 hw/xfree86/loader/Makefile
@@ -2530,6 +2604,7 @@ hw/kdrive/fake/Makefile
 hw/kdrive/fbdev/Makefile
 hw/kdrive/linux/Makefile
 hw/kdrive/src/Makefile
+hw/xwayland/Makefile
 test/Makefile
 test/xi2/Makefile
 xserver.ent

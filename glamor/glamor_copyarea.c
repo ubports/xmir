@@ -70,7 +70,7 @@ glamor_copy_n_to_n_fbo_blit(DrawablePtr src,
     pixmap_priv_get_fbo_off(dst_pixmap_priv, &fbo_x_off, &fbo_y_off);
     pixmap_priv_get_fbo_off(src_pixmap_priv, &src_fbo_x_off, &src_fbo_y_off);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->base.fbo->fb);
     glamor_get_drawable_deltas(dst, dst_pixmap, &dst_x_off, &dst_y_off);
     glamor_get_drawable_deltas(src, src_pixmap, &src_x_off, &src_y_off);
@@ -112,7 +112,6 @@ glamor_copy_n_to_n_fbo_blit(DrawablePtr src,
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
         }
     }
-    glamor_put_context(glamor_priv);
     glamor_priv->state = BLIT_STATE;
     return TRUE;
 }
@@ -137,7 +136,7 @@ glamor_copy_n_to_n_textured(DrawablePtr src,
     src_pixmap_priv = glamor_get_pixmap_private(src_pixmap);
     dst_pixmap_priv = glamor_get_pixmap_private(dst_pixmap);
 
-    if (!src_pixmap_priv->base.gl_fbo) {
+    if (src_pixmap_priv->base.gl_fbo == GLAMOR_FBO_UNATTACHED) {
 #ifndef GLAMOR_PIXMAP_DYNAMIC_UPLOAD
         glamor_delayed_fallback(dst->pScreen, "src has no fbo.\n");
         return FALSE;
@@ -155,7 +154,7 @@ glamor_copy_n_to_n_textured(DrawablePtr src,
 
     glamor_get_drawable_deltas(dst, dst_pixmap, &dst_x_off, &dst_y_off);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     glamor_set_destination_pixmap_priv_nc(dst_pixmap_priv);
     glVertexAttribPointer(GLAMOR_VERTEX_POS, 2, GL_FLOAT,
@@ -205,9 +204,7 @@ glamor_copy_n_to_n_textured(DrawablePtr src,
 
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-    glUseProgram(0);
     /* The source texture is bound to a fbo, we have to flush it here. */
-    glamor_put_context(glamor_priv);
     glamor_priv->state = RENDER_STATE;
     glamor_priv->render_idle_cnt = 0;
     return TRUE;
@@ -368,12 +365,10 @@ _glamor_copy_n_to_n(DrawablePtr src,
     if (gc) {
         if (!glamor_set_planemask(dst_pixmap, gc->planemask))
             goto fall_back;
-        glamor_get_context(glamor_priv);
+        glamor_make_current(glamor_priv);
         if (!glamor_set_alu(screen, gc->alu)) {
-            glamor_put_context(glamor_priv);
-            goto fail;
+            goto fail_noregion;
         }
-        glamor_put_context(glamor_priv);
     }
 
     if (!src_pixmap_priv) {
@@ -538,7 +533,6 @@ _glamor_copy_n_to_n(DrawablePtr src,
         if (n_dst_region == 0)
             ok = TRUE;
         free(clipped_dst_regions);
-        RegionUninit(&region);
     }
     else {
         ok = __glamor_copy_n_to_n(src, dst, gc, box, nbox, dx, dy,
@@ -546,9 +540,10 @@ _glamor_copy_n_to_n(DrawablePtr src,
     }
 
  fail:
-    glamor_get_context(glamor_priv);
+    RegionUninit(&region);
+ fail_noregion:
+    glamor_make_current(glamor_priv);
     glamor_set_alu(screen, GXcopy);
-    glamor_put_context(glamor_priv);
 
     if (ok)
         return TRUE;
@@ -570,15 +565,15 @@ _glamor_copy_n_to_n(DrawablePtr src,
                     glamor_get_drawable_location(src),
                     glamor_get_drawable_location(dst));
 
-    if (glamor_prepare_access(dst, GLAMOR_ACCESS_RW)) {
-        if (dst == src || glamor_prepare_access(src, GLAMOR_ACCESS_RO)) {
-            fbCopyNtoN(src, dst, gc, box, nbox,
-                       dx, dy, reverse, upsidedown, bitplane, closure);
-            if (dst != src)
-                glamor_finish_access(src, GLAMOR_ACCESS_RO);
-        }
-        glamor_finish_access(dst, GLAMOR_ACCESS_RW);
+    if (glamor_prepare_access(dst, GLAMOR_ACCESS_RW) &&
+        glamor_prepare_access(src, GLAMOR_ACCESS_RO) &&
+        glamor_prepare_access_gc(gc)) {
+        fbCopyNtoN(src, dst, gc, box, nbox,
+                   dx, dy, reverse, upsidedown, bitplane, closure);
     }
+    glamor_finish_access_gc(gc);
+    glamor_finish_access(src);
+    glamor_finish_access(dst);
     ok = TRUE;
 
  done:

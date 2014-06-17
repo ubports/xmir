@@ -56,6 +56,7 @@
 #include <X11/X.h>
 #include <X11/Xpoll.h>
 #include <X11/Xproto.h>
+#include <X11/Xatom.h>
 #include "misc.h"
 #include "compiler.h"
 #include "xf86.h"
@@ -85,6 +86,8 @@
 #endif
 
 #include "xf86platformBus.h"
+#include "systemd-logind.h"
+
 /*
  * This is a toggling variable:
  *  FALSE = No VT switching keys have been pressed last time around
@@ -429,6 +432,29 @@ xf86EnableInputDeviceForVTSwitch(InputInfoPtr pInfo)
     pInfo->flags &= ~XI86_DEVICE_DISABLED;
 }
 
+/*
+ * xf86UpdateHasVTProperty --
+ *    Update a flag property on the root window to say whether the server VT
+ *    is currently the active one as some clients need to know this.
+ */
+static void
+xf86UpdateHasVTProperty(Bool hasVT)
+{
+    Atom property_name;
+    int32_t value = hasVT ? 1 : 0;
+    int i;
+
+    property_name = MakeAtom(HAS_VT_ATOM_NAME, sizeof(HAS_VT_ATOM_NAME) - 1,
+                             FALSE);
+    if (property_name == BAD_RESOURCE)
+        FatalError("Failed to retrieve \"HAS_VT\" atom\n");
+    for (i = 0; i < xf86NumScreens; i++) {
+        ChangeWindowProperty(xf86ScrnToScreen(xf86Screens[i])->root,
+                             property_name, XA_INTEGER, 32,
+                             PropModeReplace, 1, &value, TRUE);
+    }
+}
+
 void
 xf86VTLeave(void)
 {
@@ -487,6 +513,8 @@ xf86VTLeave(void)
     }
     if (xorgHWAccess)
         xf86DisableIO();
+
+    xf86UpdateHasVTProperty(FALSE);
 
     return;
 
@@ -556,8 +584,11 @@ xf86VTEnter(void)
     /* Turn screen saver off when switching back */
     dixSaveScreens(serverClient, SCREEN_SAVER_FORCER, ScreenSaverReset);
 
-    for (pInfo = xf86InputDevs; pInfo; pInfo = pInfo->next)
-        xf86EnableInputDeviceForVTSwitch(pInfo);
+    /* If we use systemd-logind it will enable input devices for us */
+    if (!systemd_logind_controls_session())
+        for (pInfo = xf86InputDevs; pInfo; pInfo = pInfo->next)
+            xf86EnableInputDeviceForVTSwitch(pInfo);
+
     for (ih = InputHandlers; ih; ih = ih->next) {
         if (ih->is_input)
             xf86EnableInputHandler(ih);
@@ -568,6 +599,8 @@ xf86VTEnter(void)
     /* check for any new output devices */
     xf86platformVTProbe();
 #endif
+
+    xf86UpdateHasVTProperty(TRUE);
 
     OsReleaseSIGIO();
 }
@@ -589,10 +622,14 @@ xf86VTSwitch(void)
     /*
      * Since all screens are currently all in the same state it is sufficient
      * check the first.  This might change in future.
+     *
+     * VTLeave is always handled here (VT_PROCESS guarantees this is safe),
+     * if we use systemd_logind xf86VTEnter() gets called by systemd-logind.c
+     * once it has resumed all drm nodes.
      */
     if (xf86VTOwner())
         xf86VTLeave();
-    else
+    else if (!systemd_logind_controls_session())
         xf86VTEnter();
 }
 

@@ -336,12 +336,30 @@ compIsAlternateVisual(ScreenPtr pScreen, XID visual)
 }
 
 static Bool
+compIsImplicitRedirectException(ScreenPtr pScreen,
+                                XID parentVisual, XID winVisual)
+{
+    CompScreenPtr cs = GetCompScreen(pScreen);
+    int i;
+
+    for (i = 0; i < cs->numImplicitRedirectExceptions; i++)
+        if (cs->implicitRedirectExceptions[i].parentVisual == parentVisual &&
+            cs->implicitRedirectExceptions[i].winVisual == winVisual)
+            return TRUE;
+
+    return FALSE;
+}
+
+static Bool
 compImplicitRedirect(WindowPtr pWin, WindowPtr pParent)
 {
     if (pParent) {
         ScreenPtr pScreen = pWin->drawable.pScreen;
         XID winVisual = wVisual(pWin);
         XID parentVisual = wVisual(pParent);
+
+        if (compIsImplicitRedirectException(pScreen, parentVisual, winVisual))
+            return FALSE;
 
         if (winVisual != parentVisual &&
             (compIsAlternateVisual(pScreen, winVisual) ||
@@ -507,6 +525,7 @@ compCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
                 }
                 FreeScratchGC(pGC);
             }
+            RegionUninit(&rgnDst);
             return;
         }
         dx = pPixmap->screen_x - cw->oldx;

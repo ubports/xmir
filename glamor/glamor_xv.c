@@ -32,10 +32,14 @@
  * Xv acceleration implementation
  */
 
+#ifdef HAVE_DIX_CONFIG_H
+#include <dix-config.h>
+#endif
+
+#include "xf86xv.h"
+#define GLAMOR_FOR_XORG
 #include "glamor_priv.h"
 
-#ifdef GLAMOR_XV
-#include "xf86xv.h"
 #include <X11/extensions/Xv.h>
 #include "fourcc.h"
 /* Reference color space transform data */
@@ -93,7 +97,7 @@ glamor_init_xv_shader(ScreenPtr screen)
     GLint fs_prog, vs_prog;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glamor_priv->xv_prog = glCreateProgram();
 
     vs_prog = glamor_compile_glsl_prog(GL_VERTEX_SHADER, xv_vs);
@@ -105,21 +109,7 @@ glamor_init_xv_shader(ScreenPtr screen)
                          GLAMOR_VERTEX_POS, "v_position");
     glBindAttribLocation(glamor_priv->xv_prog,
                          GLAMOR_VERTEX_SOURCE, "v_texcoord0");
-    glamor_link_glsl_prog(glamor_priv->xv_prog);
-
-    glamor_put_context(glamor_priv);
-}
-
-void
-glamor_fini_xv_shader(ScreenPtr screen)
-{
-    glamor_screen_private *glamor_priv;
-
-    glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
-
-    glDeleteProgram(glamor_priv->xv_prog);
-    glamor_put_context(glamor_priv);
+    glamor_link_glsl_prog(screen, glamor_priv->xv_prog, "xv");
 }
 
 #define ClipValue(v,min,max) ((v) < (min) ? (min) : (v) > (max) ? (max) : (v))
@@ -324,7 +314,7 @@ glamor_display_textured_video(glamor_port_private *port_priv)
                                   &src_yscale[i]);
         }
     }
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glUseProgram(glamor_priv->xv_prog);
 
     uloc = glGetUniformLocation(glamor_priv->xv_prog, "offsetyco");
@@ -412,8 +402,6 @@ glamor_display_textured_video(glamor_port_private *port_priv)
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
 
-    glUseProgram(0);
-    glamor_put_context(glamor_priv);
     DamageDamageRegion(port_priv->pDraw, &port_priv->clip);
 }
 
@@ -430,7 +418,7 @@ glamor_xv_put_image(ScrnInfoPtr pScrn,
                     Bool sync,
                     RegionPtr clipBoxes, void *data, DrawablePtr pDrawable)
 {
-    ScreenPtr screen = xf86ScrnToScreen(pScrn);
+    ScreenPtr screen = pDrawable->pScreen;
     glamor_port_private *port_priv = (glamor_port_private *) data;
     INT32 x1, x2, y1, y2;
     int srcPitch, srcPitch2;
@@ -556,6 +544,8 @@ glamor_xv_init(ScreenPtr screen, int num_texture_ports)
     XF86VideoAdaptorPtr adapt;
     int i;
 
+    glamor_init_xv_shader(screen);
+
     adapt = calloc(1, sizeof(XF86VideoAdaptorRec) + num_texture_ports *
                    (sizeof(glamor_port_private) + sizeof(DevUnion)));
     if (adapt == NULL)
@@ -614,12 +604,3 @@ glamor_xv_init(ScreenPtr screen, int num_texture_ports)
     }
     return adapt;
 }
-#else
-#if 0
-XF86VideoAdaptorPtr
-glamor_xv_init(ScreenPtr screen, int num_texture_ports)
-{
-    return NULL;
-}
-#endif
-#endif

@@ -46,8 +46,6 @@ static const char *
 _glamor_create_getcolor_fs_source(ScreenPtr screen, int stops_count,
                                   int use_array)
 {
-    glamor_screen_private *glamor_priv;
-
     char *gradient_fs = NULL;
 
 #define gradient_fs_getcolor\
@@ -174,9 +172,6 @@ _glamor_create_getcolor_fs_source(ScreenPtr screen, int stops_count,
         "    return gradient_color;\n"
         "}\n";
 
-    glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
-
     if (use_array) {
         XNFasprintf(&gradient_fs,
                     gradient_fs_getcolor, stops_count, stops_count);
@@ -252,7 +247,6 @@ _glamor_create_radial_gradient_program(ScreenPtr screen, int stops_count,
 	    "{\n"\
 	    "    float t = 0.0;\n"\
 	    "    float sqrt_value;\n"\
-	    "    int revserse = 0;\n"\
 	    "    t_invalid = 0;\n"\
 	    "    \n"\
 	    "    vec3 tmp = vec3(source_texture.x, source_texture.y, 1.0);\n"\
@@ -300,30 +294,11 @@ _glamor_create_radial_gradient_program(ScreenPtr screen, int stops_count,
 	    "    }\n"\
 	    "    \n"\
 	    "    if(repeat_type == %d){\n" /* repeat normal*/\
-	    "        while(t > 1.0) \n"\
-	    "            t = t - 1.0; \n"\
-	    "        while(t < 0.0) \n"\
-	    "            t = t + 1.0; \n"\
+	    "        t = fract(t);\n"\
 	    "    }\n"\
 	    "    \n"\
 	    "    if(repeat_type == %d) {\n" /* repeat reflect*/\
-	    "        while(t > 1.0) {\n"\
-	    "            t = t - 1.0; \n"\
-	    "            if(revserse == 0)\n"\
-	    "                revserse = 1;\n"\
-	    "            else\n"\
-	    "                revserse = 0;\n"\
-	    "        }\n"\
-	    "        while(t < 0.0) {\n"\
-	    "            t = t + 1.0; \n"\
-	    "            if(revserse == 0)\n"\
-	    "                revserse = 1;\n"\
-	    "            else\n"\
-	    "                revserse = 0;\n"\
-	    "        }\n"\
-	    "        if(revserse == 1) {\n"\
-	    "            t = 1.0 - t; \n"\
-	    "        }\n"\
+	    "        t = abs(fract(t * 0.5 + 0.5) * 2.0 - 1.0);\n"\
 	    "    }\n"\
 	    "    \n"\
 	    "    return t;\n"\
@@ -349,7 +324,7 @@ _glamor_create_radial_gradient_program(ScreenPtr screen, int stops_count,
         return;
     }
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     if (dyn_gen && glamor_priv->gradient_prog[SHADER_GRADIENT_RADIAL][2]) {
         glDeleteProgram(glamor_priv->gradient_prog[SHADER_GRADIENT_RADIAL][2]);
@@ -382,9 +357,7 @@ _glamor_create_radial_gradient_program(ScreenPtr screen, int stops_count,
     glBindAttribLocation(gradient_prog, GLAMOR_VERTEX_POS, "v_position");
     glBindAttribLocation(gradient_prog, GLAMOR_VERTEX_SOURCE, "v_texcoord");
 
-    glamor_link_glsl_prog(gradient_prog);
-
-    glUseProgram(0);
+    glamor_link_glsl_prog(screen, gradient_prog, "radial gradient");
 
     if (dyn_gen) {
         index = 2;
@@ -398,8 +371,6 @@ _glamor_create_radial_gradient_program(ScreenPtr screen, int stops_count,
     }
 
     glamor_priv->gradient_prog[SHADER_GRADIENT_RADIAL][index] = gradient_prog;
-
-    glamor_put_context(glamor_priv);
 }
 
 static void
@@ -499,7 +470,6 @@ _glamor_create_linear_gradient_program(ScreenPtr screen, int stops_count,
 	    "    vec4 stop_color_before;\n"\
 	    "    vec4 stop_color_after;\n"\
 	    "    float new_alpha; \n"\
-	    "    int revserse = 0;\n"\
 	    "    vec4 gradient_color;\n"\
 	    "    float percentage; \n"\
 	    "    vec3 source_texture_trans = transform_mat * tmp;\n"\
@@ -519,30 +489,11 @@ _glamor_create_linear_gradient_program(ScreenPtr screen, int stops_count,
 	    "    distance = distance - _p1_distance; \n"\
 	    "    \n"\
 	    "    if(repeat_type == %d){\n" /* repeat normal*/\
-	    "        while(distance > _pt_distance) \n"\
-	    "            distance = distance - (_pt_distance); \n"\
-	    "        while(distance < 0.0) \n"\
-	    "            distance = distance + (_pt_distance); \n"\
+	    "        distance = mod(distance, _pt_distance);\n"\
 	    "    }\n"\
 	    "    \n"\
 	    "    if(repeat_type == %d) {\n" /* repeat reflect*/\
-	    "        while(distance > _pt_distance) {\n"\
-	    "            distance = distance - (_pt_distance); \n"\
-	    "            if(revserse == 0)\n"\
-	    "                revserse = 1;\n"\
-	    "            else\n"\
-	    "                revserse = 0;\n"\
-	    "        }\n"\
-	    "        while(distance < 0.0) {\n"\
-	    "            distance = distance + (_pt_distance); \n"\
-	    "            if(revserse == 0)\n"\
-	    "                revserse = 1;\n"\
-	    "            else\n"\
-	    "                revserse = 0;\n"\
-	    "        }\n"\
-	    "        if(revserse == 1) {\n"\
-	    "            distance = (_pt_distance) - distance; \n"\
-	    "        }\n"\
+	    "        distance = abs(mod(distance + _pt_distance, 2.0 * _pt_distance) - _pt_distance);\n"\
 	    "    }\n"\
 	    "    \n"\
 	    "    len_percentage = distance/(_pt_distance);\n"\
@@ -566,7 +517,7 @@ _glamor_create_linear_gradient_program(ScreenPtr screen, int stops_count,
         return;
     }
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     if (dyn_gen && glamor_priv->gradient_prog[SHADER_GRADIENT_LINEAR][2]) {
         glDeleteProgram(glamor_priv->gradient_prog[SHADER_GRADIENT_LINEAR][2]);
         glamor_priv->gradient_prog[SHADER_GRADIENT_LINEAR][2] = 0;
@@ -595,9 +546,7 @@ _glamor_create_linear_gradient_program(ScreenPtr screen, int stops_count,
     glBindAttribLocation(gradient_prog, GLAMOR_VERTEX_POS, "v_position");
     glBindAttribLocation(gradient_prog, GLAMOR_VERTEX_SOURCE, "v_texcoord");
 
-    glamor_link_glsl_prog(gradient_prog);
-
-    glUseProgram(0);
+    glamor_link_glsl_prog(screen, gradient_prog, "linear gradient");
 
     if (dyn_gen) {
         index = 2;
@@ -611,8 +560,6 @@ _glamor_create_linear_gradient_program(ScreenPtr screen, int stops_count,
     }
 
     glamor_priv->gradient_prog[SHADER_GRADIENT_LINEAR][index] = gradient_prog;
-
-    glamor_put_context(glamor_priv);
 }
 
 void
@@ -644,7 +591,7 @@ glamor_fini_gradient_shader(ScreenPtr screen)
     int i = 0;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     for (i = 0; i < 3; i++) {
         /* Linear Gradient */
@@ -656,8 +603,6 @@ glamor_fini_gradient_shader(ScreenPtr screen)
             glDeleteProgram(glamor_priv->gradient_prog
                             [SHADER_GRADIENT_RADIAL][i]);
     }
-
-    glamor_put_context(glamor_priv);
 }
 
 static void
@@ -788,7 +733,7 @@ _glamor_gradient_set_pixmap_destination(ScreenPtr screen,
            tex_vertices[0], tex_vertices[1], tex_vertices[2], tex_vertices[3],
            tex_vertices[4], tex_vertices[5], tex_vertices[6], tex_vertices[7]);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     glVertexAttribPointer(GLAMOR_VERTEX_POS, 2, GL_FLOAT,
                           GL_FALSE, 0, vertices);
@@ -797,8 +742,6 @@ _glamor_gradient_set_pixmap_destination(ScreenPtr screen,
 
     glEnableVertexAttribArray(GLAMOR_VERTEX_POS);
     glEnableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-
-    glamor_put_context(glamor_priv);
 
     return 1;
 }
@@ -941,7 +884,7 @@ glamor_generate_radial_gradient_picture(ScreenPtr screen,
     GLint r2_uniform_location = 0;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     /* Create a pixmap with VBO. */
     pixmap = glamor_create_pixmap(screen,
@@ -988,8 +931,6 @@ glamor_generate_radial_gradient_picture(ScreenPtr screen,
                                                         "repeat_type");
     n_stop_uniform_location = glGetUniformLocation(gradient_prog, "n_stop");
     A_value_uniform_location = glGetUniformLocation(gradient_prog, "A_value");
-    repeat_type_uniform_location =glGetUniformLocation(gradient_prog,
-                                                       "repeat_type");
     c1_uniform_location = glGetUniformLocation(gradient_prog, "c1");
     r1_uniform_location = glGetUniformLocation(gradient_prog, "r1");
     c2_uniform_location = glGetUniformLocation(gradient_prog, "c2");
@@ -1171,14 +1112,9 @@ glamor_generate_radial_gradient_picture(ScreenPtr screen,
         free(stop_colors);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-    glUseProgram(0);
 
-    glamor_put_context(glamor_priv);
     return dst_picture;
 
  GRADIENT_FAIL:
@@ -1193,13 +1129,8 @@ glamor_generate_radial_gradient_picture(ScreenPtr screen,
             free(stop_colors);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-    glUseProgram(0);
-    glamor_put_context(glamor_priv);
     return NULL;
 }
 
@@ -1263,7 +1194,7 @@ glamor_generate_linear_gradient_picture(ScreenPtr screen,
     GLint pt_distance_uniform_location = 0;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
 
     /* Create a pixmap with VBO. */
     pixmap = glamor_create_pixmap(screen,
@@ -1524,14 +1455,9 @@ glamor_generate_linear_gradient_picture(ScreenPtr screen,
         free(stop_colors);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-    glUseProgram(0);
 
-    glamor_put_context(glamor_priv);
     return dst_picture;
 
  GRADIENT_FAIL:
@@ -1546,13 +1472,8 @@ glamor_generate_linear_gradient_picture(ScreenPtr screen,
             free(stop_colors);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
     glDisableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-    glUseProgram(0);
-    glamor_put_context(glamor_priv);
     return NULL;
 }
 

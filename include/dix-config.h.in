@@ -288,8 +288,14 @@
 /* Support SHAPE extension */
 #undef SHAPE
 
+/* Where to install Xorg.bin and Xorg.wrap */
+#undef SUID_WRAPPER_DIR
+
 /* Define to 1 on systems derived from System V Release 4 */
 #undef SVR4
+
+/* sysconfdir */
+#undef SYSCONFDIR
 
 /* Support TCP socket connections */
 #undef TCPCONN
@@ -420,6 +426,9 @@
 /* Support HAL for hotplug */
 #undef CONFIG_HAL
 
+/* Enable systemd-logind integration */
+#undef SYSTEMD_LOGIND 1
+
 /* Have a monotonic clock from clock_gettime() */
 #undef MONOTONIC_CLOCK
 
@@ -480,5 +489,8 @@
 
 /* Build GLAMOR */
 #undef GLAMOR
+
+/* Build glamor's GBM-based EGL support */
+#undef GLAMOR_HAS_GBM
 
 #endif /* _DIX_CONFIG_H_ */

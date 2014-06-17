@@ -42,7 +42,8 @@ glamor_get_drawable_location(const DrawablePtr drawable)
     glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
     glamor_screen_private *glamor_priv =
         glamor_get_screen_private(drawable->pScreen);
-    if (pixmap_priv == NULL || pixmap_priv->base.gl_fbo == 0)
+    if (pixmap_priv == NULL ||
+        pixmap_priv->base.gl_fbo == GLAMOR_FBO_UNATTACHED)
         return 'm';
     if (pixmap_priv->base.fbo->fb == glamor_priv->screen_fbo)
         return 's';
@@ -82,9 +83,10 @@ glamor_compile_glsl_prog(GLenum type, const char *source)
 }
 
 void
-glamor_link_glsl_prog(GLint prog)
+glamor_link_glsl_prog(ScreenPtr screen, GLint prog, const char *format, ...)
 {
     GLint ok;
+    glamor_screen_private *glamor_priv = glamor_get_screen_private(screen);
 
     glLinkProgram(prog);
     glGetProgramiv(prog, GL_LINK_STATUS, &ok);
@@ -99,12 +101,36 @@ glamor_link_glsl_prog(GLint prog)
         ErrorF("Failed to link: %s\n", info);
         FatalError("GLSL link failure\n");
     }
+
+    if (glamor_priv->has_khr_debug) {
+        char *label;
+        va_list va;
+
+        va_start(va, format);
+        XNFvasprintf(&label, format, va);
+        glObjectLabel(GL_PROGRAM, prog, -1, label);
+        free(label);
+        va_end(va);
+    }
 }
 
 Bool
 glamor_prepare_access(DrawablePtr drawable, glamor_access_t access)
 {
     PixmapPtr pixmap = glamor_get_drawable_pixmap(drawable);
+    glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
+
+    if (pixmap->devPrivate.ptr) {
+        /* Already mapped, nothing needs to be done.  Note that we
+         * aren't allowing promotion from RO to RW, because it would
+         * require re-mapping the PBO.
+         */
+        assert(!GLAMOR_PIXMAP_PRIV_HAS_FBO(pixmap_priv) ||
+               access == GLAMOR_ACCESS_RO ||
+               pixmap_priv->base.map_access == GLAMOR_ACCESS_RW);
+        return TRUE;
+    }
+    pixmap_priv->base.map_access = access;
 
     return glamor_download_pixmap_to_cpu(pixmap, access);
 }
@@ -215,7 +241,7 @@ glamor_init_finish_access_shaders(ScreenPtr screen)
     char *source;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glamor_priv->finish_access_prog[0] = glCreateProgram();
     glamor_priv->finish_access_prog[1] = glCreateProgram();
 
@@ -242,13 +268,15 @@ glamor_init_finish_access_shaders(ScreenPtr screen)
                          GLAMOR_VERTEX_POS, "v_position");
     glBindAttribLocation(glamor_priv->finish_access_prog[0],
                          GLAMOR_VERTEX_SOURCE, "v_texcoord0");
-    glamor_link_glsl_prog(glamor_priv->finish_access_prog[0]);
+    glamor_link_glsl_prog(screen, glamor_priv->finish_access_prog[0],
+                          "finish access 0");
 
     glBindAttribLocation(glamor_priv->finish_access_prog[1],
                          GLAMOR_VERTEX_POS, "v_position");
     glBindAttribLocation(glamor_priv->finish_access_prog[1],
                          GLAMOR_VERTEX_SOURCE, "v_texcoord0");
-    glamor_link_glsl_prog(glamor_priv->finish_access_prog[1]);
+    glamor_link_glsl_prog(screen, glamor_priv->finish_access_prog[1],
+                          "finish access 1");
 
     glamor_priv->finish_access_revert[0] =
         glGetUniformLocation(glamor_priv->finish_access_prog[0], "revert");
@@ -261,7 +289,6 @@ glamor_init_finish_access_shaders(ScreenPtr screen)
     glUniform1i(sampler_uniform_location, 0);
     glUniform1i(glamor_priv->finish_access_revert[0], 0);
     glUniform1i(glamor_priv->finish_access_swap_rb[0], 0);
-    glUseProgram(0);
 
     glamor_priv->finish_access_revert[1] =
         glGetUniformLocation(glamor_priv->finish_access_prog[1], "revert");
@@ -273,8 +300,6 @@ glamor_init_finish_access_shaders(ScreenPtr screen)
     glUniform1i(glamor_priv->finish_access_revert[1], 0);
     glUniform1i(sampler_uniform_location, 0);
     glUniform1i(glamor_priv->finish_access_swap_rb[1], 0);
-    glUseProgram(0);
-    glamor_put_context(glamor_priv);
 }
 
 void
@@ -283,14 +308,13 @@ glamor_fini_finish_access_shaders(ScreenPtr screen)
     glamor_screen_private *glamor_priv;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glDeleteProgram(glamor_priv->finish_access_prog[0]);
     glDeleteProgram(glamor_priv->finish_access_prog[1]);
-    glamor_put_context(glamor_priv);
 }
 
 void
-glamor_finish_access(DrawablePtr drawable, glamor_access_t access_mode)
+glamor_finish_access(DrawablePtr drawable)
 {
     PixmapPtr pixmap = glamor_get_drawable_pixmap(drawable);
     glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
@@ -300,18 +324,25 @@ glamor_finish_access(DrawablePtr drawable, glamor_access_t access_mode)
     if (!GLAMOR_PIXMAP_PRIV_HAS_FBO_DOWNLOADED(pixmap_priv))
         return;
 
-    if (access_mode != GLAMOR_ACCESS_RO) {
+    /* If we are doing a series of unmaps from a nested map, we're
+     * done.  None of the callers do any rendering to maps after
+     * starting an unmap sequence, so we don't need to delay until the
+     * last nested unmap.
+     */
+    if (!pixmap->devPrivate.ptr)
+        return;
+
+    if (pixmap_priv->base.map_access == GLAMOR_ACCESS_RW) {
         glamor_restore_pixmap_to_texture(pixmap);
     }
 
     if (pixmap_priv->base.fbo->pbo != 0 && pixmap_priv->base.fbo->pbo_valid) {
         assert(glamor_priv->gl_flavor == GLAMOR_GL_DESKTOP);
 
-        glamor_get_context(glamor_priv);
+        glamor_make_current(glamor_priv);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         glDeleteBuffers(1, &pixmap_priv->base.fbo->pbo);
-        glamor_put_context(glamor_priv);
 
         pixmap_priv->base.fbo->pbo_valid = FALSE;
         pixmap_priv->base.fbo->pbo = 0;
@@ -348,7 +379,7 @@ glamor_prepare_access_gc(GCPtr gc)
         if (!glamor_prepare_access(&gc->tile.pixmap->drawable,
                                    GLAMOR_ACCESS_RO)) {
             if (gc->stipple)
-                glamor_finish_access(&gc->stipple->drawable, GLAMOR_ACCESS_RO);
+                glamor_finish_access(&gc->stipple->drawable);
             return FALSE;
         }
     }
@@ -362,9 +393,9 @@ void
 glamor_finish_access_gc(GCPtr gc)
 {
     if (gc->fillStyle == FillTiled)
-        glamor_finish_access(&gc->tile.pixmap->drawable, GLAMOR_ACCESS_RO);
+        glamor_finish_access(&gc->tile.pixmap->drawable);
     if (gc->stipple)
-        glamor_finish_access(&gc->stipple->drawable, GLAMOR_ACCESS_RO);
+        glamor_finish_access(&gc->stipple->drawable);
 }
 
 Bool
@@ -392,13 +423,13 @@ GCOps glamor_gc_ops = {
     .FillPolygon = miFillPolygon,
     .PolyFillRect = glamor_poly_fill_rect,
     .PolyFillArc = miPolyFillArc,
-    .PolyText8 = miPolyText8,
-    .PolyText16 = miPolyText16,
-    .ImageText8 = miImageText8,
-    .ImageText16 = miImageText16,
-    .ImageGlyphBlt = glamor_image_glyph_blt,    //miImageGlyphBlt,
-    .PolyGlyphBlt = glamor_poly_glyph_blt,      //miPolyGlyphBlt,
-    .PushPixels = glamor_push_pixels,   //miPushPixels,
+    .PolyText8 = glamor_poly_text8,
+    .PolyText16 = glamor_poly_text16,
+    .ImageText8 = glamor_image_text8,
+    .ImageText16 = glamor_image_text16,
+    .ImageGlyphBlt = miImageGlyphBlt,
+    .PolyGlyphBlt = glamor_poly_glyph_blt,
+    .PushPixels = glamor_push_pixels,
 };
 
 /**
@@ -438,7 +469,7 @@ glamor_validate_gc(GCPtr gc, unsigned long changes, DrawablePtr drawable)
                     (&old_tile->drawable, GLAMOR_ACCESS_RO)) {
                     new_tile =
                         fb24_32ReformatTile(old_tile, drawable->bitsPerPixel);
-                    glamor_finish_access(&old_tile->drawable, GLAMOR_ACCESS_RO);
+                    glamor_finish_access(&old_tile->drawable);
                 }
             }
             if (new_tile) {
@@ -461,8 +492,7 @@ glamor_validate_gc(GCPtr gc, unsigned long changes, DrawablePtr drawable)
                 if (glamor_prepare_access
                     (&gc->tile.pixmap->drawable, GLAMOR_ACCESS_RW)) {
                     fbPadPixmap(gc->tile.pixmap);
-                    glamor_finish_access
-                        (&gc->tile.pixmap->drawable, GLAMOR_ACCESS_RW);
+                    glamor_finish_access(&gc->tile.pixmap->drawable);
                 }
             }
         }
@@ -478,7 +508,7 @@ glamor_validate_gc(GCPtr gc, unsigned long changes, DrawablePtr drawable)
          */
         if (glamor_prepare_access(&gc->stipple->drawable, GLAMOR_ACCESS_RW)) {
             fbValidateGC(gc, changes, drawable);
-            glamor_finish_access(&gc->stipple->drawable, GLAMOR_ACCESS_RW);
+            glamor_finish_access(&gc->stipple->drawable);
         }
     }
     else {
@@ -522,52 +552,7 @@ glamor_bitmap_to_region(PixmapPtr pixmap)
     if (!glamor_prepare_access(&pixmap->drawable, GLAMOR_ACCESS_RO))
         return NULL;
     ret = fbPixmapToRegion(pixmap);
-    glamor_finish_access(&pixmap->drawable, GLAMOR_ACCESS_RO);
+    glamor_finish_access(&pixmap->drawable);
     return ret;
 }
 
-/* Borrow from cairo. */
-Bool
-glamor_gl_has_extension(const char *extension)
-{
-    const char *pext;
-    int ext_len;
-
-    ext_len = strlen(extension);
-
-    pext = (const char *) glGetString(GL_EXTENSIONS);
-
-    if (pext == NULL || extension == NULL)
-        return FALSE;
-
-    while ((pext = strstr(pext, extension)) != NULL) {
-        if (pext[ext_len] == ' ' || pext[ext_len] == '\0')
-            return TRUE;
-        pext += ext_len;
-    }
-    return FALSE;
-}
-
-int
-glamor_gl_get_version(void)
-{
-    int major, minor;
-    const char *version = (const char *) glGetString(GL_VERSION);
-    const char *dot = version == NULL ? NULL : strchr(version, '.');
-    const char *major_start = dot;
-
-    /* Sanity check */
-    if (dot == NULL || dot == version || *(dot + 1) == '\0') {
-        major = 0;
-        minor = 0;
-    }
-    else {
-        /* Find the start of the major version in the string */
-        while (major_start > version && *major_start != ' ')
-            --major_start;
-        major = strtol(major_start, NULL, 10);
-        minor = strtol(dot + 1, NULL, 10);
-    }
-
-    return GLAMOR_GL_VERSION_ENCODE(major, minor);
-}

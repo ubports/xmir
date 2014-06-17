@@ -27,9 +27,13 @@
 
 #include "glamor_priv.h"
 
-/** @file glamor_fillspans.c
+/** @file glamor_fill.c
  *
  * GC fill implementation, based loosely on fb_fill.c
+ */
+
+/**
+ * Fills the given rectangle of a drawable with the GC's fill style.
  */
 Bool
 glamor_fill(DrawablePtr drawable,
@@ -108,13 +112,12 @@ glamor_fill(DrawablePtr drawable,
         x = 0;
         y = 0;
     }
-    if (glamor_prepare_access(drawable, GLAMOR_ACCESS_RW)) {
-        if (glamor_prepare_access_gc(gc)) {
-            fbFill(drawable, gc, x, y, width, height);
-            glamor_finish_access_gc(gc);
-        }
-        glamor_finish_access(drawable, GLAMOR_ACCESS_RW);
+    if (glamor_prepare_access(drawable, GLAMOR_ACCESS_RW) &&
+        glamor_prepare_access_gc(gc)) {
+        fbFill(drawable, gc, x, y, width, height);
     }
+    glamor_finish_access_gc(gc);
+    glamor_finish_access(drawable);
 
     if (sub_pixmap != NULL) {
         if (gc->fillStyle != FillSolid) {
@@ -153,7 +156,7 @@ glamor_init_solid_shader(ScreenPtr screen)
     GLint fs_prog, vs_prog;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glamor_priv->solid_prog = glCreateProgram();
     vs_prog = glamor_compile_glsl_prog(GL_VERTEX_SHADER, solid_vs);
     fs_prog = glamor_compile_glsl_prog(GL_FRAGMENT_SHADER, solid_fs);
@@ -162,11 +165,10 @@ glamor_init_solid_shader(ScreenPtr screen)
 
     glBindAttribLocation(glamor_priv->solid_prog,
                          GLAMOR_VERTEX_POS, "v_position");
-    glamor_link_glsl_prog(glamor_priv->solid_prog);
+    glamor_link_glsl_prog(screen, glamor_priv->solid_prog, "solid");
 
     glamor_priv->solid_color_uniform_location =
         glGetUniformLocation(glamor_priv->solid_prog, "color");
-    glamor_put_context(glamor_priv);
 }
 
 void
@@ -175,9 +177,8 @@ glamor_fini_solid_shader(ScreenPtr screen)
     glamor_screen_private *glamor_priv;
 
     glamor_priv = glamor_get_screen_private(screen);
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glDeleteProgram(glamor_priv->solid_prog);
-    glamor_put_context(glamor_priv);
 }
 
 static void
@@ -187,56 +188,51 @@ _glamor_solid_boxes(PixmapPtr pixmap, BoxPtr box, int nbox, float *color)
     glamor_screen_private *glamor_priv = glamor_get_screen_private(screen);
     glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
     GLfloat xscale, yscale;
-    float vertices[32];
-    float *pvertices = vertices;
-    int valid_nbox = ARRAY_SIZE(vertices);
+    float stack_vertices[32];
+    float *vertices = stack_vertices;
+    int valid_nbox = ARRAY_SIZE(stack_vertices) / (4 * 2);
 
     glamor_set_destination_pixmap_priv_nc(pixmap_priv);
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     glUseProgram(glamor_priv->solid_prog);
 
     glUniform4fv(glamor_priv->solid_color_uniform_location, 1, color);
 
     pixmap_priv_get_dest_scale(pixmap_priv, &xscale, &yscale);
 
-    if (_X_UNLIKELY(nbox * 4 * 2 > ARRAY_SIZE(vertices))) {
-        int allocated_box;
+    if (nbox > valid_nbox) {
+        int allocated_nbox;
+        float *new_vertices;
 
-        if (nbox * 6 > GLAMOR_COMPOSITE_VBO_VERT_CNT) {
-            allocated_box = GLAMOR_COMPOSITE_VBO_VERT_CNT / 6;
-        }
+        if (nbox > GLAMOR_COMPOSITE_VBO_VERT_CNT / 6)
+            allocated_nbox = GLAMOR_COMPOSITE_VBO_VERT_CNT / 6;
         else
-            allocated_box = nbox;
-        pvertices = malloc(allocated_box * 4 * 2 * sizeof(float));
-        if (pvertices)
-            valid_nbox = allocated_box;
-        else {
-            pvertices = vertices;
-            valid_nbox = ARRAY_SIZE(vertices) / (4 * 2);
+            allocated_nbox = nbox;
+        new_vertices = malloc(allocated_nbox * 4 * 2 * sizeof(float));
+        if (new_vertices) {
+            vertices = new_vertices;
+            valid_nbox = allocated_nbox;
         }
     }
 
-    if (_X_UNLIKELY(nbox > 1))
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glamor_priv->ebo);
-
     glVertexAttribPointer(GLAMOR_VERTEX_POS, 2, GL_FLOAT,
-                          GL_FALSE, 2 * sizeof(float), pvertices);
+                          GL_FALSE, 2 * sizeof(float), vertices);
     glEnableVertexAttribArray(GLAMOR_VERTEX_POS);
 
     while (nbox) {
         int box_cnt, i;
-        float *valid_vertices;
+        float *next_box;
 
-        valid_vertices = pvertices;
+        next_box = vertices;
         box_cnt = nbox > valid_nbox ? valid_nbox : nbox;
         for (i = 0; i < box_cnt; i++) {
             glamor_set_normalize_vcoords(pixmap_priv, xscale, yscale,
                                          box[i].x1, box[i].y1,
                                          box[i].x2, box[i].y2,
                                          glamor_priv->yInverted,
-                                         valid_vertices);
-            valid_vertices += 4 * 2;
+                                         next_box);
+            next_box += 4 * 2;
         }
         if (box_cnt == 1)
             glDrawArrays(GL_TRIANGLE_FAN, 0, box_cnt * 4);
@@ -253,16 +249,20 @@ _glamor_solid_boxes(PixmapPtr pixmap, BoxPtr box, int nbox, float *color)
         box += box_cnt;
     }
 
-    if (pvertices != vertices)
-        free(pvertices);
+    if (vertices != stack_vertices)
+        free(vertices);
 
     glDisableVertexAttribArray(GLAMOR_VERTEX_POS);
-    glUseProgram(0);
-    glamor_put_context(glamor_priv);
     glamor_priv->state = RENDER_STATE;
     glamor_priv->render_idle_cnt = 0;
 }
 
+/**
+ * Fills the given rectangles of pixmap with an X pixel value.
+ *
+ * This is a helper used by other code after clipping and translation
+ * of coordinates to a glamor backing pixmap.
+ */
 Bool
 glamor_solid_boxes(PixmapPtr pixmap,
                    BoxPtr box, int nbox, unsigned long fg_pixel)
@@ -310,6 +310,12 @@ glamor_solid_boxes(PixmapPtr pixmap,
     return TRUE;
 }
 
+/**
+ * Fills a rectangle of a pixmap with an X pixel value.
+ *
+ * This is a helper used by other glamor code mostly for clearing of
+ * buffers to 0.
+ */
 Bool
 glamor_solid(PixmapPtr pixmap, int x, int y, int width, int height,
              unsigned char alu, unsigned long planemask, unsigned long fg_pixel)
@@ -329,13 +335,12 @@ glamor_solid(PixmapPtr pixmap, int x, int y, int width, int height,
         return FALSE;
     }
 
-    glamor_get_context(glamor_priv);
+    glamor_make_current(glamor_priv);
     if (!glamor_set_alu(screen, alu)) {
         if (alu == GXclear)
             fg_pixel = 0;
         else {
             glamor_fallback("unsupported alu %x\n", alu);
-            glamor_put_context(glamor_priv);
             return FALSE;
         }
     }
@@ -346,7 +351,6 @@ glamor_solid(PixmapPtr pixmap, int x, int y, int width, int height,
     glamor_solid_boxes(pixmap, &box, 1, fg_pixel);
 
     glamor_set_alu(screen, GXcopy);
-    glamor_put_context(glamor_priv);
 
     return TRUE;
 }

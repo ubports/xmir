@@ -1,3 +1,42 @@
+xorg-server (2:1.15.99.903-3) experimental; urgency=medium
+
+  * Set shared memory dir to /dev/shm (closes: #747894).
+  * Disable dri3 on kfreebsd again to fix FTBFS.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 10 Jun 2014 21:50:06 +0200
+
+xorg-server (2:1.15.99.903-2) experimental; urgency=medium
+
+  * Enable xwayland for the main build on linux (closes: #747950).
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 05 Jun 2014 21:58:45 +0200
+
+xorg-server (2:1.15.99.903-1) experimental; urgency=medium
+
+  * New upstream release candidate
+    - reverted quirk for "Evoluent VerticalMouse 3" (closes: #739537)
+    - Xi: block SIGIOs while copying device classes around (closes: #744303)
+    - fix FTBFS on arm
+    - add support for mips64 (closes: #725801)
+  * Enable dri3 on kfreebsd, now xtrans 1.3.3 supports fd passing.
+  * Enable glamor.
+  * Don't run tests in parallel.
+  * Bump video ABI and serverminver.
+  * Explicitly disable xwayland.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 05 Jun 2014 20:14:56 +0200
+
+xorg-server (2:1.15.99.902-1) experimental; urgency=medium
+
+  * New upstream snapshot.
+    + fix Xephyr -screen (closes: #742028)
+  * Refresh patches.
+  * Bump video ABI to 17, input ABI to 21.
+  * Bump xtrans requirement to 1.3.3.
+  * Bump xproto and fontsproto requirements.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 15 Apr 2014 08:35:26 +0200
+
 xorg-server (2:1.15.1-0ubuntu5) utopic; urgency=low
 
   * Add upstream patch to fix some valgrind issues.
