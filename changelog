@@ -1,3 +1,9 @@
+xorg-server (2:1.15.1-0ubuntu6) utopic; urgency=medium
+
+  * ppc64el-endian-fix.patch: Fix PPC endian assumptions (LP: #1333422)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 23 Jun 2014 23:47:15 -0600
+
 xorg-server (2:1.15.1-0ubuntu5) utopic; urgency=low
 
   * Add upstream patch to fix some valgrind issues.
