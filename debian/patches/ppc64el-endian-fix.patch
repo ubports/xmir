@@ -1,0 +1,34 @@
+From adb7bc3386559dfee34b359dadcbb6796bc416e7 Mon Sep 17 00:00:00 2001
+From: Dinar Valeev <dvaleev@suse.com>
+Date: Mon, 24 Feb 2014 10:36:54 +0000
+Subject: arch: Fix image and bitmap byte order for ppc64le
+
+So far PPC was big endian for sure. For ppc64le this is no longer
+true.
+
+Signed-off-by: Egbert Eich <eich@freedesktop.org>
+Reviewed-by: Mark Kettenis <kettenis@openbsd.org>
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+diff --git a/include/servermd.h b/include/servermd.h
+index 081123b..e413314 100644
+--- a/include/servermd.h
++++ b/include/servermd.h
+@@ -114,8 +114,13 @@ SOFTWARE.
+ 
+ #if defined(__powerpc__) || defined(__ppc__) || defined(__ppc64__)
+ 
+-#define IMAGE_BYTE_ORDER        MSBFirst
+-#define BITMAP_BIT_ORDER        MSBFirst
++#if defined(__LITTLE_ENDIAN__)
++#define IMAGE_BYTE_ORDER      LSBFirst
++#define BITMAP_BIT_ORDER      LSBFirst
++#else
++#define IMAGE_BYTE_ORDER      MSBFirst
++#define BITMAP_BIT_ORDER      MSBFirst
++#endif
+ #define GLYPHPADBYTES           4
+ 
+ #endif                          /* PowerPC */
+--
+cgit v0.9.0.2-2-gbebe
