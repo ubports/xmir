@@ -21,19 +21,20 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 
 --- a/config/udev.c
 +++ b/config/udev.c
-@@ -98,7 +98,7 @@
-         if (strncmp(sysname, "card", 4) != 0)
+@@ -116,7 +116,7 @@
+         if (xf86_find_platform_device_by_devnum(major(devnum), minor(devnum)))
              return;
  
 -        LogMessage(X_INFO, "config/udev: Adding drm device (%s)\n", path);
 +        LogMessage(X_INFO, "config/udev: Adding drm device (%s) %s %s\n", path, sysname, syspath);
  
-         config_udev_odev_setup_attribs(path, syspath, NewGPUDeviceRequest);
-         return;
-@@ -430,11 +430,23 @@
+         config_udev_odev_setup_attribs(path, syspath, major(devnum),
+                                        minor(devnum), NewGPUDeviceRequest);
+@@ -456,6 +456,17 @@
+ 
  #ifdef CONFIG_UDEV_KMS
  
- static Bool
++static Bool
 +get_pci_busid(const char *in, char *pci_str)
 +{
 +    int ret, domain, bus, dev, func;
@@ -44,27 +45,20 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +    return TRUE;
 +}
 +
-+static Bool
+ static void
  config_udev_odev_setup_attribs(const char *path, const char *syspath,
-                                config_odev_probe_proc_ptr probe_callback)
- {
-     struct OdevAttributes *attribs = config_odev_allocate_attribute_list();
-     int ret;
-+    const char *platform;
- 
-     if (!attribs)
-         return FALSE;
-@@ -447,6 +459,33 @@
-     if (ret == FALSE)
-         goto fail;
+                                int major, int minor,
+@@ -468,6 +479,31 @@
+     config_odev_add_int_attribute(attribs, ODEV_ATTRIB_MAJOR, major);
+     config_odev_add_int_attribute(attribs, ODEV_ATTRIB_MINOR, minor);
  
 +    if (strstr(syspath, "/devices/pci")) {
 +        char pci_str[17];
 +        const char *end = strstr(syspath, "/drm/card");
 +        if (strstr(syspath, "/usb"))
-+            ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, "");
++            config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, "");
 +        else if (get_pci_busid(end - 13, pci_str))
-+            ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, pci_str);
++            config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, pci_str);
 +    } else if ((platform = strstr(syspath, "/devices/platform/"))) {
 +        /* OMAP relies on this, modesetting doesn't use it */
 +        const char *end;
@@ -72,40 +66,37 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +        end = strchr(platform, '.');
 +        if (end) {
 +            char *busid;
++            int ret;
++
 +            ret = asprintf(&busid, "platform:%.*s:%02li",
 +                           (int)(end - platform), platform, strtol(end + 1, NULL, 10));
 +            if (ret >= 0) {
-+                ret = config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, busid);
++                config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, busid);
 +                free(busid);
 +            }
-+            else
-+                ret = TRUE;
 +        }
 +    }
-+    if (ret == FALSE)
-+        goto fail;
 +
      /* ownership of attribs is passed to probe layer */
      probe_callback(attribs);
-     return TRUE;
+ }
 --- a/hw/xfree86/os-support/linux/lnx_platform.c
 +++ b/hw/xfree86/os-support/linux/lnx_platform.c
-@@ -19,44 +19,6 @@
- 
- #include "hotplug.h"
- 
--static Bool
--get_drm_info(struct OdevAttributes *attribs, char *path, int delayed_index)
--{
+@@ -23,10 +23,7 @@
+ static Bool
+ get_drm_info(struct OdevAttributes *attribs, char *path, int delayed_index)
+ {
 -    drmSetVersion sv;
 -    char *buf;
--    int fd;
+     int major, minor, fd;
 -    int err = 0;
--
--    fd = open(path, O_RDWR, O_CLOEXEC);
--    if (fd == -1)
--        return FALSE;
--
+     Bool paused, server_fd = FALSE;
+ 
+     major = config_odev_get_int_attribute(attribs, ODEV_ATTRIB_MAJOR, 0);
+@@ -50,17 +47,6 @@
+     if (fd == -1)
+         return FALSE;
+ 
 -    sv.drm_di_major = 1;
 -    sv.drm_di_minor = 4;
 -    sv.drm_dd_major = -1;       /* Don't care */
@@ -117,56 +108,35 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 -	goto out;
 -    }
 -
--    /* for a delayed probe we've already added the device */
--    if (delayed_index == -1) {
--            xf86_add_platform_device(attribs);
--            delayed_index = xf86_num_platform_devices - 1;
--    }
--
+     /* for a delayed probe we've already added the device */
+     if (delayed_index == -1) {
+             xf86_add_platform_device(attribs, FALSE);
+@@ -70,14 +56,9 @@
+     if (server_fd)
+         xf86_platform_devices[delayed_index].flags |= XF86_PDEV_SERVER_FD;
+ 
 -    buf = drmGetBusid(fd);
 -    xf86_add_platform_device_attrib(delayed_index,
 -                                    ODEV_ATTRIB_BUSID, buf);
 -    drmFreeBusid(buf);
 -out:
--    close(fd);
+     if (!server_fd)
+         close(fd);
 -    return (err == 0);
--}
--
- Bool
- xf86PlatformDeviceCheckBusID(struct xf86_platform_device *device, const char *busid)
- {
-@@ -105,11 +67,6 @@
-     char *dpath;
-     dpath = xf86_get_platform_attrib(index, ODEV_ATTRIB_PATH);
++    return TRUE;
+ }
  
--    ret = get_drm_info(attribs, dpath, index);
--    if (ret == FALSE) {
--        xf86_remove_platform_device(index);
--        return;
--    }
-     ret = xf86platformAddDevice(index);
-     if (ret == -1)
-         xf86_remove_platform_device(index);
-@@ -145,18 +102,10 @@
+ Bool
+@@ -157,8 +138,11 @@
+             break;
+     }
+ 
+-    if (i != xf86_num_platform_devices)
++    if (i != xf86_num_platform_devices) {
++        LogMessage(X_INFO, "config/udev: Ignoring already known drm device (%s)\n",
++                   path);
+         goto out_free;
++    }
  
      LogMessage(X_INFO, "xfree86: Adding drm device (%s)\n", path);
  
--    if (!xf86VTOwner()) {
--            /* if we don't currently own the VT then don't probe the device,
--               just mark it as unowned for later use */
--            attribs->unowned = TRUE;
--            xf86_add_platform_device(attribs);
--            return;
--    }
--
--    ret = get_drm_info(attribs, path, -1);
--    if (ret == FALSE)
--        goto out_free;
--
-+    /* if we don't currently own the VT then don't probe the device,
-+       just mark it as unowned for later use */
-+    attribs->unowned = !xf86VTOwner();
-+    xf86_add_platform_device(attribs);
-     return;
- 
- out_free:
