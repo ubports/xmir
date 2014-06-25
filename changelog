@@ -1,3 +1,11 @@
+xorg-server (2:1.15.99.903-3ubuntu1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+    - Refresh patches.
+    - Disable xmir, for now.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 25 Jun 2014 12:57:16 +0200
+
 xorg-server (2:1.15.99.903-3) experimental; urgency=medium
 
   * Set shared memory dir to /dev/shm (closes: #747894).
