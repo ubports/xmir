@@ -30,7 +30,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  
          config_udev_odev_setup_attribs(path, syspath, major(devnum),
                                         minor(devnum), NewGPUDeviceRequest);
-@@ -456,6 +456,17 @@
+@@ -456,18 +456,55 @@
  
  #ifdef CONFIG_UDEV_KMS
  
@@ -48,7 +48,13 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  static void
  config_udev_odev_setup_attribs(const char *path, const char *syspath,
                                 int major, int minor,
-@@ -468,6 +479,31 @@
+                                config_odev_probe_proc_ptr probe_callback)
+ {
+     struct OdevAttributes *attribs = config_odev_allocate_attribute_list();
++    const char *platform;
+ 
+     config_odev_add_attribute(attribs, ODEV_ATTRIB_PATH, path);
+     config_odev_add_attribute(attribs, ODEV_ATTRIB_SYSPATH, syspath);
      config_odev_add_int_attribute(attribs, ODEV_ATTRIB_MAJOR, major);
      config_odev_add_int_attribute(attribs, ODEV_ATTRIB_MINOR, minor);
  
