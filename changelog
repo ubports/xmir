@@ -1,3 +1,11 @@
+xorg-server (2:1.15.1-0ubuntu7) utopic; urgency=medium
+
+  * debian/patches/xfree86-pci-bus-probe-non-seat0.patch
+    - Upstream patch to fix "No devices detected" error for seats
+      other than seat0. (LP: #1209008)
+
+ -- Alberts Muktupāvels <alberts.muktupavels@gmail.com>  Tue, 01 Jul 2014 17:12:51 +0300
+
 xorg-server (2:1.15.1-0ubuntu6) utopic; urgency=medium
 
   * ppc64el-endian-fix.patch: Fix PPC endian assumptions (LP: #1333422)
