@@ -49,7 +49,7 @@ disable-rotation-transform-gpuscreens.patch
 
 pixman-validate.patch
 fix-ftbfs-ppc64el.patch
-#xmir.patch
+xmir.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
 mi-dont-process-disabled.patch
