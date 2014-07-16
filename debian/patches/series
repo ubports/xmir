@@ -54,4 +54,3 @@ drm_device_keep_trying.patch
 xi2-resize-touch.patch
 mi-dont-process-disabled.patch
 ppc64el-endian-fix.patch
-xfree86-pci-bus-probe-non-seat0.patch
