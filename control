@@ -95,7 +95,7 @@ Build-Depends:
 # xwayland
  libwayland-dev [linux-any],
 # XMir
- libmirclient-dev (>= 0.1.5) [!arm64 !powerpc !ppc64el],
+ libmirclient-dev (>= 0.4.0) [!arm64 !powerpc !ppc64el],
  libatomic-ops-dev,
 Standards-Version: 3.9.2
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
