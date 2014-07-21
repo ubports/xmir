@@ -1,12 +1,4 @@
-xorg-server (2:1.16.0-1) unstable; urgency=medium
-
-  * New upstream release
-    + Revert "dix: fix up coordinate scaling when external monitors are
-      present" (closes: #754822)
-
- -- Julien Cristau <jcristau@debian.org>  Fri, 18 Jul 2014 00:17:11 +0200
-
-xorg-server (2:1.15.99.904-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.16.0-1ubuntu1) UNRELEASED; urgency=medium
 
   [ Maarten Lankhorst ]
   * New upstream release.
@@ -16,7 +8,15 @@ xorg-server (2:1.15.99.904-1ubuntu1) UNRELEASED; urgency=medium
   [ Christopher James Halse Rogers ]
   * Refresh XMir patch
 
- -- Christopher James Halse Rogers <raof@ubuntu.com>  Fri, 04 Jul 2014 10:40:30 +1000
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 21 Jul 2014 11:24:36 +0200
+
+xorg-server (2:1.16.0-1) unstable; urgency=medium
+
+  * New upstream release
+    + Revert "dix: fix up coordinate scaling when external monitors are
+      present" (closes: #754822)
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 18 Jul 2014 00:17:11 +0200
 
 xorg-server (2:1.15.99.904-1) unstable; urgency=medium
 
