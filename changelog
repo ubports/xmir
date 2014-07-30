@@ -1,3 +1,10 @@
+xorg-server (2:1.15.1-0ubuntu9) utopic; urgency=medium
+
+  * xserver-xorg-dev: /usr/share/xserver-xorg/configure_flags.mk
+    Provide the flags how the xserver was configured.
+
+ -- Matthias Klose <doko@ubuntu.com>  Wed, 30 Jul 2014 22:49:51 +0200
+
 xorg-server (2:1.15.1-0ubuntu8) utopic; urgency=medium
 
   * debian/patches/xfree86-pci-bus-probe-non-seat0.patch
