@@ -365,6 +365,15 @@ binary-arch: build install
 	echo inputabi=xorg-input-abi-$$abi_xinput >> debian/xserver-xorg-core.substvars && \
 	echo "xorg-input-abi-$$abi_xinput, xserver-xorg-core (>= $(serverminver))" > debian/xserver-xorg-dev/usr/share/xserver-xorg/xinputdep
 
+	# save the configure flags so that packages like vnc, tightvnc, tigervnc
+	# know how the package was built.
+	( \
+	  echo 'xserver_confflags = $(confflags)'; \
+	  echo 'xserver_confflags_main = $(confflags_main)'; \
+	  echo 'xserver_confflags_udeb = $(confflags_udeb)'; \
+	  echo 'xserver_vars = $(vars)'; \
+	) > debian/xserver-xorg-dev/usr/share/xserver-xorg/configure_flags.mk
+
 	# The udeb uses the same substvars:
 	cp debian/xserver-xorg-core.substvars debian/xserver-xorg-core-udeb.substvars
 
