@@ -1,4 +1,4 @@
-xorg-server (2:1.16.0-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.16.0-1ubuntu1) utopic; urgency=medium
 
   [ Maarten Lankhorst ]
   * New upstream release.
@@ -8,7 +8,7 @@ xorg-server (2:1.16.0-1ubuntu1) UNRELEASED; urgency=medium
   [ Christopher James Halse Rogers ]
   * Refresh XMir patch
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 21 Jul 2014 11:24:36 +0200
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 10 Sep 2014 12:30:55 +0200
 
 xorg-server (2:1.16.0-1) unstable; urgency=medium
 
