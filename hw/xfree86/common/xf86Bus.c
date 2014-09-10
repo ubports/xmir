@@ -81,7 +81,7 @@ xf86CallDriverProbe(DriverPtr drv, Bool detect_only)
     if (drv->platformProbe != NULL) {
         foundScreen = xf86platformProbeDev(drv);
     }
-    if (ServerIsNotSeat0())
+    if (ServerIsNotSeat0() && foundScreen)
         return foundScreen;
 #endif
 
@@ -201,7 +201,7 @@ xf86BusProbe(void)
 {
 #ifdef XSERVER_PLATFORM_BUS
     xf86platformProbe();
-    if (ServerIsNotSeat0())
+    if (ServerIsNotSeat0() && xf86_num_platform_devices > 0)
         return;
 #endif
 #ifdef XSERVER_LIBPCIACCESS
@@ -288,7 +288,7 @@ xf86IsEntityPrimary(int entityIndex)
 
 Bool
 xf86SetEntityFuncs(int entityIndex, EntityProc init, EntityProc enter,
-                   EntityProc leave, pointer private)
+                   EntityProc leave, void *private)
 {
     if (entityIndex >= xf86NumEntities)
         return FALSE;

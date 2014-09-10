@@ -82,7 +82,7 @@ fbDestroyGlyphCache(void)
     }
 }
 
-static void
+void
 fbUnrealizeGlyph(ScreenPtr pScreen,
 		 GlyphPtr pGlyph)
 {
@@ -90,7 +90,7 @@ fbUnrealizeGlyph(ScreenPtr pScreen,
 	pixman_glyph_cache_remove (glyphCache, pGlyph, NULL);
 }
 
-static void
+void
 fbGlyphs(CARD8 op,
 	 PicturePtr pSrc,
 	 PicturePtr pDst,
@@ -191,7 +191,7 @@ fbGlyphs(CARD8 op,
 	pixman_glyph_get_extents(glyphCache, n_glyphs, pglyphs, &extents);
 
 	pixman_composite_glyphs(op, srcImage, dstImage, format,
-				xSrc + srcXoff + xDst, ySrc + srcYoff + yDst,
+				xSrc + srcXoff + extents.x1 - xDst, ySrc + srcYoff + extents.y1 - yDst,
 				extents.x1, extents.y1,
 				extents.x1 + dstXoff, extents.y1 + dstYoff,
 				extents.x2 - extents.x1,

@@ -1,3 +1,72 @@
+xorg-server (2:1.16.0-1ubuntu1) UNRELEASED; urgency=medium
+
+  [ Maarten Lankhorst ]
+  * New upstream release.
+    - Refresh patches.
+  * Merge from released debian sid.
+
+  [ Christopher James Halse Rogers ]
+  * Refresh XMir patch
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 21 Jul 2014 11:24:36 +0200
+
+xorg-server (2:1.16.0-1) unstable; urgency=medium
+
+  * New upstream release
+    + Revert "dix: fix up coordinate scaling when external monitors are
+      present" (closes: #754822)
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 18 Jul 2014 00:17:11 +0200
+
+xorg-server (2:1.15.99.904-1) unstable; urgency=medium
+
+  * New upstream release candidate.
+  * Make xserver-common Multi-Arch: foreign (closes: #693922)
+  * Add debian/upstream/signing-key.asc, and add pgpsigurlmangle option to
+    debian/watch, to allow uscan to verify tarball signatures.
+  * Upload to unstable.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 08 Jul 2014 15:22:20 +0200
+
+xorg-server (2:1.15.99.903-3) experimental; urgency=medium
+
+  * Set shared memory dir to /dev/shm (closes: #747894).
+  * Disable dri3 on kfreebsd again to fix FTBFS.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 10 Jun 2014 21:50:06 +0200
+
+xorg-server (2:1.15.99.903-2) experimental; urgency=medium
+
+  * Enable xwayland for the main build on linux (closes: #747950).
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 05 Jun 2014 21:58:45 +0200
+
+xorg-server (2:1.15.99.903-1) experimental; urgency=medium
+
+  * New upstream release candidate
+    - reverted quirk for "Evoluent VerticalMouse 3" (closes: #739537)
+    - Xi: block SIGIOs while copying device classes around (closes: #744303)
+    - fix FTBFS on arm
+    - add support for mips64 (closes: #725801)
+  * Enable dri3 on kfreebsd, now xtrans 1.3.3 supports fd passing.
+  * Enable glamor.
+  * Don't run tests in parallel.
+  * Bump video ABI and serverminver.
+  * Explicitly disable xwayland.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 05 Jun 2014 20:14:56 +0200
+
+xorg-server (2:1.15.99.902-1) experimental; urgency=medium
+
+  * New upstream snapshot.
+    + fix Xephyr -screen (closes: #742028)
+  * Refresh patches.
+  * Bump video ABI to 17, input ABI to 21.
+  * Bump xtrans requirement to 1.3.3.
+  * Bump xproto and fontsproto requirements.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 15 Apr 2014 08:35:26 +0200
+
 xorg-server (2:1.15.1-0ubuntu9) utopic; urgency=medium
 
   * xserver-xorg-dev: /usr/share/xserver-xorg/configure_flags.mk

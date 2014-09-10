@@ -25,6 +25,12 @@
 #include "swaprep.h"
 #include "mipointer.h"
 
+#if 0
+#define DBG(x) ErrorF x
+#else
+#define DBG(x) x
+#endif
+
 RESTYPE RRCrtcType;
 
 /*
@@ -95,7 +101,7 @@ RRCrtcCreate(ScreenPtr pScreen, void *devPrivate)
     pixman_f_transform_init_identity(&crtc->f_transform);
     pixman_f_transform_init_identity(&crtc->f_inverse);
 
-    if (!AddResource(crtc->id, RRCrtcType, (pointer) crtc))
+    if (!AddResource(crtc->id, RRCrtcType, (void *) crtc))
         return NULL;
 
     /* attach the screen and crtc together */
@@ -273,25 +279,41 @@ RRCrtcPendingProperties(RRCrtcPtr crtc)
     return FALSE;
 }
 
+static int mode_height(const RRModeRec *mode, Rotation rotation)
+{
+	switch (rotation & 0xf) {
+	case RR_Rotate_0:
+	case RR_Rotate_180:
+		return mode->mode.height;
+	case RR_Rotate_90:
+	case RR_Rotate_270:
+		return mode->mode.width;
+	default:
+		return 0;
+	}
+}
+
+static int mode_width(const RRModeRec *mode, Rotation rotation)
+{
+	switch (rotation & 0xf) {
+	case RR_Rotate_0:
+	case RR_Rotate_180:
+		return mode->mode.width;
+	case RR_Rotate_90:
+	case RR_Rotate_270:
+		return mode->mode.height;
+	default:
+		return 0;
+	}
+}
+
 static void
 crtc_bounds(RRCrtcPtr crtc, int *left, int *right, int *top, int *bottom)
 {
     *left = crtc->x;
     *top = crtc->y;
-
-    switch (crtc->rotation) {
-    case RR_Rotate_0:
-    case RR_Rotate_180:
-    default:
-        *right = crtc->x + crtc->mode->mode.width;
-        *bottom = crtc->y + crtc->mode->mode.height;
-        return;
-    case RR_Rotate_90:
-    case RR_Rotate_270:
-        *right = crtc->x + crtc->mode->mode.height;
-        *bottom = crtc->y + crtc->mode->mode.width;
-        return;
-    }
+    *right = crtc->x + mode_width(crtc->mode, crtc->rotation);
+    *bottom = crtc->y + mode_height(crtc->mode, crtc->rotation);
 }
 
 /* overlapping counts as adjacent */
@@ -428,7 +450,7 @@ rrCreateSharedPixmap(RRCrtcPtr crtc, int width, int height,
 
     ret = pScrPriv->rrCrtcSetScanoutPixmap(crtc, spix);
     if (ret == FALSE) {
-        ErrorF("failed to set shadow slave pixmap\n");
+        DBG(("failed to set shadow slave pixmap\n"));
         return FALSE;
     }
 
@@ -466,33 +488,34 @@ rrCheckPixmapBounding(ScreenPtr pScreen,
             if (!pScrPriv->crtcs[c]->mode)
                 continue;
             newbox.x1 = pScrPriv->crtcs[c]->x;
-            newbox.x2 = pScrPriv->crtcs[c]->x + pScrPriv->crtcs[c]->mode->mode.width;
+            newbox.x2 = pScrPriv->crtcs[c]->x + mode_width(pScrPriv->crtcs[c]->mode, pScrPriv->crtcs[c]->rotation);
             newbox.y1 = pScrPriv->crtcs[c]->y;
-            newbox.y2 = pScrPriv->crtcs[c]->y + pScrPriv->crtcs[c]->mode->mode.height;
+            newbox.y2 = pScrPriv->crtcs[c]->y + mode_height(pScrPriv->crtcs[c]->mode, pScrPriv->crtcs[c]->rotation);
         }
         RegionInit(&new_crtc_region, &newbox, 1);
         RegionUnion(&total_region, &total_region, &new_crtc_region);
     }
 
     xorg_list_for_each_entry(slave, &pScreen->output_slave_list, output_head) {
-        rrScrPriv(slave);
-        for (c = 0; c < pScrPriv->numCrtcs; c++)
-            if (pScrPriv->crtcs[c] == rr_crtc) {
+        rrScrPrivPtr    slave_priv = rrGetScrPriv(slave);
+        for (c = 0; c < slave_priv->numCrtcs; c++) {
+            if (slave_priv->crtcs[c] == rr_crtc) {
                 newbox.x1 = x;
                 newbox.x2 = x + w;
                 newbox.y1 = y;
                 newbox.y2 = y + h;
             }
             else {
-                if (!pScrPriv->crtcs[c]->mode)
+                if (!slave_priv->crtcs[c]->mode)
                     continue;
-                newbox.x1 = pScrPriv->crtcs[c]->x;
-                newbox.x2 = pScrPriv->crtcs[c]->x + pScrPriv->crtcs[c]->mode->mode.width;
-                newbox.y1 = pScrPriv->crtcs[c]->y;
-                newbox.y2 = pScrPriv->crtcs[c]->y + pScrPriv->crtcs[c]->mode->mode.height;
+                newbox.x1 = slave_priv->crtcs[c]->x;
+		newbox.x2 = slave_priv->crtcs[c]->x + mode_width(slave_priv->crtcs[c]->mode, slave_priv->crtcs[c]->rotation);
+                newbox.y1 = slave_priv->crtcs[c]->y;
+		newbox.y2 = slave_priv->crtcs[c]->y + mode_height(slave_priv->crtcs[c]->mode, slave_priv->crtcs[c]->rotation);
             }
-        RegionInit(&new_crtc_region, &newbox, 1);
-        RegionUnion(&total_region, &total_region, &new_crtc_region);
+            RegionInit(&new_crtc_region, &newbox, 1);
+            RegionUnion(&total_region, &total_region, &new_crtc_region);
+        }
     }
 
     newsize = RegionExtents(&total_region);
@@ -501,9 +524,8 @@ rrCheckPixmapBounding(ScreenPtr pScreen,
 
     if (new_width == screen_pixmap->drawable.width &&
         new_height == screen_pixmap->drawable.height) {
-        ErrorF("adjust shatters %d %d\n", newsize->x1, newsize->x2);
+        DBG(("adjust shatters %d %d\n", newsize->x1, newsize->x2));
     } else {
-        rrScrPriv(pScreen);
         pScrPriv->rrScreenSetSize(pScreen, new_width, new_height, 0, 0);
     }
 
@@ -523,8 +545,18 @@ RRCrtcSet(RRCrtcPtr crtc,
     ScreenPtr pScreen = crtc->pScreen;
     Bool ret = FALSE;
     Bool recompute = TRUE;
+    Bool crtcChanged;
+    int  o;
 
     rrScrPriv(pScreen);
+
+    crtcChanged = FALSE;
+    for (o = 0; o < numOutputs; o++) {
+        if (outputs[o] && outputs[o]->crtc != crtc) {
+            crtcChanged = TRUE;
+            break;
+        }
+    }
 
     /* See if nothing changed */
     if (crtc->mode == mode &&
@@ -533,7 +565,8 @@ RRCrtcSet(RRCrtcPtr crtc,
         crtc->rotation == rotation &&
         crtc->numOutputs == numOutputs &&
         !memcmp(crtc->outputs, outputs, numOutputs * sizeof(RROutputPtr)) &&
-        !RRCrtcPendingProperties(crtc) && !RRCrtcPendingTransform(crtc)) {
+        !RRCrtcPendingProperties(crtc) && !RRCrtcPendingTransform(crtc) &&
+        !crtcChanged) {
         recompute = FALSE;
         ret = TRUE;
     }
@@ -543,10 +576,10 @@ RRCrtcSet(RRCrtcPtr crtc,
             int width = 0, height = 0;
 
             if (mode) {
-                width = mode->mode.width;
-                height = mode->mode.height;
+                width = mode_width(mode, rotation);
+                height = mode_height(mode, rotation);
             }
-            ErrorF("have a master to look out for\n");
+            DBG(("have a master to look out for\n"));
             ret = rrCheckPixmapBounding(master, crtc,
                                         x, y, width, height);
             if (!ret)
@@ -554,7 +587,7 @@ RRCrtcSet(RRCrtcPtr crtc,
 
             if (pScreen->current_master) {
                 ret = rrCreateSharedPixmap(crtc, width, height, x, y);
-                ErrorF("need to create shared pixmap %d", ret);
+                DBG(("need to create shared pixmap %d\n", ret));
 
             }
         }
@@ -605,7 +638,6 @@ RRCrtcSet(RRCrtcPtr crtc,
 #endif
         }
         if (ret) {
-            int o;
 
             RRTellChanged(pScreen);
 
@@ -654,7 +686,7 @@ RRCrtcDestroy(RRCrtcPtr crtc)
 }
 
 static int
-RRCrtcDestroyResource(pointer value, XID pid)
+RRCrtcDestroyResource(void *value, XID pid)
 {
     RRCrtcPtr crtc = (RRCrtcPtr) value;
     ScreenPtr pScreen = crtc->pScreen;
@@ -1026,7 +1058,7 @@ ProcRRSetCrtcConfig(ClientPtr client)
 
     outputIds = (RROutput *) (stuff + 1);
     for (i = 0; i < numOutputs; i++) {
-        ret = dixLookupResourceByType((pointer *) (outputs + i), outputIds[i],
+        ret = dixLookupResourceByType((void **) (outputs + i), outputIds[i],
                                      RROutputType, client, DixSetAttrAccess);
         if (ret != Success) {
             free(outputs);
@@ -1671,8 +1703,8 @@ RRReplaceScanoutPixmap(DrawablePtr pDrawable, PixmapPtr pPixmap, Bool enable)
         changed = FALSE;
         if (crtc->mode && crtc->x == pDrawable->x &&
             crtc->y == pDrawable->y &&
-            crtc->mode->mode.width == pDrawable->width &&
-            crtc->mode->mode.height == pDrawable->height)
+            mode_width(crtc->mode, crtc->rotation) == pDrawable->width &&
+            mode_height(crtc->mode, crtc->rotation) == pDrawable->height)
             size_fits = TRUE;
 
         /* is the pixmap already set? */

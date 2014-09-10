@@ -42,7 +42,6 @@ no-nv.patch
 xf86-fixup-detection.patch
 xf86-inactive-gpuscreen.patch
 xrandr-rroutputchanged-main.patch
-rrcrtc-brackets-are-hard.patch
 config-add-no-removal.patch
 xf86-ignore-conflicting-rr-caps.patch
 fix-detach-gpu.patch
@@ -53,7 +52,5 @@ fix-ftbfs-ppc64el.patch
 xmir.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
-xi-dont-copy-too-much.patch
 mi-dont-process-disabled.patch
 ppc64el-endian-fix.patch
-xfree86-pci-bus-probe-non-seat0.patch
