@@ -364,17 +364,6 @@ Depends:
 Recommends:
  xfonts-base,
  xauth,
-Breaks:
- xserver-common-lts-quantal (<< 3:0),
- xserver-common-lts-raring (<< 3:0),
- xserver-common-lts-saucy (<< 3:0),
- xserver-common-lts-trusty (<< 3:0),
-Replaces:
- xserver-common-lts-quantal (<< 3:0),
- xserver-common-lts-raring (<< 3:0),
- xserver-common-lts-saucy (<< 3:0),
- xserver-common-lts-trusty (<< 3:0),
- xserver-xorg-core (<< 2:1.5.2)
 Description: common files used by various X servers
  This package provides files necessary for all X.Org based X servers.
 
