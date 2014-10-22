@@ -39,7 +39,6 @@ no-nv.patch
 
 # hybrid graphics fixes
 228_autobind_gpu.patch
-xf86-fixup-detection.patch
 xf86-inactive-gpuscreen.patch
 xrandr-rroutputchanged-main.patch
 config-add-no-removal.patch
@@ -54,3 +53,4 @@ drm_device_keep_trying.patch
 xi2-resize-touch.patch
 mi-dont-process-disabled.patch
 ppc64el-endian-fix.patch
+fix-present-use-after-free.patch

@@ -1,0 +1,68 @@
+From: Chris Wilson <chris@chris-wilson.co.uk>
+To: xorg-devel@lists.x.org
+Subject: [PATCH 3/6] present: Reorder Window teardown to avoid use-after-free
+Date: Wed, 28 May 2014 08:14:01 +0100
+
+The cleanup sequence was slightly confused as it attempted to clear
+pending events for the screen after it had freed those events from the
+window's queue. Reorder the sequence so that all the clearing of events
+is done first before we free any events.
+
+==31451== Invalid read of size 4
+==31451==    at 0x81A6B3E: present_clear_window_flip (present_screen.c:93)
+==31451==    by 0x81A6C07: present_destroy_window (present_screen.c:116)
+==31451==    by 0x8145796: compDestroyWindow (compwindow.c:608)
+==31451==    by 0x8176B6B: DbeDestroyWindow (dbe.c:1318)
+==31451==    by 0x80B5A98: FreeWindowResources (window.c:910)
+==31451==    by 0x80B5D7B: DeleteWindow (window.c:978)
+==31451==    by 0x80A9C85: doFreeResource (resource.c:873)
+==31451==    by 0x80AA5F8: FreeClientResources (resource.c:1139)
+==31451==    by 0x807BD5E: CloseDownClient (dispatch.c:3384)
+==31451==    by 0x80740B5: Dispatch (dispatch.c:406)
+==31451==    by 0x80816CD: dix_main (main.c:296)
+==31451==    by 0x80D2FA1: main (stubmain.c:34)
+==31451==  Address 0x62ae4bc is 20 bytes inside a block of size 108 free'd
+==31451==    at 0x4007BCD: free (in /usr/lib/valgrind/vgpreload_memcheck-x86-linux.so)
+==31451==    by 0x81A8FDF: present_vblank_destroy (present.c:901)
+==31451==    by 0x81A6ADF: present_free_window_vblank (present_screen.c:79)
+==31451==    by 0x81A6BFC: present_destroy_window (present_screen.c:115)
+==31451==    by 0x8145796: compDestroyWindow (compwindow.c:608)
+==31451==    by 0x8176B6B: DbeDestroyWindow (dbe.c:1318)
+==31451==    by 0x80B5A98: FreeWindowResources (window.c:910)
+==31451==    by 0x80B5D7B: DeleteWindow (window.c:978)
+==31451==    by 0x80A9C85: doFreeResource (resource.c:873)
+==31451==    by 0x80AA5F8: FreeClientResources (resource.c:1139)
+==31451==    by 0x807BD5E: CloseDownClient (dispatch.c:3384)
+==31451==    by 0x80740B5: Dispatch (dispatch.c:406)
+
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+---
+mlankhorst: The logic has been reordered for the next xorg-server, so this patch only applies to 1.16.
+
+ present/present_screen.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/present/present_screen.c b/present/present_screen.c
+index 25ef681..b475d03 100644
+--- a/present/present_screen.c
++++ b/present/present_screen.c
+@@ -111,9 +111,9 @@ present_destroy_window(WindowPtr window)
+ 
+     if (window_priv) {
+         present_clear_window_notifies(window);
+-        present_free_events(window);
+-        present_free_window_vblank(window);
+         present_clear_window_flip(window);
++        present_free_window_vblank(window);
++        present_free_events(window);
+         free(window_priv);
+     }
+     unwrap(screen_priv, screen, DestroyWindow);
+-- 
+2.0.0.rc2
+
+_______________________________________________
+xorg-devel@lists.x.org: X.Org development
+Archives: http://lists.x.org/archives/xorg-devel
+Info: http://lists.x.org/mailman/listinfo/xorg-devel
+

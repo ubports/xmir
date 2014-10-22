@@ -1,5 +1,3 @@
-diff --git a/hw/xfree86/common/xf86AutoConfig.c b/hw/xfree86/common/xf86AutoConfig.c
-index 55412b4..d4a95d2 100644
 --- a/hw/xfree86/common/xf86AutoConfig.c
 +++ b/hw/xfree86/common/xf86AutoConfig.c
 @@ -45,6 +45,12 @@
@@ -15,7 +13,7 @@ index 55412b4..d4a95d2 100644
  #ifdef sun
  #include <sys/visual_io.h>
  #include <ctype.h>
-@@ -200,6 +206,27 @@ xf86AutoConfig(void)
+@@ -200,6 +206,27 @@
      return ret == CONFIG_OK;
  }
  
@@ -43,9 +41,9 @@ index 55412b4..d4a95d2 100644
  static void
  listPossibleVideoDrivers(char *matches[], int nmatches)
  {
-@@ -287,6 +314,21 @@ listPossibleVideoDrivers(char *matches[], int nmatches)
+@@ -279,6 +306,21 @@
+         i += xf86PciMatchDriver(&matches[i], nmatches - i);
  #endif
-     }
  
 +#if defined(__linux__) && defined(__arm__)
 +    if (i < (nmatches - 1)) {
@@ -65,22 +63,3 @@ index 55412b4..d4a95d2 100644
  #if defined(__linux__)
      matches[i++] = xnfstrdup("modesetting");
  #endif
-diff --git a/hw/xfree86/common/xf86platformBus.c b/hw/xfree86/common/xf86platformBus.c
-index 24b9473..0061c25 100644
---- a/hw/xfree86/common/xf86platformBus.c
-+++ b/hw/xfree86/common/xf86platformBus.c
-@@ -362,6 +362,14 @@ xf86platformProbeDev(DriverPtr drvp)
-                     if (xf86IsPrimaryPlatform(&xf86_platform_devices[j]))
-                         break;
-                 }
-+                else {
-+                    /* there's no way to handle real platform devices at this point,
-+                     * as there's no valid busID to be used, so try to move forward
-+                     * in case there's only one platform device, and see if the
-+                     * driver's probe succeeds or not at least once */
-+                    if ((xf86_num_platform_devices == 1) && (!foundScreen))
-+                        break;
-+                }
-             }
-         }
- 
