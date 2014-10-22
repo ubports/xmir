@@ -1,6 +1,12 @@
-xorg-server (2:1.16.0-1ubuntu2) UNRELEASED; urgency=medium
+xorg-server (2:1.16.1-0ubuntu1) UNRELEASED; urgency=medium
 
+  * New upstream micro release.
+    - Import another patch from the 1.16 branch to fix KVM terminals.
+      This is an alternative, better, fix for (LP: #1318119).
   * Remove outdated breaks/replaces, only affects the lts.
+  * Refresh patch series for 1.16.1
+    - Drop parts of the series for primary platform devices, upstream.
+  * Add fix-present-use-after-free.patch to fix a use after free with dri3.
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 13 Oct 2014 10:24:16 +0200
 

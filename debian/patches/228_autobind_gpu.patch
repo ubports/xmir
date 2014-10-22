@@ -15,11 +15,9 @@ DO NOT UPSTREAM.
  hw/xfree86/modes/xf86Crtc.c         | 32 ++++++++++++++++++++++++++++++++
  3 files changed, 47 insertions(+), 0 deletions(-)
 
-diff --git a/hw/xfree86/common/xf86Init.c b/hw/xfree86/common/xf86Init.c
-index d231ced..89629c1 100644
 --- a/hw/xfree86/common/xf86Init.c
 +++ b/hw/xfree86/common/xf86Init.c
-@@ -361,6 +361,16 @@ xf86CreateRootWindow(WindowPtr pWin)
+@@ -363,6 +363,16 @@
      return ret;
  }
  
@@ -36,7 +34,7 @@ index d231ced..89629c1 100644
  static void
  InstallSignalHandlers(void)
  {
-@@ -926,6 +936,8 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+@@ -973,6 +983,8 @@
      for (i = 0; i < xf86NumGPUScreens; i++)
          AttachUnboundGPU(xf86Screens[0]->pScreen, xf86GPUScreens[i]->pScreen);
  
@@ -45,11 +43,13 @@ index d231ced..89629c1 100644
      xf86VGAarbiterWrapFunctions();
      if (sigio_blocked)
          OsReleaseSIGIO();
-diff --git a/hw/xfree86/common/xf86platformBus.c b/hw/xfree86/common/xf86platformBus.c
-index 0525e39..82fef32 100644
 --- a/hw/xfree86/common/xf86platformBus.c
 +++ b/hw/xfree86/common/xf86platformBus.c
-@@ -387,6 +387,8 @@ xf86platformProbeDev(DriverPtr drvp)
+@@ -497,9 +497,12 @@
+         }
+     }
+ 
++    free(devList);
      return foundScreen;
  }
  
@@ -58,19 +58,17 @@ index 0525e39..82fef32 100644
  int
  xf86platformAddDevice(int index)
  {
-@@ -446,6 +448,7 @@ xf86platformAddDevice(int index)
- 
+@@ -568,6 +571,7 @@
+    }
     /* attach unbound to 0 protocol screen */
     AttachUnboundGPU(xf86Screens[0]->pScreen, xf86GPUScreens[i]->pScreen);
 +   xf86AutoConfigOutputDevice(xf86GPUScreens[i], xf86Screens[0]);
  
-    return 0;
- }
-diff --git a/hw/xfree86/modes/xf86Crtc.c b/hw/xfree86/modes/xf86Crtc.c
-index 3011f13..34c1848 100644
+    RRResourcesChanged(xf86Screens[0]->pScreen);
+    RRTellChanged(xf86Screens[0]->pScreen);
 --- a/hw/xfree86/modes/xf86Crtc.c
 +++ b/hw/xfree86/modes/xf86Crtc.c
-@@ -3323,3 +3323,35 @@ xf86DetachAllCrtc(ScrnInfoPtr scrn)
+@@ -3387,3 +3387,35 @@
              crtc->x = crtc->y = 0;
          }
  }
@@ -106,6 +104,3 @@ index 3011f13..34c1848 100644
 +        slave_config->randr_provider->output_source = master_provider;
 +    }
 +}
--- 
-1.8.1
-
