@@ -1,3 +1,11 @@
+xorg-server (2:1.16.1-1) unstable; urgency=medium
+
+  * Add my key to debian/upstream/signing-key.asc.
+  * New upstream release.
+  * Update help text since -iglx is now the default (cherry-pick from master)
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 22 Sep 2014 22:12:20 +0200
+
 xorg-server (2:1.16.1-0ubuntu1) UNRELEASED; urgency=medium
 
   * New upstream micro release.
@@ -9,6 +17,22 @@ xorg-server (2:1.16.1-0ubuntu1) UNRELEASED; urgency=medium
   * Add fix-present-use-after-free.patch to fix a use after free with dri3.
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 13 Oct 2014 10:24:16 +0200
+
+xorg-server (2:1.16.0.901-1) unstable; urgency=medium
+
+  * New upstream release
+    + glx/present: Only send GLX_BufferSwapComplete for PresentCompleteKindPixmap (closes: #761393)
+  * glx: Disable indirect GLX contexts by default (cherry-pick from master)
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 16 Sep 2014 15:44:55 +0200
+
+xorg-server (2:1.16.0-2) unstable; urgency=medium
+
+  * xserver-xorg-dev: /usr/share/xserver-xorg/configure_flags.mk
+    Provide the flags how the xserver was configured (closes: #757246).  Based
+    on Ubuntu patch by Matthias Klose.  Thanks, Yaroslav Halchenko!
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 31 Aug 2014 11:58:36 -0700
 
 xorg-server (2:1.16.0-1ubuntu1) utopic; urgency=medium
 
