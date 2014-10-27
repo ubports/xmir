@@ -53,4 +53,3 @@ drm_device_keep_trying.patch
 xi2-resize-touch.patch
 mi-dont-process-disabled.patch
 ppc64el-endian-fix.patch
-fix-present-use-after-free.patch
