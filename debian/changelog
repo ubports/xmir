@@ -1,3 +1,16 @@
+xorg-server (2:1.16.1-1ubuntu1) UNRELEASED; urgency=medium
+
+  * Merge from released debian-unstable.
+  * New upstream micro release.
+    - Import another patch from the 1.16 branch to fix KVM terminals.
+      This is an alternative, better, fix for (LP: #1318119).
+  * Remove outdated breaks/replaces, only affects the lts.
+  * Refresh patch series for 1.16.1
+    - Drop parts of the series for primary platform devices, upstream.
+  * Release to vivid.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 27 Oct 2014 11:03:48 +0100
+
 xorg-server (2:1.16.1-1) unstable; urgency=medium
 
   * Add my key to debian/upstream/signing-key.asc.
@@ -5,18 +18,6 @@ xorg-server (2:1.16.1-1) unstable; urgency=medium
   * Update help text since -iglx is now the default (cherry-pick from master)
 
  -- Julien Cristau <jcristau@debian.org>  Mon, 22 Sep 2014 22:12:20 +0200
-
-xorg-server (2:1.16.1-0ubuntu1) UNRELEASED; urgency=medium
-
-  * New upstream micro release.
-    - Import another patch from the 1.16 branch to fix KVM terminals.
-      This is an alternative, better, fix for (LP: #1318119).
-  * Remove outdated breaks/replaces, only affects the lts.
-  * Refresh patch series for 1.16.1
-    - Drop parts of the series for primary platform devices, upstream.
-  * Add fix-present-use-after-free.patch to fix a use after free with dri3.
-
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 13 Oct 2014 10:24:16 +0200
 
 xorg-server (2:1.16.0.901-1) unstable; urgency=medium
 
