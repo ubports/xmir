@@ -1,4 +1,4 @@
-xorg-server (2:1.16.1-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.16.1-1ubuntu1) vivid; urgency=medium
 
   * Merge from released debian-unstable.
   * New upstream micro release.
@@ -7,9 +7,8 @@ xorg-server (2:1.16.1-1ubuntu1) UNRELEASED; urgency=medium
   * Remove outdated breaks/replaces, only affects the lts.
   * Refresh patch series for 1.16.1
     - Drop parts of the series for primary platform devices, upstream.
-  * Release to vivid.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 27 Oct 2014 11:03:48 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Mon, 27 Oct 2014 11:05:40 +0100
 
 xorg-server (2:1.16.1-1) unstable; urgency=medium
 
