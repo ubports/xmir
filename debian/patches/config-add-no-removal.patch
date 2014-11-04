@@ -1,8 +1,6 @@
-diff --git a/config/udev.c b/config/udev.c
-index 454838f..74ac998 100644
 --- a/config/udev.c
 +++ b/config/udev.c
-@@ -300,10 +300,9 @@ wakeup_handler(pointer data, int err, pointer read_mask)
+@@ -338,10 +338,9 @@
              return;
          action = udev_device_get_action(udev_device);
          if (action) {
@@ -15,16 +13,13 @@ index 454838f..74ac998 100644
                  /* ignore change for the drm devices */
                  if (strcmp(udev_device_get_subsystem(udev_device), "drm")) {
                      device_removed(udev_device);
-diff --git a/hw/xfree86/os-support/linux/lnx_platform.c b/hw/xfree86/os-support/linux/lnx_platform.c
-index 76f5583..c125e35 100644
 --- a/hw/xfree86/os-support/linux/lnx_platform.c
 +++ b/hw/xfree86/os-support/linux/lnx_platform.c
-@@ -126,6 +126,8 @@ xf86PlatformDeviceProbe(struct OdevAttributes *attribs)
+@@ -177,6 +177,7 @@
      return;
  
  out_free:
-+    LogMessage(X_INFO, "config/udev: Ignoring already known drm device (%s)\n",
-+               path);
-     config_odev_free_attribute_list(attribs);
++    LogMessage(X_INFO, "config/udev: Ignoring already known drm device (%s)\n", path);
+     config_odev_free_attributes(attribs);
  }
  
