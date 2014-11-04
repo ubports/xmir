@@ -198,19 +198,17 @@
      ErrorF("\n");
 --- a/hw/xfree86/common/xf86Priv.h
 +++ b/hw/xfree86/common/xf86Priv.h
-@@ -93,6 +93,11 @@
+@@ -93,6 +93,9 @@
  extern _X_EXPORT const char *xf86VisualNames[];
  extern _X_EXPORT int xf86Verbose;       /* verbosity level */
  extern _X_EXPORT int xf86LogVerbose;    /* log file verbosity level */
-+extern _X_EXPORT Bool xorgHWAccess;
 +extern _X_EXPORT Bool xorgMir;
 +extern _X_EXPORT const char *mirID;
 +extern _X_EXPORT const char *mirSocket;
-+
  
  extern _X_EXPORT RootWinPropPtr *xf86RegisteredPropertiesTable;
  
-@@ -150,6 +155,7 @@
+@@ -150,6 +153,7 @@
                                                int num);
  extern _X_EXPORT pmWait (*xf86PMConfirmEventToOs) (int fd, pmEvent event);
  
@@ -1210,7 +1208,7 @@
 +
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-window.c
-@@ -0,0 +1,343 @@
+@@ -0,0 +1,342 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1246,7 +1244,6 @@
 +#ifdef HAVE_XORG_CONFIG_H
 +#include "xorg-config.h"
 +#endif
-+#include <xorg-server.h>
 +#include "windowstr.h"
 +#include "regionstr.h"
 +#include "damagestr.h"

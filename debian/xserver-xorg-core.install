@@ -1,5 +1,5 @@
 main/usr/lib/xorg/modules/*.so	usr/lib/xorg/modules
-main/usr/lib/xorg/modules/multimedia	usr/lib/xorg/modules
+main/usr/lib/xorg/modules/drivers	usr/lib/xorg/modules
 main/usr/lib/xorg/modules/extensions/libglx.so	usr/lib/xorg/modules/extensions
 main/usr/bin/Xorg	usr/bin
 main/usr/share/man/man1/Xorg.1	usr/share/man/man1
