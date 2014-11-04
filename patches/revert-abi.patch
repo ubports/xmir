@@ -1,0 +1,816 @@
+--- a/Xext/panoramiXprocs.c
++++ b/Xext/panoramiXprocs.c
+@@ -1193,8 +1193,9 @@
+             Bool overlap;
+ 
+             RegionValidate(&totalReg, &overlap);
+-            SendGraphicsExpose(client, &totalReg, stuff->dstDrawable,
+-                               X_CopyArea, 0);
++            (*pDst->pScreen->SendGraphicsExpose) (client, &totalReg,
++                                                  stuff->dstDrawable,
++                                                  X_CopyArea, 0);
+             RegionUninit(&totalReg);
+         }
+     }
+@@ -1305,8 +1306,9 @@
+         Bool overlap;
+ 
+         RegionValidate(&totalReg, &overlap);
+-        SendGraphicsExpose(client, &totalReg, stuff->dstDrawable,
+-                           X_CopyPlane, 0);
++        (*pdstDraw->pScreen->SendGraphicsExpose) (client, &totalReg,
++                                                  stuff->dstDrawable,
++                                                  X_CopyPlane, 0);
+         RegionUninit(&totalReg);
+     }
+ 
+--- a/composite/compinit.c
++++ b/composite/compinit.c
+@@ -120,12 +120,12 @@
+         pScreen->backingStoreSupport != NotUseful) {
+         if (pWin->backingStore != NotUseful && !pWin->backStorage) {
+             compRedirectWindow(serverClient, pWin, CompositeRedirectAutomatic);
+-            pWin->backStorage = TRUE;
++            pWin->backStorage = (void *) (intptr_t) 1;
+         }
+         else if (pWin->backingStore == NotUseful && pWin->backStorage) {
+             compUnredirectWindow(serverClient, pWin,
+                                  CompositeRedirectAutomatic);
+-            pWin->backStorage = FALSE;
++            pWin->backStorage = NULL;
+         }
+     }
+ 
+--- a/dix/dispatch.c
++++ b/dix/dispatch.c
+@@ -1597,52 +1597,6 @@
+     return Success;
+ }
+ 
+-/* send GraphicsExpose events, or a NoExpose event, based on the region */
+-void
+-SendGraphicsExpose(ClientPtr client, RegionPtr pRgn, XID drawable,
+-                     int major, int minor)
+-{
+-    if (pRgn && !RegionNil(pRgn)) {
+-        xEvent *pEvent;
+-        xEvent *pe;
+-        BoxPtr pBox;
+-        int i;
+-        int numRects;
+-
+-        numRects = RegionNumRects(pRgn);
+-        pBox = RegionRects(pRgn);
+-        if (!(pEvent = calloc(numRects, sizeof(xEvent))))
+-            return;
+-        pe = pEvent;
+-
+-        for (i = 1; i <= numRects; i++, pe++, pBox++) {
+-            pe->u.u.type = GraphicsExpose;
+-            pe->u.graphicsExposure.drawable = drawable;
+-            pe->u.graphicsExposure.x = pBox->x1;
+-            pe->u.graphicsExposure.y = pBox->y1;
+-            pe->u.graphicsExposure.width = pBox->x2 - pBox->x1;
+-            pe->u.graphicsExposure.height = pBox->y2 - pBox->y1;
+-            pe->u.graphicsExposure.count = numRects - i;
+-            pe->u.graphicsExposure.majorEvent = major;
+-            pe->u.graphicsExposure.minorEvent = minor;
+-        }
+-        /* GraphicsExpose is a "critical event", which TryClientEvents
+-         * handles specially. */
+-        TryClientEvents(client, NULL, pEvent, numRects,
+-                        (Mask) 0, NoEventMask, NullGrab);
+-        free(pEvent);
+-    }
+-    else {
+-        xEvent event = {
+-            .u.noExposure.drawable = drawable,
+-            .u.noExposure.majorEvent = major,
+-            .u.noExposure.minorEvent = minor
+-        };
+-        event.u.u.type = NoExpose;
+-        WriteEventsToClient(client, 1, &event);
+-    }
+-}
+-
+ int
+ ProcCopyArea(ClientPtr client)
+ {
+@@ -1674,7 +1628,8 @@
+                                   stuff->width, stuff->height,
+                                   stuff->dstX, stuff->dstY);
+     if (pGC->graphicsExposures) {
+-        SendGraphicsExpose(client, pRgn, stuff->dstDrawable, X_CopyArea, 0);
++        (*pDst->pScreen->SendGraphicsExpose)
++            (client, pRgn, stuff->dstDrawable, X_CopyArea, 0);
+         if (pRgn)
+             RegionDestroy(pRgn);
+     }
+@@ -1721,7 +1676,8 @@
+                                 stuff->srcY, stuff->width, stuff->height,
+                                 stuff->dstX, stuff->dstY, stuff->bitPlane);
+     if (pGC->graphicsExposures) {
+-        SendGraphicsExpose(client, pRgn, stuff->dstDrawable, X_CopyPlane, 0);
++        (*pdstDraw->pScreen->SendGraphicsExpose)
++            (client, pRgn, stuff->dstDrawable, X_CopyPlane, 0);
+         if (pRgn)
+             RegionDestroy(pRgn);
+     }
+--- a/dix/gc.c
++++ b/dix/gc.c
+@@ -495,6 +495,7 @@
+     pGC->graphicsExposures = TRUE;
+     pGC->clipOrg.x = 0;
+     pGC->clipOrg.y = 0;
++    pGC->clientClipType = CT_NONE;
+     pGC->clientClip = (void *) NULL;
+     pGC->numInDashList = 2;
+     pGC->dash = DefaultDash;
+@@ -1066,7 +1067,7 @@
+             pGC->graphicsExposures = FALSE;
+             pGC->clipOrg.x = 0;
+             pGC->clipOrg.y = 0;
+-            if (pGC->clientClip)
++            if (pGC->clientClipType != CT_NONE)
+                 (*pGC->funcs->ChangeClip) (pGC, CT_NONE, NULL, 0);
+             pGC->stateChanges = GCAllBits;
+             return pGC;
+--- a/dix/window.c
++++ b/dix/window.c
+@@ -362,7 +362,8 @@
+     pWin->cursorIsNone = TRUE;
+ 
+     pWin->backingStore = NotUseful;
+-    pWin->backStorage = 0;
++    pWin->DIXsaveUnder = FALSE;
++    pWin->backStorage = (void *) NULL;
+ 
+     pWin->mapped = FALSE;       /* off */
+     pWin->realized = FALSE;     /* off */
+--- a/exa/exa_accel.c
++++ b/exa/exa_accel.c
+@@ -413,7 +413,7 @@
+ 
+         if (!pGC || !exaGCReadsDestination(pDstDrawable, pGC->planemask,
+                                            pGC->fillStyle, pGC->alu,
+-                                           pGC->clientClip != NULL)) {
++                                           pGC->clientClipType)) {
+             dstregion = RegionCreate(NullBox, 0);
+             RegionCopy(dstregion, srcregion);
+             RegionTranslate(dstregion, dst_off_x - dx - src_off_x,
+@@ -771,7 +771,7 @@
+ 
+ static Bool exaFillRegionSolid(DrawablePtr pDrawable, RegionPtr pRegion,
+                                Pixel pixel, CARD32 planemask, CARD32 alu,
+-                               Bool hasClientClip);
++                               unsigned int clientClipType);
+ 
+ static void
+ exaPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrect, xRectangle *prect)
+@@ -816,11 +816,11 @@
+         if (((pGC->fillStyle == FillSolid || pGC->tileIsPixel) &&
+              exaFillRegionSolid(pDrawable, pReg, pGC->fillStyle == FillSolid ?
+                                 pGC->fgPixel : pGC->tile.pixel, pGC->planemask,
+-                                pGC->alu, pGC->clientClip != NULL)) ||
++                                pGC->alu, pGC->clientClipType)) ||
+             (pGC->fillStyle == FillTiled && !pGC->tileIsPixel &&
+              exaFillRegionTiled(pDrawable, pReg, pGC->tile.pixmap, &pGC->patOrg,
+                                 pGC->planemask, pGC->alu,
+-                                pGC->clientClip != NULL))) {
++                                pGC->clientClipType))) {
+             goto out;
+         }
+     }
+@@ -990,7 +990,7 @@
+ 
+ static Bool
+ exaFillRegionSolid(DrawablePtr pDrawable, RegionPtr pRegion, Pixel pixel,
+-                   CARD32 planemask, CARD32 alu, Bool hasClientClip)
++                   CARD32 planemask, CARD32 alu, unsigned int clientClipType)
+ {
+     ExaScreenPriv(pDrawable->pScreen);
+     PixmapPtr pPixmap = exaGetDrawablePixmap(pDrawable);
+@@ -1013,7 +1013,8 @@
+         pixmaps[0].pPix = pPixmap;
+         pixmaps[0].pReg = exaGCReadsDestination(pDrawable, planemask, FillSolid,
+                                                 alu,
+-                                                hasClientClip) ? NULL : pRegion;
++                                                clientClipType) ? NULL :
++            pRegion;
+ 
+         exaDoMigration(pixmaps, 1, TRUE);
+     }
+@@ -1073,7 +1074,7 @@
+ Bool
+ exaFillRegionTiled(DrawablePtr pDrawable, RegionPtr pRegion, PixmapPtr pTile,
+                    DDXPointPtr pPatOrg, CARD32 planemask, CARD32 alu,
+-                   Bool hasClientClip)
++                   unsigned int clientClipType)
+ {
+     ExaScreenPriv(pDrawable->pScreen);
+     PixmapPtr pPixmap;
+@@ -1095,7 +1096,7 @@
+     if (tileWidth == 1 && tileHeight == 1)
+         return exaFillRegionSolid(pDrawable, pRegion,
+                                   exaGetPixmapFirstPixel(pTile), planemask,
+-                                  alu, hasClientClip);
++                                  alu, clientClipType);
+ 
+     pPixmap = exaGetDrawablePixmap(pDrawable);
+     pExaPixmap = ExaGetPixmapPriv(pPixmap);
+@@ -1112,7 +1113,8 @@
+         pixmaps[0].pPix = pPixmap;
+         pixmaps[0].pReg = exaGCReadsDestination(pDrawable, planemask, FillTiled,
+                                                 alu,
+-                                                hasClientClip) ? NULL : pRegion;
++                                                clientClipType) ? NULL :
++            pRegion;
+         pixmaps[1].as_dst = FALSE;
+         pixmaps[1].as_src = TRUE;
+         pixmaps[1].pPix = pTile;
+--- a/exa/exa_priv.h
++++ b/exa/exa_priv.h
+@@ -455,11 +455,12 @@
+ static _X_INLINE Bool
+ exaGCReadsDestination(DrawablePtr pDrawable, unsigned long planemask,
+                       unsigned int fillStyle, unsigned char alu,
+-                      Bool clientClip)
++                      unsigned int clientClipType)
+ {
+     return ((alu != GXcopy && alu != GXclear && alu != GXset &&
+              alu != GXcopyInverted) || fillStyle == FillStippled ||
+-            clientClip != FALSE || !EXA_PM_IS_SOLID(pDrawable, planemask));
++            clientClipType != CT_NONE ||
++            !EXA_PM_IS_SOLID(pDrawable, planemask));
+ }
+ 
+ void
+@@ -469,7 +470,7 @@
+ 
+ exaFillRegionTiled(DrawablePtr pDrawable, RegionPtr pRegion, PixmapPtr pTile,
+                    DDXPointPtr pPatOrg, CARD32 planemask, CARD32 alu,
+-                   Bool clientClip);
++                   unsigned int clientClipType);
+ 
+ void
+ 
+--- a/exa/exa_unaccel.c
++++ b/exa/exa_unaccel.c
+@@ -107,7 +107,7 @@
+     EXA_FALLBACK(("to %p (%c)\n", pDrawable, exaDrawableLocation(pDrawable)));
+     if (!pExaScr->prepare_access_reg || !pExaPixmap->pDamage ||
+         exaGCReadsDestination(pDrawable, pGC->planemask, pGC->fillStyle,
+-                              pGC->alu, pGC->clientClip != NULL))
++                              pGC->alu, pGC->clientClipType))
+         exaPrepareAccess(pDrawable, EXA_PREPARE_DEST);
+     else
+         pExaScr->prepare_access_reg(pPixmap, EXA_PREPARE_DEST,
+@@ -143,7 +143,7 @@
+ 
+     if (pExaScr->prepare_access_reg &&
+         !exaGCReadsDestination(pDst, pGC->planemask, pGC->fillStyle,
+-                               pGC->alu, pGC->clientClip != NULL) &&
++                               pGC->alu, pGC->clientClipType) &&
+         RegionInitBoxes(&reg, pbox, nbox)) {
+         PixmapPtr pPixmap = exaGetDrawablePixmap(pDst);
+ 
+@@ -179,9 +179,10 @@
+     ExaScreenPriv(pScreen);
+ 
+     if (pExaScr->prepare_access_reg &&
+-        !(checkReads && exaGCReadsDestination(pDrawable, pGC->planemask,
+-                                              pGC->fillStyle, pGC->alu,
+-                                              pGC->clientClip != NULL))) {
++        !(checkReads && exaGCReadsDestination(pDrawable,
++                                              pGC->planemask,
++                                              pGC->fillStyle,
++                                              pGC->alu, pGC->clientClipType))) {
+         BoxRec box;
+         RegionRec reg;
+         int xoff, yoff;
+--- a/hw/dmx/dmxgc.c
++++ b/hw/dmx/dmxgc.c
+@@ -391,10 +391,13 @@
+     pGC->funcs->ChangeClip(pGC, type, pvalue, nrects);
+ 
+     /* Set the client clip on the back-end server */
+-    if (!pGC->clientClip) {
++    switch (pGC->clientClipType) {
++    case CT_NONE:
+         if (dmxScreen->beDisplay)
+             XSetClipMask(dmxScreen->beDisplay, pGCPriv->gc, None);
+-    } else {
++        break;
++
++    case CT_REGION:
+         if (dmxScreen->beDisplay) {
+             nRects = RegionNumRects((RegionPtr) pGC->clientClip);
+             pRects = malloc(nRects * sizeof(*pRects));
+@@ -413,6 +416,11 @@
+ 
+             free(pRects);
+         }
++        break;
++
++    case CT_PIXMAP:
++        /* Condensed down to REGION in the mi code */
++        break;
+     }
+ 
+     DMX_GC_FUNC_EPILOGUE(pGC);
+--- a/hw/kdrive/src/kxv.c
++++ b/hw/kdrive/src/kxv.c
+@@ -492,7 +492,7 @@
+ KdXVCopyClip(XvPortRecPrivatePtr portPriv, GCPtr pGC)
+ {
+     /* copy the new clip if it exists */
+-    if (pGC->clientClip) {
++    if ((pGC->clientClipType == CT_REGION) && pGC->clientClip) {
+         if (!portPriv->clientClip)
+             portPriv->clientClip = RegionCreate(NullBox, 1);
+         /* Note: this is in window coordinates */
+--- a/hw/xfree86/common/xf86xv.c
++++ b/hw/xfree86/common/xf86xv.c
+@@ -599,7 +599,7 @@
+ xf86XVCopyClip(XvPortRecPrivatePtr portPriv, GCPtr pGC)
+ {
+     /* copy the new clip if it exists */
+-    if (pGC->clientClip) {
++    if ((pGC->clientClipType == CT_REGION) && pGC->clientClip) {
+         if (!portPriv->clientClip)
+             portPriv->clientClip = RegionCreate(NullBox, 1);
+         /* Note: this is in window coordinates */
+--- a/hw/xnest/GC.c
++++ b/hw/xnest/GC.c
+@@ -194,12 +194,11 @@
+     BoxPtr pBox;
+     XRectangle *pRects;
+ 
+-    xnestDestroyClip(pGC);
++    xnestDestroyClipHelper(pGC);
+ 
+     switch (type) {
+     case CT_NONE:
+         XSetClipMask(xnestDisplay, xnestGC(pGC), None);
+-        pValue = NULL;
+         break;
+ 
+     case CT_REGION:
+@@ -225,9 +224,11 @@
+          * Need to change into region, so subsequent uses are with
+          * current pixmap contents.
+          */
+-        pGC->clientClip = (*pGC->pScreen->BitmapToRegion) ((PixmapPtr) pValue);
++        pGC->clientClip =
++            (void *) (*pGC->pScreen->BitmapToRegion) ((PixmapPtr) pValue);
+         (*pGC->pScreen->DestroyPixmap) ((PixmapPtr) pValue);
+         pValue = pGC->clientClip;
++        type = CT_REGION;
+         break;
+ 
+     case CT_UNSORTED:
+@@ -263,34 +264,65 @@
+     case CT_YSORTED:
+     case CT_YXSORTED:
+     case CT_YXBANDED:
+-        /* server clip representation is a region */
+-        pGC->clientClip = RegionFromRects(nRects, (xRectangle *) pValue, type);
++
++        /*
++         * other parts of server can only deal with CT_NONE,
++         * CT_PIXMAP and CT_REGION client clips.
++         */
++        pGC->clientClip = (void *) RegionFromRects(nRects,
++                                                    (xRectangle *) pValue,
++                                                    type);
+         free(pValue);
+         pValue = pGC->clientClip;
++        type = CT_REGION;
++
+         break;
+     }
+ 
++    pGC->clientClipType = type;
+     pGC->clientClip = pValue;
+ }
+ 
+ void
+ xnestDestroyClip(GCPtr pGC)
+ {
+-    if (pGC->clientClip) {
++    xnestDestroyClipHelper(pGC);
++
++    XSetClipMask(xnestDisplay, xnestGC(pGC), None);
++
++    pGC->clientClipType = CT_NONE;
++    pGC->clientClip = NULL;
++}
++
++void
++xnestDestroyClipHelper(GCPtr pGC)
++{
++    switch (pGC->clientClipType) {
++    default:
++    case CT_NONE:
++        break;
++
++    case CT_REGION:
+         RegionDestroy(pGC->clientClip);
+-        XSetClipMask(xnestDisplay, xnestGC(pGC), None);
+-        pGC->clientClip = NULL;
++        break;
+     }
+ }
+ 
+ void
+ xnestCopyClip(GCPtr pGCDst, GCPtr pGCSrc)
+ {
+-    if (pGCSrc->clientClip) {
+-        RegionPtr pRgn = RegionCreate(NULL, 1);
++    RegionPtr pRgn;
++
++    switch (pGCSrc->clientClipType) {
++    default:
++    case CT_NONE:
++        xnestDestroyClip(pGCDst);
++        break;
++
++    case CT_REGION:
++        pRgn = RegionCreate(NULL, 1);
+         RegionCopy(pRgn, pGCSrc->clientClip);
+         xnestChangeClip(pGCDst, CT_REGION, pRgn, 0);
+-    } else {
+-        xnestDestroyClip(pGCDst);
++        break;
+     }
+ }
+--- a/hw/xnest/XNGC.h
++++ b/hw/xnest/XNGC.h
+@@ -37,6 +37,7 @@
+ void xnestDestroyGC(GCPtr pGC);
+ void xnestChangeClip(GCPtr pGC, int type, void *pValue, int nRects);
+ void xnestDestroyClip(GCPtr pGC);
++void xnestDestroyClipHelper(GCPtr pGC);
+ void xnestCopyClip(GCPtr pGCDst, GCPtr pGCSrc);
+ 
+ #endif                          /* XNESTGC_H */
+--- a/include/dix.h
++++ b/include/dix.h
+@@ -254,12 +254,6 @@
+ 
+ extern _X_EXPORT Bool ClientIsAsleep(ClientPtr /*client */ );
+ 
+-extern _X_EXPORT void SendGraphicsExpose(ClientPtr /*client */ ,
+-                                         RegionPtr /*pRgn */ ,
+-                                         XID /*drawable */ ,
+-                                         int /*major */ ,
+-                                         int  /*minor */);
+-
+ /* atom.c */
+ 
+ extern _X_EXPORT Atom MakeAtom(const char * /*string */ ,
+--- a/include/gcstruct.h
++++ b/include/gcstruct.h
+@@ -254,15 +254,16 @@
+     unsigned int arcMode:1;
+     unsigned int subWindowMode:1;
+     unsigned int graphicsExposures:1;
++    unsigned int clientClipType:2;      /* CT_<kind> */
+     unsigned int miTranslate:1; /* should mi things translate? */
+     unsigned int tileIsPixel:1; /* tile is solid pixel */
+     unsigned int fExpose:1;     /* Call exposure handling */
+     unsigned int freeCompClip:1;        /* Free composite clip */
+     unsigned int scratch_inuse:1;       /* is this GC in a pool for reuse? */
+-    unsigned int unused:15;     /* see comment above */
+-    unsigned int planemask;
+-    unsigned int fgPixel;
+-    unsigned int bgPixel;
++    unsigned int unused:13;     /* see comment above */
++    unsigned long planemask;
++    unsigned long fgPixel;
++    unsigned long bgPixel;
+     /*
+      * alas -- both tile and stipple must be here as they
+      * are independently specifiable
+@@ -270,11 +271,11 @@
+     PixUnion tile;
+     PixmapPtr stipple;
+     DDXPointRec patOrg;         /* origin for (tile, stipple) */
+-    DDXPointRec clipOrg;
+     struct _Font *font;
+-    RegionPtr clientClip;
+-    unsigned int stateChanges; /* masked with GC_<kind> */
+-    unsigned int serialNumber;
++    DDXPointRec clipOrg;
++    void *clientClip;
++    unsigned long stateChanges; /* masked with GC_<kind> */
++    unsigned long serialNumber;
+     const GCFuncs *funcs;
+     const GCOps *ops;
+     PrivateRec *devPrivates;
+--- a/include/scrnintstr.h
++++ b/include/scrnintstr.h
+@@ -252,6 +252,12 @@
+ 
+ typedef RegionPtr (*BitmapToRegionProcPtr) (PixmapPtr /*pPix */ );
+ 
++typedef void (*SendGraphicsExposeProcPtr) (ClientPtr /*client */ ,
++                                           RegionPtr /*pRgn */ ,
++                                           XID /*drawable */ ,
++                                           int /*major */ ,
++                                           int /*minor */ );
++
+ typedef void (*ScreenBlockHandlerProcPtr) (ScreenPtr pScreen,
+                                            void *pTimeout,
+                                            void *pReadmask);
+@@ -534,6 +540,7 @@
+     /* Region procedures */
+ 
+     BitmapToRegionProcPtr BitmapToRegion;
++    SendGraphicsExposeProcPtr SendGraphicsExpose;
+ 
+     /* os layer procedures */
+ 
+--- a/include/windowstr.h
++++ b/include/windowstr.h
+@@ -144,13 +144,14 @@
+     Mask eventMask;             /* mask from the creating client */
+     PixUnion background;
+     PixUnion border;
++    void *backStorage;          /* null when BS disabled */
+     WindowOptPtr optional;
+     unsigned backgroundState:2; /* None, Relative, Pixel, Pixmap */
+     unsigned borderIsPixel:1;
+     unsigned cursorIsNone:1;    /* else real cursor (might inherit) */
+     unsigned backingStore:2;
+-    unsigned backStorage:1;     /* if bs is allocated */
+     unsigned saveUnder:1;
++    unsigned DIXsaveUnder:1;
+     unsigned bitGravity:4;
+     unsigned winGravity:4;
+     unsigned overrideRedirect:1;
+--- a/mi/mi.h
++++ b/mi/mi.h
+@@ -232,6 +232,13 @@
+                                              int /*dsty */
+     );
+ 
++extern _X_EXPORT void miSendGraphicsExpose(ClientPtr /*client */ ,
++                                           RegionPtr /*pRgn */ ,
++                                           XID /*drawable */ ,
++                                           int /*major */ ,
++                                           int  /*minor */
++    );
++
+ extern _X_EXPORT void miSendExposures(WindowPtr /*pWin */ ,
+                                       RegionPtr /*pRgn */ ,
+                                       int /*dx */ ,
+--- a/mi/micopy.c
++++ b/mi/micopy.c
+@@ -167,7 +167,7 @@
+ 
+     /* Compute source clip region */
+     if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
+-        if ((pSrcDrawable == pDstDrawable) && (!pGC->clientClip))
++        if ((pSrcDrawable == pDstDrawable) && (pGC->clientClipType == CT_NONE))
+             prgnSrcClip = miGetCompositeClip(pGC);
+         else
+             fastSrc = TRUE;
+@@ -186,7 +186,8 @@
+                  */
+                 fastSrc = TRUE;
+             }
+-            else if ((pSrcDrawable == pDstDrawable) && (!pGC->clientClip)) {
++            else if ((pSrcDrawable == pDstDrawable) &&
++                     (pGC->clientClipType == CT_NONE)) {
+                 prgnSrcClip = miGetCompositeClip(pGC);
+             }
+             else {
+--- a/mi/miexpose.c
++++ b/mi/miexpose.c
+@@ -143,7 +143,7 @@
+     if (!pGC->graphicsExposures &&
+         (pDstDrawable->type == DRAWABLE_PIXMAP) &&
+         ((pSrcDrawable->type == DRAWABLE_PIXMAP) ||
+-         (((WindowPtr) pSrcDrawable)->backStorage == 0)))
++         (((WindowPtr) pSrcDrawable)->backStorage == NULL)))
+         return NULL;
+ 
+     srcBox.x1 = srcx;
+@@ -230,7 +230,7 @@
+     RegionIntersect(&rgnExposed, &rgnExposed, prgnDstClip);
+ 
+     /* intersect with client clip region. */
+-    if (pGC->clientClip)
++    if (pGC->clientClipType == CT_REGION)
+         RegionIntersect(&rgnExposed, &rgnExposed, pGC->clientClip);
+ 
+     /*
+@@ -306,6 +306,53 @@
+     }
+ }
+ 
++/* send GraphicsExpose events, or a NoExpose event, based on the region */
++
++void
++miSendGraphicsExpose(ClientPtr client, RegionPtr pRgn, XID drawable,
++                     int major, int minor)
++{
++    if (pRgn && !RegionNil(pRgn)) {
++        xEvent *pEvent;
++        xEvent *pe;
++        BoxPtr pBox;
++        int i;
++        int numRects;
++
++        numRects = RegionNumRects(pRgn);
++        pBox = RegionRects(pRgn);
++        if (!(pEvent = calloc(numRects, sizeof(xEvent))))
++            return;
++        pe = pEvent;
++
++        for (i = 1; i <= numRects; i++, pe++, pBox++) {
++            pe->u.u.type = GraphicsExpose;
++            pe->u.graphicsExposure.drawable = drawable;
++            pe->u.graphicsExposure.x = pBox->x1;
++            pe->u.graphicsExposure.y = pBox->y1;
++            pe->u.graphicsExposure.width = pBox->x2 - pBox->x1;
++            pe->u.graphicsExposure.height = pBox->y2 - pBox->y1;
++            pe->u.graphicsExposure.count = numRects - i;
++            pe->u.graphicsExposure.majorEvent = major;
++            pe->u.graphicsExposure.minorEvent = minor;
++        }
++        /* GraphicsExpose is a "critical event", which TryClientEvents
++         * handles specially. */
++        TryClientEvents(client, NULL, pEvent, numRects,
++                        (Mask) 0, NoEventMask, NullGrab);
++        free(pEvent);
++    }
++    else {
++        xEvent event = {
++            .u.noExposure.drawable = drawable,
++            .u.noExposure.majorEvent = major,
++            .u.noExposure.minorEvent = minor
++        };
++        event.u.u.type = NoExpose;
++        WriteEventsToClient(client, 1, &event);
++    }
++}
++
+ void
+ miSendExposures(WindowPtr pWin, RegionPtr pRgn, int dx, int dy)
+ {
+--- a/mi/migc.c
++++ b/mi/migc.c
+@@ -55,9 +55,20 @@
+ void
+ miDestroyClip(GCPtr pGC)
+ {
+-    if (pGC->clientClip)
++    if (pGC->clientClipType == CT_NONE)
++        return;
++    else if (pGC->clientClipType == CT_PIXMAP) {
++        (*pGC->pScreen->DestroyPixmap) ((PixmapPtr) (pGC->clientClip));
++    }
++    else {
++        /*
++         * we know we'll never have a list of rectangles, since ChangeClip
++         * immediately turns them into a region
++         */
+         RegionDestroy(pGC->clientClip);
++    }
+     pGC->clientClip = NULL;
++    pGC->clientClipType = CT_NONE;
+ }
+ 
+ void
+@@ -66,7 +77,8 @@
+     (*pGC->funcs->DestroyClip) (pGC);
+     if (type == CT_PIXMAP) {
+         /* convert the pixmap to a region */
+-        pGC->clientClip = BitmapToRegion(pGC->pScreen, (PixmapPtr) pvalue);
++        pGC->clientClip = (void *) BitmapToRegion(pGC->pScreen,
++                                                   (PixmapPtr) pvalue);
+         (*pGC->pScreen->DestroyPixmap) (pvalue);
+     }
+     else if (type == CT_REGION) {
+@@ -74,21 +86,34 @@
+         pGC->clientClip = pvalue;
+     }
+     else if (type != CT_NONE) {
+-        pGC->clientClip = RegionFromRects(nrects, (xRectangle *) pvalue, type);
++        pGC->clientClip = (void *) RegionFromRects(nrects,
++                                                    (xRectangle *) pvalue,
++                                                    type);
+         free(pvalue);
+     }
++    pGC->clientClipType = (type != CT_NONE &&
++                           pGC->clientClip) ? CT_REGION : CT_NONE;
+     pGC->stateChanges |= GCClipMask;
+ }
+ 
+ void
+ miCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
+ {
+-    if (pgcSrc->clientClip) {
+-        RegionPtr prgnNew = RegionCreate(NULL, 1);
++    RegionPtr prgnNew;
++
++    switch (pgcSrc->clientClipType) {
++    case CT_PIXMAP:
++        ((PixmapPtr) pgcSrc->clientClip)->refcnt++;
++        /* Fall through !! */
++    case CT_NONE:
++        (*pgcDst->funcs->ChangeClip) (pgcDst, (int) pgcSrc->clientClipType,
++                                      pgcSrc->clientClip, 0);
++        break;
++    case CT_REGION:
++        prgnNew = RegionCreate(NULL, 1);
+         RegionCopy(prgnNew, (RegionPtr) (pgcSrc->clientClip));
+-        (*pgcDst->funcs->ChangeClip) (pgcDst, CT_REGION, prgnNew, 0);
+-    } else {
+-        (*pgcDst->funcs->ChangeClip) (pgcDst, CT_NONE, NULL, 0);
++        (*pgcDst->funcs->ChangeClip) (pgcDst, CT_REGION, (void *) prgnNew, 0);
++        break;
+     }
+ }
+ 
+@@ -124,7 +149,7 @@
+          * regions.  (this wins especially if many clients clip by children
+          * and have no client clip.)
+          */
+-        if (!pGC->clientClip) {
++        if (pGC->clientClipType == CT_NONE) {
+             if (freeCompClip)
+                 RegionDestroy(pGC->pCompositeClip);
+             pGC->pCompositeClip = pregWin;
+@@ -181,7 +206,7 @@
+             pGC->pCompositeClip = RegionCreate(&pixbounds, 1);
+         }
+ 
+-        if (pGC->clientClip) {
++        if (pGC->clientClipType == CT_REGION) {
+             if (pDrawable->x || pDrawable->y) {
+                 RegionTranslate(pGC->clientClip,
+                                 pDrawable->x + pGC->clipOrg.x,
+--- a/mi/mioverlay.c
++++ b/mi/mioverlay.c
+@@ -1667,7 +1667,7 @@
+         freeTmpClip = FALSE;
+     }
+     freeCompClip = pGC->freeCompClip;
+-    if (!pGC->clientClip) {
++    if (pGC->clientClipType == CT_NONE) {
+         if (freeCompClip)
+             RegionDestroy(pGC->pCompositeClip);
+         pGC->pCompositeClip = pregWin;
+--- a/mi/miscrinit.c
++++ b/mi/miscrinit.c
+@@ -259,6 +259,7 @@
+     /* CreateColormap, DestroyColormap, InstallColormap, UninstallColormap */
+     /* ListInstalledColormaps, StoreColors, ResolveColor */
+     /* BitmapToRegion */
++    pScreen->SendGraphicsExpose = miSendGraphicsExpose;
+     pScreen->BlockHandler = (ScreenBlockHandlerProcPtr) NoopDDA;
+     pScreen->WakeupHandler = (ScreenWakeupHandlerProcPtr) NoopDDA;
+     pScreen->MarkWindow = miMarkWindow;
+--- a/xfixes/region.c
++++ b/xfixes/region.c
+@@ -222,13 +222,20 @@
+     if (rc != Success)
+         return rc;
+ 
+-    if (pGC->clientClip) {
++    switch (pGC->clientClipType) {
++    case CT_PIXMAP:
++        pRegion = BitmapToRegion(pGC->pScreen, (PixmapPtr) pGC->clientClip);
++        if (!pRegion)
++            return BadAlloc;
++        break;
++    case CT_REGION:
+         pClip = (RegionPtr) pGC->clientClip;
+         pRegion = XFixesRegionCopy(pClip);
+         if (!pRegion)
+             return BadAlloc;
+-    } else {
+-        return BadMatch;
++        break;
++    default:
++        return BadImplementation;       /* assume sane server bits */
+     }
+ 
+     if (!AddResource(stuff->region, RegionResType, (void *) pRegion))
+--- a/hw/xfree86/common/xf86Module.h
++++ b/hw/xfree86/common/xf86Module.h
+@@ -80,9 +80,9 @@
+  * mask is 0xFFFF0000.
+  */
+ #define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 4)
+-#define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(19, 0)
++#define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(18, 0)
+ #define ABI_XINPUT_VERSION	SET_ABI_VERSION(21, 0)
+-#define ABI_EXTENSION_VERSION	SET_ABI_VERSION(9, 0)
++#define ABI_EXTENSION_VERSION	SET_ABI_VERSION(8, 0)
+ #define ABI_FONT_VERSION	SET_ABI_VERSION(0, 6)
+ 
+ #define MODINFOSTRING1	0xef23fdc5

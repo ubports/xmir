@@ -30,7 +30,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  
          config_udev_odev_setup_attribs(path, syspath, major(devnum),
                                         minor(devnum), NewGPUDeviceRequest);
-@@ -456,18 +456,57 @@
+@@ -456,18 +456,54 @@
  
  #ifdef CONFIG_UDEV_KMS
  
@@ -62,9 +62,9 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +        char pci_str[17];
 +        const char *end = strstr(syspath, "/drm/card");
 +        if (strstr(syspath, "/usb"))
-+            config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, "");
++            attribs->busid = strdup("");
 +        else if (get_pci_busid(end - 13, pci_str))
-+            config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, pci_str);
++            attribs->busid = strdup(pci_str);
 +    } else if ((platform = strstr(syspath, "/devices/platform/"))) {
 +        /* OMAP relies on this, modesetting doesn't use it */
 +        const char *end;
@@ -77,13 +77,10 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
 +            ret = asprintf(&busid, "platform:%.*s:%02li",
 +                           (int)(end - platform), platform, strtol(end + 1, NULL, 10));
 +            if (ret >= 0) {
-+                config_odev_add_attribute(attribs, ODEV_ATTRIB_BUSID, busid);
-+                free(busid);
++                attribs->busid = busid;
 +            }
 +        }
 +    }
-+    if (platform)
-+        attribs->busid = strdup(platform);
 +
      /* ownership of attribs is passed to probe layer */
      probe_callback(attribs);
@@ -121,7 +118,18 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
      /* for a delayed probe we've already added the device */
      if (delayed_index == -1) {
              xf86_add_platform_device(attribs, FALSE);
-@@ -88,7 +73,7 @@
+@@ -72,10 +57,6 @@
+     if (server_fd)
+         xf86_platform_devices[delayed_index].flags |= XF86_PDEV_SERVER_FD;
+ 
+-    buf = drmGetBusid(fd);
+-    xf86_platform_odev_attributes(delayed_index)->busid = XNFstrdup(buf);
+-    drmFreeBusid(buf);
+-
+     v = drmGetVersion(fd);
+     if (!v) {
+         xf86Msg(X_ERROR, "%s: failed to query DRM version\n", path);
+@@ -88,7 +69,7 @@
  out:
      if (!server_fd)
          close(fd);
@@ -130,7 +138,7 @@ Signed-off-by: Bryce Harrington <bryce@canonical.com>
  }
  
  Bool
-@@ -158,8 +143,11 @@
+@@ -158,8 +139,11 @@
              break;
      }
  
