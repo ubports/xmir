@@ -93,13 +93,13 @@ typedef union _PixUnion {
 #define WindowDrawable(type) \
 	((type == DRAWABLE_WINDOW) || (type == UNDRAWABLE_WINDOW))
 
-extern _X_EXPORT PixmapPtr GetScratchPixmapHeader(ScreenPtr /*pScreen */ ,
-                                                  int /*width */ ,
-                                                  int /*height */ ,
-                                                  int /*depth */ ,
-                                                  int /*bitsPerPixel */ ,
-                                                  int /*devKind */ ,
-                                                  void */*pPixData */ );
+extern _X_EXPORT PixmapPtr GetScratchPixmapHeader(ScreenPtr pScreen,
+                                                  int width,
+                                                  int height,
+                                                  int depth,
+                                                  int bitsPerPixel,
+                                                  int devKind,
+                                                  void *pPixData);
 
 extern _X_EXPORT void FreeScratchPixmapHeader(PixmapPtr /*pPixmap */ );
 
@@ -119,6 +119,12 @@ extern _X_EXPORT Bool
 PixmapStartDirtyTracking(PixmapPtr src,
                          PixmapPtr slave_dst,
                          int x, int y);
+
+#define HAS_DIRTYTRACKING2 1
+extern _X_EXPORT Bool
+PixmapStartDirtyTracking2(PixmapPtr src,
+			  PixmapPtr slave_dst,
+			  int x, int y, int dst_x, int dst_y);
 
 extern _X_EXPORT Bool
 PixmapStopDirtyTracking(PixmapPtr src, PixmapPtr slave_dst);

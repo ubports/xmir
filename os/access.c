@@ -835,7 +835,7 @@ ResetHosts(const char *display)
     } saddr;
 #endif
     int family = 0;
-    void *addr;
+    void *addr = NULL;
     int len;
 
     siTypesInitialize();
@@ -928,8 +928,8 @@ ResetHosts(const char *display)
                             len = a->ai_addrlen;
                             f = ConvertAddr(a->ai_addr, &len,
                                             (void **) &addr);
-                            if ((family == f) ||
-                                ((family == FamilyWild) && (f != -1))) {
+                            if (addr && ((family == f) ||
+                                         ((family == FamilyWild) && (f != -1)))) {
                                 NewHost(f, addr, len, FALSE);
                             }
                         }
@@ -1005,33 +1005,6 @@ ComputeLocalClient(ClientPtr client)
         free(from);
     }
     return FALSE;
-}
-
-/*
- * Return the uid and gid of a connected local client
- * 
- * Used by XShm to test access rights to shared memory segments
- */
-int
-LocalClientCred(ClientPtr client, int *pUid, int *pGid)
-{
-    LocalClientCredRec *lcc;
-    int ret = GetLocalClientCreds(client, &lcc);
-
-    if (ret == 0) {
-#ifdef HAVE_GETZONEID           /* only local if in the same zone */
-        if ((lcc->fieldsSet & LCC_ZID_SET) && (lcc->zoneid != getzoneid())) {
-            FreeLocalClientCreds(lcc);
-            return -1;
-        }
-#endif
-        if ((lcc->fieldsSet & LCC_UID_SET) && (pUid != NULL))
-            *pUid = lcc->euid;
-        if ((lcc->fieldsSet & LCC_GID_SET) && (pGid != NULL))
-            *pGid = lcc->egid;
-        FreeLocalClientCreds(lcc);
-    }
-    return ret;
 }
 
 /*
@@ -1217,9 +1190,9 @@ AddHost(ClientPtr client, int family, unsigned length,  /* of bytes in pAddr */
 }
 
 Bool
-ForEachHostInFamily(int family, Bool (*func) (unsigned char * /* addr */ ,
-                                              short /* len */ ,
-                                              void */* closure */ ),
+ForEachHostInFamily(int family, Bool (*func) (unsigned char *addr,
+                                              short len,
+                                              void *closure),
                     void *closure)
 {
     HOST *host;
@@ -1386,7 +1359,7 @@ int
 InvalidHost(register struct sockaddr *saddr, int len, ClientPtr client)
 {
     int family;
-    void *addr;
+    void *addr = NULL;
     register HOST *selfhost, *host;
 
     if (!AccessEnabled)         /* just let them in */
@@ -1413,12 +1386,12 @@ InvalidHost(register struct sockaddr *saddr, int len, ClientPtr client)
     }
     for (host = validhosts; host; host = host->next) {
         if (host->family == FamilyServerInterpreted) {
-            if (siAddrMatch(family, addr, len, host, client)) {
+            if (addr && siAddrMatch(family, addr, len, host, client)) {
                 return 0;
             }
         }
         else {
-            if (addrEqual(family, addr, len, host))
+            if (addr && addrEqual(family, addr, len, host))
                 return 0;
         }
 
@@ -1675,7 +1648,7 @@ siHostnameAddrMatch(int family, void *addr, int len,
         struct addrinfo *addresses;
         struct addrinfo *a;
         int f, hostaddrlen;
-        void *hostaddr;
+        void *hostaddr = NULL;
 
         if (siAddrLen >= sizeof(hostname))
             return FALSE;
@@ -1686,7 +1659,7 @@ siHostnameAddrMatch(int family, void *addr, int len,
             for (a = addresses; a != NULL; a = a->ai_next) {
                 hostaddrlen = a->ai_addrlen;
                 f = ConvertAddr(a->ai_addr, &hostaddrlen, &hostaddr);
-                if ((f == family) && (len == hostaddrlen) &&
+                if ((f == family) && (len == hostaddrlen) && hostaddr &&
                     (memcmp(addr, hostaddr, len) == 0)) {
                     res = TRUE;
                     break;

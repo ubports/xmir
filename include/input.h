@@ -287,9 +287,6 @@ extern _X_EXPORT int dixLookupDevice(DeviceIntPtr * /* dev */ ,
 extern _X_EXPORT void QueryMinMaxKeyCodes(KeyCode * /*minCode */ ,
                                           KeyCode * /*maxCode */ );
 
-extern _X_EXPORT Bool SetKeySymsMap(KeySymsPtr /*dst */ ,
-                                    KeySymsPtr /*src */ );
-
 extern _X_EXPORT Bool InitButtonClassDeviceStruct(DeviceIntPtr /*device */ ,
                                                   int /*numButtons */ ,
                                                   Atom * /* labels */ ,
@@ -314,10 +311,10 @@ extern _X_EXPORT Bool InitTouchClassDeviceStruct(DeviceIntPtr /*device */ ,
                                                  unsigned int /*mode */ ,
                                                  unsigned int /*numAxes */ );
 
-typedef void (*BellProcPtr) (int /*percent */ ,
-                             DeviceIntPtr /*device */ ,
-                             void */*ctrl */ ,
-                             int);
+typedef void (*BellProcPtr) (int percent,
+                             DeviceIntPtr device,
+                             void *ctrl,
+                             int feedbackClass);
 
 typedef void (*KbdCtrlProcPtr) (DeviceIntPtr /*device */ ,
                                 KeybdCtrl * /*ctrl */ );

@@ -35,10 +35,9 @@
 
 #include "glamor_priv.h"
 
-static DevPrivateKeyRec glamor_screen_private_key_index;
-DevPrivateKey glamor_screen_private_key = &glamor_screen_private_key_index;
-static DevPrivateKeyRec glamor_pixmap_private_key_index;
-DevPrivateKey glamor_pixmap_private_key = &glamor_pixmap_private_key_index;
+DevPrivateKeyRec glamor_screen_private_key;
+DevPrivateKeyRec glamor_pixmap_private_key;
+DevPrivateKeyRec glamor_gc_private_key;
 
 /**
  * glamor_get_drawable_pixmap() returns a backing pixmap for a given drawable.
@@ -68,7 +67,7 @@ glamor_set_pixmap_type(PixmapPtr pixmap, glamor_pixmap_type_t type)
         glamor_get_screen_private(pixmap->drawable.pScreen);
 
     pixmap_priv = dixLookupPrivate(&pixmap->devPrivates,
-                                   glamor_pixmap_private_key);
+                                   &glamor_pixmap_private_key);
     if (pixmap_priv == NULL) {
         pixmap_priv = calloc(sizeof(*pixmap_priv), 1);
         glamor_set_pixmap_private(pixmap, pixmap_priv);
@@ -251,11 +250,6 @@ glamor_block_handler(ScreenPtr screen)
     glamor_priv->tick++;
     glFlush();
     glamor_fbo_expire(glamor_priv);
-    if (glamor_priv->state == RENDER_STATE
-        && glamor_priv->render_idle_cnt++ > RENDER_IDEL_MAX) {
-        glamor_priv->state = IDLE_STATE;
-        glamor_priv->render_idle_cnt = 0;
-    }
 }
 
 static void
@@ -302,6 +296,11 @@ glamor_create_screen_resources(ScreenPtr screen)
         ret = screen->CreateScreenResources(screen);
     screen->CreateScreenResources = glamor_create_screen_resources;
 
+    if (!glamor_glyphs_init(screen)) {
+        ErrorF("Failed to initialize glyphs\n");
+        ret = FALSE;
+    }
+
     if (!glamor_realize_glyph_caches(screen)) {
         ErrorF("Failed to initialize glyph cache\n");
         ret = FALSE;
@@ -330,13 +329,8 @@ glamor_init(ScreenPtr screen, unsigned int flags)
         return FALSE;
 
     glamor_priv->flags = flags;
-    if (flags & GLAMOR_INVERTED_Y_AXIS) {
-        glamor_priv->yInverted = TRUE;
-    }
-    else
-        glamor_priv->yInverted = FALSE;
 
-    if (!dixRegisterPrivateKey(glamor_screen_private_key, PRIVATE_SCREEN, 0)) {
+    if (!dixRegisterPrivateKey(&glamor_screen_private_key, PRIVATE_SCREEN, 0)) {
         LogMessage(X_WARNING,
                    "glamor%d: Failed to allocate screen private\n",
                    screen->myNum);
@@ -345,11 +339,19 @@ glamor_init(ScreenPtr screen, unsigned int flags)
 
     glamor_set_screen_private(screen, glamor_priv);
 
-    if (!dixRegisterPrivateKey(glamor_pixmap_private_key, PRIVATE_PIXMAP, 0)) {
+    if (!dixRegisterPrivateKey(&glamor_pixmap_private_key, PRIVATE_PIXMAP, 0)) {
         LogMessage(X_WARNING,
                    "glamor%d: Failed to allocate pixmap private\n",
                    screen->myNum);
-        goto fail;;
+        goto fail;
+    }
+
+    if (!dixRegisterPrivateKey(&glamor_gc_private_key, PRIVATE_GC,
+                               sizeof (glamor_gc_private))) {
+        LogMessage(X_WARNING,
+                   "glamor%d: Failed to allocate gc private\n",
+                   screen->myNum);
+        goto fail;
     }
 
     if (epoxy_is_desktop_gl())
@@ -398,6 +400,10 @@ glamor_init(ScreenPtr screen, unsigned int flags)
         }
     }
 
+    glamor_priv->has_rw_pbo = FALSE;
+    if (glamor_priv->gl_flavor == GLAMOR_GL_DESKTOP)
+        glamor_priv->has_rw_pbo = TRUE;
+
     glamor_priv->has_khr_debug = epoxy_has_gl_extension("GL_KHR_debug");
     glamor_priv->has_pack_invert =
         epoxy_has_gl_extension("GL_MESA_pack_invert");
@@ -407,6 +413,10 @@ glamor_init(ScreenPtr screen, unsigned int flags)
         epoxy_has_gl_extension("GL_ARB_map_buffer_range");
     glamor_priv->has_buffer_storage =
         epoxy_has_gl_extension("GL_ARB_buffer_storage");
+    glamor_priv->has_nv_texture_barrier =
+        epoxy_has_gl_extension("GL_NV_texture_barrier");
+
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &glamor_priv->max_fbo_size);
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glamor_priv->max_fbo_size);
     glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
     glamor_priv->max_fbo_size = MIN(glamor_priv->max_fbo_size, max_viewport_size[0]);
@@ -505,17 +515,12 @@ glamor_init(ScreenPtr screen, unsigned int flags)
 
     glamor_init_vbo(screen);
     glamor_init_pixmap_fbo(screen);
-    glamor_init_solid_shader(screen);
-    glamor_init_tile_shader(screen);
-#ifdef GLAMOR_TRAPEZOID_SHADER
-    glamor_init_trapezoid_shader(screen);
-#endif
     glamor_init_finish_access_shaders(screen);
 #ifdef GLAMOR_GRADIENT_SHADER
     glamor_init_gradient_shader(screen);
 #endif
     glamor_pixmap_init(screen);
-    glamor_glyphs_init(screen);
+    glamor_sync_init(screen);
 
     glamor_priv->screen = screen;
 
@@ -538,11 +543,6 @@ glamor_release_screen_priv(ScreenPtr screen)
 #endif
     glamor_fini_vbo(screen);
     glamor_fini_pixmap_fbo(screen);
-    glamor_fini_solid_shader(screen);
-    glamor_fini_tile_shader(screen);
-#ifdef GLAMOR_TRAPEZOID_SHADER
-    glamor_fini_trapezoid_shader(screen);
-#endif
     glamor_fini_finish_access_shaders(screen);
 #ifdef GLAMOR_GRADIENT_SHADER
     glamor_fini_gradient_shader(screen);
@@ -559,7 +559,7 @@ glamor_set_pixmap_private(PixmapPtr pixmap, glamor_pixmap_private *priv)
     glamor_pixmap_private *old_priv;
     glamor_pixmap_fbo *fbo;
 
-    old_priv = dixGetPrivate(&pixmap->devPrivates, glamor_pixmap_private_key);
+    old_priv = dixGetPrivate(&pixmap->devPrivates, &glamor_pixmap_private_key);
 
     if (priv) {
         assert(old_priv == NULL);
@@ -572,7 +572,7 @@ glamor_set_pixmap_private(PixmapPtr pixmap, glamor_pixmap_private *priv)
         free(old_priv);
     }
 
-    dixSetPrivate(&pixmap->devPrivates, glamor_pixmap_private_key, priv);
+    dixSetPrivate(&pixmap->devPrivates, &glamor_pixmap_private_key, priv);
 }
 
 Bool
@@ -587,6 +587,7 @@ glamor_close_screen(ScreenPtr screen)
 #endif
     glamor_priv = glamor_get_screen_private(screen);
     flags = glamor_priv->flags;
+    glamor_sync_close(screen);
     glamor_glyphs_fini(screen);
     screen->CloseScreen = glamor_priv->saved_procs.close_screen;
     screen->CreateScreenResources =

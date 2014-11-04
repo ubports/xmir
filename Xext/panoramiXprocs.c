@@ -1193,9 +1193,8 @@ PanoramiXCopyArea(ClientPtr client)
             Bool overlap;
 
             RegionValidate(&totalReg, &overlap);
-            (*pDst->pScreen->SendGraphicsExpose) (client, &totalReg,
-                                                  stuff->dstDrawable,
-                                                  X_CopyArea, 0);
+            SendGraphicsExpose(client, &totalReg, stuff->dstDrawable,
+                               X_CopyArea, 0);
             RegionUninit(&totalReg);
         }
     }
@@ -1306,9 +1305,8 @@ PanoramiXCopyPlane(ClientPtr client)
         Bool overlap;
 
         RegionValidate(&totalReg, &overlap);
-        (*pdstDraw->pScreen->SendGraphicsExpose) (client, &totalReg,
-                                                  stuff->dstDrawable,
-                                                  X_CopyPlane, 0);
+        SendGraphicsExpose(client, &totalReg, stuff->dstDrawable,
+                           X_CopyPlane, 0);
         RegionUninit(&totalReg);
     }
 
@@ -1910,7 +1908,7 @@ PanoramiXGetImage(ClientPtr client)
     }
 
     rc = dixLookupResourceByClass((void **) &draw, stuff->drawable,
-                                  XRC_DRAWABLE, client, DixWriteAccess);
+                                  XRC_DRAWABLE, client, DixReadAccess);
     if (rc != Success)
         return (rc == BadValue) ? BadDrawable : rc;
 

@@ -42,6 +42,9 @@
 #include "winmsg.h"
 #include "winmonitors.h"
 #include "inputstr.h"
+#ifdef XWIN_CLIPBOARD
+#include "winclipboard/winclipboard.h"
+#endif
 
 /*
  * Global variables
@@ -160,11 +163,7 @@ winWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
          */
         if (s_pScreenInfo->fFullScreen
             && (s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
-                || s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL
-#ifdef XWIN_PRIMARYFB
-                || s_pScreenInfo->dwEngine == WIN_SERVER_PRIMARY_DD
-#endif
-            )) {
+                || s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL)) {
             break;
         }
 
@@ -188,11 +187,7 @@ winWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (s_pScreenInfo->dwBPP !=
             GetDeviceCaps(s_pScreenPriv->hdcScreen, BITSPIXEL)) {
             if ((s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD ||
-                 s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL
-#ifdef XWIN_PRIMARYFB
-                 || s_pScreenInfo->dwEngine == WIN_SERVER_PRIMARY_DD
-#endif
-                )) {
+                 s_pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL)) {
                 /* Cannot display the visual until the depth is restored */
                 ErrorF("winWindowProc - Disruptive change in depth\n");
 
@@ -626,7 +621,7 @@ winWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         int iBorderHeight, iBorderWidth;
 
 #if CYGDEBUG
-        winDebug("winWindowProc - WM_GETMINMAXINFO - pScreenInfo: %08x\n",
+        winDebug("winWindowProc - WM_GETMINMAXINFO - pScreenInfo: %p\n",
                  s_pScreenInfo);
 #endif
 

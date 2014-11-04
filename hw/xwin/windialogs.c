@@ -37,13 +37,6 @@
 #include "winprefs.h"
 
 /*
- * References to external globals
- */
-
-#ifdef XWIN_CLIPBOARD
-extern Bool g_fClipboardStarted;
-#endif
-/*
  * Local function prototypes
  */
 
@@ -444,8 +437,8 @@ winChangeDepthDlgProc(HWND hwndDialog, UINT message,
         s_pScreenInfo = s_pScreenPriv->pScreenInfo;
 
 #if CYGDEBUG
-        winDebug("winChangeDepthDlgProc - WM_INITDIALOG - s_pScreenPriv: %08x, "
-                 "s_pScreenInfo: %08x\n",
+        winDebug("winChangeDepthDlgProc - WM_INITDIALOG - s_pScreenPriv: %p, "
+                 "s_pScreenInfo: %p\n",
                  s_pScreenPriv, s_pScreenInfo);
 #endif
 

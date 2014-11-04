@@ -171,23 +171,3 @@ typedef struct _ScanLineListBlock {
       pAET = pAET->next; \
    } \
 }
-
-/* mipolyutil.c */
-
-extern _X_EXPORT Bool miCreateETandAET(int /*count */ ,
-                                       DDXPointPtr /*pts */ ,
-                                       EdgeTable * /*ET*/,
-                                       EdgeTableEntry * /*AET*/,
-                                       EdgeTableEntry * /*pETEs */ ,
-                                       ScanLineListBlock *      /*pSLLBlock */
-    );
-
-extern _X_EXPORT void miloadAET(EdgeTableEntry * /*AET*/, EdgeTableEntry *      /*ETEs */
-    );
-
-extern _X_EXPORT void micomputeWAET(EdgeTableEntry * /*AET*/);
-
-extern _X_EXPORT int miInsertionSort(EdgeTableEntry * /*AET*/);
-
-extern _X_EXPORT void miFreeStorage(ScanLineListBlock * /*pSLLBlock */
-    );
