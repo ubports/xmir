@@ -1,3 +1,9 @@
+xorg-server (2:1.16.1.901-1ubuntu2) vivid; urgency=medium
+
+  * Re-enable rotation in optimus mode with SNA. (LP: #1386620)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 06 Nov 2014 12:19:07 +0100
+
 xorg-server (2:1.16.1.901-1ubuntu1) vivid; urgency=medium
 
   * Merge from released debian-unstable.
