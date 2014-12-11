@@ -49,6 +49,11 @@
 
 #include "driver.h"
 
+#ifdef GLAMOR
+#define GLAMOR_FOR_XORG 1
+#include "glamor.h"
+#endif
+
 static struct dumb_bo *
 dumb_bo_create(int fd,
                const unsigned width, const unsigned height, const unsigned bpp)
@@ -1019,8 +1024,7 @@ static const char *const output_names[] = {
 };
 
 static void
-drmmode_output_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, int num,
-                    int *num_dvi, int *num_hdmi)
+drmmode_output_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, int num)
 {
     xf86OutputPtr output;
     drmModeConnectorPtr koutput;
@@ -1243,6 +1247,20 @@ drmmode_xf86crtc_resize(ScrnInfoPtr scrn, int width, int height)
                                    pitch, drmmode->shadow_fb);
     }
 
+#ifdef GLAMOR
+    if (drmmode->glamor) {
+        if (!glamor_egl_create_textured_screen_ext(screen,
+                                                   drmmode->front_bo->handle,
+                                                   scrn->displayWidth *
+                                                   scrn->bitsPerPixel / 8,
+                                                   NULL)) {
+            xf86DrvMsg(scrn->scrnIndex, X_ERROR,
+                       "glamor_egl_create_textured_screen_ext() failed\n");
+            goto fail;
+        }
+    }
+#endif
+
     for (i = 0; i < xf86_config->num_crtc; i++) {
         xf86CrtcPtr crtc = xf86_config->crtc[i];
 
@@ -1279,7 +1297,7 @@ static const xf86CrtcConfigFuncsRec drmmode_xf86crtc_config_funcs = {
 Bool
 drmmode_pre_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, int cpp)
 {
-    int i, num_dvi = 0, num_hdmi = 0;
+    int i;
     int ret;
     uint64_t value = 0;
 
@@ -1307,7 +1325,7 @@ drmmode_pre_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, int cpp)
             drmmode_crtc_init(pScrn, drmmode, i);
 
     for (i = 0; i < drmmode->mode_res->count_connectors; i++)
-        drmmode_output_init(pScrn, drmmode, i, &num_dvi, &num_hdmi);
+        drmmode_output_init(pScrn, drmmode, i);
 
     /* workout clones */
     drmmode_clones_init(pScrn, drmmode);
@@ -1468,7 +1486,7 @@ drmmode_setup_colormap(ScreenPtr pScreen, ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-#ifdef HAVE_UDEV
+#ifdef CONFIG_UDEV_KMS
 static void
 drmmode_handle_uevents(int fd, void *closure)
 {
@@ -1488,7 +1506,7 @@ drmmode_handle_uevents(int fd, void *closure)
 void
 drmmode_uevent_init(ScrnInfoPtr scrn, drmmode_ptr drmmode)
 {
-#ifdef HAVE_UDEV
+#ifdef CONFIG_UDEV_KMS
     struct udev *u;
     struct udev_monitor *mon;
 
@@ -1521,7 +1539,7 @@ drmmode_uevent_init(ScrnInfoPtr scrn, drmmode_ptr drmmode)
 void
 drmmode_uevent_fini(ScrnInfoPtr scrn, drmmode_ptr drmmode)
 {
-#ifdef HAVE_UDEV
+#ifdef CONFIG_UDEV_KMS
     if (drmmode->uevent_handler) {
         struct udev *u = udev_monitor_get_udev(drmmode->uevent_monitor);
 

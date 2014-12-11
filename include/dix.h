@@ -26,13 +26,13 @@ Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -74,9 +74,14 @@ SOFTWARE.
     if ((sizeof(req) >> 2) > client->req_len )\
          return(BadLength)
 
+#define REQUEST_AT_LEAST_EXTRA_SIZE(req, extra)  \
+    if (((sizeof(req) + ((uint64_t) extra)) >> 2) > client->req_len ) \
+         return(BadLength)
+
 #define REQUEST_FIXED_SIZE(req, n)\
     if (((sizeof(req) >> 2) > client->req_len) || \
-        (((sizeof(req) + (n) + 3) >> 2) != client->req_len)) \
+        (((n) >> 2) >= client->req_len) ||                              \
+        ((((uint64_t) sizeof(req) + (n) + 3) >> 2) != (uint64_t) client->req_len))  \
          return(BadLength)
 
 #define LEGAL_NEW_RESOURCE(id,client)\

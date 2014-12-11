@@ -306,7 +306,6 @@ typedef struct glamor_screen_private {
     int linear_max_nstops;
     int radial_max_nstops;
 
-    PixmapPtr *back_pixmap;
     int screen_fbo;
     struct glamor_saved_procs saved_procs;
     char delayed_fallback_string[GLAMOR_DELAYED_STRING_MAX + 1];
@@ -352,6 +351,7 @@ enum glamor_fbo_state {
  * @pbo:     attached pbo.
  * @width:   width of this fbo.
  * @height:  height of this fbo.
+ * @external set when the texture was not created by glamor
  * @format:  internal format of this fbo's texture.
  * @type:    internal type of this fbo's texture.
  * @glamor_priv: point to glamor private data.
@@ -365,6 +365,7 @@ typedef struct glamor_pixmap_fbo {
     GLuint pbo;
     int width;
     int height;
+    Bool external;
     GLenum format;
     GLenum type;
     glamor_screen_private *glamor_priv;

@@ -127,7 +127,7 @@ static char __crashreporter_info_buff__[4096] = { 0 };
 static const char *__crashreporter_info__ __attribute__ ((__used__)) =
     &__crashreporter_info_buff__[0];
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1050
-// This is actually a toolchain requirement, but I'm not sure the correct check,        
+// This is actually a toolchain requirement, but I'm not sure the correct check,
 // but it should be fine to just only include it for Leopard and later.  This line
 // just tells the linker to never strip this symbol (such as for space optimization)
 asm(".desc ___crashreporter_info__, 0x10");
@@ -257,8 +257,11 @@ void
 LogClose(enum ExitCode error)
 {
     if (logFile) {
-        ErrorFSigSafe("Server terminated %s (%d). Closing log file.\n",
-               (error == EXIT_NO_ERROR) ? "successfully" : "with error", error);
+        int msgtype = (error == EXIT_NO_ERROR) ? X_INFO : X_ERROR;
+        LogMessageVerbSigSafe(msgtype, -1,
+                "Server terminated %s (%d). Closing log file.\n",
+                (error == EXIT_NO_ERROR) ? "successfully" : "with error",
+                error);
         fclose(logFile);
         logFile = NULL;
         logFileFd = -1;

@@ -28,7 +28,7 @@
 #define DRMMODE_DISPLAY_H
 
 #include "xf86drmMode.h"
-#ifdef HAVE_UDEV
+#ifdef CONFIG_UDEV_KMS
 #include "libudev.h"
 #endif
 
@@ -48,7 +48,7 @@ typedef struct {
     drmModeFBPtr mode_fb;
     int cpp;
     ScrnInfoPtr scrn;
-#ifdef HAVE_UDEV
+#ifdef CONFIG_UDEV_KMS
     struct udev_monitor *uevent_monitor;
     InputHandlerProc uevent_handler;
 #endif
@@ -56,6 +56,7 @@ typedef struct {
     struct dumb_bo *front_bo;
     Bool sw_cursor;
 
+    Bool glamor;
     Bool shadow_enable;
     void *shadow_fb;
 

@@ -1,5 +1,5 @@
 /******************************************************************************
- * 
+ *
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -9,10 +9,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -20,12 +20,12 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Except as contained in this notice, the name of the Hewlett-Packard
  * Company shall not be used in advertising or otherwise to promote the
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
- * 
+ *
  *     DIX DBE code
  *
  *****************************************************************************/
@@ -152,7 +152,7 @@ ProcDbeGetVersion(ClientPtr client)
  *     BadIDChoice - id is out of range for client; id is already in use
  *     BadMatch    - window is not an InputOutput window;
  *                   visual of window is not on list returned by
- *                   DBEGetVisualInfo; 
+ *                   DBEGetVisualInfo;
  *     BadValue    - invalid swap action is specified
  *     BadWindow   - window is not a valid window
  *     Success
@@ -450,18 +450,21 @@ ProcDbeSwapBuffers(ClientPtr client)
     DbeSwapInfoPtr swapInfo;
     xDbeSwapInfo *dbeSwapInfo;
     int error;
-    register int i, j;
-    int nStuff;
+    unsigned int i, j;
+    unsigned int nStuff;
+    int nStuff_i;       /* DDX API requires int for nStuff */
 
     REQUEST_AT_LEAST_SIZE(xDbeSwapBuffersReq);
     nStuff = stuff->n;          /* use local variable for performance. */
 
     if (nStuff == 0) {
+        REQUEST_SIZE_MATCH(xDbeSwapBuffersReq);
         return Success;
     }
 
     if (nStuff > UINT32_MAX / sizeof(DbeSwapInfoRec))
         return BadAlloc;
+    REQUEST_FIXED_SIZE(xDbeSwapBuffersReq, nStuff * sizeof(xDbeSwapInfo));
 
     /* Get to the swap info appended to the end of the request. */
     dbeSwapInfo = (xDbeSwapInfo *) &stuff[1];
@@ -525,9 +528,10 @@ ProcDbeSwapBuffers(ClientPtr client)
      * could deal with cross-screen synchronization.
      */
 
-    while (nStuff > 0) {
+    nStuff_i = nStuff;
+    while (nStuff_i > 0) {
         pDbeScreenPriv = DBE_SCREEN_PRIV_FROM_WINDOW(swapInfo[0].pWindow);
-        error = (*pDbeScreenPriv->SwapBuffers) (client, &nStuff, swapInfo);
+        error = (*pDbeScreenPriv->SwapBuffers) (client, &nStuff_i, swapInfo);
         if (error != Success) {
             free(swapInfo);
             return error;
@@ -835,7 +839,7 @@ SProcDbeGetVersion(ClientPtr client)
  *     BadIDChoice - id is out of range for client; id is already in use
  *     BadMatch    - window is not an InputOutput window;
  *                   visual of window is not on list returned by
- *                   DBEGetVisualInfo; 
+ *                   DBEGetVisualInfo;
  *     BadValue    - invalid swap action is specified
  *     BadWindow   - window is not a valid window
  *     Success
@@ -914,13 +918,16 @@ static int
 SProcDbeSwapBuffers(ClientPtr client)
 {
     REQUEST(xDbeSwapBuffersReq);
-    register int i;
+    unsigned int i;
     xDbeSwapInfo *pSwapInfo;
 
     swaps(&stuff->length);
     REQUEST_AT_LEAST_SIZE(xDbeSwapBuffersReq);
 
     swapl(&stuff->n);
+    if (stuff->n > UINT32_MAX / sizeof(DbeSwapInfoRec))
+        return BadAlloc;
+    REQUEST_FIXED_SIZE(xDbeSwapBuffersReq, stuff->n * sizeof(xDbeSwapInfo));
 
     if (stuff->n != 0) {
         pSwapInfo = (xDbeSwapInfo *) stuff + 1;
@@ -1058,7 +1065,7 @@ SProcDbeDispatch(ClientPtr client)
  *
  *     TRUE  - setup was successful
  *     FALSE - the window's background state is NONE
- * 
+ *
  *****************************************************************************/
 
 static Bool

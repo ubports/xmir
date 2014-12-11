@@ -628,9 +628,9 @@ OsVendorInit(void)
 
     if (!g_fLogInited) {
         /* keep this order. If LogInit fails it calls Abort which then calls
-         * ddxGiveUp where LogInit is called again and creates an infinite 
-         * recursion. If we set g_fLogInited to TRUE before the init we 
-         * avoid the second call 
+         * ddxGiveUp where LogInit is called again and creates an infinite
+         * recursion. If we set g_fLogInited to TRUE before the init we
+         * avoid the second call
          */
         g_fLogInited = TRUE;
         g_pszLogFile = LogInit(g_pszLogFile, NULL);
@@ -793,6 +793,10 @@ winUseMsg(void)
 #ifdef XWIN_CLIPBOARD
     ErrorF("-nounicodeclipboard\n"
            "\tDo not use Unicode clipboard even if on a NT-based platform.\n");
+
+    ErrorF("-[no]primary\n"
+           "\tWhen clipboard integration is enabled, map the X11 PRIMARY selection\n"
+           "\tto the Windows clipboard. Default is enabled.\n");
 #endif
 
     ErrorF("-refresh rate_in_Hz\n"
@@ -885,7 +889,7 @@ ddxUseMsg(void)
 /* See Porting Layer Definition - p. 20 */
 /*
  * Do any global initialization, then initialize each screen.
- * 
+ *
  * NOTE: We use ddxProcessArgument, so we don't need to touch argc and argv
  */
 
