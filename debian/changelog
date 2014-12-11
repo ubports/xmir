@@ -1,8 +1,8 @@
-xorg-server (2:1.16.2.901-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.16.2.901-1ubuntu1) vivid; urgency=medium
 
   * Merge from released debian-unstable.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 16:15:36 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 16:17:07 +0100
 
 xorg-server (2:1.16.2.901-1) unstable; urgency=medium
 
