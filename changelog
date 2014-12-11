@@ -19,6 +19,12 @@ xorg-server (2:1.16.99.901-1) UNRELEASED; urgency=medium
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 15:49:13 +0100
 
+xorg-server (2:1.16.2.901-1ubuntu1) vivid; urgency=medium
+
+  * Merge from released debian-unstable.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 16:17:07 +0100
+
 xorg-server (2:1.16.2.901-1) unstable; urgency=medium
 
   * New upstream release
@@ -38,6 +44,18 @@ xorg-server (2:1.16.2.901-1) unstable; urgency=medium
     contexts by default.
 
  -- Julien Cristau <jcristau@debian.org>  Tue, 09 Dec 2014 22:04:20 +0100
+
+xorg-server (2:1.16.1.901-1ubuntu2) vivid; urgency=medium
+
+  * Re-enable rotation in optimus mode with SNA. (LP: #1386620)
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 06 Nov 2014 12:19:07 +0100
+
+xorg-server (2:1.16.1.901-1ubuntu1) vivid; urgency=medium
+
+  * Merge from released debian-unstable.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Wed, 05 Nov 2014 15:38:44 +0100
 
 xorg-server (2:1.16.1.901-1) unstable; urgency=medium
 
