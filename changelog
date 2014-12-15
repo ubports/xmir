@@ -19,6 +19,12 @@ xorg-server (2:1.16.99.901-1) UNRELEASED; urgency=medium
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 15:49:13 +0100
 
+xorg-server (2:1.16.2.901-1ubuntu2) vivid; urgency=medium
+
+  * Fix FTBFS with the bool redefinition by undef'ing it after including mir.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Sat, 13 Dec 2014 14:13:17 +0100
+
 xorg-server (2:1.16.2.901-1ubuntu1) vivid; urgency=medium
 
   * Merge from released debian-unstable.
