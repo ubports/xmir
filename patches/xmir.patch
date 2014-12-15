@@ -972,7 +972,7 @@
 +}
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir-private.h
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,105 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1008,7 +1008,6 @@
 +#ifndef _XMIR_PRIVATE_H
 +#define _XMIR_PRIVATE_H
 +
-+#include <mir_toolkit/mir_client_library.h>
 +#include "xmir.h"
 +#include "xf86str.h"
 +#include "list.h"
@@ -1819,7 +1818,7 @@
 +}
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.h
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,104 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1856,14 +1855,12 @@
 +#define _XMIR_H
 +
 +#include <stdint.h>
-+#include <mir_toolkit/mir_client_library.h>
-+
-+/* Fix because the library defines one of its members as having the name bool */
-+#undef bool
 +
 +#include "xf86str.h"
 +#include "scrnintstr.h"
 +#include "window.h"
++
++#include <mir_toolkit/mir_client_library.h>
 +
 +typedef struct xmir_screen xmir_screen;
 +typedef struct xmir_window xmir_window;
