@@ -78,7 +78,7 @@
 +
      if (xf86configptr->conf_modules) {
          /* Walk the disable list and let people know what we've parsed to
-          * not be loaded 
+          * not be loaded
 --- a/hw/xfree86/common/xf86Events.c
 +++ b/hw/xfree86/common/xf86Events.c
 @@ -613,6 +613,10 @@
@@ -1819,7 +1819,7 @@
 +}
 --- /dev/null
 +++ b/hw/xfree86/xmir/xmir.h
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,106 @@
 +/*
 + * Copyright © 2012 Canonical, Inc
 + *
@@ -1857,6 +1857,9 @@
 +
 +#include <stdint.h>
 +#include <mir_toolkit/mir_client_library.h>
++
++/* Fix because the library defines one of its members as having the name bool */
++#undef bool
 +
 +#include "xf86str.h"
 +#include "scrnintstr.h"
