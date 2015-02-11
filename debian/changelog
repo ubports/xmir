@@ -1,4 +1,4 @@
-xorg-server (2:1.17.0~rc1-0ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.17.1-0ubuntu1) UNRELEASED; urgency=medium
 
   * Merge with 1.17 branch.
     - ABI bumped.
@@ -7,7 +7,7 @@ xorg-server (2:1.17.0~rc1-0ubuntu1) UNRELEASED; urgency=medium
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 04 Nov 2014 16:14:20 +0100
 
-xorg-server (2:1.16.99.901-1) UNRELEASED; urgency=medium
+xorg-server (2:1.17.1-1) UNRELEASED; urgency=medium
 
   * New upstream release candidate 17~rc1.
   * Enable the modesetting driver from xorg-server.
@@ -18,6 +18,20 @@ xorg-server (2:1.16.99.901-1) UNRELEASED; urgency=medium
   * Bump video abi to 19.
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 15:49:13 +0100
+
+xorg-server (2:1.16.4-1) unstable; urgency=high
+
+  * New upstream release
+    + dix: Allow zero-height PutImage requests (closes: #774308)
+    + os: Fix timer race conditions
+    + randr: attempt to fix primary on slave output
+    + config/udev: Respect seat assignments when assigned devices
+    + dix: make RegionInit legal C++
+    + dri2: SourceOffloads may be for DRI3 only
+    + xkb: Don't swap XkbSetGeometry data in the input buffer
+    + xkb: Check strings length against request size (CVE-2015-0255)
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 11 Feb 2015 01:26:07 +0100
 
 xorg-server (2:1.16.2.901-1ubuntu3) vivid; urgency=medium
 
