@@ -1,11 +1,11 @@
-xorg-server (2:1.17.1-0ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.17.1-0ubuntu1) vivid; urgency=medium
 
   * Merge with 1.17 branch.
     - ABI bumped.
     - Patches refreshed.
     - Modesetting moved to xorg-server.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Tue, 04 Nov 2014 16:14:20 +0100
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 12 Mar 2015 13:26:04 +0100
 
 xorg-server (2:1.17.1-1) UNRELEASED; urgency=medium
 
