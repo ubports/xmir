@@ -143,10 +143,10 @@ Breaks:
  xserver-xorg-video-vga (<= 1:4.1.0-8),
  libgl1-mesa-dri (<< 7.10.2-4),
  libgl1-mesa-dri-experimental (<< 7.10.2-4),
- xserver-xorg-video-modesetting (<< 0.10),
 Replaces:
- xserver-xorg-video-modesetting (<< 0.10),
+ xserver-xorg-video-modesetting,
 Conflicts:
+ xserver-xorg-video-modesetting,
  xserver-xorg-input-evtouch,
 Provides:
  ${videoabi},
