@@ -1,3 +1,9 @@
+xorg-server (2:1.17.1-0ubuntu2) vivid; urgency=medium
+
+  * Use conflicts/replaces on modesetting.
+
+ -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 12 Mar 2015 16:56:38 +0100
+
 xorg-server (2:1.17.1-0ubuntu1) vivid; urgency=medium
 
   * Merge with 1.17 branch.
