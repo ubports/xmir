@@ -649,6 +649,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
 AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
 AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
 AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
+AC_ARG_ENABLE(xmir,           AS_HELP_STRING([--enable-xmir], [Build Xmir server (default: auto)]), [XMIR=$enableval], [XMIR=auto])
 AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
 AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
 AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: auto)]), [GLAMOR=$enableval], [GLAMOR=auto])
@@ -767,6 +768,7 @@ case $host_os in
 			XVFB=no
 			XNEST=no
 			XWAYLAND=no
+			XMIR=no
 
 			COMPOSITE=no
 			DGA=no
@@ -2532,6 +2534,27 @@ if test "x$XWAYLAND" = xyes; then
 	AC_SUBST(WAYLAND_PROTOCOLS_DATADIR, `$PKG_CONFIG --variable=pkgdatadir wayland-protocols`)
 fi
 
+dnl Xmir DDX
+
+PKG_CHECK_MODULES(XMIRMODULES, [mirclient >= 0.13.1 libdrm epoxy], [have_xmir=yes], [have_xmir=no])
+AC_MSG_CHECKING([whether to build Xmir DDX])
+if test "x$XMIR" = xauto; then
+   XMIR="$have_xmir"
+fi
+AC_MSG_RESULT([$XMIR])
+AM_CONDITIONAL(XMIR, [test "x$XMIR" = xyes])
+
+if test "x$XMIR" = xyes; then
+	if test "x$have_xmir" = xno; then
+		AC_MSG_ERROR([Xmir build explicitly requested, but required modules not found.])
+	fi
+
+	XMIR_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB $DRI3_LIB $PRESENT_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $MAIN_LIB $DIX_LIB $OS_LIB"
+	XMIR_SYS_LIBS="$XMIRMODULES_LIBS $GLX_SYS_LIBS"
+	AC_SUBST([XMIR_LIBS])
+	AC_SUBST([XMIR_SYS_LIBS])
+fi
+
 
 dnl and the rest of these are generic, so they're in config.h
 dnl 
@@ -2681,6 +2704,8 @@ hw/kdrive/fbdev/Makefile
 hw/kdrive/linux/Makefile
 hw/kdrive/src/Makefile
 hw/xwayland/Makefile
+hw/xmir/Makefile
+hw/xmir/dri2/Makefile
 test/Makefile
 test/xi1/Makefile
 test/xi2/Makefile

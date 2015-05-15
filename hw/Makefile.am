@@ -30,6 +30,10 @@ if XWAYLAND
 XWAYLAND_SUBDIRS = xwayland
 endif
 
+if XMIR
+XMIR_SUBDIRS = xmir
+endif
+
 SUBDIRS =			\
 	$(XORG_SUBDIRS)		\
 	$(XWIN_SUBDIRS)		\
@@ -38,9 +42,10 @@ SUBDIRS =			\
 	$(DMX_SUBDIRS)		\
 	$(KDRIVE_SUBDIRS)	\
 	$(XQUARTZ_SUBDIRS)	\
-	$(XWAYLAND_SUBDIRS)
+	$(XWAYLAND_SUBDIRS) \
+	$(XMIR_SUBDIRS)
 
-DIST_SUBDIRS = dmx xfree86 vfb xnest xwin xquartz kdrive xwayland
+DIST_SUBDIRS = dmx xfree86 vfb xnest xwin xquartz kdrive xwayland xmir
 
 relink:
 	$(AM_V_at)for i in $(SUBDIRS) ; do $(MAKE) -C $$i relink || exit 1 ; done
