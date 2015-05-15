@@ -86,6 +86,8 @@ int limitStackSpace = -1;
 int limitNoFile = -1;
 #endif
 
+int KeepStdout = 0;
+
 static OsSigWrapperPtr OsSigWrapper = NULL;
 
 OsSigWrapperPtr
@@ -225,7 +227,8 @@ OsInit(void)
         close(devnullfd);
 # elif !defined(__CYGWIN__)
         fclose(stdin);
-        fclose(stdout);
+        if (!KeepStdout)
+            fclose(stdout);
 # endif
         /*
          * If a write of zero bytes to stderr returns non-zero, i.e. -1,
