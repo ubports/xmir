@@ -1,3 +1,14 @@
+xorg-server (2:1.17.1-0ubuntu4) wily; urgency=medium
+
+  * debian/control:
+    - Rename xserver-xorg-xmir to xmir
+    - Build build-depends on libmirclient to 0.13.1
+  * debian/xmir.install:
+  * debian/patches/xmir.patch:
+    - Use new XMir implementation
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Wed, 03 Jun 2015 14:21:10 +1200
+
 xorg-server (2:1.17.1-0ubuntu3) vivid; urgency=medium
 
   * Add a patch to fix vesa int10 failure. (LP: #1433198)

@@ -96,7 +96,7 @@ Build-Depends:
 # xwayland
  libwayland-dev [linux-any],
 # XMir
- libmirclient-dev (>= 0.4.0) [!arm64 !powerpc !ppc64el],
+ libmirclient-dev (>= 0.13.1) [!arm64 !powerpc !ppc64el],
  libatomic-ops-dev,
 Standards-Version: 3.9.2
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
@@ -363,15 +363,24 @@ Recommends:
 Description: common files used by various X servers
  This package provides files necessary for all X.Org based X servers.
 
-Package: xserver-xorg-xmir
+Package: xmir
 Architecture: amd64 armhf i386
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
- xserver-xorg-core (= ${binary:Version}),
-Description: Xorg - the X.Org X server (module for running nested in Mir)
- xserver-xorg-xmir provides an extension module to support running an
- Xorg as a client of an existing Mir compositor.
+Description: Xmir X server
+ This package provides an X server running on top of Mir, using Mir
+ input devices for input and forwarding either the root window or individual
+ top-level windows as wayland surfaces.
+ 
+Package: xserver-xorg-xmir
+Architecture: all
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         xmir,
+Description: Xmir X server (transitional package)
+ This is a transitional package to ease upgrades to xmir.
+ It can be safely removed.
 
 Package: xorg-server-source
 Architecture: all
