@@ -1,3 +1,29 @@
+xorg-server (2:1.17.2-1) unstable; urgency=medium
+
+  [ Sven Joachim ]
+  * New upstream release.
+    + symbols: Fix sdksyms.sh to cope with gcc5 (Closes: #778187)
+    + os/access: fix regression in server interpreted auth (Closes: #784687)
+    + dix: Fix image byte order on big endian hardware (Closes: #785474)
+    + int10: Fix error check for pci_device_map_legacy (Closes: #787144)
+    + modesetting: Include dix-config.h from dumb_bo.c (Closes: #789823)
+    + unauthorised local client access in XWayland [CVE-2015-3164]
+      (Closes: #788410)
+  * Install the modesetting.4 manpage into xserver-xorg-core (Closes: #789646)
+  * Build xserver-xorg-core-udeb on all architectures again (Closes: #775205)
+  * Update debian/upstream/signing-key.asc.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 01 Jul 2015 18:07:40 +0200
+
+xorg-server (2:1.17.1-2) unstable; urgency=medium
+
+  * Disable libdrm support on hurd and in the kfreebsd udeb build, so we don't
+    try building the modesetting driver without libdrm.  We should probably
+    revisit this later and ship modesetting_drv.so in d-i, but this should do
+    for now.
+
+ -- Julien Cristau <jcristau@debian.org>  Mon, 04 May 2015 22:04:01 +0200
+
 xorg-server (2:1.17.1-0ubuntu5) UNRELEASED; urgency=medium
 
   * xserver-xorg-xmir.install: Removed, not used anymore.
@@ -36,9 +62,10 @@ xorg-server (2:1.17.1-0ubuntu1) vivid; urgency=medium
 
  -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 12 Mar 2015 13:26:04 +0100
 
-xorg-server (2:1.17.1-1) UNRELEASED; urgency=medium
+xorg-server (2:1.17.1-1) experimental; urgency=medium
 
-  * New upstream release candidate 17~rc1.
+  [ Maarten Lankhorst ]
+  * New upstream release 1.17.1.
   * Enable the modesetting driver from xorg-server.
   * Drop upstreamed patches:
     - 09_Xserver-man-iglx.diff
@@ -46,7 +73,11 @@ xorg-server (2:1.17.1-1) UNRELEASED; urgency=medium
     - Is this patch still needed because it seems to be handled now?
   * Bump video abi to 19.
 
- -- Maarten Lankhorst <maarten.lankhorst@ubuntu.com>  Thu, 11 Dec 2014 15:49:13 +0100
+  [ Julien Cristau ]
+  * Bump debhelper compat level to 9.
+  * Update debian/copyright from upstream COPYING.
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 03 May 2015 18:00:32 +0200
 
 xorg-server (2:1.16.4-1) unstable; urgency=high
 
