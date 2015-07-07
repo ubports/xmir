@@ -35,7 +35,6 @@ no-nv.patch
 #   Probably is just papering over issue; needs further analysis
 
 ## upstream patches
-fix-int10.patch
 
 # hybrid graphics fixes
 228_autobind_gpu.patch

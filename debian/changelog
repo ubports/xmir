@@ -1,3 +1,10 @@
+xorg-server (2:1.17.2-1ubuntu1) UNRELEASED; urgency=medium
+
+  * xserver-xorg-xmir.install: Removed, not used anymore.
+  * fix-int10.patch: Dropped, upstream.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 03 Jun 2015 11:41:03 +0300
+
 xorg-server (2:1.17.2-1) unstable; urgency=medium
 
   [ Sven Joachim ]
@@ -23,12 +30,6 @@ xorg-server (2:1.17.1-2) unstable; urgency=medium
     for now.
 
  -- Julien Cristau <jcristau@debian.org>  Mon, 04 May 2015 22:04:01 +0200
-
-xorg-server (2:1.17.1-0ubuntu5) UNRELEASED; urgency=medium
-
-  * xserver-xorg-xmir.install: Removed, not used anymore.
-
- -- Timo Aaltonen <tjaalton@debian.org>  Wed, 03 Jun 2015 11:41:03 +0300
 
 xorg-server (2:1.17.1-0ubuntu4) wily; urgency=medium
 
