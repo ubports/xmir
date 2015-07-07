@@ -1,5 +1,6 @@
 xorg-server (2:1.17.2-1ubuntu1) UNRELEASED; urgency=medium
 
+  * Merge from Debian unstable. (LP: #1471185)
   * xserver-xorg-xmir.install: Removed, not used anymore.
   * fix-int10.patch: Dropped, upstream.
 
