@@ -3,6 +3,8 @@ xorg-server (2:1.17.2-1ubuntu1) UNRELEASED; urgency=medium
   * Merge from Debian unstable. (LP: #1471185)
   * xserver-xorg-xmir.install: Removed, not used anymore.
   * fix-int10.patch: Dropped, upstream.
+  * pixman-validate.patch: Dropped, not upstream and not needed since
+    pixman got fixed.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Wed, 03 Jun 2015 11:41:03 +0300
 

@@ -45,7 +45,6 @@ xf86-ignore-conflicting-rr-caps.patch
 fix-detach-gpu.patch
 disable-rotation-transform-gpuscreens.patch
 
-pixman-validate.patch
 fix-ftbfs-ppc64el.patch
 xmir.patch
 drm_device_keep_trying.patch
