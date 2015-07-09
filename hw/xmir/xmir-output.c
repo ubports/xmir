@@ -78,6 +78,9 @@ xmir_output_dpms(struct xmir_screen *xmir_screen, int mode)
     MirPowerMode mir_mode = mir_power_mode_on;
     Bool unchanged = TRUE;
 
+    if (xmir_screen->rootless)
+        return FALSE;
+
     switch (mode) {
     case DPMSModeOn:
         mir_mode = mir_power_mode_on;
@@ -304,6 +307,11 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 
         eglDestroyImageKHR(xmir_screen->egl_display, xmir_window->image);
         xmir_window->image = NULL;
+    }
+
+    if (xmir_screen->rootless) {
+        screen->ResizeWindow(window, window->drawable.x, window->drawable.y, window_width, window_height, NULL);
+        return;
     }
 
     if (!xmir_screen->windowed) {

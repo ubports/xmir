@@ -134,7 +134,10 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
     config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
 
 apply:
-    mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
+    if (!xmir_input->xmir_screen->rootless)
+        mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
+    else if (xmir_input->focus_window)
+        mir_wait_for(mir_surface_configure_cursor(xmir_input->focus_window->surface, config));
     mir_cursor_configuration_destroy(config);
 
     if (stream)
