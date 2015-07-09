@@ -33,6 +33,7 @@
 #include <selection.h>
 #include <micmap.h>
 #include <misyncshm.h>
+#include <compositeext.h>
 #include <glx_extinit.h>
 
 #include <mir_toolkit/mir_surface.h>
@@ -91,6 +92,7 @@ ddxBeforeReset(void)
 void
 ddxUseMsg(void)
 {
+    ErrorF("-rootless              run rootless, requires wm support\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
     ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -107,7 +109,8 @@ ddxProcessArgument(int argc, char *argv[], int i)
 {
     static int seen_shared;
 
-    if (strcmp(argv[i], "-sw") == 0 ||
+    if (strcmp(argv[i], "-rootless") == 0 ||
+        strcmp(argv[i], "-sw") == 0 ||
         strcmp(argv[i], "-egl") == 0 ||
         strcmp(argv[i], "-egl_sync") == 0 ||
         strcmp(argv[i], "-2x") == 0 ||
@@ -425,8 +428,21 @@ xmir_realize_window(WindowPtr window)
     xmir_screen->RealizeWindow = screen->RealizeWindow;
     screen->RealizeWindow = xmir_realize_window;
 
-    if (window->parent)
-        return ret;
+    if (xmir_screen->rootless && !window->parent) {
+        RegionNull(&window->clipList);
+        RegionNull(&window->borderClip);
+        RegionNull(&window->winSize);
+    }
+
+    if (xmir_screen->rootless) {
+        CompositeRedirectSubwindows(window, /*CompositeRedirectManual*/TRUE); // WTF? Where is this defined
+        if (window->redirectDraw != RedirectDrawManual)
+            return ret;
+    }
+    else {
+        if (window->parent)
+            return ret;
+    }
 
     mir_connection_get_available_surface_formats (xmir_screen->conn, formats, 1024, &n_formats);
     for (i = 0; i < n_formats && pixel_format == mir_pixel_format_invalid; i++) {
@@ -546,8 +562,15 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
 void
 xmir_close_surface(struct xmir_window *xmir_window)
 {
-    ErrorF("Root window closed, shutting down Xmir\n");
-    GiveUp(0);
+    WindowPtr window = xmir_window->window;
+    struct xmir_screen *xmir_screen = xmir_screen_get(window->drawable.pScreen);
+
+    if (!xmir_screen->rootless) {
+        ErrorF("Root window closed, shutting down Xmir\n");
+        GiveUp(0);
+    }
+
+    DeleteWindow(window, 1);
 }
 
 static void
@@ -679,7 +702,8 @@ xmir_is_unblank(int mode)
 Bool
 DPMSSupported(void)
 {
-    return TRUE;
+    struct xmir_screen *xmir_screen = xmir_screen_get(screenInfo.screens[0]);
+    return !xmir_screen->rootless;
 }
 
 int
@@ -748,12 +772,16 @@ xmir_create_screen_resources(ScreenPtr screen)
     if (!ret)
         return ret;
 
-    screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
+    if (!xmir_screen->rootless)
+        screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
+    else
+        screen->devPrivate = fbCreatePixmap(screen, 0, 0, screen->rootDepth, 0);
+
     if (!screen->devPrivate)
         return FALSE;
 
 #ifdef GLAMOR_HAS_GBM
-    if (xmir_screen->glamor) {
+    if (xmir_screen->glamor && !xmir_screen->rootless) {
         glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
 
         glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
@@ -835,7 +863,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xmir_screen->glamor = 1;
 
     for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-mir") == 0) {
+        if (strcmp(argv[i], "-rootless") == 0) {
+            xmir_screen->rootless = 1;
+        } else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
         } else if (strcmp(argv[i], "-mirSocket") == 0) {
             socket = argv[++i];

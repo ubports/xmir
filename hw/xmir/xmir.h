@@ -53,7 +53,7 @@
 struct xmir_screen {
     ScreenPtr screen;
 
-    int depth, windowed, glamor, doubled;
+    int depth, rootless, windowed, glamor, doubled;
 
     CreateScreenResourcesProcPtr CreateScreenResources;
     CloseScreenProcPtr CloseScreen;

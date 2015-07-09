@@ -90,7 +90,11 @@ static struct xmir_window *
 xmir_window_swappable_parent(WindowPtr win)
 {
     ScreenPtr screen = win->drawable.pScreen;
+    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     PixmapPtr root, pixmap;
+
+    if (xmir_screen->rootless)
+        return NULL;
 
     root = screen->GetScreenPixmap(screen);
     pixmap = screen->GetWindowPixmap(win);

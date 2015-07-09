@@ -307,6 +307,37 @@ DDXRingBell(int volume, int pitch, int duration)
 {
 }
 
+static WindowPtr
+xmir_xy_to_window(ScreenPtr screen, SpritePtr sprite, int x, int y)
+{
+    struct xmir_input *xmir_input = NULL;
+    DeviceIntPtr device;
+
+    for (device = inputInfo.devices; device; device = device->next) {
+        if (device->deviceProc == xmir_pointer_proc &&
+            device->spriteInfo->sprite == sprite) {
+            xmir_input = device->public.devicePrivate;
+            break;
+        }
+    }
+
+    if (xmir_input == NULL) {
+        /* XTEST device */
+        sprite->spriteTraceGood = 1;
+        return sprite->spriteTrace[0];
+    }
+
+    if (xmir_input->focus_window) {
+        sprite->spriteTraceGood = 2;
+        sprite->spriteTrace[1] = xmir_input->focus_window->window;
+        return miSpriteTrace(sprite, x, y);
+    }
+    else {
+        sprite->spriteTraceGood = 1;
+        return sprite->spriteTrace[0];
+    }
+}
+
 static void
 fake_touch_move(struct xmir_input *xmir_input, struct xmir_window *xmir_window, int sx, int sy)
 {
@@ -475,6 +506,9 @@ InitInput(int argc, char *argv[])
     ScreenPtr pScreen = screenInfo.screens[0];
     struct xmir_screen *xmir_screen = xmir_screen_get(pScreen);
     struct xmir_input *xmir_input;
+
+    if (xmir_screen->rootless)
+        pScreen->XYToWindow = xmir_xy_to_window;
 
     mieqInit();
 
