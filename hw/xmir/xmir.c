@@ -172,6 +172,9 @@ ddxProcessArgument(int argc, char *argv[], int i)
     } else if (!strcmp(argv[i], "-novtswitch") ||
                !strncmp(argv[i], "vt", 2)) {
         return 1;
+    /* Bypass unity8 "security" */
+    } else if (!strncmp(argv[i], "--desktop_file_hint=", strlen("--desktop_file_hint="))) {
+        return 1;
     } else if (!strcmp(argv[i], "-fd")) {
         if (!seen_shared)
             NoListenAll = 1;
