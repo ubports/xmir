@@ -1,3 +1,6 @@
+Description: Resize touch event history if the array is filled up.
+Author: Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
+
 diff --git a/dix/touch.c b/dix/touch.c
 index a7ea213..1478e38 100644
 --- a/dix/touch.c
