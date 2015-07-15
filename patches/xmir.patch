@@ -1,13 +1,15 @@
-From da18c3b8c7bd4ce3a2a1210d425272cbded19246 Mon Sep 17 00:00:00 2001
+From df6cf00a92b45129af1f187924b664a1ff64408e Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 15 May 2015 14:58:59 +1200
-Subject: [PATCH 4/5] Add XMir
+Subject: [PATCH 1/3] XMir DDX
 
+Contributions from:
+  Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
+  Christopher James Halse Rogers <christopher.halse.rogers@canonical.com>
+  Robert Ancell <robert.ancell@canonical.com>
+  Andreas Pokorny <andreas.pokorny@canonical.com>
 ---
- composite/compalloc.c       |    6 +
- composite/compositeext.h    |    3 +
  configure.ac                |   25 +
- glx/glxdri2.c               |   16 +-
  hw/Makefile.am              |    9 +-
  hw/xmir/.gitignore          |    1 +
  hw/xmir/Makefile.am         |   61 ++
@@ -16,16 +18,16 @@ Subject: [PATCH 4/5] Add XMir
  hw/xmir/dri2/dri2.h         |  364 +++++++++++
  hw/xmir/dri2/dri2ext.c      |  683 +++++++++++++++++++++
  hw/xmir/dri2/dri2int.h      |   26 +
- hw/xmir/xmir-cursor.c       |  214 +++++++
+ hw/xmir/xmir-cursor.c       |  211 +++++++
  hw/xmir/xmir-cvt.c          |  304 ++++++++++
- hw/xmir/xmir-dri2.c         |  473 +++++++++++++++
- hw/xmir/xmir-glamor.c       | 1229 +++++++++++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  539 +++++++++++++++++
- hw/xmir/xmir-output.c       |  454 ++++++++++++++
+ hw/xmir/xmir-dri2.c         |  529 ++++++++++++++++
+ hw/xmir/xmir-glamor.c       | 1187 ++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir-input.c        |  505 ++++++++++++++++
+ hw/xmir/xmir-output.c       |  444 ++++++++++++++
  hw/xmir/xmir-thread-proxy.c |  132 ++++
- hw/xmir/xmir.c              | 1013 +++++++++++++++++++++++++++++++
+ hw/xmir/xmir.c              |  983 ++++++++++++++++++++++++++++++
  hw/xmir/xmir.h              |  211 +++++++
- 21 files changed, 7167 insertions(+), 8 deletions(-)
+ 18 files changed, 7085 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -43,49 +45,11 @@ Subject: [PATCH 4/5] Add XMir
  create mode 100644 hw/xmir/xmir.c
  create mode 100644 hw/xmir/xmir.h
 
-diff --git a/composite/compalloc.c b/composite/compalloc.c
-index 8daded0..fb1b476 100644
---- a/composite/compalloc.c
-+++ b/composite/compalloc.c
-@@ -46,6 +46,7 @@
- #endif
- 
- #include "compint.h"
-+#include "compositeext.h"
- 
- static void
- compScreenUpdate(ScreenPtr pScreen)
-@@ -411,6 +412,11 @@ compRedirectSubwindows(ClientPtr pClient, WindowPtr pWin, int update)
-     return Success;
- }
- 
-+int CompositeRedirectSubwindows (WindowPtr pWin, int update)
-+{
-+    return compRedirectSubwindows (serverClient, pWin, update);
-+}
-+
- /*
-  * Free one of the per-client per-subwindows resources,
-  * which frees one redirect per subwindow
-diff --git a/composite/compositeext.h b/composite/compositeext.h
-index b96cb1d..f279013 100644
---- a/composite/compositeext.h
-+++ b/composite/compositeext.h
-@@ -35,6 +35,9 @@ extern _X_EXPORT Bool CompositeRegisterAlternateVisuals(ScreenPtr pScreen,
-                                                         VisualID * vids,
-                                                         int nVisuals);
- 
-+extern _X_EXPORT int CompositeRedirectSubwindows(WindowPtr pWin,
-+						 int update);
-+
- extern _X_EXPORT Bool CompositeRegisterImplicitRedirectionException(ScreenPtr pScreen,
-                                                                     VisualID parentVisual,
-                                                                     VisualID winVisual);
-diff --git a/configure.ac b/configure.ac
-index 4e47bbc..7a42775 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -624,6 +624,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
+Index: xorg-server-1.17.2/configure.ac
+===================================================================
+--- xorg-server-1.17.2.orig/configure.ac
++++ xorg-server-1.17.2/configure.ac
+@@ -629,6 +629,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
  AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
@@ -93,7 +57,7 @@ index 4e47bbc..7a42775 100644
  AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
  AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
  AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: no)]), [GLAMOR=$enableval], [GLAMOR=no])
-@@ -745,6 +746,7 @@ case $host_os in
+@@ -750,6 +751,7 @@ case $host_os in
  			XVFB=no
  			XNEST=no
  			XWAYLAND=no
@@ -101,7 +65,7 @@ index 4e47bbc..7a42775 100644
  
  			COMPOSITE=no
  			DGA=no
-@@ -2472,6 +2474,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2495,6 +2497,27 @@ if test "x$XWAYLAND" = xyes; then
  		     [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
  fi
  
@@ -129,7 +93,7 @@ index 4e47bbc..7a42775 100644
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2620,6 +2643,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2643,6 +2666,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -138,44 +102,10 @@ index 4e47bbc..7a42775 100644
  test/Makefile
  test/xi1/Makefile
  test/xi2/Makefile
-diff --git a/glx/glxdri2.c b/glx/glxdri2.c
-index bcd57a4..32bfb1b 100644
---- a/glx/glxdri2.c
-+++ b/glx/glxdri2.c
-@@ -361,8 +361,10 @@ __glXDRIscreenDestroy(__GLXscreen * baseScreen)
-         free(screen->driConfigs);
-     }
- 
--    pScrn->EnterVT = screen->enterVT;
--    pScrn->LeaveVT = screen->leaveVT;
-+    if (pScrn) {
-+        pScrn->EnterVT = screen->enterVT;
-+        pScrn->LeaveVT = screen->leaveVT;
-+    }
- 
-     free(screen);
- }
-@@ -1007,10 +1009,12 @@ __glXDRIscreenProbe(ScreenPtr pScreen)
-     screen->base.GLXmajor = 1;
-     screen->base.GLXminor = 4;
- 
--    screen->enterVT = pScrn->EnterVT;
--    pScrn->EnterVT = glxDRIEnterVT;
--    screen->leaveVT = pScrn->LeaveVT;
--    pScrn->LeaveVT = glxDRILeaveVT;
-+    if (pScrn) {
-+        screen->enterVT = pScrn->EnterVT;
-+        pScrn->EnterVT = glxDRIEnterVT;
-+        screen->leaveVT = pScrn->LeaveVT;
-+        pScrn->LeaveVT = glxDRILeaveVT;
-+    }
- 
-     __glXsetGetProcAddress(glXGetProcAddressARB);
- 
-diff --git a/hw/Makefile.am b/hw/Makefile.am
-index 19895dc..b7b958c 100644
---- a/hw/Makefile.am
-+++ b/hw/Makefile.am
+Index: xorg-server-1.17.2/hw/Makefile.am
+===================================================================
+--- xorg-server-1.17.2.orig/hw/Makefile.am
++++ xorg-server-1.17.2/hw/Makefile.am
 @@ -30,6 +30,10 @@ if XWAYLAND
  XWAYLAND_SUBDIRS = xwayland
  endif
@@ -200,18 +130,16 @@ index 19895dc..b7b958c 100644
  
  relink:
  	$(AM_V_at)for i in $(SUBDIRS) ; do $(MAKE) -C $$i relink || exit 1 ; done
-diff --git a/hw/xmir/.gitignore b/hw/xmir/.gitignore
-new file mode 100644
-index 0000000..b6a16d4
+Index: xorg-server-1.17.2/hw/xmir/.gitignore
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/.gitignore
++++ xorg-server-1.17.2/hw/xmir/.gitignore
 @@ -0,0 +1 @@
 +Xmir
-diff --git a/hw/xmir/Makefile.am b/hw/xmir/Makefile.am
-new file mode 100644
-index 0000000..e494091
+Index: xorg-server-1.17.2/hw/xmir/Makefile.am
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/Makefile.am
++++ xorg-server-1.17.2/hw/xmir/Makefile.am
 @@ -0,0 +1,61 @@
 +bin_PROGRAMS = Xmir
 +
@@ -223,6 +151,7 @@ index 0000000..e494091
 +	-I$(top_srcdir)/glamor		\
 +	-I$(srcdir)/dri2		\
 +	-I$(top_srcdir)/glx		\
++	-I$(top_srcdir)/hw/xfree86/common		\
 +	-DHAVE_DIX_CONFIG_H		\
 +	$(XMIRMODULES_CFLAGS)			\
 +	$(DIX_CFLAGS)			\
@@ -264,7 +193,6 @@ index 0000000..e494091
 +Xmir_LDADD += dri2/libdri2.la
 +endif
 +
-+#dnl FIXME: Needed?
 +if AIGLX_DRI_LOADER
 +aiglx_lib = $(top_builddir)/glx/libglxdri.la
 +if NO_UNDEFINED
@@ -274,11 +202,10 @@ index 0000000..e494091
 +
 +relink:
 +	$(AM_V_at)rm -f Xmir$(EXEEXT) && $(MAKE) Xmir$(EXEEXT)
-diff --git a/hw/xmir/dri2/Makefile.am b/hw/xmir/dri2/Makefile.am
-new file mode 100644
-index 0000000..696240c
+Index: xorg-server-1.17.2/hw/xmir/dri2/Makefile.am
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/Makefile.am
++++ xorg-server-1.17.2/hw/xmir/dri2/Makefile.am
 @@ -0,0 +1,14 @@
 +noinst_LTLIBRARIES = libdri2.la
 +
@@ -294,11 +221,10 @@ index 0000000..696240c
 +	dri2ext.c \
 +	dri2int.h
 +
-diff --git a/hw/xmir/dri2/dri2.c b/hw/xmir/dri2/dri2.c
-new file mode 100644
-index 0000000..6aa19ba
+Index: xorg-server-1.17.2/hw/xmir/dri2/dri2.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2.c
++++ xorg-server-1.17.2/hw/xmir/dri2/dri2.c
 @@ -0,0 +1,1398 @@
 +/*
 + * Copyright © 2007, 2008 Red Hat, Inc.
@@ -1698,11 +1624,10 @@ index 0000000..6aa19ba
 +    *is_param_recognized = FALSE;
 +    return Success;
 +}
-diff --git a/hw/xmir/dri2/dri2.h b/hw/xmir/dri2/dri2.h
-new file mode 100644
-index 0000000..318898b
+Index: xorg-server-1.17.2/hw/xmir/dri2/dri2.h
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2.h
++++ xorg-server-1.17.2/hw/xmir/dri2/dri2.h
 @@ -0,0 +1,364 @@
 +/*
 + * Copyright © 2007 Red Hat, Inc.
@@ -2068,11 +1993,10 @@ index 0000000..318898b
 +extern Bool noDRI2Extension;
 +
 +#endif
-diff --git a/hw/xmir/dri2/dri2ext.c b/hw/xmir/dri2/dri2ext.c
-new file mode 100644
-index 0000000..befbb82
+Index: xorg-server-1.17.2/hw/xmir/dri2/dri2ext.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2ext.c
++++ xorg-server-1.17.2/hw/xmir/dri2/dri2ext.c
 @@ -0,0 +1,683 @@
 +/*
 + * Copyright © 2008 Red Hat, Inc.
@@ -2757,11 +2681,10 @@ index 0000000..befbb82
 +
 +    DRI2ModuleSetup();
 +}
-diff --git a/hw/xmir/dri2/dri2int.h b/hw/xmir/dri2/dri2int.h
-new file mode 100644
-index 0000000..7f53eba
+Index: xorg-server-1.17.2/hw/xmir/dri2/dri2int.h
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2int.h
++++ xorg-server-1.17.2/hw/xmir/dri2/dri2int.h
 @@ -0,0 +1,26 @@
 +/*
 + * Copyright © 2011 Daniel Stone
@@ -2789,12 +2712,11 @@ index 0000000..7f53eba
 + */
 +
 +extern Bool DRI2ModuleSetup(void);
-diff --git a/hw/xmir/xmir-cursor.c b/hw/xmir/xmir-cursor.c
-new file mode 100644
-index 0000000..dd9a8a7
+Index: xorg-server-1.17.2/hw/xmir/xmir-cursor.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-cursor.c
-@@ -0,0 +1,214 @@
++++ xorg-server-1.17.2/hw/xmir/xmir-cursor.c
+@@ -0,0 +1,211 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -2928,10 +2850,7 @@ index 0000000..dd9a8a7
 +    config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
 +
 +apply:
-+    if (!xmir_input->xmir_screen->rootless)
-+        mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
-+    else if (xmir_input->focus_window)
-+        mir_wait_for(mir_surface_configure_cursor(xmir_input->focus_window->surface, config));
++    mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
 +    mir_cursor_configuration_destroy(config);
 +
 +    if (stream)
@@ -3009,11 +2928,10 @@ index 0000000..dd9a8a7
 +                               &xmir_pointer_sprite_funcs,
 +                               &xmir_pointer_screen_funcs, TRUE);
 +}
-diff --git a/hw/xmir/xmir-cvt.c b/hw/xmir/xmir-cvt.c
-new file mode 100644
-index 0000000..6070d77
+Index: xorg-server-1.17.2/hw/xmir/xmir-cvt.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-cvt.c
++++ xorg-server-1.17.2/hw/xmir/xmir-cvt.c
 @@ -0,0 +1,304 @@
 +/* Copied from hw/xfree86/modes/xf86cvt.c into xmir DDX and
 + * changed to generate an RRMode */
@@ -3319,12 +3237,36 @@ index 0000000..6070d77
 +
 +    return RRModeGet(&modeinfo, name);
 +}
-diff --git a/hw/xmir/xmir-dri2.c b/hw/xmir/xmir-dri2.c
-new file mode 100644
-index 0000000..a98c37b
+Index: xorg-server-1.17.2/hw/xmir/xmir-dri2.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-dri2.c
-@@ -0,0 +1,473 @@
++++ xorg-server-1.17.2/hw/xmir/xmir-dri2.c
+@@ -0,0 +1,529 @@
++/*
++ * Copyright © 2015 Canonical Ltd
++ *
++ * Permission to use, copy, modify, distribute, and sell this software
++ * and its documentation for any purpose is hereby granted without
++ * fee, provided that the above copyright notice appear in all copies
++ * and that both that copyright notice and this permission notice
++ * appear in supporting documentation, and that the name of the
++ * copyright holders not be used in advertising or publicity
++ * pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no
++ * representations about the suitability of this software for any
++ * purpose.  It is provided "as is" without express or implied
++ * warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
++ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
++ * FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
++ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
++ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
++ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
++ * SOFTWARE.
++ */
++
 +#include "glamor_priv.h"
 +#include "glamor_transform.h"
 +#include "xmir.h"
@@ -3338,7 +3280,8 @@ index 0000000..a98c37b
 +#include <gbm.h>
 +#include <epoxy/egl.h>
 +#include <epoxy/gl.h>
-+#include <mir_toolkit/mir_client_library_drm.h>
++#include <mir_toolkit/mir_connection.h>
++#include <mir_toolkit/mesa/platform_operation.h>
 +
 +/* XMir dri2 support:
 + *
@@ -3375,12 +3318,6 @@ index 0000000..a98c37b
 +    return 0;
 +}
 +
-+static void auth_cb(int status, void *ctx)
-+{
-+    int *ret = ctx;
-+    *ret = status;
-+}
-+
 +static Bool
 +xmir_dri2_flink(int drm_fd, unsigned int handle, unsigned int *name)
 +{
@@ -3397,11 +3334,7 @@ index 0000000..a98c37b
 +xmir_window_swappable_parent(WindowPtr win)
 +{
 +    ScreenPtr screen = win->drawable.pScreen;
-+    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +    PixmapPtr root, pixmap;
-+
-+    if (xmir_screen->rootless)
-+        return NULL;
 +
 +    root = screen->GetScreenPixmap(screen);
 +    pixmap = screen->GetWindowPixmap(win);
@@ -3463,14 +3396,54 @@ index 0000000..a98c37b
 +    xmir_dri2_flink(xmir_screen->drm_fd, gbm_bo_get_handle(bo).u32, &buf->name);
 +}
 +
++static void
++xmir_dri2_auth_magic_reply(MirConnection* con, MirPlatformMessage* reply, Bool* ret)
++{
++    struct MirMesaAuthMagicResponse const* response;
++    unsigned int opcode = mir_platform_message_get_opcode(reply);
++    MirPlatformMessageData data = mir_platform_message_get_data(reply);
++
++    *ret = 0;
++    response = data.data;
++
++    if (auth_magic != opcode ||
++        data.size != sizeof response ||
++        response == NULL)
++    {
++        mir_platform_message_release(reply);
++        return;
++    }
++
++    /* status == 0 indciates success */
++    if (response->status == 0)
++        *ret = 1;
++    mir_platform_message_release(reply);
++}
++
 +static Bool
 +xmir_dri2_auth_magic(ScreenPtr screen, uint32_t magic)
 +{
 +    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
-+    int ret = 0;
++    Bool ret = 0;
++    MirPlatformMessage *msg = NULL;
 +
-+    if (!is_fd_render_node(xmir_screen->drm_fd))
-+        mir_wait_for(mir_connection_drm_auth_magic(xmir_screen->conn, magic, auth_cb, &ret));
++    if (!is_fd_render_node(xmir_screen->drm_fd)) {
++        struct MirMesaAuthMagicRequest req = {
++            .magic = magic
++        };
++        msg = mir_platform_message_create(auth_magic);
++
++        if (msg == NULL)
++            return ret;
++
++        mir_platform_message_set_data(msg, &req, sizeof req);
++        mir_wait_for(mir_connection_platform_operation(
++                xmir_screen->conn,
++                msg,
++                (mir_platform_operation_callback)&xmir_dri2_auth_magic_reply,
++                &ret));
++        mir_platform_message_release(msg);
++    }
 +
 +    return ret;
 +}
@@ -3521,7 +3494,7 @@ index 0000000..a98c37b
 +            bo = xmir_pixmap->bo;
 +            break;
 +        }
-+        /* fall-through */
++        /* Fall-through */
 +    case DRI2BufferFrontLeft:
 +        xmir_pixmap = xmir_pixmap_get(pixmap);
 +
@@ -3586,7 +3559,7 @@ index 0000000..a98c37b
 +    else if (src->attachment == DRI2BufferFrontLeft && dest->attachment == DRI2BufferFakeFrontLeft)
 +        ErrorF("glXWaitX\n");
 +    else {
-+        /* no swap interval, copy to front */
++        /* No swap interval, copy to front */
 +        int dx, dy;
 +        PixmapPtr dsrc = src->driverPrivate;
 +        PixmapPtr pixmap;
@@ -3626,7 +3599,7 @@ index 0000000..a98c37b
 +    RegionRec region;
 +    int ret = 1;
 +
-+    /* noop on a glxpixmap */
++    /* Noop on a glxpixmap */
 +    if (draw->type == DRAWABLE_WINDOW) {
 +        xmir_window = xmir_window_get((WindowPtr)draw);
 +        pixmap = screen->GetWindowPixmap((WindowPtr)draw);
@@ -3647,7 +3620,7 @@ index 0000000..a98c37b
 +            struct xmir_pixmap swap_pix;
 +            struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +
-+            /* exchange pixmap data with the front glamor pixmap, and update src name/pitch */
++            /* Exchange pixmap data with the front glamor pixmap, and update src name/pitch */
 +            DebugF("%s: Exchanging glamor pixmap from %ux%u to %ux%u\n",
 +                   GetClientCmdName(client), draw->width, draw->height,
 +                   pixmap->drawable.width, pixmap->drawable.height);
@@ -3728,7 +3701,7 @@ index 0000000..a98c37b
 +        xorg_list_add(entry, &xmir_window->flip.entry);
 +    }
 +
-+    /* must report damage after adding flip entry, in case flip completes immediately */
++    /* Must report damage after adding flip entry, in case flip completes immediately */
 +    if (type != DRI2_FLIP_COMPLETE) {
 +        DamageDamageRegion(draw, &region);
 +        RegionUninit(&region);
@@ -3765,7 +3738,7 @@ index 0000000..a98c37b
 +
 +    xmir_screen->dri2.version = 9;
 +
-+    /* abuse the megablob ability to load all needed drivers */
++    /* Abuse the megablob ability to load all needed drivers */
 +    if (!strcmp(vers->name, "radeon"))
 +        driver = "r600";
 +    else
@@ -3774,7 +3747,7 @@ index 0000000..a98c37b
 +    driverNames[0] = driverNames[1] = xmir_screen->driver_name = strdup(driver);
 +    drmFreeVersion(vers);
 +
-+    /* as far as I can tell, only legacy AuthMagic has a use for the fd.. oh well */
++    /* As far as I can tell, only legacy AuthMagic has a use for the fd.. oh well */
 +    xmir_screen->dri2.fd = xmir_screen->drm_fd;
 +    xmir_screen->dri2.driverName = driverNames[0];
 +    xmir_screen->dri2.deviceName = xmir_screen->device_name;
@@ -3798,12 +3771,11 @@ index 0000000..a98c37b
 +    ret = DRI2ScreenInit(xmir_screen->screen, &xmir_screen->dri2);
 +    return ret;
 +}
-diff --git a/hw/xmir/xmir-glamor.c b/hw/xmir/xmir-glamor.c
-new file mode 100644
-index 0000000..e86849a
+Index: xorg-server-1.17.2/hw/xmir/xmir-glamor.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-glamor.c
-@@ -0,0 +1,1229 @@
++++ xorg-server-1.17.2/hw/xmir/xmir-glamor.c
+@@ -0,0 +1,1187 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -3833,7 +3805,7 @@ index 0000000..e86849a
 +#include "glamor_priv.h"
 +#include "xmir.h"
 +
-+#include <mir_toolkit/mir_client_library_drm.h>
++#include <mir_toolkit/mir_surface.h>
 +
 +#include <fcntl.h>
 +#include <sys/stat.h>
@@ -3845,8 +3817,9 @@ index 0000000..e86849a
 +#include <epoxy/egl.h>
 +#include <epoxy/gl.h>
 +#include <pthread.h>
-+
-+#define XMIR_DRM_REOPEN_HACK 0
++#include <mir_toolkit/mir_connection.h>
++#include <mir_toolkit/mir_platform_message.h>
++#include <mir_toolkit/mesa/platform_operation.h>
 +
 +static void
 +xmir_glamor_egl_make_current(struct glamor_context *glamor_ctx)
@@ -4315,7 +4288,8 @@ index 0000000..e86849a
 +        while (!xorg_list_is_empty(&xmir_screen->swap_list)) {
 +            struct xmir_window *xmir_win;
 +            Bool ret;
-+            EGLint val;
++            EGLint val, width, height;
++            PixmapPtr src_pixmap;
 +
 +            xmir_win = xorg_list_first_entry(&xmir_screen->swap_list, struct xmir_window, flip.entry);
 +
@@ -4334,20 +4308,13 @@ index 0000000..e86849a
 +            glClearColor(0., 1., 0., 1.);
 +            glClear(GL_COLOR_BUFFER_BIT);
 +
-+            {
-+                ScreenPtr screen = xmir_screen->screen;
-+                WindowPtr window = xmir_win->window;
-+                PixmapPtr src_pixmap = screen->GetWindowPixmap(window);
-+                glamor_pixmap_private *src_pixmap_priv = glamor_get_pixmap_private(src_pixmap);
-+                EGLint width, height;
++            glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
++                                         (GLeglImageOES)xmir_win->image);
 +
-+                glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
-+                                             (GLeglImageOES)xmir_win->image);
-+
-+                eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_HEIGHT, &height);
-+                eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
-+                xmir_glamor_copy_egl_tex(1, &window->drawable, src_pixmap, src_pixmap_priv, RegionExtents(&xmir_win->region), width, height, 0, 0, xmir_win->orientation);
-+            }
++            eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_HEIGHT, &height);
++            eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
++            src_pixmap = xmir_screen->screen->GetWindowPixmap(xmir_win->window);
++            xmir_glamor_copy_egl_tex(1, &xmir_win->window->drawable, src_pixmap, glamor_get_pixmap_private(src_pixmap), RegionExtents(&xmir_win->region), width, height, 0, 0, xmir_win->orientation);
 +
 +            ret = eglSwapBuffers(xmir_screen->egl_display, xmir_win->egl_surface);
 +            if (!ret)
@@ -4402,8 +4369,6 @@ index 0000000..e86849a
 +    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_HEIGHT, &height);
 +    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
 +    xmir_output_handle_resize(xmir_win, width, height);
-+
-+//     eglMakeCurrent(xmir_screen->egl_display, xmir_screen->egl_surface, xmir_screen->egl_surface, xmir_screen->egl_context);
 +}
 +
 +static void
@@ -4451,7 +4416,7 @@ index 0000000..e86849a
 +    if (epoxy_has_gl_extension("GL_OES_EGL_sync"))
 +        sync_fd = eglCreateSyncKHR(xmir_screen->egl_display, EGL_SYNC_FENCE_KHR, NULL);
 +
-+    /* flush work, and the sync_fd if created */
++    /* Flush work, and the sync_fd if created */
 +    glFlush();
 +
 +    DebugF("Queueing on %p with %p\n", xmir_win, xmir_win->image);
@@ -4571,6 +4536,12 @@ index 0000000..e86849a
 +    }
 +}
 +
++static void
++xmir_drm_set_gbm_device_response(MirConnection *con, MirPlatformMessage* reply, void* context)
++{
++    mir_platform_message_release(reply);
++}
++
 +static Bool
 +xmir_drm_init_egl(struct xmir_screen *xmir_screen)
 +{
@@ -4592,19 +4563,28 @@ index 0000000..e86849a
 +
 +
 +    if (xmir_screen->drm_fd > 0) {
-+        xmir_screen->gbm = gbm_create_device(xmir_screen->drm_fd);
++        struct MirMesaSetGBMDeviceRequest req = {
++            .device = gbm_create_device(xmir_screen->drm_fd)
++        };
++        MirPlatformMessage* msg = mir_platform_message_create(set_gbm_device);
++
++        xmir_screen->gbm = req.device;
 +        if (xmir_screen->gbm == NULL) {
 +            ErrorF("couldn't get display device\n");
++            mir_platform_message_release(msg);
 +            return FALSE;
 +        }
 +
-+        // FIXME: Use mir_connection_platform_operation
-+        mir_connection_drm_set_gbm_device(xmir_screen->conn, xmir_screen->gbm);
++        mir_platform_message_set_data(msg, &req, sizeof req);
 +
-+        /*
-+         * In GBM mode no mir functions are used in any way.
-+         * This means using the GBM device directly is safe..
-+         */
++        mir_wait_for(mir_connection_platform_operation(
++                xmir_screen->conn,
++                msg,
++                &xmir_drm_set_gbm_device_response,
++                NULL));
++        mir_platform_message_release(msg);
++        /* In GBM mode no mir functions are used in any way.
++         * This means using the GBM device directly is safe.. */
 +        xmir_screen->egl_display = eglGetDisplay(xmir_screen->gbm);
 +    } else
 +        xmir_screen->egl_display = eglGetDisplay(mir_connection_get_egl_native_display(xmir_screen->conn));
@@ -4673,29 +4653,6 @@ index 0000000..e86849a
 +    return TRUE;
 +}
 +
-+#if XMIR_DRM_REOPEN_HACK
-+static char
-+is_fd_render_node(int fd)
-+{
-+    struct stat render;
-+
-+    if (fstat(fd, &render))
-+        return 0;
-+    if (!S_ISCHR(render.st_mode))
-+        return 0;
-+    if (render.st_rdev & 0x80)
-+        return 1;
-+
-+    return 0;
-+}
-+
-+static void auth_cb(int status, void *ctx)
-+{
-+    int *ret = ctx;
-+    *ret = status;
-+}
-+#endif
-+
 +static Bool
 +xmir_screen_init_glamor_drm(struct xmir_screen *xmir_screen)
 +{
@@ -4704,27 +4661,6 @@ index 0000000..e86849a
 +    xmir_screen->device_name = drmGetDeviceNameFromFd(xmir_screen->drm_fd);
 +    if (!xmir_screen->device_name)
 +        return FALSE;
-+
-+#if XMIR_DRM_REOPEN_HACK
-+    /* This is a hack that should not be needed */
-+    xmir_screen->drm_fd = open(xmir_screen->device_name, O_RDWR | O_CLOEXEC);
-+    if (xmir_screen->drm_fd == -1) {
-+        ErrorF("wmir-egl: could not open %s (%s)\n", xmir_screen->device_name, strerror(errno));
-+        return FALSE;
-+    }
-+
-+    if (!is_fd_render_node(xmir_screen->drm_fd)) {
-+        int ret = 0;
-+        drm_magic_t magic;
-+
-+        drmGetMagic(xmir_screen->drm_fd, &magic);
-+        // FIXME: Use mir_connection_platform_operation
-+        mir_wait_for(mir_connection_drm_auth_magic(xmir_screen->conn, magic, auth_cb, &ret));
-+
-+        if (ret)
-+            return FALSE;
-+    }
-+#endif
 +
 +    return TRUE;
 +}
@@ -4774,13 +4710,7 @@ index 0000000..e86849a
 +    if (xmir_screen->gbm)
 +        gbm_device_destroy(xmir_screen->gbm);
 +    free(xmir_screen->device_name);
-+
-+#if XMIR_DRM_REOPEN_HACK
-+    if (xmir_screen->drm_fd > 0)
-+        close(xmir_screen->drm_fd);
-+#endif
 +}
-+
 +
 +void
 +glamor_egl_destroy_textured_pixmap(PixmapPtr pixmap)
@@ -5033,12 +4963,11 @@ index 0000000..e86849a
 +
 +    return TRUE;
 +}
-diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
-new file mode 100644
-index 0000000..e602ef6
+Index: xorg-server-1.17.2/hw/xmir/xmir-input.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,539 @@
++++ xorg-server-1.17.2/hw/xmir/xmir-input.c
+@@ -0,0 +1,505 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5103,7 +5032,7 @@ index 0000000..e602ef6
 +        btn_labels[4] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_WHEEL_DOWN);
 +        btn_labels[5] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_HWHEEL_LEFT);
 +        btn_labels[6] = XIGetKnownProperty(BTN_LABEL_PROP_BTN_HWHEEL_RIGHT);
-+        /* don't know about the rest */
++        /* Don't know about the rest */
 +
 +        axes_labels[0] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_X);
 +        axes_labels[1] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_Y);
@@ -5348,37 +5277,6 @@ index 0000000..e602ef6
 +{
 +}
 +
-+static WindowPtr
-+xmir_xy_to_window(ScreenPtr screen, SpritePtr sprite, int x, int y)
-+{
-+    struct xmir_input *xmir_input = NULL;
-+    DeviceIntPtr device;
-+
-+    for (device = inputInfo.devices; device; device = device->next) {
-+        if (device->deviceProc == xmir_pointer_proc &&
-+            device->spriteInfo->sprite == sprite) {
-+            xmir_input = device->public.devicePrivate;
-+            break;
-+        }
-+    }
-+
-+    if (xmir_input == NULL) {
-+        /* XTEST device */
-+        sprite->spriteTraceGood = 1;
-+        return sprite->spriteTrace[0];
-+    }
-+
-+    if (xmir_input->focus_window) {
-+        sprite->spriteTraceGood = 2;
-+        sprite->spriteTrace[1] = xmir_input->focus_window->window;
-+        return miSpriteTrace(sprite, x, y);
-+    }
-+    else {
-+        sprite->spriteTraceGood = 1;
-+        return sprite->spriteTrace[0];
-+    }
-+}
-+
 +static void
 +fake_touch_move(struct xmir_input *xmir_input, struct xmir_window *xmir_window, int sx, int sy)
 +{
@@ -5548,9 +5446,6 @@ index 0000000..e602ef6
 +    struct xmir_screen *xmir_screen = xmir_screen_get(pScreen);
 +    struct xmir_input *xmir_input;
 +
-+    if (xmir_screen->rootless)
-+        pScreen->XYToWindow = xmir_xy_to_window;
-+
 +    mieqInit();
 +
 +    xmir_input = calloc(1, sizeof(*xmir_input));
@@ -5578,12 +5473,11 @@ index 0000000..e602ef6
 +
 +    mieqFini();
 +}
-diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
-new file mode 100644
-index 0000000..4e26b8f
+Index: xorg-server-1.17.2/hw/xmir/xmir-output.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-output.c
-@@ -0,0 +1,454 @@
++++ xorg-server-1.17.2/hw/xmir/xmir-output.c
+@@ -0,0 +1,444 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5664,9 +5558,6 @@ index 0000000..4e26b8f
 +    MirPowerMode mir_mode = mir_power_mode_on;
 +    Bool unchanged = TRUE;
 +
-+    if (xmir_screen->rootless)
-+        return FALSE;
-+
 +    switch (mode) {
 +    case DPMSModeOn:
 +        mir_mode = mir_power_mode_on;
@@ -5717,7 +5608,7 @@ index 0000000..4e26b8f
 +        xmir_output->y = mir_output->position_y;
 +
 +        randr_mode = xmir_cvt(xmir_output->width, xmir_output->height, mode->refresh_rate, 0, 0);
-+        /* odd resolutions like 1366x768 don't show correctly otherwise */
++        /* Odd resolutions like 1366x768 don't show correctly otherwise */
 +        randr_mode->mode.width = mode->horizontal_resolution;
 +        randr_mode->mode.height = mode->vertical_resolution;
 +        sprintf(randr_mode->name, "%dx%d@%.1fHz",
@@ -5874,13 +5765,13 @@ index 0000000..4e26b8f
 +
 +    if (window_width == window->drawable.width &&
 +        window_height == window->drawable.height) {
-+        /* damage window if rotated */
++        /* Damage window if rotated */
 +        if (old != xmir_window->orientation)
 +            DamageDamageRegion(&window->drawable, &xmir_window->region);
 +        return;
 +    }
 +
-+    /* in case of async EGL, destroy the image after swap has finished */
++    /* In case of async EGL, destroy the image after swap has finished */
 +    if (xmir_window->image) {
 +        if (!xmir_window->has_free_buffer) {
 +            while (1) {
@@ -5895,11 +5786,6 @@ index 0000000..4e26b8f
 +        xmir_window->image = NULL;
 +    }
 +
-+    if (xmir_screen->rootless) {
-+        screen->ResizeWindow(window, window->drawable.x, window->drawable.y, window_width, window_height, NULL);
-+        return;
-+    }
-+
 +    if (!xmir_screen->windowed) {
 +        xmir_screen->windowed = 1;
 +
@@ -5912,8 +5798,6 @@ index 0000000..4e26b8f
 +            RROutputDestroy(xmir_output->randr_output);
 +            xmir_output_destroy(xmir_output);
 +        }
-+
-+//        xmir_output_create(xmir_screen, NULL, "windowed");
 +    }
 +
 +    ErrorF("New size: %ix%i with rotation %i\n", width, height, xmir_window->orientation);
@@ -5966,7 +5850,7 @@ index 0000000..4e26b8f
 +    RegionReset(&window->borderClip, &box);
 +    DamageDamageRegion(&window->drawable, &xmir_window->region);
 +
-+    /* update cursor info too */
++    /* Update cursor info too */
 +    for (pDev = inputInfo.devices; pDev; pDev = pDev->next) {
 +        int x, y;
 +
@@ -6038,14 +5922,13 @@ index 0000000..4e26b8f
 +
 +    return TRUE;
 +}
-diff --git a/hw/xmir/xmir-thread-proxy.c b/hw/xmir/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..fa24e1d
+Index: xorg-server-1.17.2/hw/xmir/xmir-thread-proxy.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-thread-proxy.c
++++ xorg-server-1.17.2/hw/xmir/xmir-thread-proxy.c
 @@ -0,0 +1,132 @@
 +/*
-+ * Copyright © 2012 Canonical Ltd
++ * Copyright © 2012-2015 Canonical Ltd
 + *
 + * Permission is hereby granted, free of charge, to any person obtaining a
 + * copy of this software and associated documentation files (the "Soft-
@@ -6176,14 +6059,13 @@ index 0000000..fa24e1d
 +		free(msg);
 +	}
 +}
-diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-new file mode 100644
-index 0000000..4f6ccce
+Index: xorg-server-1.17.2/hw/xmir/xmir.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir.c
-@@ -0,0 +1,1013 @@
++++ xorg-server-1.17.2/hw/xmir/xmir.c
+@@ -0,0 +1,983 @@
 +/*
-+ * Copyright © 2011-2014 Intel Corporation
++ * Copyright © 2015 Canonical Ltd
 + *
 + * Permission to use, copy, modify, distribute, and sell this software
 + * and its documentation for any purpose is hereby granted without
@@ -6206,6 +6088,7 @@ index 0000000..4f6ccce
 + * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 + * SOFTWARE.
 + */
++#include "xf86.h"
 +
 +#include "xmir.h"
 +
@@ -6216,32 +6099,30 @@ index 0000000..4f6ccce
 +#include <selection.h>
 +#include <micmap.h>
 +#include <misyncshm.h>
-+#include <compositeext.h>
 +#include <glx_extinit.h>
++
++#include <mir_toolkit/mir_surface.h>
 +
 +#include "dri2.h"
 +#include "glxserver.h"
++#include "glamor_priv.h"
++#include "dpmsproc.h"
 +
 +extern __GLXprovider __glXDRI2Provider;
 +
-+// FIXME: This is supposed to be conditional
-+#include "glamor_priv.h"
-+
-+#include "dpmsproc.h"
-+
 +static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 +
-+/* used by aiglx */
-+ScreenPtr *xf86ScrnToScreen(void *foo);
-+ScreenPtr *xf86ScrnToScreen(void *foo)
++/* Required by GLX module */
++ScreenPtr xf86ScrnToScreen(ScrnInfoPtr pScrn)
 +{
 +    return NULL;
 +}
 +
-+void *xf86ScreenToScrn(ScreenPtr screen);
-+void *xf86ScreenToScrn(ScreenPtr screen)
++/* Required by GLX module */
++ScrnInfoPtr xf86ScreenToScrn(ScreenPtr pScreen)
 +{
-+    return NULL;
++    static ScrnInfoRec rec;
++    return &rec;
 +}
 +
 +void
@@ -6276,7 +6157,6 @@ index 0000000..4f6ccce
 +void
 +ddxUseMsg(void)
 +{
-+    ErrorF("-rootless              run rootless, requires wm support\n");
 +    ErrorF("-sw                    disable glamor rendering\n");
 +    ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
 +    ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -6293,8 +6173,7 @@ index 0000000..4f6ccce
 +{
 +    static int seen_shared;
 +
-+    if (strcmp(argv[i], "-rootless") == 0 ||
-+        strcmp(argv[i], "-sw") == 0 ||
++    if (strcmp(argv[i], "-sw") == 0 ||
 +        strcmp(argv[i], "-egl") == 0 ||
 +        strcmp(argv[i], "-egl_sync") == 0 ||
 +        strcmp(argv[i], "-2x") == 0 ||
@@ -6536,12 +6415,6 @@ index 0000000..4f6ccce
 +        return;
 +    }
 +
-+    if (xmir_win->window == NULL)
-+    {
-+        ErrorF("WTF? Window %p has NULL win\n", xmir_win);
-+        return;
-+    }
-+
 +    DebugF("Buffer-available on %p\n", xmir_win);
 +    xmir_win->has_free_buffer = TRUE;
 +    xmir_win->damage_index = (xmir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
@@ -6610,41 +6483,34 @@ index 0000000..4f6ccce
 +
 +    int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
 +    int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
-+
-+    MirSurfaceParameters params = {
-+        .name = "Xorg",
-+        .width = mir_width,
-+        .height = mir_height,
-+        .pixel_format = window->drawable.depth == 32 ? mir_pixel_format_argb_8888 : mir_pixel_format_xrgb_8888,
-+        .buffer_usage = xmir_screen->glamor ? mir_buffer_usage_hardware : mir_buffer_usage_software,
-+        .output_id = mir_display_output_id_invalid
-+    };
++    MirSurfaceSpec* spec = NULL;
 +
 +    screen->RealizeWindow = xmir_screen->RealizeWindow;
 +    ret = (*screen->RealizeWindow) (window);
 +    xmir_screen->RealizeWindow = screen->RealizeWindow;
 +    screen->RealizeWindow = xmir_realize_window;
 +
-+    if (xmir_screen->rootless) {
-+        if (!window->parent) {
-+            CompositeRedirectSubwindows(window, /*CompositeRedirectManual*/TRUE); // WTF? Where is this defined
-+            RegionNull(&window->clipList);
-+            RegionNull(&window->borderClip);
-+            RegionNull(&window->winSize);
-+        }
++    if (window->parent)
++        return ret;
 +
-+        if (window->redirectDraw != RedirectDrawManual)
-+            return ret;
-+    }
-+    else {
-+        if (window->parent)
-+            return ret;
++    spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn,
++                                                         mir_width,
++                                                         mir_height,
++                                                         window->drawable.depth == 32 ? mir_pixel_format_argb_8888 : mir_pixel_format_xrgb_8888);
++
++    if (spec == NULL) {
++        ErrorF("failed to create a surface spec: %s\n", mir_connection_get_error_message(xmir_screen->conn));
++        return FALSE;
 +    }
 +
-+    // FIXME: Use mir_surface_create_sync
-+    xmir_window->surface = mir_connection_create_surface_sync(xmir_screen->conn, &params);
++    mir_surface_spec_set_buffer_usage(spec,
++                                      xmir_screen->glamor
++                                      ? mir_buffer_usage_hardware
++                                      : mir_buffer_usage_software);
++
++    xmir_window->surface = mir_surface_create_sync(spec);
 +    xmir_window->has_free_buffer = TRUE;
-+    if (xmir_window->surface == NULL) {
++    if (!mir_surface_is_valid(xmir_window->surface)) {
 +        ErrorF("failed to create a surface: %s\n", mir_surface_get_error_message(xmir_window->surface));
 +        return FALSE;
 +    }
@@ -6730,15 +6596,8 @@ index 0000000..4f6ccce
 +void
 +xmir_close_surface(struct xmir_window *xmir_window)
 +{
-+    WindowPtr window = xmir_window->window;
-+    struct xmir_screen *xmir_screen = xmir_screen_get(window->drawable.pScreen);
-+
-+    if (!xmir_screen->rootless) {
-+        ErrorF("Root window closed, shutting down Xmir\n");
-+        GiveUp(0);
-+    }
-+
-+    DeleteWindow(window, 1);
++    ErrorF("Root window closed, shutting down Xmir\n");
++    GiveUp(0);
 +}
 +
 +static void
@@ -6870,8 +6729,7 @@ index 0000000..4f6ccce
 +Bool
 +DPMSSupported(void)
 +{
-+    struct xmir_screen *xmir_screen = xmir_screen_get(screenInfo.screens[0]);
-+    return !xmir_screen->rootless;
++    return TRUE;
 +}
 +
 +int
@@ -6940,16 +6798,12 @@ index 0000000..4f6ccce
 +    if (!ret)
 +        return ret;
 +
-+    if (!xmir_screen->rootless)
-+        screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
-+    else
-+        screen->devPrivate = fbCreatePixmap(screen, 0, 0, screen->rootDepth, 0);
-+
++    screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
 +    if (!screen->devPrivate)
 +        return FALSE;
 +
 +#ifdef GLAMOR_HAS_GBM
-+    if (xmir_screen->glamor && !xmir_screen->rootless) {
++    if (xmir_screen->glamor) {
 +        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
 +
 +        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
@@ -7031,9 +6885,7 @@ index 0000000..4f6ccce
 +    xmir_screen->glamor = 1;
 +
 +    for (i = 1; i < argc; i++) {
-+        if (strcmp(argv[i], "-rootless") == 0) {
-+            xmir_screen->rootless = 1;
-+        } else if (strcmp(argv[i], "-mir") == 0) {
++        if (strcmp(argv[i], "-mir") == 0) {
 +            appid = argv[++i];
 +        } else if (strcmp(argv[i], "-mirSocket") == 0) {
 +            socket = argv[++i];
@@ -7195,11 +7047,10 @@ index 0000000..4f6ccce
 +        FatalError("Couldn't add screen\n");
 +    }
 +}
-diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
-new file mode 100644
-index 0000000..211efa6
+Index: xorg-server-1.17.2/hw/xmir/xmir.h
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir.h
++++ xorg-server-1.17.2/hw/xmir/xmir.h
 @@ -0,0 +1,211 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -7256,7 +7107,7 @@ index 0000000..211efa6
 +struct xmir_screen {
 +    ScreenPtr screen;
 +
-+    int depth, rootless, windowed, glamor, doubled;
++    int depth, windowed, glamor, doubled;
 +
 +    CreateScreenResourcesProcPtr CreateScreenResources;
 +    CloseScreenProcPtr CloseScreen;
@@ -7277,7 +7128,7 @@ index 0000000..211efa6
 +    struct xmir_marshall_handler *hotplug_event_handler;
 +    struct xmir_marshall_handler *submit_rendering_handler;
 +
-+    /* bookkeeping for eglSwapBuffers */
++    /* Bookkeeping for eglSwapBuffers */
 +    pthread_mutex_t mutex;
 +    pthread_cond_t cond;
 +    pthread_t thread;
@@ -7412,6 +7263,3 @@ index 0000000..211efa6
 +	(((major) * 10000000) + ((minor) * 100000) + ((patch) * 1000) + snap)
 +
 +#endif
--- 
-2.1.4
-
