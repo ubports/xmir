@@ -99,7 +99,7 @@ Build-Depends:
  libwayland-dev [linux-any],
 # XMir
  libmirclient-dev (>= 0.13.1) [!arm64 !powerpc !ppc64el],
- libatomic-ops-dev,
+ mir-client-platform-mesa-dev,
 Standards-Version: 3.9.2
 Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
@@ -211,6 +211,7 @@ Depends:
  libpciaccess-dev,
  mesa-common-dev,
  libmirclient-dev [!arm64 !powerpc !ppc64el],
+ mir-client-platform-mesa-dev,
  ${misc:Depends},
 Description: Xorg X server - development files
  This package provides development files for the X.Org ('Xorg') X server.
