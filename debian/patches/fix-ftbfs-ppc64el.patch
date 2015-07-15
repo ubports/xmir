@@ -1,3 +1,6 @@
+Description: Fix ftbfs on ppc64el
+Author: Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
+
 diff --git a/hw/kdrive/src/kinput.c b/hw/kdrive/src/kinput.c
 index a9a9fa5..f88cdc0 100644
 --- a/hw/kdrive/src/kinput.c

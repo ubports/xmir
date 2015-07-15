@@ -1,3 +1,8 @@
+Description: Disable support for rotations and transforms on gpu screens.
+Author: Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
+Bug-Ubuntu: https://launchpad.net/bugs/1386620
+Bug-Ubuntu: https://launchpad.net/bugs/1308515
+
 diff --git a/hw/xfree86/modes/xf86Crtc.c b/hw/xfree86/modes/xf86Crtc.c
 index a441fd1..9147a26 100644
 --- a/hw/xfree86/modes/xf86Crtc.c
