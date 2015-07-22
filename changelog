@@ -1,4 +1,4 @@
-xorg-server (2:1.17.2-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.17.2-1ubuntu1) wily; urgency=medium
 
   [ Timo Aaltonen ]
   * Merge from Debian unstable. (LP: #1471185)
@@ -13,7 +13,7 @@ xorg-server (2:1.17.2-1ubuntu1) UNRELEASED; urgency=medium
   * debian/xserver-xorg-core.install:
     - Simplify man page install
 
- -- Timo Aaltonen <tjaalton@debian.org>  Wed, 03 Jun 2015 11:41:03 +0300
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 23 Jul 2015 11:04:33 +1200
 
 xorg-server (2:1.17.2-1) unstable; urgency=medium
 
