@@ -41,6 +41,12 @@ xorg-server (2:1.17.1-2) unstable; urgency=medium
 
  -- Julien Cristau <jcristau@debian.org>  Mon, 04 May 2015 22:04:01 +0200
 
+xorg-server (2:1.17.1-0ubuntu6) wily; urgency=medium
+
+  * No change rebuild against Mir 0.14.0
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 16 Jul 2015 10:37:45 +1200
+
 xorg-server (2:1.17.1-0ubuntu5) wily; urgency=medium
 
   * debain/patches/xmir.patch:
