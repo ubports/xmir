@@ -36,6 +36,18 @@ xorg-server (2:1.17.1-2) unstable; urgency=medium
 
  -- Julien Cristau <jcristau@debian.org>  Mon, 04 May 2015 22:04:01 +0200
 
+xorg-server (2:1.17.1-0ubuntu5) wily; urgency=medium
+
+  * debain/patches/xmir.patch:
+    - Update from git branch, now builds against Mir 0.14.0
+  * debian/patches/xmir-rootless.patch:
+    - Split out rootless support which requires more extensive changes to
+      existing X code.
+  * debian/control:
+    - Add build-depends on mir-client-platform-mesa-dev
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 13 Jul 2015 11:33:23 +1200
+
 xorg-server (2:1.17.1-0ubuntu4) wily; urgency=medium
 
   * debian/control:
