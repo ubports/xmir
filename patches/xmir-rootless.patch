@@ -1,7 +1,7 @@
-From ae3f0599114144c26ab1de02320f000c86b2d042 Mon Sep 17 00:00:00 2001
+From 3c705fcf4a68de1276d1a2f6ee176ec7e62eb9df Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Thu, 9 Jul 2015 14:03:49 +1200
-Subject: [PATCH 2/3] xmir: Support rootless
+Subject: [PATCH 2/4] xmir: Support rootless
 
 Contributions from:
  Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
@@ -56,10 +56,10 @@ index b96cb1d..f279013 100644
                                                                      VisualID parentVisual,
                                                                      VisualID winVisual);
 diff --git a/hw/xmir/xmir-cursor.c b/hw/xmir/xmir-cursor.c
-index 143f008..dd9a8a7 100644
+index 459f9ac..c311d88 100644
 --- a/hw/xmir/xmir-cursor.c
 +++ b/hw/xmir/xmir-cursor.c
-@@ -131,7 +131,10 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
+@@ -134,7 +134,10 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
      config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
  
  apply:
@@ -72,7 +72,7 @@ index 143f008..dd9a8a7 100644
  
      if (stream)
 diff --git a/hw/xmir/xmir-dri2.c b/hw/xmir/xmir-dri2.c
-index 21de4f9..b88d089 100644
+index 1f7c1b0..4f95006 100644
 --- a/hw/xmir/xmir-dri2.c
 +++ b/hw/xmir/xmir-dri2.c
 @@ -90,8 +90,12 @@ static struct xmir_window *
@@ -167,7 +167,7 @@ index f958e87..c1770d5 100644
          xmir_screen->windowed = 1;
  
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-index ce30727..a598c0d 100644
+index c07457d..2a7227e 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
 @@ -33,6 +33,7 @@
@@ -196,7 +196,7 @@ index ce30727..a598c0d 100644
          strcmp(argv[i], "-egl") == 0 ||
          strcmp(argv[i], "-egl_sync") == 0 ||
          strcmp(argv[i], "-2x") == 0 ||
-@@ -424,8 +427,21 @@ xmir_realize_window(WindowPtr window)
+@@ -422,8 +425,21 @@ xmir_realize_window(WindowPtr window)
      xmir_screen->RealizeWindow = screen->RealizeWindow;
      screen->RealizeWindow = xmir_realize_window;
  
@@ -220,7 +220,7 @@ index ce30727..a598c0d 100644
  
      spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn,
                                                           mir_width,
-@@ -530,8 +546,15 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
+@@ -528,8 +544,15 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
  void
  xmir_close_surface(struct xmir_window *xmir_window)
  {
@@ -238,7 +238,7 @@ index ce30727..a598c0d 100644
  }
  
  static void
-@@ -663,7 +686,8 @@ xmir_is_unblank(int mode)
+@@ -661,7 +684,8 @@ xmir_is_unblank(int mode)
  Bool
  DPMSSupported(void)
  {
@@ -248,7 +248,7 @@ index ce30727..a598c0d 100644
  }
  
  int
-@@ -732,12 +756,16 @@ xmir_create_screen_resources(ScreenPtr screen)
+@@ -730,12 +754,16 @@ xmir_create_screen_resources(ScreenPtr screen)
      if (!ret)
          return ret;
  
@@ -267,7 +267,7 @@ index ce30727..a598c0d 100644
          glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
  
          glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
-@@ -819,7 +847,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
+@@ -817,7 +845,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
      xmir_screen->glamor = 1;
  
      for (i = 1; i < argc; i++) {
@@ -292,5 +292,5 @@ index e43fa40..b67f3a1 100644
      CreateScreenResourcesProcPtr CreateScreenResources;
      CloseScreenProcPtr CloseScreen;
 -- 
-2.1.4
+2.4.6
 
