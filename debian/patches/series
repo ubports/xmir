@@ -48,5 +48,6 @@ disable-rotation-transform-gpuscreens.patch
 fix-ftbfs-ppc64el.patch
 xmir.patch
 xmir-rootless.patch
+xmir-desktop-file-hint-flag.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
