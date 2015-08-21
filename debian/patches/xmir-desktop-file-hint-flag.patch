@@ -1,4 +1,4 @@
-From cc91948d4be69af96ddf9417a4b3cfac5d0f0f35 Mon Sep 17 00:00:00 2001
+From 938313b76b0e3279a94af931cbe5fd34b8cb580c Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Mon, 13 Jul 2015 15:54:32 +1200
 Subject: [PATCH 3/4] xmir: Ignore --desktop_file_hint flag required by Unity8
@@ -9,7 +9,7 @@ Subject: [PATCH 3/4] xmir: Ignore --desktop_file_hint flag required by Unity8
  1 file changed, 3 insertions(+)
 
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-index 2a7227e..810b715 100644
+index ef78cca..b9b7f2d 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
 @@ -123,6 +123,9 @@ ddxProcessArgument(int argc, char *argv[], int i)
