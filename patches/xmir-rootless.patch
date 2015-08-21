@@ -1,4 +1,4 @@
-From 2cf1ea480b7ebcecc61509a54b27b685c4ccfc53 Mon Sep 17 00:00:00 2001
+From a7b78b9c0eee1a53e0fed309474aa6cc76656ffc Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Thu, 9 Jul 2015 14:03:49 +1200
 Subject: [PATCH 2/4] xmir: Support rootless
@@ -167,7 +167,7 @@ index f958e87..c1770d5 100644
          xmir_screen->windowed = 1;
  
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-index 4afd66e..ef78cca 100644
+index 4afd66e..13224aa 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
 @@ -33,6 +33,7 @@
@@ -202,14 +202,14 @@ index 4afd66e..ef78cca 100644
  
 -    if (window->parent)
 -        return ret;
-+    if (xmir_screen->rootless) {
-+        if (!window->parent) {
-+            CompositeRedirectSubwindows(window, /*CompositeRedirectManual*/TRUE); // WTF? Where is this defined
-+            RegionNull(&window->clipList);
-+            RegionNull(&window->borderClip);
-+            RegionNull(&window->winSize);
-+        }
++    if (xmir_screen->rootless && !window->parent) {
++        RegionNull(&window->clipList);
++        RegionNull(&window->borderClip);
++        RegionNull(&window->winSize);
++    }
 +
++    if (xmir_screen->rootless) {
++        CompositeRedirectSubwindows(window, /*CompositeRedirectManual*/TRUE); // WTF? Where is this defined
 +        if (window->redirectDraw != RedirectDrawManual)
 +            return ret;
 +    }
@@ -292,5 +292,5 @@ index e43fa40..b67f3a1 100644
      CreateScreenResourcesProcPtr CreateScreenResources;
      CloseScreenProcPtr CloseScreen;
 -- 
-2.4.6
+2.5.0
 

@@ -1,3 +1,10 @@
+xorg-server (2:1.17.2-1ubuntu4) wily; urgency=medium
+
+  * debian/patches/xmir-rootless.patch:
+    - Fix crash when running XMir in rootless mode (LP: #1472097)
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 20 Aug 2015 16:31:37 +1200
+
 xorg-server (2:1.17.2-1ubuntu3) wily; urgency=medium
 
   * debian/patches/xmir.patch:
