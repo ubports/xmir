@@ -1,4 +1,4 @@
-From 0ee9ce22bb8741841d37bd0c4bd9a48bf86e82a0 Mon Sep 17 00:00:00 2001
+From 288ecd8208dadaf661639559192373874cad9f20 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 15 May 2015 14:58:59 +1200
 Subject: [PATCH 1/4] XMir DDX
@@ -25,9 +25,9 @@ Contributions from:
  hw/xmir/xmir-input.c        |  505 ++++++++++++++++
  hw/xmir/xmir-output.c       |  444 ++++++++++++++
  hw/xmir/xmir-thread-proxy.c |  132 ++++
- hw/xmir/xmir.c              |  981 ++++++++++++++++++++++++++++++
+ hw/xmir/xmir.c              |  999 +++++++++++++++++++++++++++++++
  hw/xmir/xmir.h              |  211 +++++++
- 18 files changed, 7083 insertions(+), 2 deletions(-)
+ 18 files changed, 7101 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -6075,10 +6075,10 @@ index 0000000..6b16871
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..c07457d
+index 0000000..4afd66e
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,981 @@
+@@ -0,0 +1,999 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6493,6 +6493,9 @@ index 0000000..c07457d
 +    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +    struct xmir_window *xmir_window = xmir_window_get(window);
 +    Bool ret;
++    MirPixelFormat formats[1024];
++    unsigned int n_formats, i;
++    MirPixelFormat pixel_format = mir_pixel_format_invalid;
 +
 +    int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
 +    int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
@@ -6506,10 +6509,25 @@ index 0000000..c07457d
 +    if (window->parent)
 +        return ret;
 +
-+    spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn,
-+                                                         mir_width,
-+                                                         mir_height,
-+                                                         window->drawable.depth == 32 ? mir_pixel_format_argb_8888 : mir_pixel_format_xrgb_8888);
++    mir_connection_get_available_surface_formats (xmir_screen->conn, formats, 1024, &n_formats);
++    for (i = 0; i < n_formats && pixel_format == mir_pixel_format_invalid; i++) {
++        switch (formats[i]) {
++        case mir_pixel_format_argb_8888:
++        case mir_pixel_format_abgr_8888:
++            if (window->drawable.depth == 32)
++                pixel_format = formats[i];
++            break;
++        case mir_pixel_format_xrgb_8888:
++        case mir_pixel_format_xbgr_8888:
++        case mir_pixel_format_bgr_888:
++            if (window->drawable.depth == 24)
++                pixel_format = formats[i];
++            break;
++        default:
++            break;
++        }
++    }
++    spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn, mir_width, mir_height, pixel_format);
 +
 +    if (spec == NULL) {
 +        ErrorF("failed to create a surface spec: %s\n", mir_connection_get_error_message(xmir_screen->conn));

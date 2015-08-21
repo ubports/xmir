@@ -1,4 +1,4 @@
-From 3c705fcf4a68de1276d1a2f6ee176ec7e62eb9df Mon Sep 17 00:00:00 2001
+From 2cf1ea480b7ebcecc61509a54b27b685c4ccfc53 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Thu, 9 Jul 2015 14:03:49 +1200
 Subject: [PATCH 2/4] xmir: Support rootless
@@ -167,7 +167,7 @@ index f958e87..c1770d5 100644
          xmir_screen->windowed = 1;
  
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-index c07457d..2a7227e 100644
+index 4afd66e..ef78cca 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
 @@ -33,6 +33,7 @@
@@ -196,7 +196,7 @@ index c07457d..2a7227e 100644
          strcmp(argv[i], "-egl") == 0 ||
          strcmp(argv[i], "-egl_sync") == 0 ||
          strcmp(argv[i], "-2x") == 0 ||
-@@ -422,8 +425,21 @@ xmir_realize_window(WindowPtr window)
+@@ -425,8 +428,21 @@ xmir_realize_window(WindowPtr window)
      xmir_screen->RealizeWindow = screen->RealizeWindow;
      screen->RealizeWindow = xmir_realize_window;
  
@@ -218,9 +218,9 @@ index c07457d..2a7227e 100644
 +            return ret;
 +    }
  
-     spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn,
-                                                          mir_width,
-@@ -528,8 +544,15 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
+     mir_connection_get_available_surface_formats (xmir_screen->conn, formats, 1024, &n_formats);
+     for (i = 0; i < n_formats && pixel_format == mir_pixel_format_invalid; i++) {
+@@ -546,8 +562,15 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
  void
  xmir_close_surface(struct xmir_window *xmir_window)
  {
@@ -238,7 +238,7 @@ index c07457d..2a7227e 100644
  }
  
  static void
-@@ -661,7 +684,8 @@ xmir_is_unblank(int mode)
+@@ -679,7 +702,8 @@ xmir_is_unblank(int mode)
  Bool
  DPMSSupported(void)
  {
@@ -248,7 +248,7 @@ index c07457d..2a7227e 100644
  }
  
  int
-@@ -730,12 +754,16 @@ xmir_create_screen_resources(ScreenPtr screen)
+@@ -748,12 +772,16 @@ xmir_create_screen_resources(ScreenPtr screen)
      if (!ret)
          return ret;
  
@@ -267,7 +267,7 @@ index c07457d..2a7227e 100644
          glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
  
          glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
-@@ -817,7 +845,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
+@@ -835,7 +863,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
      xmir_screen->glamor = 1;
  
      for (i = 1; i < argc; i++) {
