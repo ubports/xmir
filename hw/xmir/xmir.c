@@ -529,7 +529,7 @@ xmir_surface_vis_str(MirSurfaceVisibility vis)
 {
     switch (vis) {
     case mir_surface_visibility_occluded: return "hidden";
-    case mir_surface_visibility_exposed: return "visibile";
+    case mir_surface_visibility_exposed: return "visible";
     default: return "???";
     }
 }
