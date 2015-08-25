@@ -808,8 +808,8 @@ xmir_visit_set_window_pixmap(WindowPtr window, void *data)
     struct xmir_visit_set_pixmap_window *visit = data;
 
     if (fbGetWindowPixmap(window) == visit->old) {
-	    window->drawable.pScreen->SetWindowPixmap(window, visit->new);
-	    return WT_WALKCHILDREN;
+        window->drawable.pScreen->SetWindowPixmap(window, visit->new);
+        return WT_WALKCHILDREN;
     }
 
     return WT_DONTWALKCHILDREN;
@@ -818,22 +818,22 @@ xmir_visit_set_window_pixmap(WindowPtr window, void *data)
 static void
 xmir_set_screen_pixmap(PixmapPtr pixmap)
 {
-	ScreenPtr screen = pixmap->drawable.pScreen;
-	PixmapPtr old_front = screen->devPrivate;
-	WindowPtr root;
+    ScreenPtr screen = pixmap->drawable.pScreen;
+    PixmapPtr old_front = screen->devPrivate;
+    WindowPtr root;
 
-	root = screen->root;
-	if (root) {
-		struct xmir_visit_set_pixmap_window visit = { old_front, pixmap };
-		assert(fbGetWindowPixmap(root) == old_front);
-		TraverseTree(root, xmir_visit_set_window_pixmap, &visit);
-		assert(fbGetWindowPixmap(root) == pixmap);
-	}
+    root = screen->root;
+    if (root) {
+        struct xmir_visit_set_pixmap_window visit = { old_front, pixmap };
+        assert(fbGetWindowPixmap(root) == old_front);
+        TraverseTree(root, xmir_visit_set_window_pixmap, &visit);
+        assert(fbGetWindowPixmap(root) == pixmap);
+    }
 
-	screen->devPrivate = pixmap;
+    screen->devPrivate = pixmap;
 
-	if (old_front)
-		screen->DestroyPixmap(old_front);
+    if (old_front)
+        screen->DestroyPixmap(old_front);
 }
 
 static Bool
