@@ -34,7 +34,6 @@
 #endif
 
 #include <string.h>
-#include <randrstr.h>
 #include "xmir.h"
 
 /*
