@@ -2,17 +2,27 @@ Description: Disable support for rotations and transforms on gpu screens.
 Author: Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
 Bug-Ubuntu: https://launchpad.net/bugs/1386620
 Bug-Ubuntu: https://launchpad.net/bugs/1308515
+Bug-Ubuntu: https://launchpad.net/bugs/1489696
 
-diff --git a/hw/xfree86/modes/xf86Crtc.c b/hw/xfree86/modes/xf86Crtc.c
-index a441fd1..9147a26 100644
---- a/hw/xfree86/modes/xf86Crtc.c
-+++ b/hw/xfree86/modes/xf86Crtc.c
-@@ -778,7 +778,7 @@ xf86CrtcScreenInit(ScreenPtr screen)
-         if (!crtc->funcs->shadow_allocate || !crtc->funcs->shadow_create)
-             break;
-     }
--    if (c == config->num_crtc) {
-+    if (c == config->num_crtc && !screen->isGPU) {
-         xf86RandR12SetRotations(screen, RR_Rotate_0 | RR_Rotate_90 |
-                                 RR_Rotate_180 | RR_Rotate_270 |
-                                 RR_Reflect_X | RR_Reflect_Y);
+--- a/hw/xfree86/modes/xf86RandR12.c
++++ b/hw/xfree86/modes/xf86RandR12.c
+@@ -927,6 +927,9 @@ xf86RandR12SetRotations(ScreenPtr pScree
+     if (xf86RandR12Key == NULL)
+         return;
+ 
++    if (pScreen->isGPU)
++        rotations = RR_Rotate_0;
++
+     randrp = XF86RANDRINFO(pScreen);
+ #if RANDR_12_INTERFACE
+     for (c = 0; c < config->num_crtc; c++) {
+@@ -947,6 +950,9 @@ xf86RandR12SetTransformSupport(ScreenPtr
+     xf86CrtcConfigPtr config = XF86_CRTC_CONFIG_PTR(pScrn);
+ #endif
+ 
++    if (pScreen->isGPU)
++        transforms = FALSE;
++
+     if (xf86RandR12Key == NULL)
+         return;
+ 
