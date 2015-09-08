@@ -1,9 +1,9 @@
-xorg-server (2:1.17.2-1ubuntu6) UNRELEASED; urgency=medium
+xorg-server (2:1.17.2-1ubuntu6) wily; urgency=medium
 
   * os-make-sure-the-clientswritable-fd-set-is-initialized.diff: Fix
     crashers caused by newer xproto bumping XFD_SETSIZE. (LP: #1484380)
 
- -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Sep 2015 10:16:29 +0300
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Sep 2015 10:30:31 +0300
 
 xorg-server (2:1.17.2-1ubuntu5) wily; urgency=medium
 
