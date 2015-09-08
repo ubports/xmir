@@ -51,3 +51,4 @@ xmir-rootless.patch
 xmir-desktop-file-hint-flag.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
+os-make-sure-the-clientswritable-fd-set-is-initialized.diff
