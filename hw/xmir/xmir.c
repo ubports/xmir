@@ -459,7 +459,7 @@ xmir_realize_window(WindowPtr window)
      *       graphics driver when using EGL:
      *         mir_connection_get_egl_pixel_format()
      */
-    
+
     spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn, mir_width, mir_height, pixel_format);
 
     if (spec == NULL) {
