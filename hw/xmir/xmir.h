@@ -89,6 +89,8 @@ struct xmir_screen {
     struct glamor_context *glamor_ctx;
     void *egl_surface;
 
+    MirPixelFormat depth24_pixel_format, depth32_pixel_format;
+
     DRI2InfoRec dri2;
 };
 

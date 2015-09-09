@@ -418,8 +418,6 @@ xmir_realize_window(WindowPtr window)
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     struct xmir_window *xmir_window = xmir_window_get(window);
     Bool ret;
-    MirPixelFormat formats[1024];
-    unsigned int n_formats, i;
     MirPixelFormat pixel_format = mir_pixel_format_invalid;
 
     int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
@@ -447,24 +445,21 @@ xmir_realize_window(WindowPtr window)
             return ret;
     }
 
-    mir_connection_get_available_surface_formats (xmir_screen->conn, formats, 1024, &n_formats);
-    for (i = 0; i < n_formats && pixel_format == mir_pixel_format_invalid; i++) {
-        switch (formats[i]) {
-        case mir_pixel_format_argb_8888:
-        case mir_pixel_format_abgr_8888:
-            if (window->drawable.depth == 32)
-                pixel_format = formats[i];
-            break;
-        case mir_pixel_format_xrgb_8888:
-        case mir_pixel_format_xbgr_8888:
-        case mir_pixel_format_bgr_888:
-            if (window->drawable.depth == 24)
-                pixel_format = formats[i];
-            break;
-        default:
-            break;
-        }
+    if (window->drawable.depth == 32)
+        pixel_format = xmir_screen->depth32_pixel_format;
+    else if (window->drawable.depth == 24)
+        pixel_format = xmir_screen->depth24_pixel_format;
+    else {
+        ErrorF("No pixel format available for depth %d\n",
+               (int)window->drawable.depth);
+        return FALSE;
     }
+
+    /* TODO: Replace pixel_format with the actual right answer from the
+     *       graphics driver when using EGL:
+     *         mir_connection_get_egl_pixel_format()
+     */
+    
     spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn, mir_width, mir_height, pixel_format);
 
     if (spec == NULL) {
@@ -842,10 +837,12 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     struct xmir_screen *xmir_screen;
     MirConnection *conn;
     Pixel red_mask, blue_mask, green_mask;
-    int ret, bpc, green_bpc, i;
+    int ret, bpc, i;
     int client_fd = -1;
     char *socket = NULL;
     const char *appid = "XMIR";
+    unsigned int formats, f;
+    MirPixelFormat format[1024];
 
     if (!dixRegisterPrivateKey(&xmir_screen_private_key, PRIVATE_SCREEN, 0) ||
         !dixRegisterPrivateKey(&xmir_window_private_key, PRIVATE_WINDOW, 0) ||
@@ -909,6 +906,26 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xorg_list_init(&xmir_screen->damage_window_list);
     xmir_screen->depth = 24;
 
+    mir_connection_get_available_surface_formats(xmir_screen->conn,
+        format, sizeof(format)/sizeof(format[0]), &formats);
+    for (f = 0; f < formats; ++f) {
+        switch (format[i]) {
+        case mir_pixel_format_argb_8888:
+        case mir_pixel_format_abgr_8888:
+            xmir_screen->depth32_pixel_format = format[i];
+            break;
+        case mir_pixel_format_xrgb_8888:
+        case mir_pixel_format_xbgr_8888:
+        case mir_pixel_format_bgr_888:
+     /* case mir_pixel_format_rgb_888:  in Mir 0.15 when landed */
+            xmir_screen->depth24_pixel_format = format[i];
+            break;
+        default:
+            ErrorF("Unrecognized Mir pixel format: %d\n", format[i]);
+            break;
+        }
+    }
+
     xmir_screen->display = mir_connection_create_display_config(conn);
     if (xmir_screen->display == NULL) {
         FatalError("could not create display config\n");
@@ -921,15 +938,28 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     if (xmir_screen->glamor)
         xmir_screen_init_glamor(xmir_screen);
 
-    bpc = xmir_screen->depth / 3;
-    green_bpc = xmir_screen->depth - 2 * bpc;
-    blue_mask = (1 << bpc) - 1;
-    green_mask = ((1 << green_bpc) - 1) << bpc;
-    red_mask = blue_mask << (green_bpc + bpc);
+    bpc = 8;
+    green_mask = 0x00ff00;
+    switch (xmir_screen->depth24_pixel_format)
+    {
+    case mir_pixel_format_xrgb_8888:
+    case mir_pixel_format_bgr_888:  /* Little endian: Note the reversal */
+        red_mask = 0xff0000;
+        blue_mask = 0x0000ff;
+        break;
+    case mir_pixel_format_xbgr_8888:
+ /* case mir_pixel_format_rgb_888:  in Mir 0.15 */
+        red_mask = 0x0000ff;
+        blue_mask = 0xff0000;
+        break;
+    default:
+        ErrorF("No Mir-compatible TrueColor formats (or memory corruption FIXME)\n");
+        return FALSE;
+    }
 
     miSetVisualTypesAndMasks(xmir_screen->depth,
                              ((1 << TrueColor) | (1 << DirectColor)),
-                             green_bpc, TrueColor,
+                             bpc, TrueColor,
                              red_mask, green_mask, blue_mask);
 
     miSetPixmapDepths();
