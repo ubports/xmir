@@ -909,19 +909,20 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     mir_connection_get_available_surface_formats(xmir_screen->conn,
         format, sizeof(format)/sizeof(format[0]), &formats);
     for (f = 0; f < formats; ++f) {
-        switch (format[i]) {
+        switch (format[f]) {
         case mir_pixel_format_argb_8888:
         case mir_pixel_format_abgr_8888:
-            xmir_screen->depth32_pixel_format = format[i];
+            xmir_screen->depth32_pixel_format = format[f];
             break;
         case mir_pixel_format_xrgb_8888:
         case mir_pixel_format_xbgr_8888:
         case mir_pixel_format_bgr_888:
      /* case mir_pixel_format_rgb_888:  in Mir 0.15 when landed */
-            xmir_screen->depth24_pixel_format = format[i];
+            xmir_screen->depth24_pixel_format = format[f];
             break;
         default:
-            ErrorF("Unrecognized Mir pixel format: %d\n", format[i]);
+            /* Other/new pixel formats don't need mentioning. We only
+               care about Xorg-compatible formats */
             break;
         }
     }
@@ -953,7 +954,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         blue_mask = 0xff0000;
         break;
     default:
-        ErrorF("No Mir-compatible TrueColor formats (or memory corruption FIXME)\n");
+        ErrorF("No Mir-compatible TrueColor formats\n");
         return FALSE;
     }
 
