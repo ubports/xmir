@@ -667,7 +667,8 @@ xmir_close_screen(ScreenPtr screen)
                                   &xmir_screen->output_list, link)
         xmir_output_destroy(xmir_output);
 
-    xmir_glamor_fini(xmir_screen);
+    if (xmir_screen->glamor)
+        xmir_glamor_fini(xmir_screen);
     mir_display_config_destroy(xmir_screen->display);
     mir_connection_release(xmir_screen->conn);
 
