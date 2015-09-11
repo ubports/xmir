@@ -822,7 +822,7 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
 
     version = eglQueryString(xmir_screen->egl_display, EGL_VERSION);
     ErrorF("glamor EGL version: %s\n", version);
-    ErrorF("glamor EGL extensions: %s:\n", eglQueryString(xmir_screen->egl_display, EGL_EXTENSIONS));
+    ErrorF("glamor EGL extensions: %s\n", eglQueryString(xmir_screen->egl_display, EGL_EXTENSIONS));
 
     egl_config = xmir_glamor_get_egl_config(xmir_screen);
 
