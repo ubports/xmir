@@ -856,7 +856,7 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
         return FALSE;
     }
 
-    if (!xmir_screen->gbm && xmir_screen->glamor != 3) {
+    if (!xmir_screen->gbm && xmir_screen->glamor != glamor_egl_sync) {
         xmir_screen->swap_context = eglCreateContext(xmir_screen->egl_display, egl_config, EGL_NO_CONTEXT, gles2_attribs);
         if (!xmir_screen->swap_context) {
             ErrorF("Failed to create EGL context: %i/%x\n", eglGetError(), eglGetError());
@@ -893,7 +893,7 @@ xmir_screen_init_glamor(struct xmir_screen *xmir_screen)
 
     if (xmir_screen->platform.fd_items >= 1 &&
         !xmir_screen->doubled &&
-        xmir_screen->glamor == 1 &&
+        xmir_screen->glamor == glamor_dri &&
         !xmir_screen_init_glamor_drm(xmir_screen))
         return FALSE;
 
