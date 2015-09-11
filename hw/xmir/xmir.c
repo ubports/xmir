@@ -886,6 +886,14 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         }
     }
 
+#ifdef __arm__
+    if (xmir_screen->glamor == glamor_dri) {
+        /* Hide the ARM glamor bugs for now so we can have working phones */
+        xmir_screen->glamor = glamor_off;
+        xmir_screen->damage_all = true;
+    }
+#endif
+
     if (client_fd != -1) {
         if (!AddClientOnOpenFD(client_fd)) {
             FatalError("failed to connect to client fd %d\n", client_fd);
