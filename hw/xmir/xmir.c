@@ -861,7 +861,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xmir_screen->screen = pScreen;
     xmir_screen->submit_rendering_handler = xmir_register_handler(&xmir_handle_buffer_available, sizeof (struct xmir_window *));
     xmir_screen->input_handler = xmir_register_handler(&xmir_handle_input_in_main_thread, sizeof (XMirEventContext));
-    xmir_screen->glamor = 1;
+    xmir_screen->glamor = glamor_dri;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
@@ -871,16 +871,16 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         } else if (strcmp(argv[i], "-mirSocket") == 0) {
             socket = argv[++i];
         } else if (strcmp(argv[i], "-sw") == 0) {
-            xmir_screen->glamor = 0;
+            xmir_screen->glamor = glamor_off;
         } else if (strcmp(argv[i], "-egl") == 0) {
-            if (xmir_screen->glamor < 2)
-                xmir_screen->glamor = 2;
+            if (xmir_screen->glamor != glamor_egl_sync)
+                xmir_screen->glamor = glamor_egl;
         } else if (strcmp(argv[i], "-2x") == 0) {
             xmir_screen->doubled = 1;
         } else if (strcmp(argv[i], "-damage") == 0) {
             xmir_screen->damage_all = true;
         } else if (strcmp(argv[i], "-egl_sync") == 0) {
-            xmir_screen->glamor = 3;
+            xmir_screen->glamor = glamor_egl_sync;
         } else if (strcmp(argv[i], "-fd") == 0) {
             client_fd = (int)strtol(argv[++i], (char **)NULL, 0);
         }
@@ -992,9 +992,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef GLAMOR_HAS_GBM
     if (xmir_screen->glamor && !xmir_glamor_init(xmir_screen)) {
-        if (xmir_screen->glamor > 1)
+        if (xmir_screen->glamor >= glamor_egl)
             FatalError("EGL requested, but not available\n");
-        xmir_screen->glamor = 0;
+        xmir_screen->glamor = glamor_off;
     }
 
     if (xmir_screen->glamor && xmir_screen->gbm && !xmir_dri2_screen_init(xmir_screen))
