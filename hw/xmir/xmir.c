@@ -43,6 +43,10 @@
 #include "glamor_priv.h"
 #include "dpmsproc.h"
 
+/* From composite.h, source package x11proto-composite */
+#define CompositeRedirectAutomatic 0
+#define CompositeRedirectManual 1
+
 extern __GLXprovider __glXDRI2Provider;
 
 static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
@@ -436,7 +440,7 @@ xmir_realize_window(WindowPtr window)
     }
 
     if (xmir_screen->rootless) {
-        CompositeRedirectSubwindows(window, /*CompositeRedirectManual*/TRUE); // WTF? Where is this defined
+        CompositeRedirectSubwindows(window, CompositeRedirectManual);
         if (window->redirectDraw != RedirectDrawManual)
             return ret;
     }
