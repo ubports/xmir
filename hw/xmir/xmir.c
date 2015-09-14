@@ -888,6 +888,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef __arm__
     if (xmir_screen->glamor == glamor_dri) {
+        ErrorF("ARM architecture: Defaulting to software mode because glamor "
+               "is not stable\n");
         /* Hide the ARM glamor bugs for now so we can have working phones */
         xmir_screen->glamor = glamor_off;
         xmir_screen->damage_all = true;
