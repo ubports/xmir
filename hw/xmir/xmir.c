@@ -475,7 +475,32 @@ xmir_realize_window(WindowPtr window)
      *         mir_connection_get_egl_pixel_format()
      */
 
-    spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn, mir_width, mir_height, pixel_format);
+    /* FIXME: This is a terrible hack for menu placement.
+     * X wants to place menus using absolute coordinates (relative to root),
+     * whereas the Mir client API never allows such things. Unfortunately we
+     * don't even have the luxury of placing the menu relative to its parent
+     * because its parent is root -- it's the same as a top-level app window.
+     * So this hack remembers the latest app window placement and just uses
+     * that.
+     */
+    if (xmir_screen->wm && xmir_screen->latest_app_window) {
+        /* TODO: Check WM_CLASS here for menu-specific behaviour. */
+        struct xmir_window *rel = xmir_screen->latest_app_window;
+        if (rel && rel->surface) {
+            short dx = window->drawable.x - rel->window->drawable.x;
+            short dy = window->drawable.y - rel->window->drawable.y;
+            MirRectangle placement = {dx, dy, 0, 0};
+            spec = mir_connection_create_spec_for_menu(xmir_screen->conn,
+                mir_width, mir_height, pixel_format, rel->surface,
+                &placement, mir_edge_attachment_any);
+        }
+    }
+
+    if (!spec) {
+        spec = mir_connection_create_spec_for_normal_surface(
+            xmir_screen->conn, mir_width, mir_height, pixel_format);
+        xmir_screen->latest_app_window = NULL;
+    }
 
     if (spec == NULL) {
         ErrorF("failed to create a surface spec: %s\n", mir_connection_get_error_message(xmir_screen->conn));
@@ -488,6 +513,8 @@ xmir_realize_window(WindowPtr window)
                                       : mir_buffer_usage_software);
 
     xmir_window->surface = mir_surface_create_sync(spec);
+    if (!xmir_screen->latest_app_window)
+        xmir_screen->latest_app_window = xmir_window;
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
         ErrorF("failed to create a surface: %s\n", mir_surface_get_error_message(xmir_window->surface));
@@ -633,7 +660,11 @@ xmir_unrealize_window(WindowPtr window)
 {
     ScreenPtr screen = window->drawable.pScreen;
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
+    struct xmir_window *xmir_window = xmir_window_get(window);
     Bool ret;
+
+    if (xmir_screen->latest_app_window == xmir_window)
+        xmir_screen->latest_app_window = NULL;
 
     xmir_unmap_input(xmir_screen, window);
 
