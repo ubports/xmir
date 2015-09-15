@@ -50,6 +50,8 @@
 
 #define MIR_MAX_BUFFER_AGE 3
 
+struct xmir_window;
+
 struct xmir_screen {
     ScreenPtr screen;
 
@@ -92,6 +94,7 @@ struct xmir_screen {
 
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
     ClientPtr wm;  /* Built-in window manager, or zero for manual WM */
+    struct xmir_window *latest_app_window;
 
     DRI2InfoRec dri2;
 };
