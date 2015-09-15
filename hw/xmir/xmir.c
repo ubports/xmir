@@ -439,6 +439,13 @@ xmir_realize_window(WindowPtr window)
         RegionNull(&window->winSize);
     }
 
+    ErrorF("Realize window %p: %dx%d parent=%p depth=%d, redir=%u "
+           "type=%hu class=%u visibility=%u viewable=%u\n",
+           window, mir_width, mir_height, window->parent,
+           window->drawable.depth,
+           window->redirectDraw, window->drawable.type,
+           window->drawable.class, window->visibility, window->viewable);
+
     if (xmir_screen->rootless) {
         CompositeRedirectSubwindows(window, CompositeRedirectManual);
         if (window->redirectDraw != RedirectDrawManual)
