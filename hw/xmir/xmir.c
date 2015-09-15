@@ -444,7 +444,9 @@ xmir_realize_window(WindowPtr window)
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable);
 
-    if (xmir_screen->rootless) {
+    if (!window->viewable) {
+        return ret;
+    } else if (xmir_screen->rootless) {
         if (xmir_screen->wm &&
             (!window->parent || window->parent == screen->root)) {
             compRedirectWindow(xmir_screen->wm, window,
@@ -454,10 +456,8 @@ xmir_realize_window(WindowPtr window)
         }
         if (window->redirectDraw != RedirectDrawManual)
             return ret;
-    }
-    else {
-        if (window->parent)
-            return ret;
+    } else if (window->parent) {
+        return ret;
     }
 
     if (window->drawable.depth == 32)
