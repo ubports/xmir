@@ -447,11 +447,11 @@ xmir_realize_window(WindowPtr window)
     if (!window->viewable) {
         return ret;
     } else if (xmir_screen->rootless) {
-        if (xmir_screen->wm &&
+        if (xmir_screen->do_own_wm &&
             (!window->parent || window->parent == screen->root)) {
-            compRedirectWindow(xmir_screen->wm, window,
+            compRedirectWindow(serverClient, window,
                                CompositeRedirectManual);
-            compRedirectSubwindows(xmir_screen->wm, window,
+            compRedirectSubwindows(serverClient, window,
                                    CompositeRedirectAutomatic);
         }
         if (window->redirectDraw != RedirectDrawManual)
@@ -483,7 +483,7 @@ xmir_realize_window(WindowPtr window)
      * So this hack remembers the latest app window placement and just uses
      * that.
      */
-    if (xmir_screen->wm && xmir_screen->latest_app_window) {
+    if (xmir_screen->do_own_wm && xmir_screen->latest_app_window) {
         /* TODO: Check WM_CLASS here for menu-specific behaviour. */
         struct xmir_window *rel = xmir_screen->latest_app_window;
         if (rel && rel->surface) {
@@ -908,13 +908,13 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xmir_screen->submit_rendering_handler = xmir_register_handler(&xmir_handle_buffer_available, sizeof (struct xmir_window *));
     xmir_screen->input_handler = xmir_register_handler(&xmir_handle_input_in_main_thread, sizeof (XMirEventContext));
     xmir_screen->glamor = glamor_dri;
-    xmir_screen->wm = serverClient;
+    xmir_screen->do_own_wm = True;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
             xmir_screen->rootless = 1;
         } else if (strcmp(argv[i], "-nowm") == 0) {
-            xmir_screen->wm = NULL;
+            xmir_screen->do_own_wm = False;
         } else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
         } else if (strcmp(argv[i], "-mirSocket") == 0) {

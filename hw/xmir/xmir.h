@@ -93,7 +93,7 @@ struct xmir_screen {
     void *egl_surface;
 
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
-    ClientPtr wm;  /* Built-in window manager, or zero for manual WM */
+    Bool do_own_wm;
     struct xmir_window *latest_app_window;
 
     DRI2InfoRec dri2;
