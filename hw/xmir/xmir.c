@@ -34,6 +34,7 @@
 #include <micmap.h>
 #include <misyncshm.h>
 #include <glx_extinit.h>
+#include <X11/Xatom.h>
 
 #include <mir_toolkit/mir_surface.h>
 
@@ -414,6 +415,30 @@ xmir_create_window(WindowPtr window)
 }
 
 static Bool
+xmir_window_get_string8_atom(WindowPtr window, ATOM atom,
+                             char *buf, size_t bufsize)
+{
+    if (window->optional) {
+        PropertyPtr p = window->optional->userProps;
+        while (p) {
+            ErrorF("Window %p: property %d type %d format %u size %u\n",
+                   window, p->propertyName, p->type, p->format, p->size);
+            if (p->propertyName == atom &&
+                p->type == XA_STRING &&
+                p->format == 8 &&
+                p->data) {
+                size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
+                memcpy(buf, p->data, len);
+                buf[len] = '\0';
+                return True;
+            }
+            p = p->next;
+        }
+    }
+    return False;
+}
+
+static Bool
 xmir_realize_window(WindowPtr window)
 {
     ScreenPtr screen = window->drawable.pScreen;
@@ -512,6 +537,14 @@ xmir_realize_window(WindowPtr window)
                                       ? mir_buffer_usage_hardware
                                       : mir_buffer_usage_software);
 
+    /* Initial window title bar works.  TODO: support for updates */
+    if (xmir_screen->do_own_wm) {
+        char name[1024];
+        if (xmir_window_get_string8_atom(window, XA_WM_NAME,
+                                         name, sizeof name)) {
+            mir_surface_spec_set_name(spec, name);
+        }
+    }
     xmir_window->surface = mir_surface_create_sync(spec);
     if (!xmir_screen->latest_app_window)
         xmir_screen->latest_app_window = xmir_window;
