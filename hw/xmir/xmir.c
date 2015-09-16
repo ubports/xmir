@@ -436,12 +436,15 @@ xmir_window_get_string8_atom(WindowPtr window, ATOM atom,
                 } else {
                     ErrorF("xmir_window_get_string8_atom: Atom %d is not "
                            "an 8-bit string as expected\n", atom);
-                    return False;
+                    break;
                 }
             }
             p = p->next;
         }
     }
+
+    if (bufsize)
+        buf[0] = '\0';
     return False;
 }
 
@@ -504,6 +507,8 @@ xmir_realize_window(WindowPtr window)
     int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
     int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
     MirSurfaceSpec* spec = NULL;
+    WindowPtr wm_transient_for = NULL;
+    char wm_name[1024];
     STATIC_ATOM(_NET_WM_WINDOW_TYPE);
     STATIC_ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
     STATIC_ATOM(_NET_WM_WINDOW_TYPE_DOCK);
@@ -547,15 +552,19 @@ xmir_realize_window(WindowPtr window)
         RegionNull(&window->winSize);
     }
 
+    xmir_window_get_string8_atom(window, XA_WM_NAME,
+                                 wm_name, sizeof wm_name);
     wm_type = xmir_window_get_atom_atom(window, _NET_WM_WINDOW_TYPE);
+    wm_transient_for = xmir_window_get_window_atom(window, XA_WM_TRANSIENT_FOR);
 
-    ErrorF("Realize window %p: %dx%d parent=%p depth=%d, redir=%u "
-           "type=%hu class=%u visibility=%u viewable=%u _NET_WM_WINDOW_TYPE=%d\n",
-           window, mir_width, mir_height, window->parent,
+    ErrorF("Realize window %p \"%s\": %dx%d parent=%p depth=%d, redir=%u "
+           "type=%hu class=%u visibility=%u viewable=%u "
+           "_NET_WM_WINDOW_TYPE=%d XA_WM_TRANSIENT_FOR=%p\n",
+           window, wm_name, mir_width, mir_height, window->parent,
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable,
-           wm_type);
+           wm_type, wm_transient_for);
 
     if (!window->viewable) {
         return ret;
@@ -588,40 +597,35 @@ xmir_realize_window(WindowPtr window)
      *         mir_connection_get_egl_pixel_format()
      */
 
-    if (xmir_screen->do_own_wm) {
-        /* TODO: Check WM_CLASS here for menu-specific behaviour. */
-        /*
-         * NOTE: "parent" in X11 is completely unrelated to "parent" in Mir.
-         *       In X, the parent of a menu or dialog is usually the root
-         *       window so that doesn't help you to find which app window it
-         *       relates to. Instead X has the XA_WM_TRANSIENT_FOR atom.
-         */
-        WindowPtr trans =
-            xmir_window_get_window_atom(window, XA_WM_TRANSIENT_FOR);
-        if (trans) {
-            struct xmir_window *rel = xmir_window_get(trans);
-            if (rel && rel->surface) {
-                short dx = window->drawable.x - rel->window->drawable.x;
-                short dy = window->drawable.y - rel->window->drawable.y;
-                MirRectangle placement = {dx, dy, 0, 0};
+    /*
+     * NOTE: "parent" in X11 is completely unrelated to "parent" in Mir.
+     *       In X, the parent of a menu or dialog is usually the root
+     *       window so that doesn't help you to find which app window it
+     *       relates to. Instead X has the XA_WM_TRANSIENT_FOR atom.
+     */
+    if (wm_transient_for) {
+        struct xmir_window *rel = xmir_window_get(wm_transient_for);
+        if (rel && rel->surface) {
+            short dx = window->drawable.x - rel->window->drawable.x;
+            short dy = window->drawable.y - rel->window->drawable.y;
+            MirRectangle placement = {dx, dy, 0, 0};
 
-                if (wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP) {
-                    spec = mir_connection_create_spec_for_tooltip(
-                        xmir_screen->conn, mir_width, mir_height, pixel_format,
-                        rel->surface, &placement);
-                } else if (wm_type == _NET_WM_WINDOW_TYPE_DIALOG) {
-                    spec = mir_connection_create_spec_for_modal_dialog(
-                        xmir_screen->conn, mir_width, mir_height, pixel_format,
-                        rel->surface);
-                } else {  /* Probably a menu. If not, still close enough... */
-                    MirEdgeAttachment edge = mir_edge_attachment_any;
-                    if (wm_type == _NET_WM_WINDOW_TYPE_DROPDOWN_MENU)
-                        edge = mir_edge_attachment_vertical;
-                    spec = mir_connection_create_spec_for_menu(
-                        xmir_screen->conn,
-                        mir_width, mir_height, pixel_format, rel->surface,
-                        &placement, edge);
-                }
+            if (wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP) {
+                spec = mir_connection_create_spec_for_tooltip(
+                    xmir_screen->conn, mir_width, mir_height, pixel_format,
+                    rel->surface, &placement);
+            } else if (wm_type == _NET_WM_WINDOW_TYPE_DIALOG) {
+                spec = mir_connection_create_spec_for_modal_dialog(
+                    xmir_screen->conn, mir_width, mir_height, pixel_format,
+                    rel->surface);
+            } else {  /* Probably a menu. If not, still close enough... */
+                MirEdgeAttachment edge = mir_edge_attachment_any;
+                if (wm_type == _NET_WM_WINDOW_TYPE_DROPDOWN_MENU)
+                    edge = mir_edge_attachment_vertical;
+                spec = mir_connection_create_spec_for_menu(
+                    xmir_screen->conn,
+                    mir_width, mir_height, pixel_format, rel->surface,
+                    &placement, edge);
             }
         }
     }
@@ -647,13 +651,7 @@ xmir_realize_window(WindowPtr window)
                                       : mir_buffer_usage_software);
 
     /* Initial window title bar works.  TODO: support for updates */
-    if (xmir_screen->do_own_wm) {
-        char name[1024];
-        if (xmir_window_get_string8_atom(window, XA_WM_NAME,
-                                         name, sizeof name)) {
-            mir_surface_spec_set_name(spec, name);
-        }
-    }
+    mir_surface_spec_set_name(spec, wm_name);
     xmir_window->surface = mir_surface_create_sync(spec);
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
