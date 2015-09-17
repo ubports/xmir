@@ -614,7 +614,7 @@ xmir_realize_window(WindowPtr window)
                            || wm_type == _NET_WM_WINDOW_TYPE_UTILITY
                            || wm_type == _NET_WM_WINDOW_TYPE_DIALOG
                            || wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP
-                           || window->overrideRedirect;
+                           || (wm_type == -1 && window->overrideRedirect);
 
         if (is_subordinate)
             positioning_parent = xmir_screen->last_focus;
