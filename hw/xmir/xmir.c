@@ -557,14 +557,14 @@ xmir_realize_window(WindowPtr window)
     wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
-    ErrorF("Realize window %p \"%s\": %dx%d parent=%p depth=%d, redir=%u "
-           "type=%hu class=%u visibility=%u viewable=%u "
-           "_NET_WM_WINDOW_TYPE=%d XA_WM_TRANSIENT_FOR=%p\n",
+    ErrorF("Realize window %p \"%s\": %dx%d parent=%p depth=%d\n"
+           "\tredir=%u type=%hu class=%u visibility=%u viewable=%u\n"
+           "\toverride=%d _NET_WM_WINDOW_TYPE=%d WM_TRANSIENT_FOR=%p\n",
            window, wm_name, mir_width, mir_height, window->parent,
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable,
-           wm_type, wm_transient_for);
+           window->overrideRedirect, wm_type, wm_transient_for);
 
     if (!window->viewable) {
         return ret;
@@ -597,14 +597,29 @@ xmir_realize_window(WindowPtr window)
      *         mir_connection_get_egl_pixel_format()
      */
 
-    /*
-     * NOTE: "parent" in X11 is completely unrelated to "parent" in Mir.
-     *       In X, the parent of a menu or dialog is usually the root
-     *       window so that doesn't help you to find which app window it
-     *       relates to. Instead X has the XA_WM_TRANSIENT_FOR atom.
-     */
-    positioning_parent = wm_transient_for ? wm_transient_for :
-                                            xmir_screen->last_focus;
+    if (!wm_type)   /* Avoid spurious matches with undetected types */
+        wm_type = -1;
+
+    positioning_parent = wm_transient_for;
+    if (!positioning_parent) {
+        /* The toolkit has not provided a definite positioning parent so the
+         * next best option is to guess. But we can only reasonably guess for
+         * window types that are typically subordinate to normal windows...
+         */
+        Bool is_subordinate = wm_type == _NET_WM_WINDOW_TYPE_DROPDOWN_MENU
+                           || wm_type == _NET_WM_WINDOW_TYPE_POPUP_MENU
+                           || wm_type == _NET_WM_WINDOW_TYPE_MENU
+                           || wm_type == _NET_WM_WINDOW_TYPE_COMBO
+                           || wm_type == _NET_WM_WINDOW_TYPE_TOOLBAR
+                           || wm_type == _NET_WM_WINDOW_TYPE_UTILITY
+                           || wm_type == _NET_WM_WINDOW_TYPE_DIALOG
+                           || wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP
+                           || window->overrideRedirect;
+
+        if (is_subordinate)
+            positioning_parent = xmir_screen->last_focus;
+    }
+
     if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
         if (rel && rel->surface) {
@@ -726,8 +741,10 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
         break;
     case mir_surface_attrib_focus:
         ErrorF("Focus: %s\n", xmir_surface_focus_str(val));
-        xmir_window->xmir_screen->last_focus =
-            (val == mir_surface_focused) ? xmir_window->window : NULL;
+        if (xmir_window->surface) {  /* It's a real Mir window */
+            xmir_window->xmir_screen->last_focus =
+                (val == mir_surface_focused) ? xmir_window->window : NULL;
+        }
         break;
     case mir_surface_attrib_dpi:
         ErrorF("DPI: %i\n", val);
