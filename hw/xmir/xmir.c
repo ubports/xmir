@@ -421,7 +421,7 @@ xmir_create_window(WindowPtr window)
 }
 
 static Bool
-xmir_window_get_string8_atom(WindowPtr window, ATOM atom,
+xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
                              char *buf, size_t bufsize)
 {
     if (window->optional) {
@@ -434,7 +434,7 @@ xmir_window_get_string8_atom(WindowPtr window, ATOM atom,
                     buf[len] = '\0';
                     return True;
                 } else {
-                    ErrorF("xmir_window_get_string8_atom: Atom %d is not "
+                    ErrorF("xmir_get_window_prop_string8: Atom %d is not "
                            "an 8-bit string as expected\n", atom);
                     break;
                 }
@@ -449,7 +449,7 @@ xmir_window_get_string8_atom(WindowPtr window, ATOM atom,
 }
 
 static WindowPtr
-xmir_window_get_window_atom(WindowPtr window, ATOM atom)
+xmir_get_window_prop_window(WindowPtr window, ATOM atom)
 {
     if (window->optional) {
         PropertyPtr p = window->optional->userProps;
@@ -463,7 +463,7 @@ xmir_window_get_window_atom(WindowPtr window, ATOM atom)
                         ptr = NULL;
                     return ptr;
                 } else {
-                    ErrorF("xmir_window_get_window_atom: Atom %d is not "
+                    ErrorF("xmir_get_window_prop_window: Atom %d is not "
                            "a Window as expected\n", atom);
                     return NULL;
                 }
@@ -475,7 +475,7 @@ xmir_window_get_window_atom(WindowPtr window, ATOM atom)
 }
 
 static Atom
-xmir_window_get_atom_atom(WindowPtr window, ATOM name)
+xmir_get_window_prop_atom(WindowPtr window, ATOM name)
 {
     if (window->optional) {
         PropertyPtr p = window->optional->userProps;
@@ -484,7 +484,7 @@ xmir_window_get_atom_atom(WindowPtr window, ATOM name)
                 if (p->type == XA_ATOM) {
                     return *(Atom*)p->data;
                 } else {
-                    ErrorF("xmir_window_get_atom_atom: Atom %d is not "
+                    ErrorF("xmir_get_window_prop_atom: Atom %d is not "
                            "an Atom as expected\n", name);
                     return 0;
                 }
@@ -552,10 +552,10 @@ xmir_realize_window(WindowPtr window)
         RegionNull(&window->winSize);
     }
 
-    xmir_window_get_string8_atom(window, XA_WM_NAME,
+    xmir_get_window_prop_string8(window, XA_WM_NAME,
                                  wm_name, sizeof wm_name);
-    wm_type = xmir_window_get_atom_atom(window, _NET_WM_WINDOW_TYPE);
-    wm_transient_for = xmir_window_get_window_atom(window, XA_WM_TRANSIENT_FOR);
+    wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
+    wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
     ErrorF("Realize window %p \"%s\": %dx%d parent=%p depth=%d, redir=%u "
            "type=%hu class=%u visibility=%u viewable=%u "
