@@ -242,18 +242,26 @@ pointer_handle_button(struct xmir_input *xmir_input,
                       MirPointerEvent const *pev)
 {
     DeviceIntPtr dev = xmir_input->pointer;
-    int map[4] = { 0, 1, 3, 2 };
+    struct {MirPointerButton mir_button; int x_button;} map[3] =
+    {
+        {mir_pointer_button_primary, 1},   /* Usually left button */
+        {mir_pointer_button_secondary, 3}, /* Middle button */
+        {mir_pointer_button_tertiary, 2},  /* Right button */
+    };
     int i;
     ValuatorMask mask;
     valuator_mask_zero(&mask);
 
-    for (i = 1; i <= 3; ++i) {
-        int swap = map[i];
-        int oldstate = BitIsOn(dev->button->down, swap) ? ButtonPress : ButtonRelease;
-        int newstate = mir_pointer_event_button_state(pev, i) ? ButtonPress : ButtonRelease;
+    for (i = 0; i < 3; ++i) {
+        MirPointerButton mir_button = map[i].mir_button;
+        int x_button = map[i].x_button;
+        int oldstate = BitIsOn(dev->button->down, x_button) ?
+                       ButtonPress : ButtonRelease;
+        int newstate = mir_pointer_event_button_state(pev, mir_button) ?
+                       ButtonPress : ButtonRelease;
 
         if (oldstate != newstate)
-            QueuePointerEvents(dev, newstate, swap, 0, &mask);
+            QueuePointerEvents(dev, newstate, x_button, 0, &mask);
     }
 
     /* XXX: Map rest of input buttons too! */
