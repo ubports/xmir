@@ -380,21 +380,25 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
 
         tev = mir_input_event_get_touch_event(ev);
         count = mir_touch_event_point_count(tev);
+
+        /* Do we really need this multifinger tracking at all?... */
         if (count < 1) {
             xmir_input->touch_id = -1;
             break;
         }
 
-        if (xmir_input->touch_id != -1)
+        if (xmir_input->touch_id != -1) {
             for (i = 0; i < count; ++i)
                 if (mir_touch_event_id(tev, i) == xmir_input->touch_id)
                     break;
-        else
+        }
+        if (i >= count) {
             for (i = 0; i < count; ++i)
                 if (mir_touch_event_action(tev, i) == mir_touch_action_down)
                     break;
+        }
 
-        if (i == count)
+        if (i >= count)
             break;
 
         sx = mir_touch_event_axis_value(tev, i, mir_touch_axis_x);
