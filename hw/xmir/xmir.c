@@ -602,9 +602,6 @@ xmir_realize_window(WindowPtr window)
      *       In X, the parent of a menu or dialog is usually the root
      *       window so that doesn't help you to find which app window it
      *       relates to. Instead X has the XA_WM_TRANSIENT_FOR atom.
-     * FIXME: Traditional pure X11 apps like 'bitmap' don't use the transient
-     *        atom, and just expect you to position menus using absolute
-     *        screen coordinates, which Mir does not support.
      */
     positioning_parent = wm_transient_for ? wm_transient_for :
                                             xmir_screen->last_focus;
