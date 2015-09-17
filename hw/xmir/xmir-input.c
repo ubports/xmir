@@ -221,6 +221,7 @@ pointer_handle_motion(struct xmir_input *xmir_input,
 {
     int sx = mir_pointer_event_axis_value(pev, mir_pointer_axis_x);
     int sy = mir_pointer_event_axis_value(pev, mir_pointer_axis_y);
+    int vscroll = 0;
     ValuatorMask mask;
 
     if (pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy))
@@ -234,6 +235,15 @@ pointer_handle_motion(struct xmir_input *xmir_input,
 
     QueuePointerEvents(xmir_input->pointer, MotionNotify, 0,
                        POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
+
+    /* Mouse wheel: Moving the wheel is a press+release of button 4/5 */
+    vscroll = mir_pointer_event_axis_value(pev, mir_pointer_axis_vscroll);
+    if (vscroll) {
+        int button = vscroll < 0 ? 5 : 4;
+        valuator_mask_zero(&mask);
+        QueuePointerEvents(xmir_input->pointer, ButtonPress, button, 0, &mask);
+        QueuePointerEvents(xmir_input->pointer, ButtonRelease, button, 0, &mask);
+    }
 }
 
 static void
