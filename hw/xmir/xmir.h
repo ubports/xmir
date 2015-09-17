@@ -94,6 +94,7 @@ struct xmir_screen {
 
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
     Bool do_own_wm;
+    WindowPtr last_focus;
 
     DRI2InfoRec dri2;
 };

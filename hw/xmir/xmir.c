@@ -507,7 +507,7 @@ xmir_realize_window(WindowPtr window)
     int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
     int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
     MirSurfaceSpec* spec = NULL;
-    WindowPtr wm_transient_for = NULL;
+    WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
     char wm_name[1024];
     STATIC_ATOM(_NET_WM_WINDOW_TYPE);
     STATIC_ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
@@ -606,8 +606,10 @@ xmir_realize_window(WindowPtr window)
      *        atom, and just expect you to position menus using absolute
      *        screen coordinates, which Mir does not support.
      */
-    if (wm_transient_for) {
-        struct xmir_window *rel = xmir_window_get(wm_transient_for);
+    positioning_parent = wm_transient_for ? wm_transient_for :
+                                            xmir_screen->last_focus;
+    if (positioning_parent) {
+        struct xmir_window *rel = xmir_window_get(positioning_parent);
         if (rel && rel->surface) {
             short dx = window->drawable.x - rel->window->drawable.x;
             short dy = window->drawable.y - rel->window->drawable.y;
@@ -727,6 +729,8 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
         break;
     case mir_surface_attrib_focus:
         ErrorF("Focus: %s\n", xmir_surface_focus_str(val));
+        xmir_window->xmir_screen->last_focus =
+            (val == mir_surface_focused) ? xmir_window->window : NULL;
         break;
     case mir_surface_attrib_dpi:
         ErrorF("DPI: %i\n", val);
@@ -802,6 +806,9 @@ xmir_unrealize_window(WindowPtr window)
     ScreenPtr screen = window->drawable.pScreen;
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     Bool ret;
+
+    if (window == xmir_screen->last_focus)
+        xmir_screen->last_focus = NULL;
 
     xmir_unmap_input(xmir_screen, window);
 
