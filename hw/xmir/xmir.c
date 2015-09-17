@@ -612,7 +612,6 @@ xmir_realize_window(WindowPtr window)
                            || wm_type == _NET_WM_WINDOW_TYPE_COMBO
                            || wm_type == _NET_WM_WINDOW_TYPE_TOOLBAR
                            || wm_type == _NET_WM_WINDOW_TYPE_UTILITY
-                           || wm_type == _NET_WM_WINDOW_TYPE_DIALOG
                            || wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP
                            || (wm_type == -1 && window->overrideRedirect);
 
