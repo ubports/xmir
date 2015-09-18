@@ -47,7 +47,7 @@
 #define STATIC_ATOM(a) static Atom a = 0
 #define INIT_ATOM(a) if (!a) { \
                          a = MakeAtom(#a, sizeof(#a) - 1, False); \
-                         if (a) ErrorF(#a " = %d\n", a); \
+                         if (a) ErrorF(#a " = %lu\n", (unsigned long)a); \
                      }
 
 extern __GLXprovider __glXDRI2Provider;
