@@ -101,6 +101,7 @@ ddxUseMsg(void)
 {
     ErrorF("-rootless              run rootless\n");
     ErrorF("-flatten               flatten rootless X windows into a single surface\n");
+    ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
     ErrorF("-nowm                  disable the built-in rootless window manager\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
@@ -1116,6 +1117,11 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         } else if (strcmp(argv[i], "-fd") == 0) {
             client_fd = (int)strtol(argv[++i], (char **)NULL, 0);
         }
+    }
+
+    if (xmir_screen->flatten && !xmir_screen->rootless) {
+        FatalError("-flatten is not valid without -rootless\n");
+        return FALSE;
     }
 
 #ifdef __arm__
