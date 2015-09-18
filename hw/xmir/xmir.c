@@ -510,7 +510,6 @@ xmir_realize_window(WindowPtr window)
     int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
     int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
     MirSurfaceSpec* spec = NULL;
-    int flatten_x = 0, flatten_y = 0;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
     char wm_name[1024];
     STATIC_ATOM(_NET_WM_WINDOW_TYPE);
@@ -623,6 +622,23 @@ xmir_realize_window(WindowPtr window)
             positioning_parent = xmir_screen->last_focus;
     }
 
+    if (xmir_screen->flatten && xmir_screen->flatten_top) {
+        int dx = 0, dy = 0;
+        if (!positioning_parent) {
+            positioning_parent = xmir_screen->flatten_top->window;
+        }
+        if (positioning_parent) {
+            dx = window->drawable.x - positioning_parent->drawable.x;
+            dy = window->drawable.y - positioning_parent->drawable.y;
+        }
+        ReparentWindow(window, positioning_parent, dx, dy, serverClient);
+        /* And thanks to the X Composite extension, window will now be
+         * automatically composited into the existing flatten_top surface
+         * so we retain only a single Mir surface, as Unity8 likes to see.
+         */
+        return ret;
+    }
+
     if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
         if (rel && rel->surface) {
@@ -630,10 +646,7 @@ xmir_realize_window(WindowPtr window)
             short dy = window->drawable.y - rel->window->drawable.y;
             MirRectangle placement = {dx, dy, 0, 0};
 
-            if (xmir_screen->flatten) {
-                flatten_x = dx;
-                flatten_y = dy;
-            } else if (wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP) {
+            if (wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP) {
                 spec = mir_connection_create_spec_for_tooltip(
                     xmir_screen->conn, mir_width, mir_height, pixel_format,
                     rel->surface, &placement);
@@ -651,19 +664,6 @@ xmir_realize_window(WindowPtr window)
                     &placement, edge);
             }
         }
-    }
-
-    if (xmir_screen->flatten && xmir_screen->flatten_top) {
-        if (!positioning_parent) {
-            positioning_parent = xmir_screen->flatten_top->window;
-        }
-        ReparentWindow(window, positioning_parent,
-                       flatten_x, flatten_y, serverClient);
-        /* And thanks to the X Composite extension, window will now be
-         * automatically composited into the existing flatten_top surface
-         * so we retain only a single Mir surface, as Unity8 likes to see.
-         */
-        return ret;
     }
 
     if (!spec) {
