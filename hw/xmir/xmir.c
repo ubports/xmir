@@ -179,6 +179,23 @@ xmir_window_get(WindowPtr window)
 }
 
 void
+xmir_window_resize(struct xmir_window *xmir_window,
+                   unsigned new_width, unsigned new_height)
+{
+    WindowPtr window = xmir_window->window;
+    XID vlist[4] = {window->drawable.x, window->drawable.y,
+                    new_width, new_height};
+    ConfigureWindow(window, CWX|CWY|CWWidth|CWHeight, vlist, serverClient);
+
+    RegionEmpty(&xmir_window->region);
+    RegionInit(&xmir_window->region,
+               &(BoxRec){
+                   0, 0,
+                   window->drawable.width, window->drawable.height
+               }, 1);
+}
+
+void
 xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap)
 {
     return dixSetPrivate(&pixmap->devPrivates, &xmir_pixmap_private_key, xmir_pixmap);

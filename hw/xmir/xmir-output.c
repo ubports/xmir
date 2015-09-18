@@ -310,10 +310,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     }
 
     if (xmir_screen->rootless) {
-        /* FIXME: This resize does nothing on desktop, and crashes on mobile
-         *        (LP: #1472097). Clearly not the way to resize...
-         * screen->ResizeWindow(window, window->drawable.x, window->drawable.y, window_width, window_height, NULL);
-         */
+        xmir_window_resize(xmir_window, window_width, window_height);
         return;
     }
 
