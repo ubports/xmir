@@ -563,12 +563,12 @@ xmir_realize_window(WindowPtr window)
 
     ErrorF("Realize window %p \"%s\": %dx%d parent=%p depth=%d\n"
            "\tredir=%u type=%hu class=%u visibility=%u viewable=%u\n"
-           "\toverride=%d _NET_WM_WINDOW_TYPE=%d WM_TRANSIENT_FOR=%p\n",
+           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
            window, wm_name, mir_width, mir_height, window->parent,
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable,
-           window->overrideRedirect, wm_type, wm_transient_for);
+           window->overrideRedirect, (unsigned long)wm_type, wm_transient_for);
 
     if (!window->viewable) {
         return ret;
