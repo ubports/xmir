@@ -602,17 +602,20 @@ xmir_realize_window(WindowPtr window)
         return ret;
     }
 
-    if (xmir_screen->flatten && xmir_screen->flatten_top) {
-        WindowPtr top = xmir_screen->flatten_top->window;
-        int dx = window->drawable.x - top->drawable.x;
-        int dy = window->drawable.y - top->drawable.y;
-        ReparentWindow(window, top, dx, dy, serverClient);
-        /* And thanks to the X Composite extension, window will now be
-         * automatically composited into the existing flatten_top surface
-         * so we retain only a single Mir surface, as Unity8 likes to see.
-         */
-        return ret;
+    if (window->drawable.depth == 32)
+        pixel_format = xmir_screen->depth32_pixel_format;
+    else if (window->drawable.depth == 24)
+        pixel_format = xmir_screen->depth24_pixel_format;
+    else {
+        ErrorF("No pixel format available for depth %d\n",
+               (int)window->drawable.depth);
+        return FALSE;
     }
+
+    /* TODO: Replace pixel_format with the actual right answer from the
+     *       graphics driver when using EGL:
+     *         mir_connection_get_egl_pixel_format()
+     */
 
     if (!wm_type)   /* Avoid spurious matches with undetected types */
         wm_type = -1;
@@ -636,20 +639,22 @@ xmir_realize_window(WindowPtr window)
             positioning_parent = xmir_screen->last_focus;
     }
 
-    if (window->drawable.depth == 32)
-        pixel_format = xmir_screen->depth32_pixel_format;
-    else if (window->drawable.depth == 24)
-        pixel_format = xmir_screen->depth24_pixel_format;
-    else {
-        ErrorF("No pixel format available for depth %d\n",
-               (int)window->drawable.depth);
-        return FALSE;
+    if (xmir_screen->flatten && xmir_screen->flatten_top) {
+        int dx = 0, dy = 0;
+        if (!positioning_parent) {
+            positioning_parent = xmir_screen->flatten_top->window;
+        }
+        if (positioning_parent) {
+            dx = window->drawable.x - positioning_parent->drawable.x;
+            dy = window->drawable.y - positioning_parent->drawable.y;
+        }
+        ReparentWindow(window, positioning_parent, dx, dy, serverClient);
+        /* And thanks to the X Composite extension, window will now be
+         * automatically composited into the existing flatten_top surface
+         * so we retain only a single Mir surface, as Unity8 likes to see.
+         */
+        return ret;
     }
-
-    /* TODO: Replace pixel_format with the actual right answer from the
-     *       graphics driver when using EGL:
-     *         mir_connection_get_egl_pixel_format()
-     */
 
     if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
