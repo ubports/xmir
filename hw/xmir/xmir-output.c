@@ -309,10 +309,8 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         xmir_window->image = NULL;
     }
 
-    if (xmir_screen->rootless) {
-        xmir_window_resize(xmir_window, window_width, window_height);
+    if (xmir_screen->rootless)
         return;
-    }
 
     if (!xmir_screen->windowed) {
         xmir_screen->windowed = 1;
