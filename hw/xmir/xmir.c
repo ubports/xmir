@@ -577,9 +577,10 @@ xmir_realize_window(WindowPtr window)
     wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
-    ErrorF("Realize window %p \"%s\": %dx%d parent=%p depth=%d\n"
+    ErrorF("Realize %swindow %p \"%s\": %dx%d parent=%p depth=%d\n"
            "\tredir=%u type=%hu class=%u visibility=%u viewable=%u\n"
            "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
+           window == screen->root ? "ROOT " : "",
            window, wm_name, mir_width, mir_height, window->parent,
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
