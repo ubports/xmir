@@ -95,6 +95,7 @@ struct xmir_screen {
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
     Bool do_own_wm;
     Bool flatten;
+    struct xorg_list flattened_list;
     struct xmir_window *flatten_top;
     WindowPtr last_focus;
 
@@ -118,6 +119,8 @@ struct xmir_window {
     RegionRec past_damage[MIR_MAX_BUFFER_AGE];
     int damage_index, orientation;
     unsigned int has_free_buffer:1;
+
+    struct xorg_list link_flattened;
 
     void *egl_surface, *image;
     PixmapPtr back_pixmap, front_pixmap, reuse_pixmap;

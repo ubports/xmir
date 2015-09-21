@@ -643,6 +643,8 @@ xmir_realize_window(WindowPtr window)
         WindowPtr top = xmir_screen->flatten_top->window;
         int dx = window->drawable.x - top->drawable.x;
         int dy = window->drawable.y - top->drawable.y;
+        xorg_list_append(&xmir_window->link_flattened,
+                         &xmir_screen->flattened_list);
         ReparentWindow(window, top, dx, dy, serverClient);
         /* And thanks to the X Composite extension, window will now be
          * automatically composited into the existing flatten_top surface
@@ -817,6 +819,38 @@ xmir_unmap_input(struct xmir_screen *xmir_screen, WindowPtr window)
 }
 
 static void
+xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
+{
+    struct xmir_screen *xmir_screen = benef->xmir_screen;
+
+    ErrorF("flatten bequeath: %p --> %p\n",
+           dying->window, benef->window);
+
+    assert(!benef->surface);
+    benef->surface = dying->surface;
+    dying->surface = NULL;
+
+    ReparentWindow(benef->window, xmir_screen->screen->root,
+                   0, 0, serverClient);
+    compRedirectWindow(serverClient, benef->window, CompositeRedirectManual);
+    compRedirectSubwindows(serverClient, benef->window, CompositeRedirectAutomatic);
+
+    /* TODO: Deduplicate this with realize */
+    RegionInit(&benef->region,
+               &(BoxRec){
+                   0, 0,
+                   benef->window->drawable.width, benef->window->drawable.height
+               }, 1);
+    mir_surface_set_event_handler(benef->surface, xmir_surface_handle_event,
+                                  benef);
+
+    xmir_window_enable_damage_tracking(benef);
+
+    if (xmir_screen->glamor)
+        xmir_glamor_realize_window(xmir_screen, benef, benef->window);
+}
+
+static void
 xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destroyed)
 {
     struct xmir_window *xmir_window =
@@ -835,14 +869,28 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     if (xmir_screen->glamor)
         xmir_glamor_unrealize_window(xmir_screen, xmir_window, window);
 
+    if (xmir_window->link_flattened.next || xmir_window->link_flattened.prev)
+        xorg_list_del(&xmir_window->link_flattened);
+
     if (!xmir_window->surface)
         return;
 
-    if (xmir_screen->flatten_top == xmir_window)
+    if (xmir_screen->flatten && xmir_screen->flatten_top == xmir_window) {
         xmir_screen->flatten_top = NULL;
+        if (!xorg_list_is_empty(&xmir_screen->flattened_list)) {
+            xmir_screen->flatten_top =
+                xorg_list_first_entry(&xmir_screen->flattened_list,
+                                      struct xmir_window,
+                                      link_flattened);
+            xorg_list_del(&xmir_screen->flatten_top->link_flattened);
+            xmir_bequeath_surface(xmir_window, xmir_screen->flatten_top);
+        }
+    }
 
-    mir_surface_release_sync(xmir_window->surface);
-    xmir_window->surface = NULL;
+    if (xmir_window->surface) {
+        mir_surface_release_sync(xmir_window->surface);
+        xmir_window->surface = NULL;
+    }
 
     /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
     xmir_process_from_eventloop();
@@ -1165,6 +1213,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xorg_list_init(&xmir_screen->output_list);
     xorg_list_init(&xmir_screen->input_list);
     xorg_list_init(&xmir_screen->damage_window_list);
+    xorg_list_init(&xmir_screen->flattened_list);
     xmir_screen->depth = 24;
 
     mir_connection_get_available_surface_formats(xmir_screen->conn,
