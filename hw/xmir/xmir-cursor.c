@@ -126,7 +126,8 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
 
         stride = cursor->bits->width * 4;
         for (y = 0; y < cursor->bits->height; y++)
-           memcpy(region.vaddr + y * region.stride, cursor->bits->argb + y * stride, stride);
+           memcpy(region.vaddr + y * region.stride,
+                  (char*)cursor->bits->argb + y * stride, stride);
     }
     else
         expand_source_and_mask(cursor, region.vaddr);
