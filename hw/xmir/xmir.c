@@ -577,11 +577,13 @@ xmir_realize_window(WindowPtr window)
     wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
-    ErrorF("Realize %swindow %p \"%s\": %dx%d parent=%p depth=%d\n"
-           "\tredir=%u type=%hu class=%u visibility=%u viewable=%u\n"
+    ErrorF("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
+           "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
            "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
            window == screen->root ? "ROOT " : "",
-           window, wm_name, mir_width, mir_height, window->parent,
+           window, wm_name, mir_width, mir_height,
+           window->drawable.x, window->drawable.y,
+           window->parent,
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable,
@@ -647,6 +649,8 @@ xmir_realize_window(WindowPtr window)
         xorg_list_append(&xmir_window->link_flattened,
                          &xmir_screen->flattened_list);
         ReparentWindow(window, top, dx, dy, serverClient);
+        ErrorF("Flattened window %p (reparented under %p)\n",
+               window, top);
         /* And thanks to the X Composite extension, window will now be
          * automatically composited into the existing flatten_top surface
          * so we retain only a single Mir surface, as Unity8 likes to see.
@@ -865,6 +869,8 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
 
     if (!xmir_window)
         return;
+
+    ErrorF("Unmap/unrealize window %p\n", window);
 
     if (!destroyed)
         xmir_window_disable_damage_tracking(xmir_window);
