@@ -426,6 +426,7 @@ xmir_create_window(WindowPtr window)
     xmir_window->window = window;
     xorg_list_init(&xmir_window->link_damage);
     xorg_list_init(&xmir_window->flip.entry);
+    xorg_list_init(&xmir_window->link_flattened);
 
     screen->CreateWindow = xmir_screen->CreateWindow;
     ret = (*screen->CreateWindow) (window);
@@ -882,8 +883,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     if (xmir_screen->glamor)
         xmir_glamor_unrealize_window(xmir_screen, xmir_window, window);
 
-    if (xmir_window->link_flattened.next || xmir_window->link_flattened.prev)
-        xorg_list_del(&xmir_window->link_flattened);
+    xorg_list_del(&xmir_window->link_flattened);
 
     if (!xmir_window->surface)
         return;
