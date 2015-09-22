@@ -719,7 +719,12 @@ xmir_realize_window(WindowPtr window)
     RegionInit(&xmir_window->region, &(BoxRec){ 0, 0, window->drawable.width, window->drawable.height }, 1);
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
+#ifndef __arm__
+    /* Mir's Android platform is still too buggy to deal with this, but
+     * use it when you can to avoid buffer queue lag...
+     */
     mir_surface_set_swapinterval(xmir_window->surface, 0);
+#endif
     xmir_window_enable_damage_tracking(xmir_window);
 
     if (xmir_screen->glamor)
