@@ -719,6 +719,7 @@ xmir_realize_window(WindowPtr window)
     RegionInit(&xmir_window->region, &(BoxRec){ 0, 0, window->drawable.width, window->drawable.height }, 1);
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
+    mir_surface_set_swapinterval(xmir_window->surface, 0);
     xmir_window_enable_damage_tracking(xmir_window);
 
     if (xmir_screen->glamor)
