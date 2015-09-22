@@ -823,6 +823,7 @@ static void
 xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
 {
     struct xmir_screen *xmir_screen = benef->xmir_screen;
+    struct xmir_window *other;
 
     ErrorF("flatten bequeath: %p --> %p\n",
            dying->window, benef->window);
@@ -835,6 +836,11 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
                    0, 0, serverClient);
     compRedirectWindow(serverClient, benef->window, CompositeRedirectManual);
     compRedirectSubwindows(serverClient, benef->window, CompositeRedirectAutomatic);
+
+    xorg_list_for_each_entry(other, &xmir_screen->flattened_list,
+                             link_flattened) {
+        ReparentWindow(other->window, benef->window, 0, 0, serverClient);
+    }
 
     /* TODO: Deduplicate this with realize */
     RegionInit(&benef->region,
