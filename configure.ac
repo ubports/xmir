@@ -2478,7 +2478,7 @@ fi
 
 dnl Xmir DDX
 
-PKG_CHECK_MODULES(XMIRMODULES, [mirclient >= 0.13.1 libdrm epoxy], [have_xmir=yes], [have_xmir=no])
+PKG_CHECK_MODULES(XMIRMODULES, [mirclient >= 0.13.1 mir-client-platform-mesa-dev libdrm epoxy], [have_xmir=yes], [have_xmir=no])
 AC_MSG_CHECKING([whether to build Xmir DDX])
 if test "x$XMIR" = xauto; then
    XMIR="$have_xmir"
