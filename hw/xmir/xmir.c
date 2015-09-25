@@ -722,6 +722,8 @@ xmir_realize_window(WindowPtr window)
 #ifndef __arm__
     /* Mir's Android platform is still too buggy to deal with this, but
      * use it when you can to avoid buffer queue lag...
+     * TODO: Revisit this after Mir 0.16.0 is released as the fix for
+     * LP: #1391261 should solve the freezing this causes on the phone:
      */
     mir_surface_set_swapinterval(xmir_window->surface, 0);
 #endif
