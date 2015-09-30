@@ -193,6 +193,12 @@ xmir_window_resize(struct xmir_window *xmir_window,
                    0, 0,
                    window->drawable.width, window->drawable.height
                }, 1);
+
+    /* This seems redundant with ConfigureWindow. But apparently necessary
+     * to solve LP: #1501039 ...
+     */
+    if (xmir_window->damage)
+        DamageDamageRegion(&window->drawable, &xmir_window->region);
 }
 
 void
