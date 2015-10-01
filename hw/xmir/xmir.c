@@ -726,10 +726,9 @@ xmir_realize_window(WindowPtr window)
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
 #ifndef __arm__
-    /* Mir's Android platform is still too buggy to deal with this, but
-     * use it when you can to avoid buffer queue lag...
-     * TODO: Revisit this after Mir 0.16.0 is released as the fix for
-     * LP: #1391261 should solve the freezing this causes on the phone:
+    /* Until recently (LP: #1391261) Mir's Android platform was still too buggy
+     * to deal with this. But we're also still blocked by Unity8 bugs:
+     * TODO: Fix bug LP: #1497828 to enable this in Unity8 (including ARM)
      */
     mir_surface_set_swapinterval(xmir_window->surface, 0);
 #endif
