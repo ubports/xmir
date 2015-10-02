@@ -725,7 +725,7 @@ xmir_realize_window(WindowPtr window)
     RegionInit(&xmir_window->region, &(BoxRec){ 0, 0, window->drawable.width, window->drawable.height }, 1);
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
-#ifndef __arm__
+#if 0
     /* Until recently (LP: #1391261) Mir's Android platform was still too buggy
      * to deal with this. But we're also still blocked by Unity8 bugs:
      * TODO: Fix bug LP: #1497828 to enable this in Unity8 (including ARM)
