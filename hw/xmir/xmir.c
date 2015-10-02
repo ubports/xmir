@@ -99,9 +99,11 @@ ddxBeforeReset(void)
 void
 ddxUseMsg(void)
 {
-    ErrorF("-rootless              run rootless\n");
-    ErrorF("-flatten               flatten rootless X windows into a single surface\n");
+    ErrorF("-rootless              Run rootless\n");
+    ErrorF("  -flatten             Flatten rootless X windows into a single surface\n");
     ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
+    ErrorF("    -neverclose        Never close the flattened rootless window\n");
+    ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
     ErrorF("-nowm                  disable the built-in rootless window manager\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
@@ -121,6 +123,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
 
     if (strcmp(argv[i], "-rootless") == 0 ||
         strcmp(argv[i], "-flatten") == 0 ||
+        strcmp(argv[i], "-neverclose") == 0 ||
         strcmp(argv[i], "-nowm") == 0 ||
         strcmp(argv[i], "-sw") == 0 ||
         strcmp(argv[i], "-egl") == 0 ||
@@ -665,7 +668,9 @@ xmir_realize_window(WindowPtr window)
         return ret;
     }
 
-    if (positioning_parent) {
+    if (xmir_screen->neverclosed) {
+        spec = mir_connection_create_spec_for_changes(xmir_screen->conn);
+    } else if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
         if (rel && rel->surface) {
             short dx = window->drawable.x - rel->window->drawable.x;
@@ -702,19 +707,24 @@ xmir_realize_window(WindowPtr window)
         }
     }
 
-    if (spec == NULL) {
-        ErrorF("failed to create a surface spec: %s\n", mir_connection_get_error_message(xmir_screen->conn));
-        return FALSE;
-    }
-
-    mir_surface_spec_set_buffer_usage(spec,
-                                      xmir_screen->glamor
-                                      ? mir_buffer_usage_hardware
-                                      : mir_buffer_usage_software);
-
     /* Initial window title bar works.  TODO: support for updates */
     mir_surface_spec_set_name(spec, wm_name);
-    xmir_window->surface = mir_surface_create_sync(spec);
+
+    if (xmir_screen->neverclosed) {
+        mir_surface_spec_set_width(spec, mir_width);
+        mir_surface_spec_set_height(spec, mir_height);
+        mir_surface_spec_set_pixel_format(spec, pixel_format);
+
+        xmir_window->surface = xmir_screen->neverclosed;
+        mir_surface_apply_spec(xmir_window->surface, spec);
+    } else {
+        mir_surface_spec_set_buffer_usage(spec,
+                                          xmir_screen->glamor
+                                          ? mir_buffer_usage_hardware
+                                          : mir_buffer_usage_software);
+        xmir_window->surface = mir_surface_create_sync(spec);
+    }
+
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
         ErrorF("failed to create a surface: %s\n", mir_surface_get_error_message(xmir_window->surface));
@@ -914,7 +924,11 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     }
 
     if (xmir_window->surface) {
-        mir_surface_release_sync(xmir_window->surface);
+        if (xmir_screen->neverclose)
+            xmir_screen->neverclosed = xmir_window->surface;
+        else
+            mir_surface_release_sync(xmir_window->surface);
+
         xmir_window->surface = NULL;
     }
 
@@ -1183,6 +1197,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
             xmir_screen->rootless = 1;
         } else if (strcmp(argv[i], "-flatten") == 0) {
             xmir_screen->flatten = True;
+        } else if (strcmp(argv[i], "-neverclose") == 0) {
+            xmir_screen->neverclose = True;
         } else if (strcmp(argv[i], "-nowm") == 0) {
             xmir_screen->do_own_wm = False;
         } else if (strcmp(argv[i], "-mir") == 0) {
@@ -1207,6 +1223,10 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     if (xmir_screen->flatten && !xmir_screen->rootless) {
         FatalError("-flatten is not valid without -rootless\n");
+        return FALSE;
+    }
+    if (xmir_screen->neverclose && !xmir_screen->flatten) {
+        FatalError("-neverclose is not valid without -rootless -flatten\n");
         return FALSE;
     }
 
