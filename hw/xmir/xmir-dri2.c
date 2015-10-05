@@ -37,6 +37,7 @@
 #include <epoxy/egl.h>
 #include <epoxy/gl.h>
 #include <mir_toolkit/mir_connection.h>
+/* FIXME: This should not be mandatory, especially on Android (LP: #1502794) */
 #include <mir_toolkit/mesa/platform_operation.h>
 
 /* XMir dri2 support:
@@ -197,6 +198,7 @@ xmir_dri2_auth_magic(ScreenPtr screen, uint32_t magic)
             return ret;
 
         mir_platform_message_set_data(msg, &req, sizeof req);
+/* FIXME: This should not be mandatory, especially on Android (LP: #1502794) */
         mir_wait_for(mir_connection_platform_operation(
                 xmir_screen->conn,
                 msg,
