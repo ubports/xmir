@@ -892,9 +892,12 @@ xmir_clear_to_black(MirSurface *surface)
     MirBufferStream *stream = mir_surface_get_buffer_stream(surface);
     MirGraphicsRegion region;
 
+    /* On error mir_buffer_stream_get_graphics_region leaves us uninitialized */
+    region.pixel_format = mir_pixel_format_invalid;
     mir_buffer_stream_get_graphics_region(stream, &region);
 
     switch (region.pixel_format) {
+        case mir_pixel_format_invalid: return; /* Probably hardware surface */
         case mir_pixel_format_abgr_8888:
         case mir_pixel_format_xbgr_8888:
         case mir_pixel_format_argb_8888:
