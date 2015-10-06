@@ -887,6 +887,65 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
 }
 
 static void
+xmir_clear_to_black(MirSurface *surface)
+{
+    MirBufferStream *stream = mir_surface_get_buffer_stream(surface);
+    MirGraphicsRegion region;
+
+    mir_buffer_stream_get_graphics_region(stream, &region);
+
+    switch (region.pixel_format) {
+        case mir_pixel_format_abgr_8888:
+        case mir_pixel_format_xbgr_8888:
+        case mir_pixel_format_argb_8888:
+        case mir_pixel_format_xrgb_8888: {
+            int y;
+            uint32_t *dest = (uint32_t*)region.vaddr;
+            for (y = 0; y < region.height; ++y) {
+                int x;
+                for (x = 0; x < region.width; ++x)
+                    dest[x] = 0xff000000;
+                dest = (uint32_t*)((char*)dest + region.stride);
+            }
+            break;
+        }
+        case mir_pixel_format_bgr_888:
+        case mir_pixel_format_rgb_888: {
+            int y;
+            char *dest = region.vaddr;
+            for (y = 0; y < region.height; ++y) {
+                memset(dest, 0, region.width*3);
+                dest += region.stride;
+            }
+            break;
+        }
+        case mir_pixel_format_rgb_565:
+        case mir_pixel_format_rgba_5551:
+        case mir_pixel_format_rgba_4444: {
+            uint16_t fill = 0;
+            int y;
+            uint16_t *dest = (uint16_t*)region.vaddr;
+            switch (region.pixel_format) {
+                case mir_pixel_format_rgb_565:   fill = 0x0000; break;
+                case mir_pixel_format_rgba_5551: fill = 0x0001; break;
+                case mir_pixel_format_rgba_4444: fill = 0x000f; break;
+                default: fill = 0;
+            }
+            for (y = 0; y < region.height; ++y) {
+                int x;
+                for (x = 0; x < region.width; ++x)
+                    dest[x] = fill;
+                dest = (uint16_t*)((char*)dest + region.stride);
+            }
+            break;
+        }
+        default:
+            return;
+    }
+    mir_buffer_stream_swap_buffers(stream, NULL, NULL);
+}
+
+static void
 xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destroyed)
 {
     struct xmir_window *xmir_window =
@@ -927,10 +986,12 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     }
 
     if (xmir_window->surface) {
-        if (xmir_screen->neverclose)
+        if (xmir_screen->neverclose) {
             xmir_screen->neverclosed = xmir_window->surface;
-        else
+            xmir_clear_to_black(xmir_screen->neverclosed);
+        } else {
             mir_surface_release_sync(xmir_window->surface);
+        }
 
         xmir_window->surface = NULL;
     }
