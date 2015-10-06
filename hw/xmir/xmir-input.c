@@ -512,6 +512,7 @@ xmir_handle_input_in_main_thread(void *vctx)
         ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
         break;
     }
+    mir_event_unref(ev);
 }
 
 void
