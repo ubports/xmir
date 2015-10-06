@@ -724,6 +724,7 @@ xmir_realize_window(WindowPtr window)
                                           : mir_buffer_usage_software);
         xmir_window->surface = mir_surface_create_sync(spec);
     }
+    mir_surface_spec_release(spec);
 
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
