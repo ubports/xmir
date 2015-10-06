@@ -912,6 +912,8 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     if (!xmir_window->surface)
         return;
 
+    mir_surface_set_event_handler(xmir_window->surface, NULL, NULL);
+
     if (xmir_screen->flatten && xmir_screen->flatten_top == xmir_window) {
         xmir_screen->flatten_top = NULL;
         if (!xorg_list_is_empty(&xmir_screen->flattened_list)) {
