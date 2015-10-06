@@ -888,7 +888,7 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
 
 static void
 xmir_clear_to_black(MirSurface *surface)
-{
+{   /* Admittedly, this will only work for software surfaces */
     MirBufferStream *stream = mir_surface_get_buffer_stream(surface);
     MirGraphicsRegion region;
 
