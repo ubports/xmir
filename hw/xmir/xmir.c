@@ -247,12 +247,15 @@ index_in_damage_buffer(int current_index, int age)
 static RegionPtr
 xmir_damage_region_for_current_buffer(struct xmir_window *xmir_win)
 {
-    MirBufferPackage *package;
+    MirNativeBuffer *native;  /* WARNING: This is Mesa only! */
     RegionPtr region;
     int age;
 
-    mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &package);
-    age = package->age;
+    /* WARNING: FIXME: On non-mesa platforms this will compile accidentally,
+     *          but won't function correctly.
+     */
+    mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &native);
+    age = native->age;
 
     region = &xmir_win->past_damage[index_in_damage_buffer(xmir_win->damage_index, age)];
 
