@@ -487,14 +487,23 @@ xmir_handle_input_in_main_thread(void *vctx)
         xmir_handle_surface_event(ctx->xmir_window, mir_surface_event_get_attribute(mir_event_get_surface_event(ev)), mir_surface_event_get_attribute_value(mir_event_get_surface_event(ev)));
         break;
     case mir_event_type_resize: {
+        struct xmir_window *xmir_window = ctx->xmir_window;
+        WindowPtr window = xmir_window->window;
         const MirResizeEvent *resize = mir_event_get_resize_event(ev);
         unsigned future_width = mir_resize_event_get_width(resize);
         unsigned future_height = mir_resize_event_get_height(resize);
         XID vlist[2] = {future_width, future_height};
         ErrorF("Mir surface for win %p resized to %ux%u (buffers arriving soon)\n",
-               ctx->xmir_window->window, future_width, future_height);
-        ConfigureWindow(ctx->xmir_window->window, CWWidth|CWHeight,
-                        vlist, serverClient);
+               window, future_width, future_height);
+        ConfigureWindow(window, CWWidth|CWHeight, vlist, serverClient);
+
+        /* Only the root window (non-rootless mode) needs this extra damage: */
+        if (xmir_window->damage)
+            DamageDamageRegion(&window->drawable, &xmir_window->region);
+            /* FIXME: We also need to damage the app windows so that they
+             *        don't get accidentally hidden by the root window update.
+             *        Workaround: Just use a compositing WM like Compiz.
+             */
         }
         break;
     case mir_event_type_prompt_session_state_change:
