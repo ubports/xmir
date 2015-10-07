@@ -374,8 +374,8 @@ xmir_glamor_copy_egl_common(DrawablePtr src, PixmapPtr src_pixmap,
     if (epoxy_has_gl_extension("GL_EXT_framebuffer_blit") && !xmir_screen->doubled && !orientation) {
         glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->base.fbo->fb);
 
-        glBlitFramebuffer(ext->x1, ext->y2, ext->x2, ext->y1,
-                          ext->x1 + dx, ext->y2 + dy, ext->x2 + dx, ext->y1 + dy,
+        glBlitFramebuffer(ext->x1, ext->y1, ext->x2+1, ext->y2+1,
+                          ext->x1+dx, ext->y1+dy, ext->x2+1+dx, ext->y2+1+dy,
                           GL_COLOR_BUFFER_BIT, GL_LINEAR);
     } else
         xmir_glamor_copy_egl_tex(0, src, src_pixmap, src_pixmap_priv, ext, width, height, dx, dy, orientation);
