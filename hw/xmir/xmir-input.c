@@ -490,14 +490,11 @@ xmir_handle_input_in_main_thread(void *vctx)
         const MirResizeEvent *resize = mir_event_get_resize_event(ev);
         unsigned future_width = mir_resize_event_get_width(resize);
         unsigned future_height = mir_resize_event_get_height(resize);
+        XID vlist[2] = {future_width, future_height};
         ErrorF("Mir surface for win %p resized to %ux%u (buffers arriving soon)\n",
                ctx->xmir_window->window, future_width, future_height);
-        /*
-         * Mir has requested a resize. This does not mean it has provided us
-         * with a buffer of the new size yet. But best to tell the client
-         * immediately...
-         */
-        xmir_window_resize(ctx->xmir_window, future_width, future_height);
+        ConfigureWindow(ctx->xmir_window->window, CWWidth|CWHeight,
+                        vlist, serverClient);
         }
         break;
     case mir_event_type_prompt_session_state_change:
