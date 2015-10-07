@@ -264,6 +264,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
             dbox.x1 = box->x1 + dstx;
             dbox.x2 = box->x2 + dstx;
         }
+        ++dbox.x2;
 
         if (reflect_y) {
             dbox.y1 = box->y2 + dsty;
@@ -272,6 +273,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
             dbox.y1 = box->y1 + dsty;
             dbox.y2 = box->y2 + dsty;
         }
+        ++dbox.y2;
 
         _tx1 = v_from_x_coord_x(dst_xscale, dbox.x1);
         _tx2 = v_from_x_coord_x(dst_xscale, dbox.x2);
@@ -309,6 +311,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
             dbox.y1 = box->x1 + dstx;
             dbox.y2 = box->x2 + dstx;
         }
+        ++dbox.y2;
 
         if (reflect_y) {
             dbox.x1 = box->y2 + dsty;
@@ -317,6 +320,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
             dbox.x1 = box->y1 + dsty;
             dbox.x2 = box->y2 + dsty;
         }
+        ++dbox.x2;
 
         _tx1 = v_from_x_coord_x(dst_xscale, dbox.x1);
         _tx2 = v_from_x_coord_x(dst_xscale, dbox.x2);
@@ -354,7 +358,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
     glamor_set_normalize_tcoords_ext(src_pixmap_priv,
                                  src_xscale, src_yscale,
                                  box->x1 + dx, box->y1 + dy,
-                                 box->x2 + dx, box->y2 + dy,
+                                 box->x2 + 1 + dx, box->y2 + 1 + dy,
                                  texcoords, 2);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
