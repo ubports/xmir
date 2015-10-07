@@ -319,29 +319,38 @@ xmir_submit_rendering_for_window(struct xmir_screen *xmir_screen, struct xmir_wi
 static void
 xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
 {
-    MirGraphicsRegion region;
     PixmapPtr pix = xmir_screen->screen->GetWindowPixmap(xmir_win->window);
-    int y;
-    char *off_src = (char *)pix->devPrivate.ptr + pix->devKind * dirty->extents.y1 + dirty->extents.x1 * 4;
-    char *off_dst;
-    int y2 = dirty->extents.y2;
-    int x2 = dirty->extents.x2;
+    int x1 = dirty->extents.x1, y1 = dirty->extents.y1;
+    int x2 = dirty->extents.x2, y2 = dirty->extents.y2;
+    int y, line_len, src_stride = pix->devKind;
+    char *src, *dst;
+    MirGraphicsRegion region;
 
-    mir_buffer_stream_get_graphics_region(mir_surface_get_buffer_stream(xmir_win->surface), &region);
+    mir_buffer_stream_get_graphics_region(
+        mir_surface_get_buffer_stream(xmir_win->surface), &region);
 
-    if (x2 >= region.width)
-        x2 = region.width - 1;
+    /*
+     * Our window region (and hence damage region) might be a little ahead of
+     * the current buffer in terms of size, during a resize. So we must accept
+     * that their dimensions might not match and take the safe intersection...
+     */
+    if (x1 < 0) x1 = 0;
+    if (y1 < 0) y1 = 0;
+    if (x2 >= region.width) x2 = region.width - 1;
+    if (y2 >= region.height) y2 = region.height - 1;
+    if (x2 >= pix->drawable.width) x2 = pix->drawable.width - 1;
+    if (y2 >= pix->drawable.height) y2 = pix->drawable.height - 1;
+    if (x2 < x1 || y2 < y1) return;
 
-    if (y2 >= region.height)
-        y2 = region.height - 1;
+    src = (char*)pix->devPrivate.ptr + src_stride*y1 + x1*4;
+    dst = region.vaddr + y1*region.stride + x1*4;
 
-    if (x2 < dirty->extents.x1 || y2 < dirty->extents.y1)
-        return;
-
-    off_dst = region.vaddr + dirty->extents.y1 * region.stride + dirty->extents.x1 * 4;
-
-    for (y = dirty->extents.y1; y <= y2; ++y, off_src += pix->devKind, off_dst += region.stride)
-        memcpy(off_dst, off_src, (x2 - dirty->extents.x1 + 1) * 4);
+    line_len = (x2 - x1 + 1) * 4;
+    for (y = y1; y <= y2; ++y) {
+        memcpy(dst, src, line_len);
+        src += src_stride;
+        dst += region.stride;
+    }
 }
 
 static void
@@ -713,7 +722,10 @@ xmir_realize_window(WindowPtr window)
     }
     if (!xmir_screen->flatten_top)
         xmir_screen->flatten_top = xmir_window;
-    RegionInit(&xmir_window->region, &(BoxRec){ 0, 0, window->drawable.width, window->drawable.height }, 1);
+    RegionInit(&xmir_window->region,
+               &(BoxRec){0, 0,
+                         window->drawable.width-1, window->drawable.height-1},
+               1);
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
 #if 0
@@ -855,7 +867,8 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
     RegionInit(&benef->region,
                &(BoxRec){
                    0, 0,
-                   benef->window->drawable.width, benef->window->drawable.height
+                   benef->window->drawable.width-1,
+                   benef->window->drawable.height-1
                }, 1);
     mir_surface_set_event_handler(benef->surface, xmir_surface_handle_event,
                                   benef);
@@ -1045,7 +1058,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
     RegionInit(&xmir_window->region,
                &(BoxRec){
                    0, 0,
-                   window->drawable.width, window->drawable.height
+                   window->drawable.width-1, window->drawable.height-1
                }, 1);
     if (xmir_window->damage)
         DamageDamageRegion(&window->drawable, &xmir_window->region);
