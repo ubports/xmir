@@ -326,7 +326,8 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         }
     }
 
-    ErrorF("New size: %ix%i with rotation %i\n", width, height, xmir_window->orientation);
+    ErrorF("Output resize (new buffers?) %ix%i with rotation %i\n",
+           width, height, xmir_window->orientation);
 
     screen->width = window_width;
     screen->height = window_height;

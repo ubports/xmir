@@ -1044,6 +1044,22 @@ xmir_destroy_window(WindowPtr window)
     return ret;
 }
 
+static void
+xmir_resize_window(WindowPtr window, int x, int y,
+                   unsigned int w, unsigned int h, WindowPtr sib)
+{
+    ScreenPtr screen = window->drawable.pScreen;
+    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
+
+    screen->ResizeWindow = xmir_screen->ResizeWindow;
+    (*screen->ResizeWindow) (window, x, y, w, h, sib);
+    xmir_screen->ResizeWindow = screen->ResizeWindow;
+    screen->ResizeWindow = xmir_resize_window;
+
+    ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
+           window, w, h, x, y, sib);
+}
+
 static Bool
 xmir_close_screen(ScreenPtr screen)
 {
@@ -1433,6 +1449,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     xmir_screen->DestroyWindow = pScreen->DestroyWindow;
     pScreen->DestroyWindow = xmir_destroy_window;
+
+    xmir_screen->ResizeWindow = pScreen->ResizeWindow;
+    pScreen->ResizeWindow = xmir_resize_window;
 
     xmir_screen->UnrealizeWindow = pScreen->UnrealizeWindow;
     pScreen->UnrealizeWindow = xmir_unrealize_window;
