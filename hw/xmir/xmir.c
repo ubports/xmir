@@ -182,28 +182,6 @@ xmir_window_get(WindowPtr window)
 }
 
 void
-xmir_window_resize(struct xmir_window *xmir_window,
-                   unsigned new_width, unsigned new_height)
-{
-    WindowPtr window = xmir_window->window;
-    XID vlist[2] = {new_width, new_height};
-    ConfigureWindow(window, CWWidth|CWHeight, vlist, serverClient);
-
-    RegionEmpty(&xmir_window->region);
-    RegionInit(&xmir_window->region,
-               &(BoxRec){
-                   0, 0,
-                   window->drawable.width, window->drawable.height
-               }, 1);
-
-    /* This seems redundant with ConfigureWindow. But apparently necessary
-     * to solve LP: #1501039 ...
-     */
-    if (xmir_window->damage)
-        DamageDamageRegion(&window->drawable, &xmir_window->region);
-}
-
-void
 xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap)
 {
     return dixSetPrivate(&pixmap->devPrivates, &xmir_pixmap_private_key, xmir_pixmap);
@@ -1050,6 +1028,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
 {
     ScreenPtr screen = window->drawable.pScreen;
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
+    struct xmir_window *xmir_window = xmir_window_get(window);
 
     screen->ResizeWindow = xmir_screen->ResizeWindow;
     (*screen->ResizeWindow) (window, x, y, w, h, sib);
@@ -1058,6 +1037,15 @@ xmir_resize_window(WindowPtr window, int x, int y,
 
     ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
            window, w, h, x, y, sib);
+
+    RegionEmpty(&xmir_window->region);
+    RegionInit(&xmir_window->region,
+               &(BoxRec){
+                   0, 0,
+                   window->drawable.width, window->drawable.height
+               }, 1);
+    if (xmir_window->damage)
+        DamageDamageRegion(&window->drawable, &xmir_window->region);
 }
 
 static Bool

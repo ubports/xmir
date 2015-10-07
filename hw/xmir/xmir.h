@@ -163,7 +163,6 @@ struct xmir_output {
 struct xmir_window *xmir_window_get(WindowPtr window);
 struct xmir_screen *xmir_screen_get(ScreenPtr screen);
 struct xmir_pixmap *xmir_pixmap_get(PixmapPtr pixmap);
-void xmir_window_resize(struct xmir_window *, unsigned w, unsigned h);
 void xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap);
 
 void xmir_handle_surface_event(struct xmir_window *, MirSurfaceAttrib, int);
