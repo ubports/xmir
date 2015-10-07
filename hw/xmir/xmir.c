@@ -659,8 +659,8 @@ xmir_realize_window(WindowPtr window)
         xorg_list_append(&xmir_window->link_flattened,
                          &xmir_screen->flattened_list);
         ReparentWindow(window, top, dx, dy, serverClient);
-        ErrorF("Flattened window %p (reparented under %p)\n",
-               window, top);
+        ErrorF("Flattened window %p (reparented under %p %+d%+d)\n",
+               window, top, dx, dy);
         /* And thanks to the X Composite extension, window will now be
          * automatically composited into the existing flatten_top surface
          * so we retain only a single Mir surface, as Unity8 likes to see.
