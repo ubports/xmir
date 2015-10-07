@@ -349,19 +349,19 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
 
     mir_buffer_stream_get_graphics_region(mir_surface_get_buffer_stream(xmir_win->surface), &region);
 
-    if (x2 > region.width)
-        x2 = region.width;
+    if (x2 >= region.width)
+        x2 = region.width - 1;
 
-    if (y2 > region.height)
-        y2 = region.height;
+    if (y2 >= region.height)
+        y2 = region.height - 1;
 
-    if (x2 <= dirty->extents.x1 || y2 <= dirty->extents.y1)
+    if (x2 < dirty->extents.x1 || y2 < dirty->extents.y1)
         return;
 
     off_dst = region.vaddr + dirty->extents.y1 * region.stride + dirty->extents.x1 * 4;
 
-    for (y = dirty->extents.y1; y < y2; ++y, off_src += pix->devKind, off_dst += region.stride)
-        memcpy(off_dst, off_src, (x2 - dirty->extents.x1) * 4);
+    for (y = dirty->extents.y1; y <= y2; ++y, off_src += pix->devKind, off_dst += region.stride)
+        memcpy(off_dst, off_src, (x2 - dirty->extents.x1 + 1) * 4);
 }
 
 static void
