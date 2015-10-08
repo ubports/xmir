@@ -1359,7 +1359,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         case mir_pixel_format_xrgb_8888:
         case mir_pixel_format_xbgr_8888:
         case mir_pixel_format_bgr_888:
-     /* case mir_pixel_format_rgb_888:  in Mir 0.15 when landed */
             xmir_screen->depth24_pixel_format = format[f];
             break;
         default:
@@ -1391,7 +1390,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         blue_mask = 0x0000ff;
         break;
     case mir_pixel_format_xbgr_8888:
- /* case mir_pixel_format_rgb_888:  in Mir 0.15 */
         red_mask = 0x0000ff;
         blue_mask = 0xff0000;
         break;
