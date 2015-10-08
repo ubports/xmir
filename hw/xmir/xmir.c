@@ -514,6 +514,17 @@ xmir_get_window_prop_atom(WindowPtr window, ATOM name)
     return 0;
 }
 
+static void
+xmir_update_window_region(struct xmir_window *xmir_window)
+{
+    WindowPtr window = xmir_window->window;
+    int border_widths = 2 * window->borderWidth;
+    BoxRec box = {0, 0,
+                  window->drawable.width + border_widths,
+                  window->drawable.height + border_widths};
+    RegionReset(&xmir_window->region, &box);
+}
+
 static Bool
 xmir_realize_window(WindowPtr window)
 {
@@ -570,6 +581,7 @@ xmir_realize_window(WindowPtr window)
         RegionNull(&window->borderClip);
         RegionNull(&window->winSize);
     }
+    xmir_update_window_region(xmir_window);
 
     xmir_get_window_prop_string8(window, XA_WM_NAME,
                                  wm_name, sizeof wm_name);
@@ -722,10 +734,6 @@ xmir_realize_window(WindowPtr window)
     }
     if (!xmir_screen->flatten_top)
         xmir_screen->flatten_top = xmir_window;
-    RegionInit(&xmir_window->region,
-               &(BoxRec){0, 0,
-                         window->drawable.width, window->drawable.height},
-               1);
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
 #if 0
@@ -863,13 +871,6 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
         ReparentWindow(other->window, benef->window, 0, 0, serverClient);
     }
 
-    /* TODO: Deduplicate this with realize */
-    RegionInit(&benef->region,
-               &(BoxRec){
-                   0, 0,
-                   benef->window->drawable.width,
-                   benef->window->drawable.height
-               }, 1);
     mir_surface_set_event_handler(benef->surface, xmir_surface_handle_event,
                                   benef);
 
@@ -1054,12 +1055,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
     ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
            window, w, h, x, y, sib);
 
-    RegionEmpty(&xmir_window->region);
-    RegionInit(&xmir_window->region,
-               &(BoxRec){
-                   0, 0,
-                   window->drawable.width, window->drawable.height
-               }, 1);
+    xmir_update_window_region(xmir_window);
     if (xmir_window->damage)
         DamageDamageRegion(&window->drawable, &xmir_window->region);
 }
