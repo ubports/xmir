@@ -1318,9 +1318,14 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
                "is not stable\n");
         /* Hide the ARM glamor bugs for now so we can have working phones */
         xmir_screen->glamor = glamor_off;
-        xmir_screen->damage_all = true;
     }
 #endif
+
+    /*
+     * Our buffer age logic is a bit broken on desktop, and very broken on
+     * mobile. So avoid it and the visible glitches it causes...
+     */
+    xmir_screen->damage_all = true;
 
     if (client_fd != -1) {
         if (!AddClientOnOpenFD(client_fd)) {
