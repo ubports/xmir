@@ -518,10 +518,7 @@ static void
 xmir_update_window_region(struct xmir_window *xmir_window)
 {
     WindowPtr window = xmir_window->window;
-    int border_widths = 2 * window->borderWidth;
-    BoxRec box = {0, 0,
-                  window->drawable.width + border_widths,
-                  window->drawable.height + border_widths};
+    BoxRec box = {0, 0, window->drawable.width, window->drawable.height};
     RegionReset(&xmir_window->region, &box);
 }
 
