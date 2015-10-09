@@ -515,7 +515,7 @@ xmir_get_window_prop_atom(WindowPtr window, ATOM name)
 }
 
 static void
-xmir_update_window_region(struct xmir_window *xmir_window)
+xmir_window_update_region(struct xmir_window *xmir_window)
 {
     WindowPtr window = xmir_window->window;
     BoxRec box = {0, 0, window->drawable.width, window->drawable.height};
@@ -578,7 +578,7 @@ xmir_realize_window(WindowPtr window)
         RegionNull(&window->borderClip);
         RegionNull(&window->winSize);
     }
-    xmir_update_window_region(xmir_window);
+    xmir_window_update_region(xmir_window);
 
     xmir_get_window_prop_string8(window, XA_WM_NAME,
                                  wm_name, sizeof wm_name);
@@ -1052,7 +1052,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
     ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
            window, w, h, x, y, sib);
 
-    xmir_update_window_region(xmir_window);
+    xmir_window_update_region(xmir_window);
     if (xmir_window->damage)
         DamageDamageRegion(&window->drawable, &xmir_window->region);
 }
