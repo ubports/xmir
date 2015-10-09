@@ -1063,8 +1063,9 @@ xmir_resize_window(WindowPtr window, int x, int y,
     xmir_screen->ResizeWindow = screen->ResizeWindow;
     screen->ResizeWindow = xmir_resize_window;
 
-    ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
-           window, w, h, x, y, sib);
+    if (xmir_window->surface)   /* Don't flood the log with all windows */
+        ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
+               window, w, h, x, y, sib);
 
     xmir_window_update_region(xmir_window);
     if (xmir_window->damage)
