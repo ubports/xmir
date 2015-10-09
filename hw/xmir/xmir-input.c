@@ -499,12 +499,10 @@ xmir_handle_input_in_main_thread(void *vctx)
             XID vlist[2] = {future_width, future_height};
             ConfigureWindow(window, CWWidth|CWHeight, vlist, serverClient);
         } else {
-            /* We are resizing the root window. That involves re-creating
-             * virtual outputs etc first (xrandr) so best to do that slightly
-             * delayed after the next page flip...
+            /* Non-rootless mode: Resizing the root window is MUCH more
+             * involved (and for now, much less stable)...
              */
-            if (xmir_window->damage)
-                DamageDamageRegion(&window->drawable, &xmir_window->region);
+            xmir_output_handle_resize(xmir_window, future_width, future_height);
         }
         }
         break;
