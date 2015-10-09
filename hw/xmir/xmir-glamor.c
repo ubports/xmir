@@ -565,8 +565,7 @@ xmir_glamor_copy_egl_direct(struct xmir_screen *xmir_screen, struct xmir_window 
     glamor_pixmap_private *src_pixmap_priv = glamor_get_pixmap_private(src_pixmap);
 
     BoxPtr ext = RegionExtents(dirty);
-    EGLint height = src_pixmap->drawable.height;
-    EGLint width = src_pixmap->drawable.width;
+    EGLint width, height;
 
     lastGLContext = xmir_screen->egl_context;
 
@@ -584,10 +583,6 @@ xmir_glamor_copy_egl_direct(struct xmir_screen *xmir_screen, struct xmir_window 
     eglSwapBuffers(xmir_screen->egl_display, xmir_win->egl_surface);
 
     xmir_win->damage_index = (xmir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
-
-    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_HEIGHT, &height);
-    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
-    xmir_output_handle_resize(xmir_win, width, height);
 }
 
 static void
