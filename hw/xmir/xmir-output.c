@@ -312,6 +312,13 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     if (xmir_screen->rootless)
         return;
 
+    if (!xmir_screen->glamor) {
+        ErrorF("FIXME: Root window resizing in -sw mode is highly unstable "
+               "and is disabled.\n"
+               "       Please either avoid -sw mode or use -rootless.\n");
+        return;
+    }
+
     if (!xmir_screen->windowed) {
         xmir_screen->windowed = 1;
 
@@ -326,7 +333,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         }
     }
 
-    ErrorF("WARNING: UNSTABLE FEATURE! Output resized %ix%i with rotation %i\n",
+    ErrorF("Output resized %ix%i with rotation %i\n",
            width, height, xmir_window->orientation);
 
     screen->width = window_width;
