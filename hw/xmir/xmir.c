@@ -1063,7 +1063,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
     xmir_screen->ResizeWindow = screen->ResizeWindow;
     screen->ResizeWindow = xmir_resize_window;
 
-    if (xmir_window->surface)   /* Don't flood the log with all windows */
+    if (xmir_window->surface || window->parent == screen->root)
         ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
                window, w, h, x, y, sib);
 
