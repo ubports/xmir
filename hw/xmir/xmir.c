@@ -270,14 +270,13 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
     int buf_width, buf_height;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 
-    xmir_win->has_free_buffer = FALSE;
-
     switch (xmir_screen->glamor) {
     case glamor_off:
         mir_buffer_stream_get_graphics_region(stream, &reg);
         buf_width = reg.width;
         buf_height = reg.height;
         xmir_sw_copy(xmir_screen, xmir_win, dirty);
+        xmir_win->has_free_buffer = FALSE;
         mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
                                        xmir_win);
         break;
@@ -286,6 +285,7 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
         buf_width = package->width;
         buf_height = package->height;
         xmir_glamor_copy(xmir_screen, xmir_win, dirty);
+        xmir_win->has_free_buffer = FALSE;
         mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
                                        xmir_win);
         break;
@@ -296,6 +296,7 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
         eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface,
                         EGL_WIDTH, &buf_width);
         xmir_glamor_copy(xmir_screen, xmir_win, dirty);
+        xmir_win->has_free_buffer = TRUE;
         /* Will eglSwapBuffers (?) */
         break;
     default:
