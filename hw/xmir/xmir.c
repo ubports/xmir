@@ -214,83 +214,16 @@ xmir_window_enable_damage_tracking(struct xmir_window *xmir_win)
                                     win->drawable.pScreen, xmir_win);
     DamageRegister(&win->drawable, xmir_win->damage);
     DamageSetReportAfterOp(xmir_win->damage, TRUE);
-
-    for (int i = 0; i < MIR_MAX_BUFFER_AGE; i++) {
-        RegionNull(&xmir_win->past_damage[i]);
-    }
-    xmir_win->damage_index = 0;
 }
 
 static void
 xmir_window_disable_damage_tracking(struct xmir_window *xmir_win)
 {
-    int i;
-
-    for (i = 0; i < MIR_MAX_BUFFER_AGE; i++)
-        RegionEmpty(&xmir_win->past_damage[i]);
-
     if (xmir_win->damage != NULL) {
         DamageUnregister(xmir_win->damage);
         DamageDestroy(xmir_win->damage);
         xmir_win->damage = NULL;
     }
-}
-
-static inline int
-index_in_damage_buffer(int current_index, int age)
-{
-    int index = (current_index - age) % MIR_MAX_BUFFER_AGE;
-
-    return index < 0 ? MIR_MAX_BUFFER_AGE + index : index;
-}
-
-static RegionPtr
-xmir_damage_region_for_current_buffer(struct xmir_window *xmir_win)
-{
-    MirNativeBuffer *native;  /* WARNING: This is Mesa only! */
-    RegionPtr region;
-    int age;
-
-    /* WARNING: FIXME: On non-mesa platforms this will compile accidentally,
-     *          but won't function correctly.
-     */
-    mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &native);
-    age = native->age;
-
-    region = &xmir_win->past_damage[index_in_damage_buffer(xmir_win->damage_index, age)];
-
-    /* As per EGL_EXT_buffer_age, contents are undefined for age == 0 */
-    if (age == 0)
-        RegionCopy(region, &xmir_win->region);
-
-    return region;
-}
-
-static RegionPtr
-xmir_window_get_dirty(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
-{
-    RegionPtr damage;
-    int i;
-
-    if (xmir_screen->damage_all) {
-        RegionCopy(xmir_win->past_damage, &xmir_win->region);
-        DamageEmpty(xmir_win->damage);
-
-        return xmir_win->past_damage;
-    }
-
-    damage = DamageRegion(xmir_win->damage);
-    RegionIntersect(damage, damage, &xmir_win->region);
-
-    for (i = 0; i < MIR_MAX_BUFFER_AGE; i++) {
-        RegionUnion(&xmir_win->past_damage[i],
-                    &xmir_win->past_damage[i],
-                    damage);
-    }
-
-    DamageEmpty(xmir_win->damage);
-
-    return xmir_damage_region_for_current_buffer(xmir_win);
 }
 
 static void
@@ -331,10 +264,11 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
 }
 
 static void
-xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
+xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
 {
     MirBufferPackage *package;
     MirGraphicsRegion reg;
+    RegionPtr dirty = &xmir_win->region;
     int buf_width, buf_height;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 
@@ -370,7 +304,7 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, 
         break;
     }
 
-    RegionEmpty(dirty);
+    DamageEmpty(xmir_win->damage);
     xorg_list_del(&xmir_win->link_damage);
 
     /*
@@ -395,7 +329,6 @@ xmir_handle_buffer_available(void *ctx)
 {
     struct xmir_window *xmir_win = *(struct xmir_window **)ctx;
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
-    RegionPtr dirty;
 
     if (!xmir_win->damage || !mir_surface_is_valid(xmir_win->surface)) {
         if (xmir_win->damage)
@@ -405,13 +338,11 @@ xmir_handle_buffer_available(void *ctx)
 
     DebugF("Buffer-available on %p\n", xmir_win);
     xmir_win->has_free_buffer = TRUE;
-    xmir_win->damage_index = (xmir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
 
     if (xorg_list_is_empty(&xmir_win->link_damage))
         return;
 
-    dirty = xmir_window_get_dirty(xmir_screen, xmir_win);
-    xmir_buffer_copy(xmir_screen, xmir_win, dirty);
+    xmir_buffer_copy(xmir_screen, xmir_win);
 }
 
 static void
@@ -1063,7 +994,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
     xmir_screen->ResizeWindow = screen->ResizeWindow;
     screen->ResizeWindow = xmir_resize_window;
 
-    if (xmir_window->surface || window->parent == screen->root)
+    if (xmir_window->surface)
         ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
                window, w, h, x, y, sib);
 
@@ -1172,9 +1103,7 @@ xmir_block_handler(ScreenPtr screen, void *ptv, void *read_mask)
                                   &xmir_screen->damage_window_list,
                                   link_damage) {
         if (xmir_window->has_free_buffer) {
-            RegionPtr dirty = xmir_window_get_dirty(xmir_screen, xmir_window);
-
-            xmir_buffer_copy(xmir_screen, xmir_window, dirty);
+            xmir_buffer_copy(xmir_screen, xmir_window);
         }
     }
 }
@@ -1307,7 +1236,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         } else if (strcmp(argv[i], "-2x") == 0) {
             xmir_screen->doubled = 1;
         } else if (strcmp(argv[i], "-damage") == 0) {
-            xmir_screen->damage_all = true;
+            /* Ignored. Damage-all is now the default and only option. */
         } else if (strcmp(argv[i], "-egl_sync") == 0) {
             xmir_screen->glamor = glamor_egl_sync;
         } else if (strcmp(argv[i], "-fd") == 0) {
@@ -1332,12 +1261,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         xmir_screen->glamor = glamor_off;
     }
 #endif
-
-    /*
-     * Our buffer age logic is a bit broken on desktop, and very broken on
-     * mobile. So avoid it and the visible glitches it causes...
-     */
-    xmir_screen->damage_all = true;
 
     if (client_fd != -1) {
         if (!AddClientOnOpenFD(client_fd)) {
