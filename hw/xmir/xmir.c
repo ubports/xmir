@@ -104,7 +104,6 @@ ddxUseMsg(void)
     ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
     ErrorF("    -neverclose        Never close the flattened rootless window\n");
     ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
-    ErrorF("-nowm                  disable the built-in rootless window manager\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
     ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -124,7 +123,6 @@ ddxProcessArgument(int argc, char *argv[], int i)
     if (strcmp(argv[i], "-rootless") == 0 ||
         strcmp(argv[i], "-flatten") == 0 ||
         strcmp(argv[i], "-neverclose") == 0 ||
-        strcmp(argv[i], "-nowm") == 0 ||
         strcmp(argv[i], "-sw") == 0 ||
         strcmp(argv[i], "-egl") == 0 ||
         strcmp(argv[i], "-egl_sync") == 0 ||
@@ -545,8 +543,7 @@ xmir_realize_window(WindowPtr window)
     if (!window->viewable) {
         return ret;
     } else if (xmir_screen->rootless) {
-        if (xmir_screen->do_own_wm &&
-            (!window->parent || window->parent == screen->root)) {
+        if (!window->parent || window->parent == screen->root) {
             compRedirectWindow(serverClient, window,
                                CompositeRedirectManual);
             compRedirectSubwindows(serverClient, window,
@@ -1213,7 +1210,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xmir_screen->submit_rendering_handler = xmir_register_handler(&xmir_handle_buffer_available, sizeof (struct xmir_window *));
     xmir_screen->input_handler = xmir_register_handler(&xmir_handle_input_in_main_thread, sizeof (XMirEventContext));
     xmir_screen->glamor = glamor_dri;
-    xmir_screen->do_own_wm = True;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
@@ -1222,8 +1218,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
             xmir_screen->flatten = True;
         } else if (strcmp(argv[i], "-neverclose") == 0) {
             xmir_screen->neverclose = True;
-        } else if (strcmp(argv[i], "-nowm") == 0) {
-            xmir_screen->do_own_wm = False;
         } else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
         } else if (strcmp(argv[i], "-mirSocket") == 0) {

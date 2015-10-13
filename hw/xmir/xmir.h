@@ -92,7 +92,6 @@ struct xmir_screen {
     void *egl_surface;
 
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
-    Bool do_own_wm;
     Bool flatten;
     Bool neverclose;
     MirSurface *neverclosed;
