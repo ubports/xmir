@@ -375,7 +375,6 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     RegionReset(&xmir_window->region, &box);
 
     RegionReset(&window->winSize, &box);
-    RegionReset(&window->winSize, &box);
     RegionReset(&window->clipList, &box);
     RegionReset(&window->borderSize, &box);
     RegionReset(&window->borderClip, &box);
