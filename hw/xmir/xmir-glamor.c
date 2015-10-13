@@ -581,8 +581,6 @@ xmir_glamor_copy_egl_direct(struct xmir_screen *xmir_screen, struct xmir_window 
     eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
     xmir_glamor_copy_egl_common(&window->drawable, src_pixmap, src_pixmap_priv, ext, width, height, 0, 0, xmir_win->orientation);
     eglSwapBuffers(xmir_screen->egl_display, xmir_win->egl_surface);
-
-    xmir_win->damage_index = (xmir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
 }
 
 static void
@@ -1172,8 +1170,7 @@ xmir_glamor_init(struct xmir_screen *xmir_screen)
          * of pixmaps.
          */
         glamor_enable_dri3(screen);
-    } else
-        xmir_screen->damage_all = 1;
+    }
 
     return TRUE;
 }

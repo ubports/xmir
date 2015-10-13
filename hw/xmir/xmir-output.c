@@ -263,7 +263,6 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     PixmapPtr pixmap;
     BoxRec box;
-    int i;
     int window_width, window_height;
     DeviceIntPtr pDev;
 
@@ -374,8 +373,6 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     window->drawable.height = box.y2;
 
     RegionReset(&xmir_window->region, &box);
-    for (i = 0; i < MIR_MAX_BUFFER_AGE; ++i)
-        RegionReset(&xmir_window->past_damage[i], &box);
 
     RegionReset(&window->winSize, &box);
     RegionReset(&window->winSize, &box);

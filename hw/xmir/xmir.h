@@ -48,8 +48,6 @@
 #include <epoxy/egl.h>
 #include <epoxy/gl.h>
 
-#define MIR_MAX_BUFFER_AGE 3
-
 struct xmir_window;
 
 struct xmir_screen {
@@ -82,7 +80,7 @@ struct xmir_screen {
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     pthread_t thread;
-    int alive, damage_all;
+    int alive;
     struct xorg_list swap_list;
     void *swap_surface;
 
@@ -119,8 +117,7 @@ struct xmir_window {
     RegionRec region;
 
     struct xorg_list link_damage;
-    RegionRec past_damage[MIR_MAX_BUFFER_AGE];
-    int damage_index, orientation;
+    int orientation;
     unsigned int has_free_buffer:1;
 
     struct xorg_list link_flattened;
