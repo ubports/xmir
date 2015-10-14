@@ -355,16 +355,17 @@ xmir_handle_buffer_available(void *ctx)
             XID vlist[2] = {buf_width, buf_height};
             ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
                             serverClient);
-            xmir_buffer_copy(xmir_screen, xmir_win);
         } else {
             /* Output resizing takes time, so start it going and let it
              * finish next frame or so...
              */
             xmir_output_handle_resize(xmir_win, buf_width, buf_height);
         }
-    } else if (!xorg_list_is_empty(&xmir_win->link_damage) || resize_lagging) {
-        xmir_buffer_copy(xmir_screen, xmir_win);
+    } else if (xorg_list_is_empty(&xmir_win->link_damage) && !resize_lagging) {
+        return;  /* We are now idle. Put your feet up. */
     }
+
+    xmir_buffer_copy(xmir_screen, xmir_win);
 
     if (resize_lagging && xmir_win->damage)
         DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
