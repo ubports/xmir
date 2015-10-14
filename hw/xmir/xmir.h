@@ -115,6 +115,8 @@ struct xmir_window {
     DamagePtr damage;
     RegionRec region;
 
+    int surface_width, surface_height;
+
     struct xorg_list link_damage;
     int orientation;
     unsigned int has_free_buffer:1;
