@@ -261,49 +261,36 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
     }
 }
 
-static Bool
-xmir_resize_if_mir_has(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
+static void
+xmir_get_current_buffer_dimensions(
+    struct xmir_screen *xmir_screen, struct xmir_window *xmir_win,
+    int *width, int *height)
 {
     MirBufferPackage *package;
     MirGraphicsRegion reg;
-    int buf_width, buf_height;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 
     switch (xmir_screen->glamor) {
     case glamor_off:
         mir_buffer_stream_get_graphics_region(stream, &reg);
-        buf_width = reg.width;
-        buf_height = reg.height;
+        *width = reg.width;
+        *height = reg.height;
         break;
     case glamor_dri:
         mir_buffer_stream_get_current_buffer(stream, &package);
-        buf_width = package->width;
-        buf_height = package->height;
+        *width = package->width;
+        *height = package->height;
         break;
     case glamor_egl:
     case glamor_egl_sync:
         eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface,
-                        EGL_HEIGHT, &buf_height);
+                        EGL_WIDTH, width);
         eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface,
-                        EGL_WIDTH, &buf_width);
+                        EGL_HEIGHT, height);
         break;
     default:
         break;
     }
-
-    if (buf_width != xmir_win->window->drawable.width ||
-        buf_height != xmir_win->window->drawable.height) {
-        if (xmir_screen->rootless) {
-            XID vlist[2] = {buf_width, buf_height};
-            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
-                            serverClient);
-        } else {
-            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
-        }
-        return TRUE;
-    }
-
-    return FALSE;
 }
 
 static void
@@ -344,6 +331,8 @@ xmir_handle_buffer_available(void *ctx)
 {
     struct xmir_window *xmir_win = *(struct xmir_window **)ctx;
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
+    int buf_width, buf_height;
+    Bool resize_lagging;
 
     if (!xmir_win->damage || !mir_surface_is_valid(xmir_win->surface)) {
         if (xmir_win->damage)
@@ -354,10 +343,31 @@ xmir_handle_buffer_available(void *ctx)
     DebugF("Buffer-available on %p\n", xmir_win);
     xmir_win->has_free_buffer = TRUE;
 
-    if (xmir_resize_if_mir_has(xmir_screen, xmir_win) ||
-            !xorg_list_is_empty(&xmir_win->link_damage)) {
+    xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
+                                       &buf_width, &buf_height);
+
+    resize_lagging = buf_width != xmir_win->surface_width ||
+                     buf_height != xmir_win->surface_height;
+
+    if (buf_width != xmir_win->window->drawable.width ||
+        buf_height != xmir_win->window->drawable.height) {
+        if (xmir_screen->rootless) {
+            XID vlist[2] = {buf_width, buf_height};
+            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
+                            serverClient);
+            xmir_buffer_copy(xmir_screen, xmir_win);
+        } else {
+            /* Output resizing takes time, so start it going and let it
+             * finish next frame or so...
+             */
+            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
+        }
+    } else if (!xorg_list_is_empty(&xmir_win->link_damage) || resize_lagging) {
         xmir_buffer_copy(xmir_screen, xmir_win);
     }
+
+    if (resize_lagging && xmir_win->damage)
+        DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
 }
 
 static void
@@ -667,6 +677,9 @@ xmir_realize_window(WindowPtr window)
     /* Initial window title bar works.  TODO: support for updates */
     mir_surface_spec_set_name(spec, wm_name);
 
+    xmir_window->surface_width = mir_width;
+    xmir_window->surface_height = mir_height;
+
     if (xmir_screen->neverclosed) {
         mir_surface_spec_set_width(spec, mir_width);
         mir_surface_spec_set_height(spec, mir_height);
@@ -910,7 +923,8 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     ErrorF("Unmap/unrealize window %p\n", window);
 
     /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
-    xmir_process_from_eventloop();
+    if (xmir_window->surface)
+        xmir_process_from_eventloop();
 
     if (!destroyed)
         xmir_window_disable_damage_tracking(xmir_window);
