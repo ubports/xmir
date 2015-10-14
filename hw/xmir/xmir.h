@@ -166,6 +166,8 @@ void xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap);
 void xmir_handle_surface_event(struct xmir_window *, MirSurfaceAttrib, int);
 void xmir_close_surface(struct xmir_window *);
 
+void xmir_repaint(struct xmir_window *);
+
 /* xmir-input.c */
 Bool xmir_screen_init_cursor(struct xmir_screen *xmir_screen);
 void xmir_input_set_cursor(struct xmir_input *xmir_input);

@@ -293,11 +293,38 @@ xmir_get_current_buffer_dimensions(
     }
 }
 
-static void
-xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
+void xmir_repaint(struct xmir_window *xmir_win)
 {
+    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
+    int buf_width, buf_height;
+    Bool resize_lagging;
     RegionPtr dirty = &xmir_win->region;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+
+    if (!xmir_win->has_free_buffer)
+        ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
+
+    xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
+                                       &buf_width, &buf_height);
+
+    resize_lagging = buf_width != xmir_win->surface_width ||
+                     buf_height != xmir_win->surface_height;
+
+    if (buf_width != xmir_win->window->drawable.width ||
+        buf_height != xmir_win->window->drawable.height) {
+        if (xmir_screen->rootless) {
+            XID vlist[2] = {buf_width, buf_height};
+            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
+                            serverClient);
+        } else {
+            /* Output resizing takes time, so start it going and let it
+             * finish next frame or so...
+             */
+            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
+        }
+    } else if (xorg_list_is_empty(&xmir_win->link_damage) && !resize_lagging) {
+        return;  /* We are now idle. Put your feet up. */
+    }
 
     switch (xmir_screen->glamor) {
     case glamor_off:
@@ -324,15 +351,15 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
 
     DamageEmpty(xmir_win->damage);
     xorg_list_del(&xmir_win->link_damage);
+
+    if (resize_lagging && xmir_win->damage)
+        DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
 }
 
 static void
 xmir_handle_buffer_available(void *ctx)
 {
     struct xmir_window *xmir_win = *(struct xmir_window **)ctx;
-    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
-    int buf_width, buf_height;
-    Bool resize_lagging;
 
     if (!xmir_win->damage || !mir_surface_is_valid(xmir_win->surface)) {
         if (xmir_win->damage)
@@ -342,33 +369,7 @@ xmir_handle_buffer_available(void *ctx)
 
     DebugF("Buffer-available on %p\n", xmir_win);
     xmir_win->has_free_buffer = TRUE;
-
-    xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
-                                       &buf_width, &buf_height);
-
-    resize_lagging = buf_width != xmir_win->surface_width ||
-                     buf_height != xmir_win->surface_height;
-
-    if (buf_width != xmir_win->window->drawable.width ||
-        buf_height != xmir_win->window->drawable.height) {
-        if (xmir_screen->rootless) {
-            XID vlist[2] = {buf_width, buf_height};
-            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
-                            serverClient);
-        } else {
-            /* Output resizing takes time, so start it going and let it
-             * finish next frame or so...
-             */
-            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
-        }
-    } else if (xorg_list_is_empty(&xmir_win->link_damage) && !resize_lagging) {
-        return;  /* We are now idle. Put your feet up. */
-    }
-
-    xmir_buffer_copy(xmir_screen, xmir_win);
-
-    if (resize_lagging && xmir_win->damage)
-        DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
+    xmir_repaint(xmir_win);
 }
 
 static void
@@ -1132,7 +1133,7 @@ xmir_block_handler(ScreenPtr screen, void *ptv, void *read_mask)
                                   &xmir_screen->damage_window_list,
                                   link_damage) {
         if (xmir_window->has_free_buffer) {
-            xmir_buffer_copy(xmir_screen, xmir_window);
+            xmir_repaint(xmir_window);
         }
     }
 }
