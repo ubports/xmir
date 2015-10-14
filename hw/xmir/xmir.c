@@ -261,12 +261,11 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
     }
 }
 
-static void
-xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
+static Bool
+xmir_resize_if_mir_has(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
 {
     MirBufferPackage *package;
     MirGraphicsRegion reg;
-    RegionPtr dirty = &xmir_win->region;
     int buf_width, buf_height;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 
@@ -275,19 +274,11 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
         mir_buffer_stream_get_graphics_region(stream, &reg);
         buf_width = reg.width;
         buf_height = reg.height;
-        xmir_sw_copy(xmir_screen, xmir_win, dirty);
-        xmir_win->has_free_buffer = FALSE;
-        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
-                                       xmir_win);
         break;
     case glamor_dri:
         mir_buffer_stream_get_current_buffer(stream, &package);
         buf_width = package->width;
         buf_height = package->height;
-        xmir_glamor_copy(xmir_screen, xmir_win, dirty);
-        xmir_win->has_free_buffer = FALSE;
-        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
-                                       xmir_win);
         break;
     case glamor_egl:
     case glamor_egl_sync:
@@ -295,6 +286,47 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
                         EGL_HEIGHT, &buf_height);
         eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface,
                         EGL_WIDTH, &buf_width);
+        break;
+    default:
+        break;
+    }
+
+    if (buf_width != xmir_win->window->drawable.width ||
+        buf_height != xmir_win->window->drawable.height) {
+        if (xmir_screen->rootless) {
+            XID vlist[2] = {buf_width, buf_height};
+            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
+                            serverClient);
+        } else {
+            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void
+xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
+{
+    RegionPtr dirty = &xmir_win->region;
+    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+
+    switch (xmir_screen->glamor) {
+    case glamor_off:
+        xmir_sw_copy(xmir_screen, xmir_win, dirty);
+        xmir_win->has_free_buffer = FALSE;
+        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
+                                       xmir_win);
+        break;
+    case glamor_dri:
+        xmir_glamor_copy(xmir_screen, xmir_win, dirty);
+        xmir_win->has_free_buffer = FALSE;
+        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
+                                       xmir_win);
+        break;
+    case glamor_egl:
+    case glamor_egl_sync:
         xmir_glamor_copy(xmir_screen, xmir_win, dirty);
         xmir_win->has_free_buffer = TRUE;
         /* Will eglSwapBuffers (?) */
@@ -305,22 +337,6 @@ xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
 
     DamageEmpty(xmir_win->damage);
     xorg_list_del(&xmir_win->link_damage);
-
-    /*
-     * During a resize the buffer dimensions will lag behind what Mir
-     * has already said is the new surface size. So detect if we're lagging
-     * and make sure a new frame is scheduled so we catch up.
-     * This is kind of a workaround for LP: #1288021.
-     */
-    if (buf_width != xmir_win->window->drawable.width ||
-        buf_height != xmir_win->window->drawable.height) {
-        /*
-         * Force a new frame, so eventually the buffer size we're rendering
-         * to catches up with the surface size.
-         */
-        if (xmir_win->damage)
-            DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
-    }
 }
 
 static void
@@ -338,10 +354,10 @@ xmir_handle_buffer_available(void *ctx)
     DebugF("Buffer-available on %p\n", xmir_win);
     xmir_win->has_free_buffer = TRUE;
 
-    if (xorg_list_is_empty(&xmir_win->link_damage))
-        return;
-
-    xmir_buffer_copy(xmir_screen, xmir_win);
+    if (xmir_resize_if_mir_has(xmir_screen, xmir_win) ||
+            !xorg_list_is_empty(&xmir_win->link_damage)) {
+        xmir_buffer_copy(xmir_screen, xmir_win);
+    }
 }
 
 static void

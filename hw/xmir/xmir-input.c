@@ -495,15 +495,8 @@ xmir_handle_input_in_main_thread(void *vctx)
         ErrorF("Mir surface for win %p resized to %ux%u (buffers arriving soon)\n",
                window, future_width, future_height);
 
-        if (ctx->xmir_screen->rootless) {
-            XID vlist[2] = {future_width, future_height};
-            ConfigureWindow(window, CWWidth|CWHeight, vlist, serverClient);
-        } else {
-            /* Non-rootless mode: Resizing the root window is MUCH more
-             * involved (and for now, much less stable)...
-             */
-            xmir_output_handle_resize(xmir_window, future_width, future_height);
-        }
+        if (xmir_window->damage)
+            DamageDamageRegion(&window->drawable, &xmir_window->region);
         }
         break;
     case mir_event_type_prompt_session_state_change:
