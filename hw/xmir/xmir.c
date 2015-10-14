@@ -296,35 +296,11 @@ xmir_get_current_buffer_dimensions(
 void xmir_repaint(struct xmir_window *xmir_win)
 {
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
-    int buf_width, buf_height;
-    Bool resize_lagging;
     RegionPtr dirty = &xmir_win->region;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
-
-    xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
-                                       &buf_width, &buf_height);
-
-    resize_lagging = buf_width != xmir_win->surface_width ||
-                     buf_height != xmir_win->surface_height;
-
-    if (buf_width != xmir_win->window->drawable.width ||
-        buf_height != xmir_win->window->drawable.height) {
-        if (xmir_screen->rootless) {
-            XID vlist[2] = {buf_width, buf_height};
-            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
-                            serverClient);
-        } else {
-            /* Output resizing takes time, so start it going and let it
-             * finish next frame or so...
-             */
-            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
-        }
-    } else if (xorg_list_is_empty(&xmir_win->link_damage) && !resize_lagging) {
-        return;  /* We are now idle. Put your feet up. */
-    }
 
     switch (xmir_screen->glamor) {
     case glamor_off:
@@ -351,15 +327,15 @@ void xmir_repaint(struct xmir_window *xmir_win)
 
     DamageEmpty(xmir_win->damage);
     xorg_list_del(&xmir_win->link_damage);
-
-    if (resize_lagging && xmir_win->damage)
-        DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
 }
 
 static void
 xmir_handle_buffer_available(void *ctx)
 {
     struct xmir_window *xmir_win = *(struct xmir_window **)ctx;
+    struct xmir_screen *xmir_screen = xmir_win->xmir_screen;
+    int buf_width, buf_height;
+    Bool xserver_lagging, xclient_lagging;
 
     if (!xmir_win->damage || !mir_surface_is_valid(xmir_win->surface)) {
         if (xmir_win->damage)
@@ -369,7 +345,38 @@ xmir_handle_buffer_available(void *ctx)
 
     DebugF("Buffer-available on %p\n", xmir_win);
     xmir_win->has_free_buffer = TRUE;
-    xmir_repaint(xmir_win);
+
+    xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
+                                       &buf_width, &buf_height);
+
+    xserver_lagging = buf_width != xmir_win->surface_width ||
+                      buf_height != xmir_win->surface_height;
+
+    xclient_lagging = buf_width != xmir_win->window->drawable.width ||
+                      buf_height != xmir_win->window->drawable.height;
+
+    if (xclient_lagging) {
+        if (xmir_screen->rootless) {
+            XID vlist[2] = {buf_width, buf_height};
+            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
+                            serverClient);
+        } else {
+            /* Output resizing takes time, so start it going and let it
+             * finish next frame or so...
+             */
+            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
+        }
+        /* Admittedly the client won't have time to redraw itself in the
+         * new size before the below repaint, but the important bit is that
+         * the X server is using the correct buffer dimensions immediately.
+         */
+    }
+
+    if (xserver_lagging || !xorg_list_is_empty(&xmir_win->link_damage))
+        xmir_repaint(xmir_win);
+
+    if (xserver_lagging)
+        DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
 }
 
 static void
