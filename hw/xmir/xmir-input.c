@@ -496,9 +496,7 @@ xmir_handle_input_in_main_thread(void *vctx)
                window, future_width, future_height);
         xmir_window->surface_width = future_width;
         xmir_window->surface_height = future_height;
-        if (xmir_window->has_free_buffer)
-            xmir_repaint(xmir_window);
-        else if (xmir_window->damage)
+        if (xmir_window->damage)
             DamageDamageRegion(&window->drawable, &xmir_window->region);
         }
         break;
