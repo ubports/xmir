@@ -808,6 +808,10 @@ xmir_close_surface(struct xmir_window *xmir_window)
     WindowPtr window = xmir_window->window;
     struct xmir_screen *xmir_screen = xmir_screen_get(window->drawable.pScreen);
 
+    ErrorF("FIXME: xmir_close_surface is not implemented\n");
+    return;
+    /* Because DeleteWindow below causes double free */
+
     if (!xmir_screen->rootless) {
         ErrorF("Root window closed, shutting down Xmir\n");
         GiveUp(0);
