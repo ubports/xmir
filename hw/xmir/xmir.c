@@ -329,11 +329,11 @@ void xmir_repaint(struct xmir_window *xmir_win)
     xorg_list_del(&xmir_win->link_damage);
 }
 
-static void
-xmir_handle_buffer_available(void *ctx)
+void
+xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
+                             struct xmir_window *xmir_win,
+                             void *unused)
 {
-    struct xmir_window *xmir_win = *(struct xmir_window **)ctx;
-    struct xmir_screen *xmir_screen = xmir_win->xmir_screen;
     int buf_width, buf_height;
     Bool xserver_lagging, xclient_lagging;
 
@@ -385,7 +385,8 @@ xmir_handle_buffer_received(MirBufferStream *stream, void *ctx)
     struct xmir_window *xmir_win = ctx;
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
 
-    xmir_post_to_eventloop(xmir_screen->submit_rendering_handler, &xmir_win);
+    xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
+                           xmir_win, 0);
 }
 
 static Bool
@@ -1063,9 +1064,6 @@ xmir_close_screen(ScreenPtr screen)
 
     xmir_fini_thread_to_eventloop();
     free(xmir_screen->driver_name);
-    free(xmir_screen->submit_rendering_handler);
-    free(xmir_screen->input_handler);
-    free(xmir_screen->hotplug_event_handler);
     free(xmir_screen);
 
     return ret;
@@ -1246,8 +1244,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xmir_init_thread_to_eventloop();
     dixSetPrivate(&pScreen->devPrivates, &xmir_screen_private_key, xmir_screen);
     xmir_screen->screen = pScreen;
-    xmir_screen->submit_rendering_handler = xmir_register_handler(&xmir_handle_buffer_available, sizeof (struct xmir_window *));
-    xmir_screen->input_handler = xmir_register_handler(&xmir_handle_input_in_main_thread, sizeof (XMirEventContext));
     xmir_screen->glamor = glamor_dri;
 
     for (i = 1; i < argc; i++) {

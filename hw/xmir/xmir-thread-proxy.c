@@ -28,6 +28,8 @@
  *
  * Authors:
  *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
+ * Later rewritten, simplified and optimized by:
+ *   Daniel van Vugt <daniel.van.vugt@canonical.com>
  */
 
 #include <stdint.h>
@@ -38,10 +40,11 @@
 
 #include "xmir.h"
 
-struct xmir_marshall_handler {
-	void (*msg_handler)(void *msg);
-	size_t msg_size;
-	char msg[];
+struct message {
+    xmir_event_callback *callback;
+    struct xmir_screen *xmir_screen;
+    struct xmir_window *xmir_window;
+    void *arg;
 };
 
 static int pipefds[2];
@@ -82,51 +85,25 @@ xmir_fini_thread_to_eventloop(void)
 	close(pipefds[0]);
 }
 
-struct xmir_marshall_handler *
-xmir_register_handler(void (*msg_handler)(void *msg), size_t msg_size)
-{
-	struct xmir_marshall_handler *handler;
-
-	if (msg_size + sizeof *handler > PIPE_BUF)
-		return NULL;
-
-	handler = malloc(sizeof *handler + msg_size);
-	if (!handler)
-		return NULL;
-
-	handler->msg_handler = msg_handler;
-	handler->msg_size = msg_size;
-	return handler;
-}
-
 void
-xmir_post_to_eventloop(struct xmir_marshall_handler *handler, void *msg)
+xmir_post_to_eventloop(xmir_event_callback *cb,
+                       struct xmir_screen *s, struct xmir_window *w, void *a)
 {
-	ssize_t written;
-	const int total_size = sizeof *handler + handler->msg_size;
-	/* We require the total size to be less than PIPE_BUF to ensure an atomic write */
-	assert(total_size < PIPE_BUF);
-
-	memcpy(handler->msg, msg, handler->msg_size);
-	written = write(pipefds[1], handler, total_size);
-	if (written != total_size)
-		ErrorF("[XMIR] Failed to proxy message to mainloop\n");
+    struct message msg = {cb, s, w, a};
+    ssize_t written = write(pipefds[1], &msg, sizeof msg);
+    if (written != sizeof(msg))
+        ErrorF("[XMIR] Failed to proxy message to mainloop\n");
 }
 
 void
 xmir_process_from_eventloop(void)
 {
-	struct xmir_marshall_handler handler;
-	void *msg;
-
-	for (;;) {
-		if (read(pipefds[0], &handler, sizeof handler) < 0) {
-			return;
-		}
-
-		msg = malloc(handler.msg_size);
-		if(read(pipefds[0], msg, handler.msg_size) == handler.msg_size)
-			(*handler.msg_handler)(msg);
-		free(msg);
-	}
+    for (;;) {
+        struct message msg;
+        ssize_t got = read(pipefds[0], &msg, sizeof msg);
+        if (got < 0)
+            return;
+        if (got == sizeof(msg))
+            msg.callback(msg.xmir_screen, msg.xmir_window, msg.arg);
+    }
 }
