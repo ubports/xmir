@@ -931,10 +931,6 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
 
     ErrorF("Unmap/unrealize window %p\n", window);
 
-    /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
-    if (xmir_window->surface)
-        xmir_process_from_eventloop();
-
     if (!destroyed)
         xmir_window_disable_damage_tracking(xmir_window);
     else
@@ -974,6 +970,9 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
 
         xmir_window->surface = NULL;
     }
+
+    /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
+    xmir_process_from_eventloop();
 
     RegionUninit(&xmir_window->region);
 }
