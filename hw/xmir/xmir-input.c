@@ -471,23 +471,23 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
     }
 }
 
-void
-xmir_handle_input_in_main_thread(void *vctx)
+static void
+xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
+                                         struct xmir_window *xmir_window,
+                                         void *arg)
 {
-    XMirEventContext *ctx = (XMirEventContext *)vctx;
-    const MirEvent *ev = ctx->ev;
-    struct xmir_input *xmir_input = xorg_list_first_entry(&ctx->xmir_screen->input_list, struct xmir_input, link);
+    const MirEvent *ev = arg;
+    struct xmir_input *xmir_input = xorg_list_first_entry(&xmir_screen->input_list, struct xmir_input, link);
 
     switch (mir_event_get_type(ev))
     {
     case mir_event_type_input:
-        xmir_window_handle_input_event(xmir_input, ctx->xmir_window, mir_event_get_input_event(ev));
+        xmir_window_handle_input_event(xmir_input, xmir_window, mir_event_get_input_event(ev));
         break;
     case mir_event_type_surface:
-        xmir_handle_surface_event(ctx->xmir_window, mir_surface_event_get_attribute(mir_event_get_surface_event(ev)), mir_surface_event_get_attribute_value(mir_event_get_surface_event(ev)));
+        xmir_handle_surface_event(xmir_window, mir_surface_event_get_attribute(mir_event_get_surface_event(ev)), mir_surface_event_get_attribute_value(mir_event_get_surface_event(ev)));
         break;
     case mir_event_type_resize: {
-        struct xmir_window *xmir_window = ctx->xmir_window;
         WindowPtr window = xmir_window->window;
         const MirResizeEvent *resize = mir_event_get_resize_event(ev);
         unsigned future_width = mir_resize_event_get_width(resize);
@@ -504,10 +504,10 @@ xmir_handle_input_in_main_thread(void *vctx)
         ErrorF("No idea about prompt_session_state_change\n");
         break;
     case mir_event_type_orientation:
-        xmir_output_handle_orientation(ctx->xmir_window, mir_orientation_event_get_direction(mir_event_get_orientation_event(ev)));
+        xmir_output_handle_orientation(xmir_window, mir_orientation_event_get_direction(mir_event_get_orientation_event(ev)));
         break;
     case mir_event_type_close_surface:
-        xmir_close_surface(ctx->xmir_window);
+        xmir_close_surface(xmir_window);
         break;
     default:
         ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
@@ -521,18 +521,13 @@ xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev,
                           void *context)
 {
     struct xmir_window *xmir_window = context;
-    struct xmir_screen *xmir_screen;
-    XMirEventContext ectx;
+    struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
 
-    xmir_screen = xmir_screen_get(xmir_window->window->drawable.pScreen);
-
-    // To prevent copying the whole MirEvent (three times in total)
-    // we could pass only the information used by X
-    ectx.ev = mir_event_ref (ev);
-    ectx.xmir_screen = xmir_screen;
-    ectx.xmir_window = xmir_window;
-
-    xmir_post_to_eventloop(xmir_screen->input_handler, &ectx);
+    /* We are in a Mir event thread, so unsafe to do X things. Post the event
+     * to the X event loop thread...
+     */
+    xmir_post_to_eventloop(&xmir_handle_surface_event_in_main_thread,
+        xmir_screen, xmir_window, (void*)mir_event_ref(ev));
 }
 
 void

@@ -387,10 +387,10 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 }
 
 static void
-xmir_handle_hotplug(void *ctx)
+xmir_handle_hotplug(struct xmir_screen *xmir_screen,
+                    struct xmir_window *unused1,
+                    void *unused2)
 {
-    struct xmir_screen *xmir_screen = *(struct xmir_screen **)ctx;
-
     xmir_update_config(xmir_screen);
 
     /* Trigger RANDR refresh */
@@ -401,8 +401,7 @@ static void
 xmir_display_config_callback(MirConnection *conn, void *ctx)
 {
     struct xmir_screen *xmir_screen = ctx;
-
-    xmir_post_to_eventloop(xmir_screen->hotplug_event_handler, &xmir_screen);
+    xmir_post_to_eventloop(xmir_handle_hotplug, xmir_screen, 0, 0);
 }
 
 Bool
@@ -415,9 +414,6 @@ xmir_screen_init_output(struct xmir_screen *xmir_screen)
 
     if (!RRScreenInit(xmir_screen->screen))
         return FALSE;
-
-    /* Hook up hotplug notification */
-    xmir_screen->hotplug_event_handler = xmir_register_handler(&xmir_handle_hotplug, sizeof (*xmir_screen));
 
     mir_connection_set_display_config_change_callback(xmir_screen->conn, &xmir_display_config_callback, xmir_screen);
 

@@ -544,8 +544,9 @@ xmir_glamor_flip(void *data)
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             xorg_list_del(&xmir_win->flip.entry);
-            xmir_post_to_eventloop(xmir_screen->submit_rendering_handler, &xmir_win);
-        }
+            xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
+                                   xmir_win, 0);
+}
     }
     glDeleteTextures(1, &tex);
     glDeleteProgram(passthrough_prog);

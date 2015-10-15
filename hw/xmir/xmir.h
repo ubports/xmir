@@ -72,10 +72,6 @@ struct xmir_screen {
     MirDisplayConfiguration *display;
     MirPlatformPackage platform;
 
-    struct xmir_marshall_handler *input_handler;
-    struct xmir_marshall_handler *hotplug_event_handler;
-    struct xmir_marshall_handler *submit_rendering_handler;
-
     /* Bookkeeping for eglSwapBuffers */
     pthread_mutex_t mutex;
     pthread_cond_t cond;
@@ -164,6 +160,9 @@ struct xmir_pixmap *xmir_pixmap_get(PixmapPtr pixmap);
 void xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap);
 
 void xmir_handle_surface_event(struct xmir_window *, MirSurfaceAttrib, int);
+void xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
+                                  struct xmir_window *xmir_win,
+                                  void *unused);
 void xmir_close_surface(struct xmir_window *);
 
 void xmir_repaint(struct xmir_window *);
@@ -203,19 +202,13 @@ void xmir_glamor_copy_egl_common(DrawablePtr, PixmapPtr src, struct glamor_pixma
 void xmir_init_thread_to_eventloop(void);
 void xmir_fini_thread_to_eventloop(void);
 
-struct xmir_marshall_handler *xmir_register_handler(void (*)(void *), size_t);
-
-void xmir_post_to_eventloop(struct xmir_marshall_handler *handler, void *msg);
+typedef void (xmir_event_callback)(struct xmir_screen*, struct xmir_window*,
+                                   void *arg);
+void xmir_post_to_eventloop(xmir_event_callback *cb,
+                            struct xmir_screen*, struct xmir_window*, void*);
 void xmir_process_from_eventloop(void);
 
 /* xmir-input.c */
-typedef struct XMirEventContext {
-    struct xmir_screen *xmir_screen;
-    struct xmir_window *xmir_window;
-    const MirEvent *ev;
-} XMirEventContext;
-
-void xmir_handle_input_in_main_thread(void *vctx);
 void xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev, void *context);
 
 #define XMIR_CREATE_PIXMAP_USAGE_FLIP 0x10000000
