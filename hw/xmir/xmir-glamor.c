@@ -546,7 +546,7 @@ xmir_glamor_flip(void *data)
             xorg_list_del(&xmir_win->flip.entry);
             xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
                                    xmir_win, 0);
-}
+        }
     }
     glDeleteTextures(1, &tex);
     glDeleteProgram(passthrough_prog);
