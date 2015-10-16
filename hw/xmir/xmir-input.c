@@ -223,8 +223,7 @@ pointer_handle_motion(struct xmir_input *xmir_input,
     int vscroll = 0;
     ValuatorMask mask;
 
-    if (pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy))
-        return;
+    pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy);
 
     pointer_convert_xy(xmir_input, xmir_window, &sx, &sy);
 
