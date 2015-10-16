@@ -99,6 +99,12 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
         return;
     }
 
+    if (cursor == rootCursor) {
+        /* Avoid using the old style X default black cross cursor */
+        config = mir_cursor_configuration_from_name(mir_arrow_cursor_name);
+        goto apply;
+    }
+
     stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
     if (stream) {
         mir_buffer_stream_get_graphics_region(stream, &region);
@@ -128,6 +134,7 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
     mir_buffer_stream_swap_buffers(stream, NULL, NULL);
     config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
 
+apply:
     if (!xmir_input->xmir_screen->rootless)
         mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
     else if (xmir_input->focus_window)
