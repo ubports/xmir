@@ -168,7 +168,6 @@ void xmir_repaint(struct xmir_window *);
 
 /* xmir-input.c */
 Bool xmir_screen_init_cursor(struct xmir_screen *xmir_screen);
-void xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor);
 
 /* xmir-output.c */
 Bool xmir_screen_init_output(struct xmir_screen *xmir_screen);

@@ -65,6 +65,8 @@ xmir_realize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
     return TRUE;
 }
 
+static void xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor);
+
 static Bool
 xmir_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
 {
@@ -83,7 +85,7 @@ xmir_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
     return TRUE;
 }
 
-void
+static void
 xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
 {
     MirGraphicsRegion region;
@@ -91,15 +93,9 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
     MirBufferStream *stream;
 
     if (!cursor) {
-        /* We've probably just started up, and probably with the cursor over
-         * the new Mir surface already. So X won't have changed the cursor
-         * yet. That doesn't mean it's invisible -- we just don't know what
-         * to change it to yet...
-         */
-        return;
-    }
-
-    if (cursor == rootCursor) {
+        config = mir_cursor_configuration_from_name(mir_disabled_cursor_name);
+        goto apply;
+    } else if (cursor == rootCursor) {
         /* Avoid using the old style X default black cross cursor */
         config = mir_cursor_configuration_from_name(mir_arrow_cursor_name);
         goto apply;
