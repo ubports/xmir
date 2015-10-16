@@ -86,8 +86,10 @@ xmir_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
     if (!xmir_input)
         return TRUE;
 
-    xmir_input->x_cursor = NULL;
-    xmir_input_set_cursor(xmir_input);
+    if (xmir_input->x_cursor == cursor) {
+        xmir_input->x_cursor = NULL;
+        xmir_input_set_cursor(xmir_input);
+    }
 
     return TRUE;
 }
@@ -103,12 +105,16 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
     cursor = xmir_input->x_cursor;
 
     if (!cursor) {
-        /* Hide cursor */
-        ErrorF("Cursor is hidden. Is this a bug?\n");
-        config = mir_cursor_configuration_from_name(mir_disabled_cursor_name);
-        stream = NULL;
-        goto apply;
-    } else if ((stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key))) {
+        /* We've probably just started up, and probably with the cursor over
+         * the new Mir surface already. So X won't have changed the cursor
+         * yet. That doesn't mean it's invisible -- we just don't know what
+         * to change it to yet...
+         */
+        return;
+    }
+
+    stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
+    if (stream) {
         mir_buffer_stream_get_graphics_region(stream, &region);
         if (region.width != cursor->bits->width || region.height != cursor->bits->height) {
             mir_buffer_stream_release_sync(stream);
@@ -136,7 +142,6 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
     mir_buffer_stream_swap_buffers(stream, NULL, NULL);
     config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
 
-apply:
     if (!xmir_input->xmir_screen->rootless)
         mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
     else if (xmir_input->focus_window)
