@@ -66,9 +66,6 @@ xmir_realize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
 
     if (xmir_input) {
         xmir_input->x_cursor = cursor;
-        /* Three times, to work around Mir bug LP: #1308133 */
-        xmir_input_set_cursor(xmir_input);
-        xmir_input_set_cursor(xmir_input);
         xmir_input_set_cursor(xmir_input);
     }
     return TRUE;
@@ -90,9 +87,6 @@ xmir_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
         return TRUE;
 
     xmir_input->x_cursor = NULL;
-    /* Three times, to work around Mir bug LP: #1308133 */
-    xmir_input_set_cursor(xmir_input);
-    xmir_input_set_cursor(xmir_input);
     xmir_input_set_cursor(xmir_input);
 
     return TRUE;
@@ -162,9 +156,6 @@ xmir_set_cursor(DeviceIntPtr device,
         return;
 
     xmir_input->x_cursor = cursor;
-    /* Three times, to work around Mir bug LP: #1308133 */
-    xmir_input_set_cursor(xmir_input);
-    xmir_input_set_cursor(xmir_input);
     xmir_input_set_cursor(xmir_input);
 }
 
