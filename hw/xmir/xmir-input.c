@@ -204,9 +204,6 @@ pointer_ensure_focus(struct xmir_input *xmir_input,
     }
 
     xmir_input->focus_window = xmir_window;
-    /* Three times, to work around Mir bug LP: #1308133 */
-    xmir_input_set_cursor(xmir_input);
-    xmir_input_set_cursor(xmir_input);
     xmir_input_set_cursor(xmir_input);
 
     pointer_convert_xy(xmir_input, xmir_window, &sx, &sy);
