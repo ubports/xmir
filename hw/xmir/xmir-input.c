@@ -204,7 +204,7 @@ pointer_ensure_focus(struct xmir_input *xmir_input,
     }
 
     xmir_input->focus_window = xmir_window;
-    xmir_input_set_cursor(xmir_input);
+    xmir_input_set_cursor(xmir_input, xmir_window->window->optional->cursor);
 
     pointer_convert_xy(xmir_input, xmir_window, &sx, &sy);
 
