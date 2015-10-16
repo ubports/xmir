@@ -104,6 +104,7 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
 
     if (!cursor) {
         /* Hide cursor */
+        ErrorF("Cursor is hidden. Is this a bug?\n");
         config = mir_cursor_configuration_from_name(mir_disabled_cursor_name);
         stream = NULL;
         goto apply;
@@ -132,6 +133,7 @@ xmir_input_set_cursor(struct xmir_input *xmir_input)
     else
         expand_source_and_mask(cursor, region.vaddr);
 
+    mir_buffer_stream_swap_buffers(stream, NULL, NULL);
     config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
 
 apply:
@@ -140,9 +142,6 @@ apply:
     else if (xmir_input->focus_window)
         mir_wait_for(mir_surface_configure_cursor(xmir_input->focus_window->surface, config));
     mir_cursor_configuration_destroy(config);
-
-    if (stream)
-        mir_buffer_stream_swap_buffers_sync(stream);
 }
 
 static void
