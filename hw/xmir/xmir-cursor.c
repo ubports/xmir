@@ -62,12 +62,6 @@ expand_source_and_mask(CursorPtr cursor, void *data)
 static Bool
 xmir_realize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
 {
-    struct xmir_input *xmir_input = device->public.devicePrivate;
-
-    if (xmir_input) {
-        xmir_input->x_cursor = cursor;
-        xmir_input_set_cursor(xmir_input);
-    }
     return TRUE;
 }
 
@@ -80,29 +74,21 @@ xmir_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
     stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
     dixSetPrivate(&cursor->devPrivates, &xmir_cursor_private_key, NULL);
 
+    if (xmir_input)
+        xmir_input_set_cursor(xmir_input, rootCursor);
+
     if (stream)
         mir_buffer_stream_release_sync(stream);
-
-    if (!xmir_input)
-        return TRUE;
-
-    if (xmir_input->x_cursor == cursor) {
-        xmir_input->x_cursor = NULL;
-        xmir_input_set_cursor(xmir_input);
-    }
 
     return TRUE;
 }
 
 void
-xmir_input_set_cursor(struct xmir_input *xmir_input)
+xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
 {
-    CursorPtr cursor;
     MirGraphicsRegion region;
     MirCursorConfiguration *config;
     MirBufferStream *stream;
-
-    cursor = xmir_input->x_cursor;
 
     if (!cursor) {
         /* We've probably just started up, and probably with the cursor over
@@ -159,8 +145,7 @@ xmir_set_cursor(DeviceIntPtr device,
     if (xmir_input == NULL)
         return;
 
-    xmir_input->x_cursor = cursor;
-    xmir_input_set_cursor(xmir_input);
+    xmir_input_set_cursor(xmir_input, cursor);
 }
 
 static void
