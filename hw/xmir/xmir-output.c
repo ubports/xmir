@@ -331,9 +331,6 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     screen->width = window_width;
     screen->height = window_height;
     screen->mmWidth = screen->mmHeight = 0;
-    if (ConnectionInfo)
-        RRScreenSizeNotify(xmir_screen->screen);
-    update_desktop_dimensions();
 
     pixmap = screen->CreatePixmap(screen, window_width, window_height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
 
@@ -384,6 +381,10 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         UpdateSpriteForScreen(pDev, screen);
         miPointerSetScreen(pDev, 0, x, y);
     }
+
+    if (ConnectionInfo)
+        RRScreenSizeNotify(xmir_screen->screen);
+    update_desktop_dimensions();
 }
 
 static void
