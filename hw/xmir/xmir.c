@@ -685,7 +685,8 @@ xmir_realize_window(WindowPtr window)
     }
 
     /* Initial window title bar works.  TODO: support for updates */
-    mir_surface_spec_set_name(spec, wm_name);
+    mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
+                                    "Xmir root window");
 
     xmir_window->surface_width = mir_width;
     xmir_window->surface_height = mir_height;
