@@ -354,15 +354,11 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     screen->mmWidth = screen->mmHeight = 0;
     screen->SetScreenPixmap(pixmap);
 
+    SetRootClip(screen, TRUE);
+
     box.x1 = box.y1 = 0;
     box.x2 = window_width;
     box.y2 = window_height;
-    window->drawable.width = box.x2;
-    window->drawable.height = box.y2;
-    RegionReset(&window->winSize, &box);
-    RegionReset(&window->clipList, &box);
-    RegionReset(&window->borderSize, &box);
-    RegionReset(&window->borderClip, &box);
     RegionReset(&xmir_window->region, &box);
     DamageDamageRegion(&window->drawable, &xmir_window->region);
 
