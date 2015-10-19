@@ -328,15 +328,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     ErrorF("Output resized %ix%i with rotation %i\n",
            width, height, xmir_window->orientation);
 
-    screen->width = window_width;
-    screen->height = window_height;
-    screen->mmWidth = screen->mmHeight = 0;
-
     pixmap = screen->CreatePixmap(screen, window_width, window_height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
-
-    box.x1 = box.y1 = 0;
-    box.x2 = window_width;
-    box.y2 = window_height;
 
     if (xmir_screen->glamor) {
         glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
@@ -357,17 +349,21 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    screen->width = window_width;
+    screen->height = window_height;
+    screen->mmWidth = screen->mmHeight = 0;
     screen->SetScreenPixmap(pixmap);
 
+    box.x1 = box.y1 = 0;
+    box.x2 = window_width;
+    box.y2 = window_height;
     window->drawable.width = box.x2;
     window->drawable.height = box.y2;
-
-    RegionReset(&xmir_window->region, &box);
-
     RegionReset(&window->winSize, &box);
     RegionReset(&window->clipList, &box);
     RegionReset(&window->borderSize, &box);
     RegionReset(&window->borderClip, &box);
+    RegionReset(&xmir_window->region, &box);
     DamageDamageRegion(&window->drawable, &xmir_window->region);
 
     /* Update cursor info too */
