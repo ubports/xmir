@@ -225,9 +225,8 @@ xmir_window_disable_damage_tracking(struct xmir_window *xmir_win)
 }
 
 static void
-xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
+xmir_sw_blit(PixmapPtr pix, struct xmir_window *xmir_win, RegionPtr dirty)
 {
-    PixmapPtr pix = xmir_screen->screen->GetWindowPixmap(xmir_win->window);
     int x1 = dirty->extents.x1, y1 = dirty->extents.y1;
     int x2 = dirty->extents.x2, y2 = dirty->extents.y2;
     int y, line_len, src_stride = pix->devKind;
@@ -259,6 +258,13 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
         src += src_stride;
         dst += region.stride;
     }
+}
+
+static void
+xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
+{
+    PixmapPtr pix = xmir_screen->screen->GetWindowPixmap(xmir_win->window);
+    xmir_sw_blit(pix, xmir_win, dirty);
 }
 
 static void
