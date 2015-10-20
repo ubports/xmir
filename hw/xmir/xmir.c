@@ -231,6 +231,7 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
     int x1 = dirty->extents.x1, y1 = dirty->extents.y1;
     int x2 = dirty->extents.x2, y2 = dirty->extents.y2;
     int y, line_len, src_stride = pix->devKind;
+    int bpp = pix->drawable.bitsPerPixel >> 3;
     char *src, *dst;
     MirGraphicsRegion region;
 
@@ -250,10 +251,10 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
     if (y2 > pix->drawable.height) y2 = pix->drawable.height;
     if (x2 <= x1 || y2 <= y1) return;
 
-    src = (char*)pix->devPrivate.ptr + src_stride*y1 + x1*4;
-    dst = region.vaddr + y1*region.stride + x1*4;
+    src = (char*)pix->devPrivate.ptr + src_stride*y1 + x1*bpp;
+    dst = region.vaddr + y1*region.stride + x1*bpp;
 
-    line_len = (x2 - x1) * 4;
+    line_len = (x2 - x1) * bpp;
     for (y = y1; y < y2; ++y) {
         memcpy(dst, src, line_len);
         src += src_stride;
