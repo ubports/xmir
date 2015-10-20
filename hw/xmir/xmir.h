@@ -112,6 +112,7 @@ struct xmir_window {
     RegionRec region;
 
     int surface_width, surface_height;
+    int buf_width, buf_height;
 
     struct xorg_list link_damage;
     int orientation;

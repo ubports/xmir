@@ -345,10 +345,12 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
     }
 
     DebugF("Buffer-available on %p\n", xmir_win);
-    xmir_win->has_free_buffer = TRUE;
-
     xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
                                        &buf_width, &buf_height);
+
+    xmir_win->has_free_buffer = TRUE;
+    xmir_win->buf_width = buf_width;
+    xmir_win->buf_height = buf_height;
 
     xserver_lagging = buf_width != xmir_win->surface_width ||
                       buf_height != xmir_win->surface_height;
@@ -691,6 +693,8 @@ xmir_realize_window(WindowPtr window)
 
     xmir_window->surface_width = mir_width;
     xmir_window->surface_height = mir_height;
+    xmir_window->buf_width = mir_width;
+    xmir_window->buf_height = mir_height;
 
     if (xmir_screen->neverclosed) {
         mir_surface_spec_set_width(spec, mir_width);
