@@ -262,7 +262,10 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     ScreenPtr screen = window->drawable.pScreen;
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     PixmapPtr pixmap;
+    DrawablePtr oldroot = &screen->root->drawable;
     BoxRec box;
+    BoxRec copy_box;
+
     int window_width, window_height;
     DeviceIntPtr pDev;
 
@@ -330,23 +333,43 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 
     pixmap = screen->CreatePixmap(screen, window_width, window_height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
 
+    copy_box.x1 = copy_box.y1 = 0;
+    copy_box.x2 = min(window_width, oldroot->width);
+    copy_box.y2 = min(window_height, oldroot->height);
+
     if (xmir_screen->glamor) {
         glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
-        DrawablePtr oldroot = &screen->root->drawable;
-        BoxRec copy_box;
-
-        copy_box.x1 = copy_box.y1 = 0;
-        copy_box.x2 = min(window_width, oldroot->width);
-        copy_box.y2 = min(window_height, oldroot->height);
-
         glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
         glClearColor(0., 0., 0., 1.);
         glClear(GL_COLOR_BUFFER_BIT);
-
         glamor_copy_n_to_n_nf(&screen->root->drawable, &pixmap->drawable,
                               NULL, &copy_box, 1, 0, 0, FALSE, FALSE, 0, NULL);
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    } else {
+        PixmapPtr old_pixmap = screen->GetWindowPixmap(window);
+        int src_stride = old_pixmap->devKind;
+        int dst_stride = pixmap->devKind;
+        int bpp = oldroot->bitsPerPixel >> 3;
+        const char *src = (char*)old_pixmap->devPrivate.ptr +
+                          src_stride * copy_box.y1 +
+                          copy_box.x1 * bpp;
+        char *dst = (char*)pixmap->devPrivate.ptr +
+                    dst_stride * copy_box.y1 +
+                    copy_box.x1 * bpp;
+        int line_len = (copy_box.x2 - copy_box.x1) * bpp;
+        int y;
+        for (y = copy_box.y1; y < copy_box.y2; ++y) {
+            memcpy(dst, src, line_len);
+            /* Bother filling the edges?
+            memset(dst+line_len, 0, dst_stride-line_len);
+            */
+            src += src_stride;
+            dst += dst_stride;
+        }
+        /* Bother filling the edges?
+        if (y < window_height)
+            memset(dst, 0, (window_height - y) * dst_stride);
+        */
     }
 
     screen->width = window_width;
