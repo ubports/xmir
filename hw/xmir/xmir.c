@@ -1046,8 +1046,6 @@ xmir_resize_window(WindowPtr window, int x, int y,
                window, w, h, x, y, sib);
 
     xmir_window_update_region(xmir_window);
-    if (xmir_window->damage)
-        DamageDamageRegion(&window->drawable, &xmir_window->region);
 }
 
 static Bool
