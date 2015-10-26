@@ -371,6 +371,7 @@ Description: common files used by various X servers
 Package: xmir
 Architecture: amd64 armhf i386
 Depends:
+ xserver-common (>= ${source:Version}),
  ${shlibs:Depends},
  ${misc:Depends},
 Description: Xmir X server
