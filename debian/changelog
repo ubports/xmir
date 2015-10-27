@@ -1,3 +1,12 @@
+xorg-server (2:1.17.2-1ubuntu10) xenial; urgency=medium
+
+  * debian/patches:
+    - linux-Do-not-call-FatalError-from-xf86CloseConsole.patch: Fix crashers
+      often occuring on shutdown (LP: #1237904) 
+    - xmir.patch: Fix typo causing FTBFS
+
+ -- Tim Lunn <tim@feathertop.org>  Mon, 26 Oct 2015 12:24:30 +1100
+
 xorg-server (2:1.17.2-1ubuntu9) wily; urgency=medium
 
   * debian/patches/xmir.patch:

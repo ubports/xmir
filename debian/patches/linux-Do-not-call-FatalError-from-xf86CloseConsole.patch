@@ -1,0 +1,80 @@
+From 2092f12a243b9f7682f542b593b77c96d455ec89 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 21 Oct 2015 11:36:06 +0200
+Subject: linux: Do not call FatalError from xf86CloseConsole
+
+FatalError ends up calling xf86CloseConsole itself, so calling FatalError
+from within xf86CloseConsole is not a good idea.
+
+Make switch_to log errors using xf86Msg(X_WARNING, ...) and return success
+(or failure).
+
+This makes switch_to match the other error checking done in xf86CloseConsole
+which all logs warnings and continues.
+
+Add checking of the return value in xf86OpenConsole and call
+FatalError there when switch_to fails, to preserve the error-handling
+behavior of xf86OpenConsole.
+
+BugLink: https://bugzilla.redhat.com/show_bug.cgi?id=1269210
+Reviewed-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+
+diff --git a/hw/xfree86/os-support/linux/lnx_init.c b/hw/xfree86/os-support/linux/lnx_init.c
+index ec06a05..1ed213c 100644
+--- a/hw/xfree86/os-support/linux/lnx_init.c
++++ b/hw/xfree86/os-support/linux/lnx_init.c
+@@ -63,18 +63,24 @@ drain_console(int fd, void *closure)
+     }
+ }
+ 
+-static void
++static int
+ switch_to(int vt, const char *from)
+ {
+     int ret;
+ 
+     SYSCALL(ret = ioctl(xf86Info.consoleFd, VT_ACTIVATE, vt));
+-    if (ret < 0)
+-        FatalError("%s: VT_ACTIVATE failed: %s\n", from, strerror(errno));
++    if (ret < 0) {
++        xf86Msg(X_WARNING, "%s: VT_ACTIVATE failed: %s\n", from, strerror(errno));
++        return 0;
++    }
+ 
+     SYSCALL(ret = ioctl(xf86Info.consoleFd, VT_WAITACTIVE, vt));
+-    if (ret < 0)
+-        FatalError("%s: VT_WAITACTIVE failed: %s\n", from, strerror(errno));
++    if (ret < 0) {
++        xf86Msg(X_WARNING, "%s: VT_WAITACTIVE failed: %s\n", from, strerror(errno));
++        return 0;
++    }
++
++    return 1;
+ }
+ 
+ #pragma GCC diagnostic push
+@@ -233,7 +239,8 @@ xf86OpenConsole(void)
+             /*
+              * now get the VT.  This _must_ succeed, or else fail completely.
+              */
+-            switch_to(xf86Info.vtno, "xf86OpenConsole");
++            if (!switch_to(xf86Info.vtno, "xf86OpenConsole"))
++                FatalError("xf86OpenConsole: Switching VT failed\n");
+ 
+             SYSCALL(ret = ioctl(xf86Info.consoleFd, VT_GETMODE, &VT));
+             if (ret < 0)
+@@ -294,7 +301,8 @@ xf86OpenConsole(void)
+     else {                      /* serverGeneration != 1 */
+         if (!xf86Info.ShareVTs && xf86Info.autoVTSwitch) {
+             /* now get the VT */
+-            switch_to(xf86Info.vtno, "xf86OpenConsole");
++            if (!switch_to(xf86Info.vtno, "xf86OpenConsole"))
++                FatalError("xf86OpenConsole: Switching VT failed\n");
+         }
+     }
+ }
+-- 
+cgit v0.10.2
+
+
