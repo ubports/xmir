@@ -53,3 +53,4 @@ drm_device_keep_trying.patch
 xi2-resize-touch.patch
 os-make-sure-the-clientswritable-fd-set-is-initialized.diff
 glamor-make-current-in-prepare-paths.diff
+linux-Do-not-call-FatalError-from-xf86CloseConsole.patch
