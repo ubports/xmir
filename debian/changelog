@@ -1,3 +1,77 @@
+xorg-server (2:1.17.3-2) unstable; urgency=medium
+
+  * Finalize xserver-xorg-core.NEWS.  Thanks, Michael Biebl!
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 27 Oct 2015 22:55:25 +0000
+
+xorg-server (2:1.17.3-1) unstable; urgency=medium
+
+  [ Julien Cristau ]
+  * New upstream release
+    - mi: fix typo in warning about overflowing queue (closes: #726041)
+  * Refresh 02_kbsd-input-devd.diff and 03_static-nettle.diff.
+  * Replace xorg-wrapper-envp.diff with a cherry-pick from master.
+  * New patch xext-fix-udeb-build.diff to fix build regression in 1.17.3.
+  * Add NEWS file for xserver-xorg-core with info about the -legacy split
+    (closes: #801487).
+  * Recommend libpam-systemd (closes:  #802544, #802618, #802327, #802566,
+    probably others)
+
+  [ Andreas Boll ]
+  * Use the correct repository for the Vcs-Git field (Closes: #801340).
+    Thanks, Vagrant Cascadian.
+  * Document new location for non-root Xorg log in the NEWS file.
+
+  [ Samuel Thibault ]
+  * Fix xorg-wrapper on hurd (cherry-picked from master).
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 27 Oct 2015 13:55:55 +0000
+
+xorg-server (2:1.17.2-3) unstable; urgency=medium
+
+  * Team upload.
+  [ Laurent Bigonville ]
+  * Move Xorg.wrap.1 man page from the xserver-xorg-core to
+    xserver-xorg-legacy package (Closes: #797661)
+  * Add a Breaks against systemd (<< 226-4~), before that version logind was
+    restarted on upgrade which makes the X server crash (See #798097)
+  * Bump Standards-Version to 3.9.6 (no further changes)
+
+  [ Andreas Boll ]
+  * Update Vcs-* fields.
+  * Add upstream url.
+
+  [ Julien Cristau ]
+  * Only reset environment in the Xorg wrapper if we didn't drop privileges.
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 06 Oct 2015 09:06:22 +0200
+
+xorg-server (2:1.17.2-2) experimental; urgency=medium
+
+  [ Laurent Bigonville ]
+  * Enable logind support for the main build on Linux.
+  * Build and ship the setuid root wrapper from upstream, replacing
+    xserver-xorg's.
+
+  [ Julien Cristau ]
+  * Take over x11-common's handling of the X wrapper; ship the wrapper in a
+    new xserver-xorg-legacy package.
+  * Patch the wrapper to reset Xorg's environment.  I don't believe it needs
+    any variable there, and if that turns out to be wrong we can add a
+    whitelist or hardcode some values.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 19 Aug 2015 11:14:05 +0200
+
+xorg-server (2:1.17.2-1.1) unstable; urgency=medium
+
+  * Non-Maintainer Upload.
+
+  [ Sven Joachim ]
+  * Install the whole usr/share/man/man4 directory into xserver-xorg-core,
+    fixes FTBFS on hurd where modesetting.4 does not exist (Closes: #794644).
+
+ -- Samuel Thibault <sthibault@debian.org>  Tue, 11 Aug 2015 10:45:35 +0200
+
 xorg-server (2:1.17.2-1ubuntu10) xenial; urgency=medium
 
   * debian/patches:

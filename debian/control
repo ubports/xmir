@@ -5,6 +5,7 @@ Maintainer: Ubuntu X-SWAT <ubuntu-x@lists.ubuntu.com>
 XSBC-Original-Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
 Build-Depends:
  debhelper (>= 9),
+ po-debconf,
  dpkg-dev (>= 1.16.1),
  quilt,
  lsb-release,
@@ -97,12 +98,15 @@ Build-Depends:
  libbsd-dev [kfreebsd-any],
 # xwayland
  libwayland-dev [linux-any],
+#logind
+  libdbus-1-dev (>= 1.0) [linux-any],
 # XMir
  libmirclient-dev (>= 0.13.1) [!arm64 !powerpc !ppc64el],
  mir-client-platform-mesa-dev,
-Standards-Version: 3.9.2
-Vcs-Git: git://git.debian.org/git/pkg-xorg/xserver/xorg-server
-Vcs-Browser: http://git.debian.org/?p=pkg-xorg/xserver/xorg-server.git
+Standards-Version: 3.9.6
+Vcs-Git: https://anonscm.debian.org/git/pkg-xorg/xserver/xorg-server.git
+Vcs-Browser: https://anonscm.debian.org/cgit/pkg-xorg/xserver/xorg-server.git
+Homepage: http://www.x.org/
 
 Package: xserver-xorg-core
 Architecture: any
@@ -115,7 +119,9 @@ Depends:
  libegl1-mesa [linux-any kfreebsd-any] | libegl1 [linux-any kfreebsd-any],
  ${shlibs:Depends},
  ${misc:Depends},
-Recommends: libgl1-mesa-dri (>= 7.10.2-4)
+Recommends:
+ libgl1-mesa-dri (>= 7.10.2-4),
+ libpam-systemd,
 Suggests: xfonts-100dpi | xfonts-75dpi, xfonts-scalable
 Breaks:
  xserver-xorg-video,
@@ -145,8 +151,11 @@ Breaks:
  xserver-xorg-video-vga (<= 1:4.1.0-8),
  libgl1-mesa-dri (<< 7.10.2-4),
  libgl1-mesa-dri-experimental (<< 7.10.2-4),
+ xserver-xorg (<< 1:7.7+10~),
+ systemd (<< 226-4~),
 Replaces:
  xserver-xorg-video-modesetting,
+ xserver-xorg (<< 1:7.7+10~),
 Conflicts:
  xserver-xorg-input-evtouch,
  xserver-xorg-video-modesetting,
@@ -293,7 +302,8 @@ Depends:
  ${misc:Depends},
  xauth,
  x11-xkb-utils
-Recommends: libgl1-mesa-dri
+Recommends:
+ libgl1-mesa-dri
 Provides: xserver
 Multi-Arch: foreign
 Description: Virtual Framebuffer 'fake' X server
@@ -412,3 +422,20 @@ Description: Xwayland X server
  This package provides an X server running on top of wayland, using wayland
  input devices for input and forwarding either the root window or individual
  top-level windows as wayland surfaces.
+
+Package: xserver-xorg-legacy
+Architecture: any
+Priority: extra
+Depends:
+ xserver-common (>= ${source:Version}),
+ ${shlibs:Depends},
+ ${misc:Depends},
+Breaks:
+ x11-common (<< 1:7.7+10~),
+ xserver-xorg-core (<< 2:1.17.2-3~),
+Replaces:
+ x11-common (<< 1:7.7+10~),
+ xserver-xorg-core (<< 2:1.17.2-3~),
+Description: setuid root Xorg server wrapper
+ This package provides a wrapper for the Xorg X server, which is
+ necessary for legacy drivers and non-Linux kernels.
