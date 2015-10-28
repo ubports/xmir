@@ -432,16 +432,13 @@ endif
 
 
 # Build architecture-independent files here
-binary-indep: build-indep install check
+binary-indep: build-indep install
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-initial
 	dh_install -i
 	dh_installdocs -i
 	dh_installchangelogs -i ChangeLog
 
 	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-deb
-
-check:
-	dh_testdir
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
