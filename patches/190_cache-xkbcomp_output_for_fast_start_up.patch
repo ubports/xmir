@@ -4,10 +4,8 @@ Description: Causes the X Keyboard Compiler (xkbcomp) to create a cache file of 
 Author: Bryce Harrington <bryce@ubuntu.com>
 Last-Update: 2013-09-19
 
-Index: xorg-server-1.17.2/configure.ac
-===================================================================
---- xorg-server-1.17.2.orig/configure.ac
-+++ xorg-server-1.17.2/configure.ac
+--- a/configure.ac
++++ b/configure.ac
 @@ -501,9 +501,9 @@ AC_MSG_RESULT([$FONTPATH])
  AC_ARG_WITH(xkb-path,         AS_HELP_STRING([--with-xkb-path=PATH], [Path to XKB base dir (default: ${datadir}/X11/xkb)]),
  				[ XKBPATH="$withval" ],
@@ -20,7 +18,7 @@ Index: xorg-server-1.17.2/configure.ac
  AC_ARG_WITH(default-xkb-rules, AS_HELP_STRING([--with-default-xkb-rules=RULES],
                                     [Keyboard ruleset (default: base/evdev)]),
                                  [ XKB_DFLT_RULES="$withval" ],
-@@ -1449,7 +1449,7 @@ AC_DEFINE_DIR(XKB_BIN_DIRECTORY, XKB_BIN
+@@ -1452,7 +1452,7 @@ AC_DEFINE_DIR(XKB_BIN_DIRECTORY, XKB_BIN
  dnl Make sure XKM_OUTPUT_DIR is an absolute path
  XKBOUTPUT_FIRSTCHAR=`echo $XKBOUTPUT | cut -b 1`
  if [[ x$XKBOUTPUT_FIRSTCHAR != x/ -a x$XKBOUTPUT_FIRSTCHAR != 'x$' ]] ; then
@@ -29,10 +27,8 @@ Index: xorg-server-1.17.2/configure.ac
  fi
  
  dnl XKM_OUTPUT_DIR (used in code) must end in / or file names get hosed
-Index: xorg-server-1.17.2/xkb/README.compiled
-===================================================================
---- xorg-server-1.17.2.orig/xkb/README.compiled
-+++ xorg-server-1.17.2/xkb/README.compiled
+--- a/xkb/README.compiled
++++ b/xkb/README.compiled
 @@ -4,10 +4,10 @@ current keymap and/or any scratch keymap
  or some other tool might destroy or replace the files in this directory,
  so it is not a safe place to store compiled keymaps for long periods of
@@ -48,10 +44,8 @@ Index: xorg-server-1.17.2/xkb/README.compiled
  
  Unless the X server is modified, sharing this directory between servers on
  different hosts could cause problems.
-Index: xorg-server-1.17.2/xkb/ddxLoad.c
-===================================================================
---- xorg-server-1.17.2.orig/xkb/ddxLoad.c
-+++ xorg-server-1.17.2/xkb/ddxLoad.c
+--- a/xkb/ddxLoad.c
++++ b/xkb/ddxLoad.c
 @@ -30,6 +30,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  
  #include <xkb-config.h>
