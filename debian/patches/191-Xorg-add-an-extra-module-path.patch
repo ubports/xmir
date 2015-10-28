@@ -1,9 +1,7 @@
 Description: Patch from Mandriva to allow the use of an extra-modules-dir so that the modules installed in this dir will override the ones in the default directory.
 
-Index: xorg-server-1.17.2/configure.ac
-===================================================================
---- xorg-server-1.17.2.orig/configure.ac
-+++ xorg-server-1.17.2/configure.ac
+--- a/configure.ac
++++ b/configure.ac
 @@ -446,6 +446,10 @@ AC_ARG_WITH(module-dir,      AS_HELP_STR
  				  [Directory where modules are installed (default: $libdir/xorg/modules)]),
  				[ moduledir="$withval" ],
@@ -15,7 +13,7 @@ Index: xorg-server-1.17.2/configure.ac
  AC_ARG_WITH(log-dir,         AS_HELP_STRING([--with-log-dir=DIR],
  				  [Directory where log files are kept (default: $localstatedir/log)]),
  				[ logdir="$withval" ],
-@@ -2083,6 +2087,7 @@ if test "x$XORG" = xyes; then
+@@ -2086,6 +2090,7 @@ if test "x$XORG" = xyes; then
  	AC_DEFINE_DIR(XF86CONFIGFILE, XF86CONFIGFILE, [Name of configuration file])
  	AC_DEFINE_DIR(__XCONFIGDIR__, XF86CONFIGDIR, [Name of configuration directory])
  	AC_DEFINE_DIR(DEFAULT_MODULE_PATH, moduledir, [Default module search path])
@@ -23,10 +21,8 @@ Index: xorg-server-1.17.2/configure.ac
  	AC_DEFINE_DIR(DEFAULT_LIBRARY_PATH, libdir, [Default library install path])
  	AC_DEFINE_DIR(DEFAULT_LOGDIR, logdir, [Default log location])
  	AC_DEFINE_DIR(DEFAULT_LOGPREFIX, LOGPREFIX, [Default logfile prefix])
-Index: xorg-server-1.17.2/hw/xfree86/common/xf86Config.c
-===================================================================
---- xorg-server-1.17.2.orig/hw/xfree86/common/xf86Config.c
-+++ xorg-server-1.17.2/hw/xfree86/common/xf86Config.c
+--- a/hw/xfree86/common/xf86Config.c
++++ b/hw/xfree86/common/xf86Config.c
 @@ -635,11 +635,22 @@ configFiles(XF86ConfFilesPtr fileconf)
  
      /* ModulePath */
@@ -52,10 +48,8 @@ Index: xorg-server-1.17.2/hw/xfree86/common/xf86Config.c
      }
  
      xf86Msg(xf86ModPathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
-Index: xorg-server-1.17.2/hw/xfree86/common/xf86Globals.c
-===================================================================
---- xorg-server-1.17.2.orig/hw/xfree86/common/xf86Globals.c
-+++ xorg-server-1.17.2/hw/xfree86/common/xf86Globals.c
+--- a/hw/xfree86/common/xf86Globals.c
++++ b/hw/xfree86/common/xf86Globals.c
 @@ -142,6 +142,7 @@ xf86InfoRec xf86Info = {
  const char *xf86ConfigFile = NULL;
  const char *xf86ConfigDir = NULL;
@@ -64,10 +58,8 @@ Index: xorg-server-1.17.2/hw/xfree86/common/xf86Globals.c
  MessageType xf86ModPathFrom = X_DEFAULT;
  const char *xf86LogFile = DEFAULT_LOGDIR "/" DEFAULT_LOGPREFIX;
  MessageType xf86LogFileFrom = X_DEFAULT;
-Index: xorg-server-1.17.2/hw/xfree86/common/xf86Priv.h
-===================================================================
---- xorg-server-1.17.2.orig/hw/xfree86/common/xf86Priv.h
-+++ xorg-server-1.17.2/hw/xfree86/common/xf86Priv.h
+--- a/hw/xfree86/common/xf86Priv.h
++++ b/hw/xfree86/common/xf86Priv.h
 @@ -77,6 +77,7 @@ extern _X_EXPORT const char *xf86ServerN
  
  extern _X_EXPORT xf86InfoRec xf86Info;
@@ -76,10 +68,8 @@ Index: xorg-server-1.17.2/hw/xfree86/common/xf86Priv.h
  extern _X_EXPORT MessageType xf86ModPathFrom;
  extern _X_EXPORT const char *xf86LogFile;
  extern _X_EXPORT MessageType xf86LogFileFrom;
-Index: xorg-server-1.17.2/include/xorg-config.h.in
-===================================================================
---- xorg-server-1.17.2.orig/include/xorg-config.h.in
-+++ xorg-server-1.17.2/include/xorg-config.h.in
+--- a/include/xorg-config.h.in
++++ b/include/xorg-config.h.in
 @@ -42,6 +42,9 @@
  /* Path to loadable modules. */
  #undef DEFAULT_MODULE_PATH

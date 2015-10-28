@@ -2,11 +2,9 @@ Description: Fix crash in RRCrtcDetachScanoutPixmap.
 Author: Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
 Bug-Ubuntu: https://launchpad.net/bugs/1280743
 
-Index: xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
-===================================================================
---- xorg-server-1.17.2.orig/hw/xfree86/modes/xf86RandR12.c
-+++ xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
-@@ -1786,7 +1786,8 @@ xf86RandR14ProviderSetOutputSource(Scree
+--- a/hw/xfree86/modes/xf86RandR12.c
++++ b/hw/xfree86/modes/xf86RandR12.c
+@@ -1781,7 +1781,8 @@ xf86RandR14ProviderSetOutputSource(Scree
              ScreenPtr cmScreen = pScreen->current_master;
  
              xf86DetachOutputGPU(pScreen);
@@ -16,7 +14,7 @@ Index: xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
          }
          provider->output_source = NULL;
          return TRUE;
-@@ -1797,7 +1798,8 @@ xf86RandR14ProviderSetOutputSource(Scree
+@@ -1792,7 +1793,8 @@ xf86RandR14ProviderSetOutputSource(Scree
  
      SetRootClip(source_provider->pScreen, FALSE);
  
@@ -26,7 +24,7 @@ Index: xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
      AttachOutputGPU(source_provider->pScreen, pScreen);
  
      provider->output_source = source_provider;
-@@ -1814,7 +1816,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
+@@ -1809,7 +1811,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
          if (provider->offload_sink) {
              ScreenPtr cmScreen = pScreen->current_master;
              xf86DetachOutputGPU(pScreen);
@@ -36,7 +34,7 @@ Index: xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
          }
  
          provider->offload_sink = NULL;
-@@ -1824,7 +1827,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
+@@ -1819,7 +1822,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
      if (provider->offload_sink == sink_provider)
          return TRUE;
  
@@ -46,7 +44,7 @@ Index: xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
      AttachOffloadGPU(sink_provider->pScreen, pScreen);
  
      provider->offload_sink = sink_provider;
-@@ -1903,12 +1907,14 @@ xf86RandR14ProviderDestroy(ScreenPtr scr
+@@ -1898,12 +1902,14 @@ xf86RandR14ProviderDestroy(ScreenPtr scr
              config->randr_provider->offload_sink = NULL;
              RRSetChanged(screen);
          }
@@ -63,11 +61,9 @@ Index: xorg-server-1.17.2/hw/xfree86/modes/xf86RandR12.c
              DetachUnboundGPU(screen);
      }
      config->randr_provider = NULL;
-Index: xorg-server-1.17.2/dix/dispatch.c
-===================================================================
---- xorg-server-1.17.2.orig/dix/dispatch.c
-+++ xorg-server-1.17.2/dix/dispatch.c
-@@ -3954,6 +3954,8 @@ AttachUnboundGPU(ScreenPtr pScreen, Scre
+--- a/dix/dispatch.c
++++ b/dix/dispatch.c
+@@ -3951,6 +3951,8 @@ AttachUnboundGPU(ScreenPtr pScreen, Scre
      assert(new->isGPU);
      assert(!new->current_master);
      xorg_list_add(&new->unattached_head, &pScreen->unattached_list);
@@ -76,7 +72,7 @@ Index: xorg-server-1.17.2/dix/dispatch.c
      new->current_master = pScreen;
  }
  
-@@ -3978,7 +3980,8 @@ DetachOutputGPU(ScreenPtr slave)
+@@ -3975,7 +3977,8 @@ DetachOutputGPU(ScreenPtr slave)
  {
      assert(slave->isGPU);
      xorg_list_del(&slave->output_head);
@@ -86,7 +82,7 @@ Index: xorg-server-1.17.2/dix/dispatch.c
  }
  
  void
-@@ -3994,6 +3997,7 @@ DetachOffloadGPU(ScreenPtr slave)
+@@ -3991,6 +3994,7 @@ DetachOffloadGPU(ScreenPtr slave)
  {
      assert(slave->isGPU);
      xorg_list_del(&slave->offload_head);

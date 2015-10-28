@@ -45,10 +45,8 @@ Contributions from:
  create mode 100644 hw/xmir/xmir.c
  create mode 100644 hw/xmir/xmir.h
 
-Index: xorg-server-1.17.2/configure.ac
-===================================================================
---- xorg-server-1.17.2.orig/configure.ac
-+++ xorg-server-1.17.2/configure.ac
+--- a/configure.ac
++++ b/configure.ac
 @@ -629,6 +629,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
@@ -65,7 +63,7 @@ Index: xorg-server-1.17.2/configure.ac
  
  			COMPOSITE=no
  			DGA=no
-@@ -2495,6 +2497,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2498,6 +2500,27 @@ if test "x$XWAYLAND" = xyes; then
  		     [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
  fi
  
@@ -93,7 +91,7 @@ Index: xorg-server-1.17.2/configure.ac
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2643,6 +2666,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2646,6 +2669,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -102,10 +100,8 @@ Index: xorg-server-1.17.2/configure.ac
  test/Makefile
  test/xi1/Makefile
  test/xi2/Makefile
-Index: xorg-server-1.17.2/hw/Makefile.am
-===================================================================
---- xorg-server-1.17.2.orig/hw/Makefile.am
-+++ xorg-server-1.17.2/hw/Makefile.am
+--- a/hw/Makefile.am
++++ b/hw/Makefile.am
 @@ -30,6 +30,10 @@ if XWAYLAND
  XWAYLAND_SUBDIRS = xwayland
  endif
@@ -130,16 +126,12 @@ Index: xorg-server-1.17.2/hw/Makefile.am
  
  relink:
  	$(AM_V_at)for i in $(SUBDIRS) ; do $(MAKE) -C $$i relink || exit 1 ; done
-Index: xorg-server-1.17.2/hw/xmir/.gitignore
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/.gitignore
++++ b/hw/xmir/.gitignore
 @@ -0,0 +1 @@
 +Xmir
-Index: xorg-server-1.17.2/hw/xmir/Makefile.am
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/Makefile.am
++++ b/hw/xmir/Makefile.am
 @@ -0,0 +1,61 @@
 +bin_PROGRAMS = Xmir
 +
@@ -202,10 +194,8 @@ Index: xorg-server-1.17.2/hw/xmir/Makefile.am
 +
 +relink:
 +	$(AM_V_at)rm -f Xmir$(EXEEXT) && $(MAKE) Xmir$(EXEEXT)
-Index: xorg-server-1.17.2/hw/xmir/dri2/Makefile.am
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/dri2/Makefile.am
++++ b/hw/xmir/dri2/Makefile.am
 @@ -0,0 +1,14 @@
 +noinst_LTLIBRARIES = libdri2.la
 +
@@ -221,10 +211,8 @@ Index: xorg-server-1.17.2/hw/xmir/dri2/Makefile.am
 +	dri2ext.c \
 +	dri2int.h
 +
-Index: xorg-server-1.17.2/hw/xmir/dri2/dri2.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/dri2/dri2.c
++++ b/hw/xmir/dri2/dri2.c
 @@ -0,0 +1,1398 @@
 +/*
 + * Copyright © 2007, 2008 Red Hat, Inc.
@@ -1624,10 +1612,8 @@ Index: xorg-server-1.17.2/hw/xmir/dri2/dri2.c
 +    *is_param_recognized = FALSE;
 +    return Success;
 +}
-Index: xorg-server-1.17.2/hw/xmir/dri2/dri2.h
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/dri2/dri2.h
++++ b/hw/xmir/dri2/dri2.h
 @@ -0,0 +1,364 @@
 +/*
 + * Copyright © 2007 Red Hat, Inc.
@@ -1993,10 +1979,8 @@ Index: xorg-server-1.17.2/hw/xmir/dri2/dri2.h
 +extern Bool noDRI2Extension;
 +
 +#endif
-Index: xorg-server-1.17.2/hw/xmir/dri2/dri2ext.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/dri2/dri2ext.c
++++ b/hw/xmir/dri2/dri2ext.c
 @@ -0,0 +1,683 @@
 +/*
 + * Copyright © 2008 Red Hat, Inc.
@@ -2681,10 +2665,8 @@ Index: xorg-server-1.17.2/hw/xmir/dri2/dri2ext.c
 +
 +    DRI2ModuleSetup();
 +}
-Index: xorg-server-1.17.2/hw/xmir/dri2/dri2int.h
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/dri2/dri2int.h
++++ b/hw/xmir/dri2/dri2int.h
 @@ -0,0 +1,26 @@
 +/*
 + * Copyright © 2011 Daniel Stone
@@ -2712,10 +2694,8 @@ Index: xorg-server-1.17.2/hw/xmir/dri2/dri2int.h
 + */
 +
 +extern Bool DRI2ModuleSetup(void);
-Index: xorg-server-1.17.2/hw/xmir/xmir-cursor.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-cursor.c
++++ b/hw/xmir/xmir-cursor.c
 @@ -0,0 +1,214 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -2931,10 +2911,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-cursor.c
 +                               &xmir_pointer_sprite_funcs,
 +                               &xmir_pointer_screen_funcs, TRUE);
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir-cvt.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-cvt.c
++++ b/hw/xmir/xmir-cvt.c
 @@ -0,0 +1,304 @@
 +/* Copied from hw/xfree86/modes/xf86cvt.c into xmir DDX and
 + * changed to generate an RRMode */
@@ -3240,10 +3218,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-cvt.c
 +
 +    return RRModeGet(&modeinfo, name);
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir-dri2.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-dri2.c
++++ b/hw/xmir/xmir-dri2.c
 @@ -0,0 +1,529 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -3774,10 +3750,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-dri2.c
 +    ret = DRI2ScreenInit(xmir_screen->screen, &xmir_screen->dri2);
 +    return ret;
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir-glamor.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-glamor.c
++++ b/hw/xmir/xmir-glamor.c
 @@ -0,0 +1,1184 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -4963,10 +4937,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-glamor.c
 +
 +    return TRUE;
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir-input.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-input.c
++++ b/hw/xmir/xmir-input.c
 @@ -0,0 +1,505 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -5473,10 +5445,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-input.c
 +
 +    mieqFini();
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir-output.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-output.c
++++ b/hw/xmir/xmir-output.c
 @@ -0,0 +1,444 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -5922,10 +5892,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-output.c
 +
 +    return TRUE;
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir-thread-proxy.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir-thread-proxy.c
++++ b/hw/xmir/xmir-thread-proxy.c
 @@ -0,0 +1,132 @@
 +/*
 + * Copyright © 2012-2015 Canonical Ltd
@@ -6059,10 +6027,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir-thread-proxy.c
 +		free(msg);
 +	}
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir.c
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir.c
++++ b/hw/xmir/xmir.c
 @@ -0,0 +1,999 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -7063,10 +7029,8 @@ Index: xorg-server-1.17.2/hw/xmir/xmir.c
 +        FatalError("Couldn't add screen\n");
 +    }
 +}
-Index: xorg-server-1.17.2/hw/xmir/xmir.h
-===================================================================
 --- /dev/null
-+++ xorg-server-1.17.2/hw/xmir/xmir.h
++++ b/hw/xmir/xmir.h
 @@ -0,0 +1,211 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
