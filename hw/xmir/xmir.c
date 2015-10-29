@@ -51,6 +51,8 @@
                      }
 
 STATIC_ATOM(UTF8_STRING);
+STATIC_ATOM(WM_PROTOCOLS);
+STATIC_ATOM(WM_DELETE_WINDOW);
 
 extern __GLXprovider __glXDRI2Provider;
 
@@ -823,16 +825,22 @@ xmir_close_surface(struct xmir_window *xmir_window)
     WindowPtr window = xmir_window->window;
     struct xmir_screen *xmir_screen = xmir_screen_get(window->drawable.pScreen);
 
-    ErrorF("FIXME: xmir_close_surface is not implemented\n");
-    return;
-    /* Because DeleteWindow below causes double free */
-
-    if (!xmir_screen->rootless) {
+    if (xmir_screen->rootless) {
+        xEvent event;
+        INIT_ATOM(WM_PROTOCOLS);
+        INIT_ATOM(WM_DELETE_WINDOW);
+        event.u.u.type = ClientMessage;
+        event.u.u.detail = 32;
+        event.u.clientMessage.window = window->drawable.id;
+        event.u.clientMessage.u.l.type = WM_PROTOCOLS;
+        event.u.clientMessage.u.l.longs0 = WM_DELETE_WINDOW;
+        event.u.clientMessage.u.l.longs1 = CurrentTime;
+        DeliverEvents(window, &event, 1, NullWindow);
+    } else {
         ErrorF("Root window closed, shutting down Xmir\n");
         GiveUp(0);
+        /*DeleteWindow(window, 1); ? */
     }
-
-    DeleteWindow(window, 1);
 }
 
 static void
