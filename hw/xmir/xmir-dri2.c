@@ -487,6 +487,15 @@ xmir_dri2_swap_limit_validate(DrawablePtr draw, int swap_limit)
 	return TRUE;
 }
 
+static int xmir_dri_get_msc(DrawablePtr draw, CARD64 *ust, CARD64 *msc)
+{
+    /* TODO: Implement this?
+     * At least doing nothing like this is enough to shut up Chromium
+     * error messages.
+     */
+    return Success;
+}
+
 Bool
 xmir_dri2_screen_init(struct xmir_screen *xmir_screen)
 {
@@ -521,6 +530,7 @@ xmir_dri2_screen_init(struct xmir_screen *xmir_screen)
     xmir_screen->dri2.ReuseBufferNotify = xmir_dri2_reusebuffer_notify;
     xmir_screen->dri2.SwapLimitValidate = xmir_dri2_swap_limit_validate;
     xmir_screen->dri2.ScheduleSwap = xmir_dri2_schedule_swap;
+    xmir_screen->dri2.GetMSC = xmir_dri_get_msc;
 
     /* 8 */
     xmir_screen->dri2.AuthMagic2 = xmir_dri2_auth_magic;
