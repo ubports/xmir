@@ -154,6 +154,9 @@ struct xmir_output {
     Rotation rotation;
 };
 
+extern Bool xmir_debug_logging;
+#define XMIR_DEBUG(_args)  {if (xmir_debug_logging) ErrorF _args;}
+
 struct xmir_window *xmir_window_get(WindowPtr window);
 struct xmir_screen *xmir_screen_get(ScreenPtr screen);
 struct xmir_pixmap *xmir_pixmap_get(PixmapPtr pixmap);

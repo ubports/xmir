@@ -487,8 +487,8 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
         const MirResizeEvent *resize = mir_event_get_resize_event(ev);
         unsigned future_width = mir_resize_event_get_width(resize);
         unsigned future_height = mir_resize_event_get_height(resize);
-        ErrorF("Mir surface for win %p resized to %ux%u (buffers arriving soon)\n",
-               window, future_width, future_height);
+        XMIR_DEBUG(("Mir surface for win %p resized to %ux%u (buffers arriving soon)\n",
+                    window, future_width, future_height));
         xmir_window->surface_width = future_width;
         xmir_window->surface_height = future_height;
         if (xmir_window->damage)

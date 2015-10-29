@@ -47,10 +47,12 @@
 #define STATIC_ATOM(a) static Atom a = 0
 #define INIT_ATOM(a) if (!a) { \
                          a = MakeAtom(#a, sizeof(#a) - 1, False); \
-                         if (a) ErrorF(#a " = %lu\n", (unsigned long)a); \
+                         if (a) XMIR_DEBUG((#a " = %lu\n", (unsigned long)a)); \
                      }
 
 extern __GLXprovider __glXDRI2Provider;
+
+Bool xmir_debug_logging = False;
 
 static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 
@@ -113,6 +115,7 @@ ddxUseMsg(void)
     ErrorF("-mir <appid>           set mir's application id.\n");
     ErrorF("-mirSocket <socket>    use the specified socket for mir\n");
     ErrorF("-2x                    double the fun (2x resolution compared to onscreen)\n");
+    ErrorF("-debug                 Log everything Xmir is doing\n");
 }
 
 int
@@ -127,6 +130,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
         strcmp(argv[i], "-egl") == 0 ||
         strcmp(argv[i], "-egl_sync") == 0 ||
         strcmp(argv[i], "-2x") == 0 ||
+        strcmp(argv[i], "-debug") == 0 ||
         strcmp(argv[i], "-damage") == 0) {
         return 1;
     }
@@ -568,7 +572,7 @@ xmir_realize_window(WindowPtr window)
     wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
-    ErrorF("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
+    XMIR_DEBUG(("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
            "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
            "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
            window == screen->root ? "ROOT " : "",
@@ -578,7 +582,7 @@ xmir_realize_window(WindowPtr window)
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable,
-           window->overrideRedirect, (unsigned long)wm_type, wm_transient_for);
+           window->overrideRedirect, (unsigned long)wm_type, wm_transient_for));
 
     if (!window->viewable) {
         return ret;
@@ -639,8 +643,8 @@ xmir_realize_window(WindowPtr window)
         xorg_list_append(&xmir_window->link_flattened,
                          &xmir_screen->flattened_list);
         ReparentWindow(window, top, dx, dy, serverClient);
-        ErrorF("Flattened window %p (reparented under %p %+d%+d)\n",
-               window, top, dx, dy);
+        XMIR_DEBUG(("Flattened window %p (reparented under %p %+d%+d)\n",
+                    window, top, dx, dy));
         /* And thanks to the X Composite extension, window will now be
          * automatically composited into the existing flatten_top surface
          * so we retain only a single Mir surface, as Unity8 likes to see.
@@ -781,29 +785,29 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
 {
     switch (attr) {
     case mir_surface_attrib_type:
-        ErrorF("Type: %s\n", xmir_surface_type_str(val));
+        XMIR_DEBUG(("Type: %s\n", xmir_surface_type_str(val)));
         break;
     case mir_surface_attrib_state:
-        ErrorF("State: %s\n", xmir_surface_state_str(val));
+        XMIR_DEBUG(("State: %s\n", xmir_surface_state_str(val)));
         break;
     case mir_surface_attrib_swapinterval:
-        ErrorF("Swap interval: %i\n", val);
+        XMIR_DEBUG(("Swap interval: %i\n", val));
         break;
     case mir_surface_attrib_focus:
-        ErrorF("Focus: %s\n", xmir_surface_focus_str(val));
+        XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
         if (xmir_window->surface) {  /* It's a real Mir window */
             xmir_window->xmir_screen->last_focus =
                 (val == mir_surface_focused) ? xmir_window->window : NULL;
         }
         break;
     case mir_surface_attrib_dpi:
-        ErrorF("DPI: %i\n", val);
+        XMIR_DEBUG(("DPI: %i\n", val));
         break;
     case mir_surface_attrib_visibility:
-        ErrorF("Visibility: %s\n", xmir_surface_vis_str(val));
+        XMIR_DEBUG(("Visibility: %s\n", xmir_surface_vis_str(val)));
         break;
     default:
-        ErrorF("Unhandled attribute %i\n", attr);
+        XMIR_DEBUG(("Unhandled attribute %i\n", attr));
         break;
     }
 }
@@ -843,8 +847,8 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
     struct xmir_screen *xmir_screen = benef->xmir_screen;
     struct xmir_window *other;
 
-    ErrorF("flatten bequeath: %p --> %p\n",
-           dying->window, benef->window);
+    XMIR_DEBUG(("flatten bequeath: %p --> %p\n",
+                dying->window, benef->window));
 
     assert(!benef->surface);
     benef->surface = dying->surface;
@@ -940,7 +944,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
     if (!xmir_window)
         return;
 
-    ErrorF("Unmap/unrealize window %p\n", window);
+    XMIR_DEBUG(("Unmap/unrealize window %p\n", window));
 
     if (!destroyed)
         xmir_window_disable_damage_tracking(xmir_window);
@@ -1042,8 +1046,8 @@ xmir_resize_window(WindowPtr window, int x, int y,
     screen->ResizeWindow = xmir_resize_window;
 
     if (xmir_window->surface)
-        ErrorF("X window %p resized to %ux%u %+d%+d with sibling %p\n",
-               window, w, h, x, y, sib);
+        XMIR_DEBUG(("X window %p resized to %ux%u %+d%+d with sibling %p\n",
+                    window, w, h, x, y, sib));
 
     xmir_window_update_region(xmir_window);
 }
@@ -1272,6 +1276,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
                 xmir_screen->glamor = glamor_egl;
         } else if (strcmp(argv[i], "-2x") == 0) {
             xmir_screen->doubled = 1;
+        } else if (strcmp(argv[i], "-debug") == 0) {
+            xmir_debug_logging = True;
         } else if (strcmp(argv[i], "-damage") == 0) {
             /* Ignored. Damage-all is now the default and only option. */
         } else if (strcmp(argv[i], "-egl_sync") == 0) {
@@ -1292,8 +1298,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef __arm__
     if (xmir_screen->glamor == glamor_dri) {
-        ErrorF("ARM architecture: Defaulting to software mode because glamor "
-               "is not stable\n");
+        XMIR_DEBUG(("ARM architecture: Defaulting to software mode because "
+                    "glamor is not stable\n"));
         /* Hide the ARM glamor bugs for now so we can have working phones */
         xmir_screen->glamor = glamor_off;
     }
