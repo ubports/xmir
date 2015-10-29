@@ -50,6 +50,8 @@
                          if (a) XMIR_DEBUG((#a " = %lu\n", (unsigned long)a)); \
                      }
 
+STATIC_ATOM(UTF8_STRING);
+
 extern __GLXprovider __glXDRI2Provider;
 
 Bool xmir_debug_logging = False;
@@ -434,7 +436,8 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
         PropertyPtr p = window->optional->userProps;
         while (p) {
             if (p->propertyName == atom) {
-                if (p->type == XA_STRING && p->format == 8 && p->data) {
+                if ((p->type == XA_STRING || p->type == UTF8_STRING) &&
+                    p->format == 8 && p->data) {
                     size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
                     memcpy(buf, p->data, len);
                     buf[len] = '\0';
@@ -554,6 +557,8 @@ xmir_realize_window(WindowPtr window)
     INIT_ATOM(_NET_WM_WINDOW_TYPE_COMBO);
     INIT_ATOM(_NET_WM_WINDOW_TYPE_DND);
     INIT_ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
+
+    INIT_ATOM(UTF8_STRING);
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
     ret = (*screen->RealizeWindow) (window);
