@@ -238,7 +238,7 @@ xmir_update_config(struct xmir_screen *xmir_screen)
 void
 xmir_output_handle_orientation(struct xmir_window *xmir_window, MirOrientation dir)
 {
-    ErrorF("Orientation: %i\n", dir);
+    XMIR_DEBUG(("Orientation: %i\n", dir));
 
     xmir_output_handle_resize(xmir_window, -1, -1);
 }
@@ -305,7 +305,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
     if (!xmir_screen->windowed) {
         xmir_screen->windowed = 1;
 
-        ErrorF("Root resized, removing all outputs and inserting fake output\n");
+        XMIR_DEBUG(("Root resized, removing all outputs and inserting fake output\n"));
 
         while (!xorg_list_is_empty(&xmir_screen->output_list)) {
             struct xmir_output *xmir_output = xorg_list_first_entry(&xmir_screen->output_list, typeof(*xmir_output), link);
@@ -316,8 +316,8 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         }
     }
 
-    ErrorF("Output resized %ix%i with rotation %i\n",
-           width, height, xmir_window->orientation);
+    XMIR_DEBUG(("Output resized %ix%i with rotation %i\n",
+                width, height, xmir_window->orientation));
 
     pixmap = screen->CreatePixmap(screen, window_width, window_height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
 
