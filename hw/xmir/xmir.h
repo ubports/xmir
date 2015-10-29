@@ -81,7 +81,7 @@ struct xmir_screen {
     void *swap_surface;
 
     char *device_name, *driver_name;
-    int drm_fd, dpms_on;
+    int drm_fd;
     void *egl_display, *egl_context, *swap_context;
     struct gbm_device *gbm;
     struct glamor_context *glamor_ctx;

@@ -82,22 +82,10 @@ xmir_output_dpms(struct xmir_screen *xmir_screen, int mode)
         return FALSE;
 
     switch (mode) {
-    case DPMSModeOn:
-        mir_mode = mir_power_mode_on;
-        xmir_screen->dpms_on = TRUE;
-        break;
-    case DPMSModeStandby:
-        mir_mode = mir_power_mode_standby;
-        xmir_screen->dpms_on = FALSE;
-        break;
-    case DPMSModeSuspend:
-        mir_mode = mir_power_mode_suspend;
-        xmir_screen->dpms_on = FALSE;
-        break;
-    case DPMSModeOff:
-        mir_mode = mir_power_mode_off;
-        xmir_screen->dpms_on = FALSE;
-        break;
+    case DPMSModeOn:      mir_mode = mir_power_mode_on; break;
+    case DPMSModeStandby: mir_mode = mir_power_mode_standby; break;
+    case DPMSModeSuspend: mir_mode = mir_power_mode_suspend; break;
+    case DPMSModeOff:     mir_mode = mir_power_mode_off; break;
     }
 
     DebugF("Setting DPMS mode to %d\n", mode);
