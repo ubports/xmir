@@ -505,7 +505,17 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
         xmir_close_surface(xmir_window);
         break;
     case mir_event_type_surface_output:
-        /* Don't care for these right now. Don't issue a warning. */
+        {
+            ScreenPtr screen = xmir_screen->screen;
+            MirSurfaceOutputEvent const* soe =
+                mir_event_get_surface_output_event(ev);
+            int dpi = mir_surface_output_event_get_dpi(soe);
+            xmir_screen->dpi = dpi;
+            screen->mmWidth = screen->width * 254 / (10 * dpi);
+            screen->mmHeight = screen->height * 254 / (10 * dpi);
+            XMIR_DEBUG(("Now screen is %hdx%hd mm\n",
+                        screen->mmWidth, screen->mmHeight));
+        }
         break;
     default:
         ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));

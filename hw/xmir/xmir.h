@@ -95,6 +95,8 @@ struct xmir_screen {
     struct xmir_window *flatten_top;
     WindowPtr last_focus;
 
+    int dpi;
+
     DRI2InfoRec dri2;
 };
 
