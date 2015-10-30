@@ -1059,7 +1059,7 @@ xmir_resize_window(WindowPtr window, int x, int y,
     screen->ResizeWindow = xmir_resize_window;
 
     if (xmir_window->surface) {
-        /* FIXME: Self-resizing not working for some reason (LP: #1511608) */
+        /* This is correct in theory but most Mir shells don't do it yet */
         MirSurfaceSpec *changes =
             mir_connection_create_spec_for_changes(xmir_screen->conn);
         mir_surface_spec_set_width(changes, w);
