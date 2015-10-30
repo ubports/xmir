@@ -1058,11 +1058,18 @@ xmir_resize_window(WindowPtr window, int x, int y,
     xmir_screen->ResizeWindow = screen->ResizeWindow;
     screen->ResizeWindow = xmir_resize_window;
 
-    /* TODO: Resize Mir surface here? (LP: #1511608) */
+    if (xmir_window->surface) {
+        /* FIXME: Self-resizing not working for some reason (LP: #1511608) */
+        MirSurfaceSpec *changes =
+            mir_connection_create_spec_for_changes(xmir_screen->conn);
+        mir_surface_spec_set_width(changes, w);
+        mir_surface_spec_set_height(changes, h);
+        mir_surface_apply_spec(xmir_window->surface, changes);
+        mir_surface_spec_release(changes);
 
-    if (xmir_window->surface)
         XMIR_DEBUG(("X window %p resized to %ux%u %+d%+d with sibling %p\n",
                     window, w, h, x, y, sib));
+    }
 
     xmir_window_update_region(xmir_window);
 }
