@@ -504,6 +504,9 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
     case mir_event_type_close_surface:
         xmir_close_surface(xmir_window);
         break;
+    case mir_event_type_surface_output:
+        /* Don't care for these right now. Don't issue a warning. */
+        break;
     default:
         ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
         break;
