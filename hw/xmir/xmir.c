@@ -1406,9 +1406,12 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     miSetPixmapDepths();
 
+    /* This will change later as we learn more about the environment */
+    xmir_screen->dpi = 96;
+
     ret = fbScreenInit(pScreen, NULL,
                        pScreen->width, pScreen->height,
-                       96, 96, 0,
+                       xmir_screen->dpi, xmir_screen->dpi, 0,
                        BitsPerPixel(xmir_screen->depth));
     if (!ret)
         return FALSE;

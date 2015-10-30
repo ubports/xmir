@@ -362,7 +362,9 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 
     screen->width = window_width;
     screen->height = window_height;
-    screen->mmWidth = screen->mmHeight = 0;
+    screen->mmWidth = screen->width * 254 / (10 * xmir_screen->dpi);
+    screen->mmHeight = screen->height * 254 / (10 * xmir_screen->dpi);
+
     screen->SetScreenPixmap(pixmap);
 
     SetRootClip(screen, TRUE);
