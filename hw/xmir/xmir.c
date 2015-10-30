@@ -698,7 +698,7 @@ xmir_realize_window(WindowPtr window)
         }
     }
 
-    /* Initial window title bar works.  TODO: support for updates */
+    /* Initial window title bar works but not changes (LP: #1511603) */
     mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
                                     "Xmir root window");
 
@@ -1057,6 +1057,8 @@ xmir_resize_window(WindowPtr window, int x, int y,
     (*screen->ResizeWindow) (window, x, y, w, h, sib);
     xmir_screen->ResizeWindow = screen->ResizeWindow;
     screen->ResizeWindow = xmir_resize_window;
+
+    /* TODO: Resize Mir surface here? (LP: #1511608) */
 
     if (xmir_window->surface)
         XMIR_DEBUG(("X window %p resized to %ux%u %+d%+d with sibling %p\n",

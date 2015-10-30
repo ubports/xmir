@@ -128,7 +128,7 @@ xmir_output_update(struct xmir_output *xmir_output, MirDisplayOutput *mir_output
         RROutputSetPhysicalSize(xmir_output->randr_output, mir_output->physical_width_mm, mir_output->physical_height_mm);
         RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
 
-        // TODO: Hook up subpixel order when available
+        /* TODO: Hook up subpixel order when available (LP: #1393578) */
         RRCrtcNotify(xmir_output->randr_crtc, randr_mode,
                      xmir_output->x, xmir_output->y,
                      to_rr_rotation(mir_output->orientation), NULL, 1, &xmir_output->randr_output);
