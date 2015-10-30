@@ -193,6 +193,82 @@ xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap)
     return dixSetPrivate(&pixmap->devPrivates, &xmir_pixmap_private_key, xmir_pixmap);
 }
 
+static Bool
+xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
+                             char *buf, size_t bufsize)
+{
+    if (window->optional) {
+        PropertyPtr p = window->optional->userProps;
+        while (p) {
+            if (p->propertyName == atom) {
+                if ((p->type == XA_STRING || p->type == UTF8_STRING) &&
+                    p->format == 8 && p->data) {
+                    size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
+                    memcpy(buf, p->data, len);
+                    buf[len] = '\0';
+                    return True;
+                } else {
+                    ErrorF("xmir_get_window_prop_string8: Atom %d is not "
+                           "an 8-bit string as expected\n", atom);
+                    break;
+                }
+            }
+            p = p->next;
+        }
+    }
+
+    if (bufsize)
+        buf[0] = '\0';
+    return False;
+}
+
+static WindowPtr
+xmir_get_window_prop_window(WindowPtr window, ATOM atom)
+{
+    if (window->optional) {
+        PropertyPtr p = window->optional->userProps;
+        while (p) {
+            if (p->propertyName == atom) {
+                if (p->type == XA_WINDOW) {
+                    WindowPtr ptr;
+                    XID id = *(XID*)p->data;
+                    if (dixLookupWindow(&ptr, id, serverClient,
+                                        DixReadAccess) != Success)
+                        ptr = NULL;
+                    return ptr;
+                } else {
+                    ErrorF("xmir_get_window_prop_window: Atom %d is not "
+                           "a Window as expected\n", atom);
+                    return NULL;
+                }
+            }
+            p = p->next;
+        }
+    }
+    return NULL;
+}
+
+static Atom
+xmir_get_window_prop_atom(WindowPtr window, ATOM name)
+{
+    if (window->optional) {
+        PropertyPtr p = window->optional->userProps;
+        while (p) {
+            if (p->propertyName == name) {
+                if (p->type == XA_ATOM) {
+                    return *(Atom*)p->data;
+                } else {
+                    ErrorF("xmir_get_window_prop_atom: Atom %d is not "
+                           "an Atom as expected\n", name);
+                    return 0;
+                }
+            }
+            p = p->next;
+        }
+    }
+    return 0;
+}
+
 static void
 damage_report(DamagePtr pDamage, RegionPtr pRegion, void *data)
 {
@@ -307,9 +383,22 @@ void xmir_repaint(struct xmir_window *xmir_win)
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
     RegionPtr dirty = &xmir_win->region;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+    char wm_name[256];
 
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
+
+    if (xmir_screen->rootless &&
+        xmir_get_window_prop_string8(xmir_win->window, XA_WM_NAME,
+                                     wm_name, sizeof wm_name) &&
+        strcmp(wm_name, xmir_win->wm_name)) {
+        MirSurfaceSpec *rename =
+            mir_connection_create_spec_for_changes(xmir_screen->conn);
+        mir_surface_spec_set_name(rename, wm_name);
+        mir_surface_apply_spec(xmir_win->surface, rename);
+        mir_surface_spec_release(rename);
+        strncpy(xmir_win->wm_name, wm_name, sizeof(xmir_win->wm_name));
+    }
 
     switch (xmir_screen->glamor) {
     case glamor_off:
@@ -428,82 +517,6 @@ xmir_create_window(WindowPtr window)
         free(xmir_window);
 
     return ret;
-}
-
-static Bool
-xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
-                             char *buf, size_t bufsize)
-{
-    if (window->optional) {
-        PropertyPtr p = window->optional->userProps;
-        while (p) {
-            if (p->propertyName == atom) {
-                if ((p->type == XA_STRING || p->type == UTF8_STRING) &&
-                    p->format == 8 && p->data) {
-                    size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
-                    memcpy(buf, p->data, len);
-                    buf[len] = '\0';
-                    return True;
-                } else {
-                    ErrorF("xmir_get_window_prop_string8: Atom %d is not "
-                           "an 8-bit string as expected\n", atom);
-                    break;
-                }
-            }
-            p = p->next;
-        }
-    }
-
-    if (bufsize)
-        buf[0] = '\0';
-    return False;
-}
-
-static WindowPtr
-xmir_get_window_prop_window(WindowPtr window, ATOM atom)
-{
-    if (window->optional) {
-        PropertyPtr p = window->optional->userProps;
-        while (p) {
-            if (p->propertyName == atom) {
-                if (p->type == XA_WINDOW) {
-                    WindowPtr ptr;
-                    XID id = *(XID*)p->data;
-                    if (dixLookupWindow(&ptr, id, serverClient,
-                                        DixReadAccess) != Success)
-                        ptr = NULL;
-                    return ptr;
-                } else {
-                    ErrorF("xmir_get_window_prop_window: Atom %d is not "
-                           "a Window as expected\n", atom);
-                    return NULL;
-                }
-            }
-            p = p->next;
-        }
-    }
-    return NULL;
-}
-
-static Atom
-xmir_get_window_prop_atom(WindowPtr window, ATOM name)
-{
-    if (window->optional) {
-        PropertyPtr p = window->optional->userProps;
-        while (p) {
-            if (p->propertyName == name) {
-                if (p->type == XA_ATOM) {
-                    return *(Atom*)p->data;
-                } else {
-                    ErrorF("xmir_get_window_prop_atom: Atom %d is not "
-                           "an Atom as expected\n", name);
-                    return 0;
-                }
-            }
-            p = p->next;
-        }
-    }
-    return 0;
 }
 
 static void
@@ -698,7 +711,6 @@ xmir_realize_window(WindowPtr window)
         }
     }
 
-    /* Initial window title bar works but not changes (LP: #1511603) */
     mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
                                     "Xmir root window");
 

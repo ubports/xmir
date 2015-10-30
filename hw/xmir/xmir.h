@@ -133,6 +133,8 @@ struct xmir_window {
         void *data;
         struct xorg_list entry;
     } flip;
+
+    char wm_name[256];
 };
 
 struct xmir_input {
