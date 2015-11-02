@@ -593,7 +593,7 @@ xmir_realize_window(WindowPtr window)
 
     XMIR_DEBUG(("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
            "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
-           "\toverride=%d GET_ATOM(_NET_WM_WINDOW_TYPE)=%lu WM_TRANSIENT_FOR=%p\n",
+           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
            window == screen->root ? "ROOT " : "",
            window, wm_name, mir_width, mir_height,
            window->drawable.x, window->drawable.y,
