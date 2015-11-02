@@ -44,17 +44,39 @@
 #include "glamor_priv.h"
 #include "dpmsproc.h"
 
-#define STATIC_ATOM(a) static Atom a = 0
-#define INIT_ATOM(a) if (!a) { \
-                         a = MakeAtom(#a, sizeof(#a) - 1, False); \
-                         if (a) XMIR_DEBUG((#a " = %lu\n", (unsigned long)a)); \
-                     }
+static struct {
+    Atom UTF8_STRING;
+    Atom _NET_WM_NAME;
+    Atom WM_PROTOCOLS;
+    Atom WM_DELETE_WINDOW;
+    Atom _NET_WM_WINDOW_TYPE;
+    Atom _NET_WM_WINDOW_TYPE_DESKTOP;
+    Atom _NET_WM_WINDOW_TYPE_DOCK;
+    Atom _NET_WM_WINDOW_TYPE_TOOLBAR;
+    Atom _NET_WM_WINDOW_TYPE_MENU;
+    Atom _NET_WM_WINDOW_TYPE_UTILITY;
+    Atom _NET_WM_WINDOW_TYPE_SPLASH;
+    Atom _NET_WM_WINDOW_TYPE_DIALOG;
+    Atom _NET_WM_WINDOW_TYPE_DROPDOWN_MENU;
+    Atom _NET_WM_WINDOW_TYPE_POPUP_MENU;
+    Atom _NET_WM_WINDOW_TYPE_TOOLTIP;
+    Atom _NET_WM_WINDOW_TYPE_NOTIFICATION;
+    Atom _NET_WM_WINDOW_TYPE_COMBO;
+    Atom _NET_WM_WINDOW_TYPE_DND;
+    Atom _NET_WM_WINDOW_TYPE_NORMAL;
+} known_atom;
 
-STATIC_ATOM(UTF8_STRING);
-STATIC_ATOM(_NET_WM_NAME);
+static Atom get_atom(const char *name, Atom *cache)
+{
+    if (!*cache) {
+        *cache = MakeAtom(name, strlen(name), False);
+        if (*cache)
+            XMIR_DEBUG(("Atom %s = %lu\n", name, (unsigned long)*cache));
+    }
+    return *cache;
+}
 
-STATIC_ATOM(WM_PROTOCOLS);
-STATIC_ATOM(WM_DELETE_WINDOW);
+#define GET_ATOM(_a) get_atom(#_a, &known_atom._a)
 
 extern __GLXprovider __glXDRI2Provider;
 
@@ -203,7 +225,9 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
         PropertyPtr p = window->optional->userProps;
         while (p) {
             if (p->propertyName == atom) {
-                if ((p->type == XA_STRING || p->type == UTF8_STRING) &&
+                if ((  p->type == XA_STRING
+                    || p->type == GET_ATOM(UTF8_STRING)
+                    ) &&
                     p->format == 8 && p->data) {
                     size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
                     memcpy(buf, p->data, len);
@@ -227,8 +251,9 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
 static Bool
 xmir_get_window_name(WindowPtr window, char *buf, size_t bufsize)
 {
-    return xmir_get_window_prop_string8(window, _NET_WM_NAME, buf, bufsize) ||
-           xmir_get_window_prop_string8(window, XA_WM_NAME, buf, bufsize);
+    return xmir_get_window_prop_string8(window, GET_ATOM(_NET_WM_NAME),
+                                        buf, bufsize)
+        || xmir_get_window_prop_string8(window, XA_WM_NAME, buf, bufsize);
 }
 
 static WindowPtr
@@ -549,40 +574,6 @@ xmir_realize_window(WindowPtr window)
     MirSurfaceSpec* spec = NULL;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
     char wm_name[1024];
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_TOOLBAR);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_MENU);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_SPLASH);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_DIALOG);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_POPUP_MENU);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_NOTIFICATION);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_COMBO);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_DND);
-    STATIC_ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
-
-    INIT_ATOM(_NET_WM_WINDOW_TYPE);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_TOOLBAR);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_MENU);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_SPLASH);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_DIALOG);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_POPUP_MENU);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_NOTIFICATION);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_COMBO);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_DND);
-    INIT_ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
-
-    INIT_ATOM(UTF8_STRING);
-    INIT_ATOM(_NET_WM_NAME);
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
     ret = (*screen->RealizeWindow) (window);
@@ -597,12 +588,12 @@ xmir_realize_window(WindowPtr window)
     xmir_window_update_region(xmir_window);
 
     xmir_get_window_name(window, wm_name, sizeof wm_name);
-    wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
+    wm_type = xmir_get_window_prop_atom(window, GET_ATOM(_NET_WM_WINDOW_TYPE));
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
     XMIR_DEBUG(("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
            "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
-           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
+           "\toverride=%d GET_ATOM(_NET_WM_WINDOW_TYPE)=%lu WM_TRANSIENT_FOR=%p\n",
            window == screen->root ? "ROOT " : "",
            window, wm_name, mir_width, mir_height,
            window->drawable.x, window->drawable.y,
@@ -651,13 +642,13 @@ xmir_realize_window(WindowPtr window)
          * next best option is to guess. But we can only reasonably guess for
          * window types that are typically subordinate to normal windows...
          */
-        Bool is_subordinate = wm_type == _NET_WM_WINDOW_TYPE_DROPDOWN_MENU
-                           || wm_type == _NET_WM_WINDOW_TYPE_POPUP_MENU
-                           || wm_type == _NET_WM_WINDOW_TYPE_MENU
-                           || wm_type == _NET_WM_WINDOW_TYPE_COMBO
-                           || wm_type == _NET_WM_WINDOW_TYPE_TOOLBAR
-                           || wm_type == _NET_WM_WINDOW_TYPE_UTILITY
-                           || wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP
+        Bool is_subordinate = wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU)
+                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_POPUP_MENU)
+                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_MENU)
+                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_COMBO)
+                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLBAR)
+                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_UTILITY)
+                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP)
                            || (wm_type == -1 && window->overrideRedirect);
 
         if (is_subordinate)
@@ -689,17 +680,17 @@ xmir_realize_window(WindowPtr window)
             short dy = window->drawable.y - rel->window->drawable.y;
             MirRectangle placement = {dx, dy, 0, 0};
 
-            if (wm_type == _NET_WM_WINDOW_TYPE_TOOLTIP) {
+            if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP)) {
                 spec = mir_connection_create_spec_for_tooltip(
                     xmir_screen->conn, mir_width, mir_height, pixel_format,
                     rel->surface, &placement);
-            } else if (wm_type == _NET_WM_WINDOW_TYPE_DIALOG) {
+            } else if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
                 spec = mir_connection_create_spec_for_modal_dialog(
                     xmir_screen->conn, mir_width, mir_height, pixel_format,
                     rel->surface);
             } else {  /* Probably a menu. If not, still close enough... */
                 MirEdgeAttachment edge = mir_edge_attachment_any;
-                if (wm_type == _NET_WM_WINDOW_TYPE_DROPDOWN_MENU)
+                if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU))
                     edge = mir_edge_attachment_vertical;
                 spec = mir_connection_create_spec_for_menu(
                     xmir_screen->conn,
@@ -710,7 +701,7 @@ xmir_realize_window(WindowPtr window)
     }
 
     if (!spec) {
-        if (wm_type == _NET_WM_WINDOW_TYPE_DIALOG) {
+        if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
             spec = mir_connection_create_spec_for_dialog(
                 xmir_screen->conn, mir_width, mir_height, pixel_format);
         } else {
@@ -847,13 +838,11 @@ xmir_close_surface(struct xmir_window *xmir_window)
 
     if (xmir_screen->rootless) {
         xEvent event;
-        INIT_ATOM(WM_PROTOCOLS);
-        INIT_ATOM(WM_DELETE_WINDOW);
         event.u.u.type = ClientMessage;
         event.u.u.detail = 32;
         event.u.clientMessage.window = window->drawable.id;
-        event.u.clientMessage.u.l.type = WM_PROTOCOLS;
-        event.u.clientMessage.u.l.longs0 = WM_DELETE_WINDOW;
+        event.u.clientMessage.u.l.type = GET_ATOM(WM_PROTOCOLS);
+        event.u.clientMessage.u.l.longs0 = GET_ATOM(WM_DELETE_WINDOW);
         event.u.clientMessage.u.l.longs1 = CurrentTime;
         DeliverEvents(window, &event, 1, NullWindow);
     } else {
@@ -1288,6 +1277,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         !dixRegisterPrivateKey(&xmir_window_private_key, PRIVATE_WINDOW, 0) ||
         !dixRegisterPrivateKey(&xmir_pixmap_private_key, PRIVATE_PIXMAP, 0))
         return FALSE;
+
+    memset(&known_atom, 0, sizeof known_atom);
 
     xmir_screen = calloc(sizeof *xmir_screen, 1);
     if (!xmir_screen)
