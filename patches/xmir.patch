@@ -1,33 +1,34 @@
-From 288ecd8208dadaf661639559192373874cad9f20 Mon Sep 17 00:00:00 2001
+From debdda3bfd737885c4fbbbcff06518c507009077 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 15 May 2015 14:58:59 +1200
-Subject: [PATCH 1/4] XMir DDX
+Subject: [PATCH 1/3] XMir DDX
 
 Contributions from:
   Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
   Christopher James Halse Rogers <christopher.halse.rogers@canonical.com>
   Robert Ancell <robert.ancell@canonical.com>
   Andreas Pokorny <andreas.pokorny@canonical.com>
+  Daniel van Vugt <daniel.van.vugt@canonical.com>
 ---
  configure.ac                |   25 +
  hw/Makefile.am              |    9 +-
  hw/xmir/.gitignore          |    1 +
  hw/xmir/Makefile.am         |   61 ++
  hw/xmir/dri2/Makefile.am    |   14 +
- hw/xmir/dri2/dri2.c         | 1398 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/dri2/dri2.c         | 1398 +++++++++++++++++++++++++++++++++++++++
  hw/xmir/dri2/dri2.h         |  364 +++++++++++
- hw/xmir/dri2/dri2ext.c      |  683 +++++++++++++++++++++
+ hw/xmir/dri2/dri2ext.c      |  683 +++++++++++++++++++
  hw/xmir/dri2/dri2int.h      |   26 +
- hw/xmir/xmir-cursor.c       |  214 +++++++
- hw/xmir/xmir-cvt.c          |  304 ++++++++++
- hw/xmir/xmir-dri2.c         |  529 ++++++++++++++++
- hw/xmir/xmir-glamor.c       | 1184 ++++++++++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  505 ++++++++++++++++
- hw/xmir/xmir-output.c       |  444 ++++++++++++++
- hw/xmir/xmir-thread-proxy.c |  132 ++++
- hw/xmir/xmir.c              |  999 +++++++++++++++++++++++++++++++
- hw/xmir/xmir.h              |  211 +++++++
- 18 files changed, 7101 insertions(+), 2 deletions(-)
+ hw/xmir/xmir-cursor.c       |  210 ++++++
+ hw/xmir/xmir-cvt.c          |  304 +++++++++
+ hw/xmir/xmir-dri2.c         |  545 ++++++++++++++++
+ hw/xmir/xmir-glamor.c       | 1173 +++++++++++++++++++++++++++++++++
+ hw/xmir/xmir-input.c        |  577 ++++++++++++++++
+ hw/xmir/xmir-output.c       |  456 +++++++++++++
+ hw/xmir/xmir-thread-proxy.c |  109 ++++
+ hw/xmir/xmir.c              | 1518 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir.h              |  225 +++++++
+ 18 files changed, 7696 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -45,9 +46,11 @@ Contributions from:
  create mode 100644 hw/xmir/xmir.c
  create mode 100644 hw/xmir/xmir.h
 
+diff --git a/configure.ac b/configure.ac
+index d8f0e74..56355fd 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -629,6 +629,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
+@@ -624,6 +624,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
  AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
@@ -55,7 +58,7 @@ Contributions from:
  AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
  AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
  AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: no)]), [GLAMOR=$enableval], [GLAMOR=no])
-@@ -750,6 +751,7 @@ case $host_os in
+@@ -745,6 +746,7 @@ case $host_os in
  			XVFB=no
  			XNEST=no
  			XWAYLAND=no
@@ -63,7 +66,7 @@ Contributions from:
  
  			COMPOSITE=no
  			DGA=no
-@@ -2498,6 +2500,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2474,6 +2476,27 @@ if test "x$XWAYLAND" = xyes; then
  		     [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
  fi
  
@@ -91,7 +94,7 @@ Contributions from:
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2646,6 +2669,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2622,6 +2645,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -100,6 +103,8 @@ Contributions from:
  test/Makefile
  test/xi1/Makefile
  test/xi2/Makefile
+diff --git a/hw/Makefile.am b/hw/Makefile.am
+index 19895dc..b7b958c 100644
 --- a/hw/Makefile.am
 +++ b/hw/Makefile.am
 @@ -30,6 +30,10 @@ if XWAYLAND
@@ -126,10 +131,16 @@ Contributions from:
  
  relink:
  	$(AM_V_at)for i in $(SUBDIRS) ; do $(MAKE) -C $$i relink || exit 1 ; done
+diff --git a/hw/xmir/.gitignore b/hw/xmir/.gitignore
+new file mode 100644
+index 0000000..b6a16d4
 --- /dev/null
 +++ b/hw/xmir/.gitignore
 @@ -0,0 +1 @@
 +Xmir
+diff --git a/hw/xmir/Makefile.am b/hw/xmir/Makefile.am
+new file mode 100644
+index 0000000..be5225e
 --- /dev/null
 +++ b/hw/xmir/Makefile.am
 @@ -0,0 +1,61 @@
@@ -194,6 +205,9 @@ Contributions from:
 +
 +relink:
 +	$(AM_V_at)rm -f Xmir$(EXEEXT) && $(MAKE) Xmir$(EXEEXT)
+diff --git a/hw/xmir/dri2/Makefile.am b/hw/xmir/dri2/Makefile.am
+new file mode 100644
+index 0000000..696240c
 --- /dev/null
 +++ b/hw/xmir/dri2/Makefile.am
 @@ -0,0 +1,14 @@
@@ -211,6 +225,9 @@ Contributions from:
 +	dri2ext.c \
 +	dri2int.h
 +
+diff --git a/hw/xmir/dri2/dri2.c b/hw/xmir/dri2/dri2.c
+new file mode 100644
+index 0000000..6aa19ba
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2.c
 @@ -0,0 +1,1398 @@
@@ -1612,6 +1629,9 @@ Contributions from:
 +    *is_param_recognized = FALSE;
 +    return Success;
 +}
+diff --git a/hw/xmir/dri2/dri2.h b/hw/xmir/dri2/dri2.h
+new file mode 100644
+index 0000000..318898b
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2.h
 @@ -0,0 +1,364 @@
@@ -1979,6 +1999,9 @@ Contributions from:
 +extern Bool noDRI2Extension;
 +
 +#endif
+diff --git a/hw/xmir/dri2/dri2ext.c b/hw/xmir/dri2/dri2ext.c
+new file mode 100644
+index 0000000..befbb82
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2ext.c
 @@ -0,0 +1,683 @@
@@ -2665,6 +2688,9 @@ Contributions from:
 +
 +    DRI2ModuleSetup();
 +}
+diff --git a/hw/xmir/dri2/dri2int.h b/hw/xmir/dri2/dri2int.h
+new file mode 100644
+index 0000000..7f53eba
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2int.h
 @@ -0,0 +1,26 @@
@@ -2694,9 +2720,12 @@ Contributions from:
 + */
 +
 +extern Bool DRI2ModuleSetup(void);
+diff --git a/hw/xmir/xmir-cursor.c b/hw/xmir/xmir-cursor.c
+new file mode 100644
+index 0000000..81873a4
 --- /dev/null
 +++ b/hw/xmir/xmir-cursor.c
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,210 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -2761,14 +2790,10 @@ Contributions from:
 +static Bool
 +xmir_realize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
 +{
-+    struct xmir_input *xmir_input = device->public.devicePrivate;
-+
-+    if (xmir_input) {
-+        xmir_input->x_cursor = cursor;
-+        xmir_input_set_cursor(xmir_input);
-+    }
 +    return TRUE;
 +}
++
++static void xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor);
 +
 +static Bool
 +xmir_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
@@ -2779,34 +2804,33 @@ Contributions from:
 +    stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
 +    dixSetPrivate(&cursor->devPrivates, &xmir_cursor_private_key, NULL);
 +
++    if (xmir_input)
++        xmir_input_set_cursor(xmir_input, rootCursor);
++
 +    if (stream)
 +        mir_buffer_stream_release_sync(stream);
-+
-+    if (!xmir_input)
-+        return TRUE;
-+
-+    xmir_input->x_cursor = NULL;
-+    xmir_input_set_cursor(xmir_input);
 +
 +    return TRUE;
 +}
 +
-+void
-+xmir_input_set_cursor(struct xmir_input *xmir_input)
++static void
++xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
 +{
-+    CursorPtr cursor;
 +    MirGraphicsRegion region;
 +    MirCursorConfiguration *config;
 +    MirBufferStream *stream;
 +
-+    cursor = xmir_input->x_cursor;
-+
 +    if (!cursor) {
-+        /* Hide cursor */
 +        config = mir_cursor_configuration_from_name(mir_disabled_cursor_name);
-+        stream = NULL;
 +        goto apply;
-+    } else if ((stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key))) {
++    } else if (cursor == rootCursor) {
++        /* Avoid using the old style X default black cross cursor */
++        config = mir_cursor_configuration_from_name(mir_arrow_cursor_name);
++        goto apply;
++    }
++
++    stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
++    if (stream) {
 +        mir_buffer_stream_get_graphics_region(stream, &region);
 +        if (region.width != cursor->bits->width || region.height != cursor->bits->height) {
 +            mir_buffer_stream_release_sync(stream);
@@ -2825,19 +2849,21 @@ Contributions from:
 +
 +        stride = cursor->bits->width * 4;
 +        for (y = 0; y < cursor->bits->height; y++)
-+           memcpy(region.vaddr + y * region.stride, cursor->bits->argb + y * stride, stride);
++           memcpy(region.vaddr + y * region.stride,
++                  (char*)cursor->bits->argb + y * stride, stride);
 +    }
 +    else
 +        expand_source_and_mask(cursor, region.vaddr);
 +
++    mir_buffer_stream_swap_buffers(stream, NULL, NULL);
 +    config = mir_cursor_configuration_from_buffer_stream(stream, cursor->bits->xhot, cursor->bits->yhot);
 +
 +apply:
-+    mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
++    if (!xmir_input->xmir_screen->rootless)
++        mir_wait_for(mir_surface_configure_cursor(xmir_window_get(xmir_input->xmir_screen->screen->root)->surface, config));
++    else if (xmir_input->focus_window)
++        mir_wait_for(mir_surface_configure_cursor(xmir_input->focus_window->surface, config));
 +    mir_cursor_configuration_destroy(config);
-+
-+    if (stream)
-+        mir_buffer_stream_swap_buffers_sync(stream);
 +}
 +
 +static void
@@ -2850,8 +2876,7 @@ Contributions from:
 +    if (xmir_input == NULL)
 +        return;
 +
-+    xmir_input->x_cursor = cursor;
-+    xmir_input_set_cursor(xmir_input);
++    xmir_input_set_cursor(xmir_input, cursor);
 +}
 +
 +static void
@@ -2911,6 +2936,9 @@ Contributions from:
 +                               &xmir_pointer_sprite_funcs,
 +                               &xmir_pointer_screen_funcs, TRUE);
 +}
+diff --git a/hw/xmir/xmir-cvt.c b/hw/xmir/xmir-cvt.c
+new file mode 100644
+index 0000000..6070d77
 --- /dev/null
 +++ b/hw/xmir/xmir-cvt.c
 @@ -0,0 +1,304 @@
@@ -3218,9 +3246,12 @@ Contributions from:
 +
 +    return RRModeGet(&modeinfo, name);
 +}
+diff --git a/hw/xmir/xmir-dri2.c b/hw/xmir/xmir-dri2.c
+new file mode 100644
+index 0000000..b24d4b9
 --- /dev/null
 +++ b/hw/xmir/xmir-dri2.c
-@@ -0,0 +1,529 @@
+@@ -0,0 +1,545 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -3260,6 +3291,7 @@ Contributions from:
 +#include <epoxy/egl.h>
 +#include <epoxy/gl.h>
 +#include <mir_toolkit/mir_connection.h>
++/* FIXME: This should not be mandatory, especially on Android (LP: #1502794) */
 +#include <mir_toolkit/mesa/platform_operation.h>
 +
 +/* XMir dri2 support:
@@ -3313,7 +3345,11 @@ Contributions from:
 +xmir_window_swappable_parent(WindowPtr win)
 +{
 +    ScreenPtr screen = win->drawable.pScreen;
++    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +    PixmapPtr root, pixmap;
++
++    if (xmir_screen->rootless)
++        return NULL;
 +
 +    root = screen->GetScreenPixmap(screen);
 +    pixmap = screen->GetWindowPixmap(win);
@@ -3416,6 +3452,7 @@ Contributions from:
 +            return ret;
 +
 +        mir_platform_message_set_data(msg, &req, sizeof req);
++/* FIXME: This should not be mandatory, especially on Android (LP: #1502794) */
 +        mir_wait_for(mir_connection_platform_operation(
 +                xmir_screen->conn,
 +                msg,
@@ -3704,6 +3741,15 @@ Contributions from:
 +	return TRUE;
 +}
 +
++static int xmir_dri_get_msc(DrawablePtr draw, CARD64 *ust, CARD64 *msc)
++{
++    /* TODO: Implement this?
++     * At least doing nothing like this is enough to shut up Chromium
++     * error messages.
++     */
++    return Success;
++}
++
 +Bool
 +xmir_dri2_screen_init(struct xmir_screen *xmir_screen)
 +{
@@ -3738,6 +3784,7 @@ Contributions from:
 +    xmir_screen->dri2.ReuseBufferNotify = xmir_dri2_reusebuffer_notify;
 +    xmir_screen->dri2.SwapLimitValidate = xmir_dri2_swap_limit_validate;
 +    xmir_screen->dri2.ScheduleSwap = xmir_dri2_schedule_swap;
++    xmir_screen->dri2.GetMSC = xmir_dri_get_msc;
 +
 +    /* 8 */
 +    xmir_screen->dri2.AuthMagic2 = xmir_dri2_auth_magic;
@@ -3750,9 +3797,12 @@ Contributions from:
 +    ret = DRI2ScreenInit(xmir_screen->screen, &xmir_screen->dri2);
 +    return ret;
 +}
+diff --git a/hw/xmir/xmir-glamor.c b/hw/xmir/xmir-glamor.c
+new file mode 100644
+index 0000000..2438013
 --- /dev/null
 +++ b/hw/xmir/xmir-glamor.c
-@@ -0,0 +1,1184 @@
+@@ -0,0 +1,1173 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -3871,19 +3921,15 @@ Contributions from:
 +
 +    if (xmir_win && xmir_win->surface) {
 +        MirNativeBuffer *buffer;
-+
-+        struct gbm_import_fd_data gbm_data = {
-+            0,
-+            draw->width,
-+            draw->height,
-+            0,
-+            GBM_FORMAT_ARGB8888
-+        };
++        struct gbm_import_fd_data gbm_data;
 +
 +        mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &buffer);
 +
 +        gbm_data.fd = buffer->fd[0];
++        gbm_data.width = buffer->width;
++        gbm_data.height = buffer->height;
 +        gbm_data.stride = buffer->stride;
++        gbm_data.format = GBM_FORMAT_ARGB8888; /* TODO: detect this properly */
 +
 +        bo = gbm_bo_import(xmir_screen->gbm, GBM_BO_IMPORT_FD, &gbm_data, GBM_BO_USE_RENDERING);
 +        xmir_pixmap->fake_back = false;
@@ -4299,7 +4345,8 @@ Contributions from:
 +
 +            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 +            xorg_list_del(&xmir_win->flip.entry);
-+            xmir_post_to_eventloop(xmir_screen->submit_rendering_handler, &xmir_win);
++            xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
++                                   xmir_win, 0);
 +        }
 +    }
 +    glDeleteTextures(1, &tex);
@@ -4320,8 +4367,7 @@ Contributions from:
 +    glamor_pixmap_private *src_pixmap_priv = glamor_get_pixmap_private(src_pixmap);
 +
 +    BoxPtr ext = RegionExtents(dirty);
-+    EGLint height = src_pixmap->drawable.height;
-+    EGLint width = src_pixmap->drawable.width;
++    EGLint width, height;
 +
 +    lastGLContext = xmir_screen->egl_context;
 +
@@ -4337,12 +4383,6 @@ Contributions from:
 +    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
 +    xmir_glamor_copy_egl_common(&window->drawable, src_pixmap, src_pixmap_priv, ext, width, height, 0, 0, xmir_win->orientation);
 +    eglSwapBuffers(xmir_screen->egl_display, xmir_win->egl_surface);
-+
-+    xmir_win->damage_index = (xmir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
-+
-+    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_HEIGHT, &height);
-+    eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
-+    xmir_output_handle_resize(xmir_win, width, height);
 +}
 +
 +static void
@@ -4577,7 +4617,7 @@ Contributions from:
 +
 +    version = eglQueryString(xmir_screen->egl_display, EGL_VERSION);
 +    ErrorF("glamor EGL version: %s\n", version);
-+    ErrorF("glamor EGL extensions: %s:\n", eglQueryString(xmir_screen->egl_display, EGL_EXTENSIONS));
++    ErrorF("glamor EGL extensions: %s\n", eglQueryString(xmir_screen->egl_display, EGL_EXTENSIONS));
 +
 +    egl_config = xmir_glamor_get_egl_config(xmir_screen);
 +
@@ -4611,7 +4651,7 @@ Contributions from:
 +        return FALSE;
 +    }
 +
-+    if (!xmir_screen->gbm && xmir_screen->glamor != 3) {
++    if (!xmir_screen->gbm && xmir_screen->glamor != glamor_egl_sync) {
 +        xmir_screen->swap_context = eglCreateContext(xmir_screen->egl_display, egl_config, EGL_NO_CONTEXT, gles2_attribs);
 +        if (!xmir_screen->swap_context) {
 +            ErrorF("Failed to create EGL context: %i/%x\n", eglGetError(), eglGetError());
@@ -4648,7 +4688,7 @@ Contributions from:
 +
 +    if (xmir_screen->platform.fd_items >= 1 &&
 +        !xmir_screen->doubled &&
-+        xmir_screen->glamor == 1 &&
++        xmir_screen->glamor == glamor_dri &&
 +        !xmir_screen_init_glamor_drm(xmir_screen))
 +        return FALSE;
 +
@@ -4932,14 +4972,16 @@ Contributions from:
 +         * of pixmaps.
 +         */
 +        glamor_enable_dri3(screen);
-+    } else
-+        xmir_screen->damage_all = 1;
++    }
 +
 +    return TRUE;
 +}
+diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
+new file mode 100644
+index 0000000..2c3bb77
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,505 @@
+@@ -0,0 +1,577 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5146,7 +5188,6 @@ Contributions from:
 +    }
 +
 +    xmir_input->focus_window = xmir_window;
-+    xmir_input_set_cursor(xmir_input);
 +
 +    pointer_convert_xy(xmir_input, xmir_window, &sx, &sy);
 +
@@ -5163,10 +5204,10 @@ Contributions from:
 +{
 +    int sx = mir_pointer_event_axis_value(pev, mir_pointer_axis_x);
 +    int sy = mir_pointer_event_axis_value(pev, mir_pointer_axis_y);
++    int vscroll = 0;
 +    ValuatorMask mask;
 +
-+    if (pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy))
-+        return;
++    pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy);
 +
 +    pointer_convert_xy(xmir_input, xmir_window, &sx, &sy);
 +
@@ -5176,6 +5217,15 @@ Contributions from:
 +
 +    QueuePointerEvents(xmir_input->pointer, MotionNotify, 0,
 +                       POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
++
++    /* Mouse wheel: Moving the wheel is a press+release of button 4/5 */
++    vscroll = mir_pointer_event_axis_value(pev, mir_pointer_axis_vscroll);
++    if (vscroll) {
++        int button = vscroll < 0 ? 5 : 4;
++        valuator_mask_zero(&mask);
++        QueuePointerEvents(xmir_input->pointer, ButtonPress, button, 0, &mask);
++        QueuePointerEvents(xmir_input->pointer, ButtonRelease, button, 0, &mask);
++    }
 +}
 +
 +static void
@@ -5184,18 +5234,26 @@ Contributions from:
 +                      MirPointerEvent const *pev)
 +{
 +    DeviceIntPtr dev = xmir_input->pointer;
-+    int map[4] = { 0, 1, 3, 2 };
++    struct {MirPointerButton mir_button; int x_button;} map[3] =
++    {
++        {mir_pointer_button_primary, 1},   /* Usually left button */
++        {mir_pointer_button_secondary, 3}, /* Middle button */
++        {mir_pointer_button_tertiary, 2},  /* Right button */
++    };
 +    int i;
 +    ValuatorMask mask;
 +    valuator_mask_zero(&mask);
 +
-+    for (i = 1; i <= 3; ++i) {
-+        int swap = map[i];
-+        int oldstate = BitIsOn(dev->button->down, swap) ? ButtonPress : ButtonRelease;
-+        int newstate = mir_pointer_event_button_state(pev, i) ? ButtonPress : ButtonRelease;
++    for (i = 0; i < 3; ++i) {
++        MirPointerButton mir_button = map[i].mir_button;
++        int x_button = map[i].x_button;
++        int oldstate = BitIsOn(dev->button->down, x_button) ?
++                       ButtonPress : ButtonRelease;
++        int newstate = mir_pointer_event_button_state(pev, mir_button) ?
++                       ButtonPress : ButtonRelease;
 +
 +        if (oldstate != newstate)
-+            QueuePointerEvents(dev, newstate, swap, 0, &mask);
++            QueuePointerEvents(dev, newstate, x_button, 0, &mask);
 +    }
 +
 +    /* XXX: Map rest of input buttons too! */
@@ -5249,6 +5307,37 @@ Contributions from:
 +{
 +}
 +
++static WindowPtr
++xmir_xy_to_window(ScreenPtr screen, SpritePtr sprite, int x, int y)
++{
++    struct xmir_input *xmir_input = NULL;
++    DeviceIntPtr device;
++
++    for (device = inputInfo.devices; device; device = device->next) {
++        if (device->deviceProc == xmir_pointer_proc &&
++            device->spriteInfo->sprite == sprite) {
++            xmir_input = device->public.devicePrivate;
++            break;
++        }
++    }
++
++    if (xmir_input == NULL) {
++        /* XTEST device */
++        sprite->spriteTraceGood = 1;
++        return sprite->spriteTrace[0];
++    }
++
++    if (xmir_input->focus_window) {
++        sprite->spriteTraceGood = 2;
++        sprite->spriteTrace[1] = xmir_input->focus_window->window;
++        return miSpriteTrace(sprite, x, y);
++    }
++    else {
++        sprite->spriteTraceGood = 1;
++        return sprite->spriteTrace[0];
++    }
++}
++
 +static void
 +fake_touch_move(struct xmir_input *xmir_input, struct xmir_window *xmir_window, int sx, int sy)
 +{
@@ -5291,21 +5380,25 @@ Contributions from:
 +
 +        tev = mir_input_event_get_touch_event(ev);
 +        count = mir_touch_event_point_count(tev);
++
++        /* Do we really need this multifinger tracking at all?... */
 +        if (count < 1) {
 +            xmir_input->touch_id = -1;
 +            break;
 +        }
 +
-+        if (xmir_input->touch_id != -1)
++        if (xmir_input->touch_id != -1) {
 +            for (i = 0; i < count; ++i)
 +                if (mir_touch_event_id(tev, i) == xmir_input->touch_id)
 +                    break;
-+        else
++        }
++        if (i >= count) {
 +            for (i = 0; i < count; ++i)
 +                if (mir_touch_event_action(tev, i) == mir_touch_action_down)
 +                    break;
++        }
 +
-+        if (i == count)
++        if (i >= count)
 +            break;
 +
 +        sx = mir_touch_event_axis_value(tev, i, mir_touch_axis_x);
@@ -5357,39 +5450,62 @@ Contributions from:
 +    }
 +}
 +
-+void
-+xmir_handle_input_in_main_thread(void *vctx)
++static void
++xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
++                                         struct xmir_window *xmir_window,
++                                         void *arg)
 +{
-+    XMirEventContext *ctx = (XMirEventContext *)vctx;
-+    const MirEvent *ev = ctx->ev;
-+    struct xmir_input *xmir_input = xorg_list_first_entry(&ctx->xmir_screen->input_list, struct xmir_input, link);
++    const MirEvent *ev = arg;
++    struct xmir_input *xmir_input = xorg_list_first_entry(&xmir_screen->input_list, struct xmir_input, link);
 +
 +    switch (mir_event_get_type(ev))
 +    {
 +    case mir_event_type_input:
-+        xmir_window_handle_input_event(xmir_input, ctx->xmir_window, mir_event_get_input_event(ev));
++        xmir_window_handle_input_event(xmir_input, xmir_window, mir_event_get_input_event(ev));
 +        break;
 +    case mir_event_type_surface:
-+        xmir_handle_surface_event(ctx->xmir_window, mir_surface_event_get_attribute(mir_event_get_surface_event(ev)), mir_surface_event_get_attribute_value(mir_event_get_surface_event(ev)));
++        xmir_handle_surface_event(xmir_window, mir_surface_event_get_attribute(mir_event_get_surface_event(ev)), mir_surface_event_get_attribute_value(mir_event_get_surface_event(ev)));
 +        break;
-+    case mir_event_type_resize:
-+        ErrorF("Resize requested to %ix%i\n", mir_resize_event_get_width(mir_event_get_resize_event(ev)), mir_resize_event_get_height(mir_event_get_resize_event(ev)));
-+        if (ctx->xmir_window->damage)
-+            DamageDamageRegion(&ctx->xmir_window->window->drawable, &ctx->xmir_window->region);
++    case mir_event_type_resize: {
++        WindowPtr window = xmir_window->window;
++        const MirResizeEvent *resize = mir_event_get_resize_event(ev);
++        unsigned future_width = mir_resize_event_get_width(resize);
++        unsigned future_height = mir_resize_event_get_height(resize);
++        XMIR_DEBUG(("Mir surface for win %p resized to %ux%u (buffers arriving soon)\n",
++                    window, future_width, future_height));
++        xmir_window->surface_width = future_width;
++        xmir_window->surface_height = future_height;
++        if (xmir_window->damage)
++            DamageDamageRegion(&window->drawable, &xmir_window->region);
++        }
 +        break;
 +    case mir_event_type_prompt_session_state_change:
 +        ErrorF("No idea about prompt_session_state_change\n");
 +        break;
 +    case mir_event_type_orientation:
-+        xmir_output_handle_orientation(ctx->xmir_window, mir_orientation_event_get_direction(mir_event_get_orientation_event(ev)));
++        xmir_output_handle_orientation(xmir_window, mir_orientation_event_get_direction(mir_event_get_orientation_event(ev)));
 +        break;
 +    case mir_event_type_close_surface:
-+        xmir_close_surface(ctx->xmir_window);
++        xmir_close_surface(xmir_window);
++        break;
++    case mir_event_type_surface_output:
++        {
++            ScreenPtr screen = xmir_screen->screen;
++            MirSurfaceOutputEvent const* soe =
++                mir_event_get_surface_output_event(ev);
++            int dpi = mir_surface_output_event_get_dpi(soe);
++            xmir_screen->dpi = dpi;
++            screen->mmWidth = screen->width * 254 / (10 * dpi);
++            screen->mmHeight = screen->height * 254 / (10 * dpi);
++            XMIR_DEBUG(("Now screen is %hdx%hd mm\n",
++                        screen->mmWidth, screen->mmHeight));
++        }
 +        break;
 +    default:
 +        ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
 +        break;
 +    }
++    mir_event_unref(ev);
 +}
 +
 +void
@@ -5397,18 +5513,13 @@ Contributions from:
 +                          void *context)
 +{
 +    struct xmir_window *xmir_window = context;
-+    struct xmir_screen *xmir_screen;
-+    XMirEventContext ectx;
++    struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
 +
-+    xmir_screen = xmir_screen_get(xmir_window->window->drawable.pScreen);
-+
-+    // To prevent copying the whole MirEvent (three times in total)
-+    // we could pass only the information used by X
-+    ectx.ev = mir_event_ref (ev);
-+    ectx.xmir_screen = xmir_screen;
-+    ectx.xmir_window = xmir_window;
-+
-+    xmir_post_to_eventloop(xmir_screen->input_handler, &ectx);
++    /* We are in a Mir event thread, so unsafe to do X things. Post the event
++     * to the X event loop thread...
++     */
++    xmir_post_to_eventloop(&xmir_handle_surface_event_in_main_thread,
++        xmir_screen, xmir_window, (void*)mir_event_ref(ev));
 +}
 +
 +void
@@ -5417,6 +5528,9 @@ Contributions from:
 +    ScreenPtr pScreen = screenInfo.screens[0];
 +    struct xmir_screen *xmir_screen = xmir_screen_get(pScreen);
 +    struct xmir_input *xmir_input;
++
++    if (xmir_screen->rootless)
++        pScreen->XYToWindow = xmir_xy_to_window;
 +
 +    mieqInit();
 +
@@ -5445,9 +5559,12 @@ Contributions from:
 +
 +    mieqFini();
 +}
+diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
+new file mode 100644
+index 0000000..5a54cf2
 --- /dev/null
 +++ b/hw/xmir/xmir-output.c
-@@ -0,0 +1,444 @@
+@@ -0,0 +1,456 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5528,23 +5645,14 @@ Contributions from:
 +    MirPowerMode mir_mode = mir_power_mode_on;
 +    Bool unchanged = TRUE;
 +
++    if (xmir_screen->rootless)
++        return FALSE;
++
 +    switch (mode) {
-+    case DPMSModeOn:
-+        mir_mode = mir_power_mode_on;
-+        xmir_screen->dpms_on = TRUE;
-+        break;
-+    case DPMSModeStandby:
-+        mir_mode = mir_power_mode_standby;
-+        xmir_screen->dpms_on = FALSE;
-+        break;
-+    case DPMSModeSuspend:
-+        mir_mode = mir_power_mode_suspend;
-+        xmir_screen->dpms_on = FALSE;
-+        break;
-+    case DPMSModeOff:
-+        mir_mode = mir_power_mode_off;
-+        xmir_screen->dpms_on = FALSE;
-+        break;
++    case DPMSModeOn:      mir_mode = mir_power_mode_on; break;
++    case DPMSModeStandby: mir_mode = mir_power_mode_standby; break;
++    case DPMSModeSuspend: mir_mode = mir_power_mode_suspend; break;
++    case DPMSModeOff:     mir_mode = mir_power_mode_off; break;
 +    }
 +
 +    DebugF("Setting DPMS mode to %d\n", mode);
@@ -5587,7 +5695,7 @@ Contributions from:
 +        RROutputSetPhysicalSize(xmir_output->randr_output, mir_output->physical_width_mm, mir_output->physical_height_mm);
 +        RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
 +
-+        // TODO: Hook up subpixel order when available
++        /* TODO: Hook up subpixel order when available (LP: #1393578) */
 +        RRCrtcNotify(xmir_output->randr_crtc, randr_mode,
 +                     xmir_output->x, xmir_output->y,
 +                     to_rr_rotation(mir_output->orientation), NULL, 1, &xmir_output->randr_output);
@@ -5697,7 +5805,7 @@ Contributions from:
 +void
 +xmir_output_handle_orientation(struct xmir_window *xmir_window, MirOrientation dir)
 +{
-+    ErrorF("Orientation: %i\n", dir);
++    XMIR_DEBUG(("Orientation: %i\n", dir));
 +
 +    xmir_output_handle_resize(xmir_window, -1, -1);
 +}
@@ -5709,8 +5817,10 @@ Contributions from:
 +    ScreenPtr screen = window->drawable.pScreen;
 +    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +    PixmapPtr pixmap;
++    DrawablePtr oldroot = &screen->root->drawable;
 +    BoxRec box;
-+    int i;
++    BoxRec copy_box;
++
 +    int window_width, window_height;
 +    DeviceIntPtr pDev;
 +
@@ -5756,10 +5866,13 @@ Contributions from:
 +        xmir_window->image = NULL;
 +    }
 +
++    if (xmir_screen->rootless)
++        return;
++
 +    if (!xmir_screen->windowed) {
 +        xmir_screen->windowed = 1;
 +
-+        ErrorF("Root resized, removing all outputs and inserting fake output\n");
++        XMIR_DEBUG(("Root resized, removing all outputs and inserting fake output\n"));
 +
 +        while (!xorg_list_is_empty(&xmir_screen->output_list)) {
 +            struct xmir_output *xmir_output = xorg_list_first_entry(&xmir_screen->output_list, typeof(*xmir_output), link);
@@ -5770,54 +5883,63 @@ Contributions from:
 +        }
 +    }
 +
-+    ErrorF("New size: %ix%i with rotation %i\n", width, height, xmir_window->orientation);
++    XMIR_DEBUG(("Output resized %ix%i with rotation %i\n",
++                width, height, xmir_window->orientation));
++
++    pixmap = screen->CreatePixmap(screen, window_width, window_height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
++
++    copy_box.x1 = copy_box.y1 = 0;
++    copy_box.x2 = min(window_width, oldroot->width);
++    copy_box.y2 = min(window_height, oldroot->height);
++
++    if (xmir_screen->glamor) {
++        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
++        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
++        glClearColor(0., 0., 0., 1.);
++        glClear(GL_COLOR_BUFFER_BIT);
++        glamor_copy_n_to_n_nf(&screen->root->drawable, &pixmap->drawable,
++                              NULL, &copy_box, 1, 0, 0, FALSE, FALSE, 0, NULL);
++        glBindFramebuffer(GL_FRAMEBUFFER, 0);
++    } else {
++        PixmapPtr old_pixmap = screen->GetWindowPixmap(window);
++        int src_stride = old_pixmap->devKind;
++        int dst_stride = pixmap->devKind;
++        int bpp = oldroot->bitsPerPixel >> 3;
++        const char *src = (char*)old_pixmap->devPrivate.ptr +
++                          src_stride * copy_box.y1 +
++                          copy_box.x1 * bpp;
++        char *dst = (char*)pixmap->devPrivate.ptr +
++                    dst_stride * copy_box.y1 +
++                    copy_box.x1 * bpp;
++        int line_len = (copy_box.x2 - copy_box.x1) * bpp;
++        int y;
++        for (y = copy_box.y1; y < copy_box.y2; ++y) {
++            memcpy(dst, src, line_len);
++            /* Bother filling the edges?
++            memset(dst+line_len, 0, dst_stride-line_len);
++            */
++            src += src_stride;
++            dst += dst_stride;
++        }
++        /* Bother filling the edges?
++        if (y < window_height)
++            memset(dst, 0, (window_height - y) * dst_stride);
++        */
++    }
 +
 +    screen->width = window_width;
 +    screen->height = window_height;
-+    screen->mmWidth = screen->mmHeight = 0;
-+    if (ConnectionInfo)
-+        RRScreenSizeNotify(xmir_screen->screen);
-+    update_desktop_dimensions();
++    screen->mmWidth = screen->width * 254 / (10 * xmir_screen->dpi);
++    screen->mmHeight = screen->height * 254 / (10 * xmir_screen->dpi);
 +
-+    pixmap = screen->CreatePixmap(screen, window_width, window_height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
++    screen->SetScreenPixmap(pixmap);
++
++    SetRootClip(screen, TRUE);
 +
 +    box.x1 = box.y1 = 0;
 +    box.x2 = window_width;
 +    box.y2 = window_height;
-+
-+    if (xmir_screen->glamor) {
-+        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
-+        DrawablePtr oldroot = &screen->root->drawable;
-+        BoxRec copy_box;
-+
-+        copy_box.x1 = copy_box.y1 = 0;
-+        copy_box.x2 = min(window_width, oldroot->width);
-+        copy_box.y2 = min(window_height, oldroot->height);
-+
-+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
-+        glClearColor(0., 0., 0., 1.);
-+        glClear(GL_COLOR_BUFFER_BIT);
-+
-+        glamor_copy_n_to_n_nf(&screen->root->drawable, &pixmap->drawable,
-+                              NULL, &copy_box, 1, 0, 0, FALSE, FALSE, 0, NULL);
-+
-+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-+    }
-+
-+    screen->SetScreenPixmap(pixmap);
-+
-+    window->drawable.width = box.x2;
-+    window->drawable.height = box.y2;
-+
 +    RegionReset(&xmir_window->region, &box);
-+    for (i = 0; i < MIR_MAX_BUFFER_AGE; ++i)
-+        RegionReset(&xmir_window->past_damage[i], &box);
-+
-+    RegionReset(&window->winSize, &box);
-+    RegionReset(&window->winSize, &box);
-+    RegionReset(&window->clipList, &box);
-+    RegionReset(&window->borderSize, &box);
-+    RegionReset(&window->borderClip, &box);
 +    DamageDamageRegion(&window->drawable, &xmir_window->region);
 +
 +    /* Update cursor info too */
@@ -5831,13 +5953,17 @@ Contributions from:
 +        UpdateSpriteForScreen(pDev, screen);
 +        miPointerSetScreen(pDev, 0, x, y);
 +    }
++
++    if (ConnectionInfo)
++        RRScreenSizeNotify(xmir_screen->screen);
++    update_desktop_dimensions();
 +}
 +
 +static void
-+xmir_handle_hotplug(void *ctx)
++xmir_handle_hotplug(struct xmir_screen *xmir_screen,
++                    struct xmir_window *unused1,
++                    void *unused2)
 +{
-+    struct xmir_screen *xmir_screen = *(struct xmir_screen **)ctx;
-+
 +    xmir_update_config(xmir_screen);
 +
 +    /* Trigger RANDR refresh */
@@ -5848,8 +5974,7 @@ Contributions from:
 +xmir_display_config_callback(MirConnection *conn, void *ctx)
 +{
 +    struct xmir_screen *xmir_screen = ctx;
-+
-+    xmir_post_to_eventloop(xmir_screen->hotplug_event_handler, &xmir_screen);
++    xmir_post_to_eventloop(xmir_handle_hotplug, xmir_screen, 0, 0);
 +}
 +
 +Bool
@@ -5862,9 +5987,6 @@ Contributions from:
 +
 +    if (!RRScreenInit(xmir_screen->screen))
 +        return FALSE;
-+
-+    /* Hook up hotplug notification */
-+    xmir_screen->hotplug_event_handler = xmir_register_handler(&xmir_handle_hotplug, sizeof (*xmir_screen));
 +
 +    mir_connection_set_display_config_change_callback(xmir_screen->conn, &xmir_display_config_callback, xmir_screen);
 +
@@ -5879,6 +6001,13 @@ Contributions from:
 +
 +        snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
 +        xmir_output_create(xmir_screen, mir_output, name);
++
++        if (mir_output->connected) {
++            MirDisplayMode *mode = &mir_output->modes[mir_output->current_mode];
++            xmir_screen->dpi = mode->horizontal_resolution * 254 /
++                (10 * mir_output->physical_width_mm);
++            XMIR_DEBUG(("Initial DPI is %d\n", xmir_screen->dpi));
++        }
 +    }
 +
 +    RRScreenSetSizeRange(xmir_screen->screen, 320, 200, INT16_MAX, INT16_MAX);
@@ -5892,9 +6021,12 @@ Contributions from:
 +
 +    return TRUE;
 +}
+diff --git a/hw/xmir/xmir-thread-proxy.c b/hw/xmir/xmir-thread-proxy.c
+new file mode 100644
+index 0000000..dbb187f
 --- /dev/null
 +++ b/hw/xmir/xmir-thread-proxy.c
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,109 @@
 +/*
 + * Copyright © 2012-2015 Canonical Ltd
 + *
@@ -5925,6 +6057,8 @@ Contributions from:
 + *
 + * Authors:
 + *   Christopher James Halse Rogers (christopher.halse.rogers@canonical.com)
++ * Later rewritten, simplified and optimized by:
++ *   Daniel van Vugt <daniel.van.vugt@canonical.com>
 + */
 +
 +#include <stdint.h>
@@ -5935,10 +6069,11 @@ Contributions from:
 +
 +#include "xmir.h"
 +
-+struct xmir_marshall_handler {
-+	void (*msg_handler)(void *msg);
-+	size_t msg_size;
-+	char msg[];
++struct message {
++    xmir_event_callback *callback;
++    struct xmir_screen *xmir_screen;
++    struct xmir_window *xmir_window;
++    void *arg;
 +};
 +
 +static int pipefds[2];
@@ -5979,57 +6114,34 @@ Contributions from:
 +	close(pipefds[0]);
 +}
 +
-+struct xmir_marshall_handler *
-+xmir_register_handler(void (*msg_handler)(void *msg), size_t msg_size)
-+{
-+	struct xmir_marshall_handler *handler;
-+
-+	if (msg_size + sizeof *handler > PIPE_BUF)
-+		return NULL;
-+
-+	handler = malloc(sizeof *handler + msg_size);
-+	if (!handler)
-+		return NULL;
-+
-+	handler->msg_handler = msg_handler;
-+	handler->msg_size = msg_size;
-+	return handler;
-+}
-+
 +void
-+xmir_post_to_eventloop(struct xmir_marshall_handler *handler, void *msg)
++xmir_post_to_eventloop(xmir_event_callback *cb,
++                       struct xmir_screen *s, struct xmir_window *w, void *a)
 +{
-+	ssize_t written;
-+	const int total_size = sizeof *handler + handler->msg_size;
-+	/* We require the total size to be less than PIPE_BUF to ensure an atomic write */
-+	assert(total_size < PIPE_BUF);
-+
-+	memcpy(handler->msg, msg, handler->msg_size);
-+	written = write(pipefds[1], handler, total_size);
-+	if (written != total_size)
-+		ErrorF("[XMIR] Failed to proxy message to mainloop\n");
++    struct message msg = {cb, s, w, a};
++    ssize_t written = write(pipefds[1], &msg, sizeof msg);
++    if (written != sizeof(msg))
++        ErrorF("[XMIR] Failed to proxy message to mainloop\n");
 +}
 +
 +void
 +xmir_process_from_eventloop(void)
 +{
-+	struct xmir_marshall_handler handler;
-+	void *msg;
-+
-+	for (;;) {
-+		if (read(pipefds[0], &handler, sizeof handler) < 0) {
-+			return;
-+		}
-+
-+		msg = malloc(handler.msg_size);
-+		if(read(pipefds[0], msg, handler.msg_size) == handler.msg_size)
-+			(*handler.msg_handler)(msg);
-+		free(msg);
-+	}
++    for (;;) {
++        struct message msg;
++        ssize_t got = read(pipefds[0], &msg, sizeof msg);
++        if (got < 0)
++            return;
++        if (got == sizeof(msg))
++            msg.callback(msg.xmir_screen, msg.xmir_window, msg.arg);
++    }
 +}
+diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
+new file mode 100644
+index 0000000..a2e60b1
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,999 @@
+@@ -0,0 +1,1518 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6066,15 +6178,53 @@ Contributions from:
 +#include <micmap.h>
 +#include <misyncshm.h>
 +#include <glx_extinit.h>
++#include <X11/Xatom.h>
 +
 +#include <mir_toolkit/mir_surface.h>
 +
++#include "compint.h"
 +#include "dri2.h"
 +#include "glxserver.h"
 +#include "glamor_priv.h"
 +#include "dpmsproc.h"
 +
++static struct {
++    Atom UTF8_STRING;
++    Atom _NET_WM_NAME;
++    Atom WM_PROTOCOLS;
++    Atom WM_DELETE_WINDOW;
++    Atom _NET_WM_WINDOW_TYPE;
++    Atom _NET_WM_WINDOW_TYPE_DESKTOP;
++    Atom _NET_WM_WINDOW_TYPE_DOCK;
++    Atom _NET_WM_WINDOW_TYPE_TOOLBAR;
++    Atom _NET_WM_WINDOW_TYPE_MENU;
++    Atom _NET_WM_WINDOW_TYPE_UTILITY;
++    Atom _NET_WM_WINDOW_TYPE_SPLASH;
++    Atom _NET_WM_WINDOW_TYPE_DIALOG;
++    Atom _NET_WM_WINDOW_TYPE_DROPDOWN_MENU;
++    Atom _NET_WM_WINDOW_TYPE_POPUP_MENU;
++    Atom _NET_WM_WINDOW_TYPE_TOOLTIP;
++    Atom _NET_WM_WINDOW_TYPE_NOTIFICATION;
++    Atom _NET_WM_WINDOW_TYPE_COMBO;
++    Atom _NET_WM_WINDOW_TYPE_DND;
++    Atom _NET_WM_WINDOW_TYPE_NORMAL;
++} known_atom;
++
++static Atom get_atom(const char *name, Atom *cache)
++{
++    if (!*cache) {
++        *cache = MakeAtom(name, strlen(name), False);
++        if (*cache)
++            XMIR_DEBUG(("Atom %s = %lu\n", name, (unsigned long)*cache));
++    }
++    return *cache;
++}
++
++#define GET_ATOM(_a) get_atom(#_a, &known_atom._a)
++
 +extern __GLXprovider __glXDRI2Provider;
++
++Bool xmir_debug_logging = False;
 +
 +static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 +
@@ -6123,6 +6273,11 @@ Contributions from:
 +void
 +ddxUseMsg(void)
 +{
++    ErrorF("-rootless              Run rootless\n");
++    ErrorF("  -flatten             Flatten rootless X windows into a single surface\n");
++    ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
++    ErrorF("    -neverclose        Never close the flattened rootless window\n");
++    ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
 +    ErrorF("-sw                    disable glamor rendering\n");
 +    ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
 +    ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -6132,6 +6287,7 @@ Contributions from:
 +    ErrorF("-mir <appid>           set mir's application id.\n");
 +    ErrorF("-mirSocket <socket>    use the specified socket for mir\n");
 +    ErrorF("-2x                    double the fun (2x resolution compared to onscreen)\n");
++    ErrorF("-debug                 Log everything Xmir is doing\n");
 +}
 +
 +int
@@ -6139,10 +6295,14 @@ Contributions from:
 +{
 +    static int seen_shared;
 +
-+    if (strcmp(argv[i], "-sw") == 0 ||
++    if (strcmp(argv[i], "-rootless") == 0 ||
++        strcmp(argv[i], "-flatten") == 0 ||
++        strcmp(argv[i], "-neverclose") == 0 ||
++        strcmp(argv[i], "-sw") == 0 ||
 +        strcmp(argv[i], "-egl") == 0 ||
 +        strcmp(argv[i], "-egl_sync") == 0 ||
 +        strcmp(argv[i], "-2x") == 0 ||
++        strcmp(argv[i], "-debug") == 0 ||
 +        strcmp(argv[i], "-damage") == 0) {
 +        return 1;
 +    }
@@ -6198,6 +6358,92 @@ Contributions from:
 +    return dixSetPrivate(&pixmap->devPrivates, &xmir_pixmap_private_key, xmir_pixmap);
 +}
 +
++static Bool
++xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
++                             char *buf, size_t bufsize)
++{
++    if (window->optional) {
++        PropertyPtr p = window->optional->userProps;
++        while (p) {
++            if (p->propertyName == atom) {
++                if ((  p->type == XA_STRING
++                    || p->type == GET_ATOM(UTF8_STRING)
++                    ) &&
++                    p->format == 8 && p->data) {
++                    size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
++                    memcpy(buf, p->data, len);
++                    buf[len] = '\0';
++                    return True;
++                } else {
++                    ErrorF("xmir_get_window_prop_string8: Atom %d is not "
++                           "an 8-bit string as expected\n", atom);
++                    break;
++                }
++            }
++            p = p->next;
++        }
++    }
++
++    if (bufsize)
++        buf[0] = '\0';
++    return False;
++}
++
++static Bool
++xmir_get_window_name(WindowPtr window, char *buf, size_t bufsize)
++{
++    return xmir_get_window_prop_string8(window, GET_ATOM(_NET_WM_NAME),
++                                        buf, bufsize)
++        || xmir_get_window_prop_string8(window, XA_WM_NAME, buf, bufsize);
++}
++
++static WindowPtr
++xmir_get_window_prop_window(WindowPtr window, ATOM atom)
++{
++    if (window->optional) {
++        PropertyPtr p = window->optional->userProps;
++        while (p) {
++            if (p->propertyName == atom) {
++                if (p->type == XA_WINDOW) {
++                    WindowPtr ptr;
++                    XID id = *(XID*)p->data;
++                    if (dixLookupWindow(&ptr, id, serverClient,
++                                        DixReadAccess) != Success)
++                        ptr = NULL;
++                    return ptr;
++                } else {
++                    ErrorF("xmir_get_window_prop_window: Atom %d is not "
++                           "a Window as expected\n", atom);
++                    return NULL;
++                }
++            }
++            p = p->next;
++        }
++    }
++    return NULL;
++}
++
++static Atom
++xmir_get_window_prop_atom(WindowPtr window, ATOM name)
++{
++    if (window->optional) {
++        PropertyPtr p = window->optional->userProps;
++        while (p) {
++            if (p->propertyName == name) {
++                if (p->type == XA_ATOM) {
++                    return *(Atom*)p->data;
++                } else {
++                    ErrorF("xmir_get_window_prop_atom: Atom %d is not "
++                           "an Atom as expected\n", name);
++                    return 0;
++                }
++            }
++            p = p->next;
++        }
++    }
++    return 0;
++}
++
 +static void
 +damage_report(DamagePtr pDamage, RegionPtr pRegion, void *data)
 +{
@@ -6225,21 +6471,11 @@ Contributions from:
 +                                    win->drawable.pScreen, xmir_win);
 +    DamageRegister(&win->drawable, xmir_win->damage);
 +    DamageSetReportAfterOp(xmir_win->damage, TRUE);
-+
-+    for (int i = 0; i < MIR_MAX_BUFFER_AGE; i++) {
-+        RegionNull(&xmir_win->past_damage[i]);
-+    }
-+    xmir_win->damage_index = 0;
 +}
 +
 +static void
 +xmir_window_disable_damage_tracking(struct xmir_window *xmir_win)
 +{
-+    int i;
-+
-+    for (i = 0; i < MIR_MAX_BUFFER_AGE; i++)
-+        RegionEmpty(&xmir_win->past_damage[i]);
-+
 +    if (xmir_win->damage != NULL) {
 +        DamageUnregister(xmir_win->damage);
 +        DamageDestroy(xmir_win->damage);
@@ -6247,131 +6483,131 @@ Contributions from:
 +    }
 +}
 +
-+static inline int
-+index_in_damage_buffer(int current_index, int age)
-+{
-+    int index = (current_index - age) % MIR_MAX_BUFFER_AGE;
-+
-+    return index < 0 ? MIR_MAX_BUFFER_AGE + index : index;
-+}
-+
-+static RegionPtr
-+xmir_damage_region_for_current_buffer(struct xmir_window *xmir_win)
-+{
-+    MirBufferPackage *package;
-+    RegionPtr region;
-+    int age;
-+
-+    mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &package);
-+    age = package->age;
-+
-+    region = &xmir_win->past_damage[index_in_damage_buffer(xmir_win->damage_index, age)];
-+
-+    /* As per EGL_EXT_buffer_age, contents are undefined for age == 0 */
-+    if (age == 0)
-+        RegionCopy(region, &xmir_win->region);
-+
-+    return region;
-+}
-+
-+static RegionPtr
-+xmir_window_get_dirty(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
-+{
-+    RegionPtr damage;
-+    int i;
-+
-+    if (xmir_screen->damage_all) {
-+        RegionCopy(xmir_win->past_damage, &xmir_win->region);
-+        DamageEmpty(xmir_win->damage);
-+
-+        return xmir_win->past_damage;
-+    }
-+
-+    damage = DamageRegion(xmir_win->damage);
-+    RegionIntersect(damage, damage, &xmir_win->region);
-+
-+    for (i = 0; i < MIR_MAX_BUFFER_AGE; i++) {
-+        RegionUnion(&xmir_win->past_damage[i],
-+                    &xmir_win->past_damage[i],
-+                    damage);
-+    }
-+
-+    DamageEmpty(xmir_win->damage);
-+
-+    return xmir_damage_region_for_current_buffer(xmir_win);
-+}
-+
-+static void
-+xmir_submit_rendering_for_window(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr region)
-+{
-+    xmir_win->has_free_buffer = FALSE;
-+    mir_buffer_stream_swap_buffers(mir_surface_get_buffer_stream(xmir_win->surface), xmir_handle_buffer_received, xmir_win);
-+
-+    RegionEmpty(region);
-+    xorg_list_del(&xmir_win->link_damage);
-+
-+    if (xmir_screen->gbm) {
-+        MirBufferPackage *package;
-+
-+        mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &package);
-+
-+        xmir_output_handle_resize(xmir_win, package->width, package->height);
-+    } else {
-+        MirGraphicsRegion reg;
-+
-+        mir_buffer_stream_get_graphics_region(mir_surface_get_buffer_stream(xmir_win->surface), &reg);
-+        xmir_output_handle_resize(xmir_win, reg.width, reg.height);
-+    }
-+}
-+
 +static void
 +xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
 +{
-+    MirGraphicsRegion region;
 +    PixmapPtr pix = xmir_screen->screen->GetWindowPixmap(xmir_win->window);
-+    int y;
-+    char *off_src = (char *)pix->devPrivate.ptr + pix->devKind * dirty->extents.y1 + dirty->extents.x1 * 4;
-+    char *off_dst;
-+    int y2 = dirty->extents.y2;
-+    int x2 = dirty->extents.x2;
++    int x1 = dirty->extents.x1, y1 = dirty->extents.y1;
++    int x2 = dirty->extents.x2, y2 = dirty->extents.y2;
++    int y, line_len, src_stride = pix->devKind;
++    int bpp = pix->drawable.bitsPerPixel >> 3;
++    char *src, *dst;
++    MirGraphicsRegion region;
 +
-+    mir_buffer_stream_get_graphics_region(mir_surface_get_buffer_stream(xmir_win->surface), &region);
++    mir_buffer_stream_get_graphics_region(
++        mir_surface_get_buffer_stream(xmir_win->surface), &region);
 +
-+    if (x2 > region.width)
-+        x2 = region.width;
++    /*
++     * Our window region (and hence damage region) might be a little ahead of
++     * the current buffer in terms of size, during a resize. So we must accept
++     * that their dimensions might not match and take the safe intersection...
++     */
++    if (x1 < 0) x1 = 0;
++    if (y1 < 0) y1 = 0;
++    if (x2 > region.width) x2 = region.width;
++    if (y2 > region.height) y2 = region.height;
++    if (x2 > pix->drawable.width) x2 = pix->drawable.width;
++    if (y2 > pix->drawable.height) y2 = pix->drawable.height;
++    if (x2 <= x1 || y2 <= y1) return;
 +
-+    if (y2 > region.height)
-+        y2 = region.height;
++    src = (char*)pix->devPrivate.ptr + src_stride*y1 + x1*bpp;
++    dst = region.vaddr + y1*region.stride + x1*bpp;
 +
-+    if (x2 <= dirty->extents.x1 || y2 <= dirty->extents.y1)
-+        return;
-+
-+    off_dst = region.vaddr + dirty->extents.y1 * region.stride + dirty->extents.x1 * 4;
-+
-+    for (y = dirty->extents.y1; y < y2; ++y, off_src += pix->devKind, off_dst += region.stride)
-+        memcpy(off_dst, off_src, (x2 - dirty->extents.x1) * 4);
++    line_len = (x2 - x1) * bpp;
++    for (y = y1; y < y2; ++y) {
++        memcpy(dst, src, line_len);
++        src += src_stride;
++        dst += region.stride;
++    }
 +}
 +
 +static void
-+xmir_buffer_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
++xmir_get_current_buffer_dimensions(
++    struct xmir_screen *xmir_screen, struct xmir_window *xmir_win,
++    int *width, int *height)
 +{
-+    if (xmir_screen->glamor) {
-+        xmir_glamor_copy(xmir_screen, xmir_win, dirty);
++    MirBufferPackage *package;
++    MirGraphicsRegion reg;
++    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 +
-+        if (!xmir_screen->gbm)
-+            return;
-+    } else
-+        xmir_sw_copy(xmir_screen, xmir_win, dirty);
-+
-+    xmir_submit_rendering_for_window(xmir_screen, xmir_win, dirty);
++    switch (xmir_screen->glamor) {
++    case glamor_off:
++        mir_buffer_stream_get_graphics_region(stream, &reg);
++        *width = reg.width;
++        *height = reg.height;
++        break;
++    case glamor_dri:
++        mir_buffer_stream_get_current_buffer(stream, &package);
++        *width = package->width;
++        *height = package->height;
++        break;
++    case glamor_egl:
++    case glamor_egl_sync:
++        eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface,
++                        EGL_WIDTH, width);
++        eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface,
++                        EGL_HEIGHT, height);
++        break;
++    default:
++        break;
++    }
 +}
 +
-+static void
-+xmir_handle_buffer_available(void *ctx)
++void xmir_repaint(struct xmir_window *xmir_win)
 +{
-+    struct xmir_window *xmir_win = *(struct xmir_window **)ctx;
 +    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
-+    RegionPtr dirty;
++    RegionPtr dirty = &xmir_win->region;
++    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
++    char wm_name[256];
++
++    if (!xmir_win->has_free_buffer)
++        ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
++
++    if (xmir_screen->rootless &&
++        xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name) &&
++        strcmp(wm_name, xmir_win->wm_name)) {
++        MirSurfaceSpec *rename =
++            mir_connection_create_spec_for_changes(xmir_screen->conn);
++        mir_surface_spec_set_name(rename, wm_name);
++        mir_surface_apply_spec(xmir_win->surface, rename);
++        mir_surface_spec_release(rename);
++        strncpy(xmir_win->wm_name, wm_name, sizeof(xmir_win->wm_name));
++    }
++
++    switch (xmir_screen->glamor) {
++    case glamor_off:
++        xmir_sw_copy(xmir_screen, xmir_win, dirty);
++        xmir_win->has_free_buffer = FALSE;
++        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
++                                       xmir_win);
++        break;
++    case glamor_dri:
++        xmir_glamor_copy(xmir_screen, xmir_win, dirty);
++        xmir_win->has_free_buffer = FALSE;
++        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
++                                       xmir_win);
++        break;
++    case glamor_egl:
++    case glamor_egl_sync:
++        xmir_glamor_copy(xmir_screen, xmir_win, dirty);
++        xmir_win->has_free_buffer = TRUE;
++        /* Will eglSwapBuffers (?) */
++        break;
++    default:
++        break;
++    }
++
++    DamageEmpty(xmir_win->damage);
++    xorg_list_del(&xmir_win->link_damage);
++}
++
++void
++xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
++                             struct xmir_window *xmir_win,
++                             void *unused)
++{
++    int buf_width, buf_height;
++    Bool xserver_lagging, xclient_lagging;
 +
 +    if (!xmir_win->damage || !mir_surface_is_valid(xmir_win->surface)) {
 +        if (xmir_win->damage)
@@ -6380,23 +6616,41 @@ Contributions from:
 +    }
 +
 +    DebugF("Buffer-available on %p\n", xmir_win);
++    xmir_get_current_buffer_dimensions(xmir_screen, xmir_win,
++                                       &buf_width, &buf_height);
++
 +    xmir_win->has_free_buffer = TRUE;
-+    xmir_win->damage_index = (xmir_win->damage_index + 1) % MIR_MAX_BUFFER_AGE;
++    xmir_win->buf_width = buf_width;
++    xmir_win->buf_height = buf_height;
 +
-+    if (xmir_screen->swap_context) {
-+        int width, height;
++    xserver_lagging = buf_width != xmir_win->surface_width ||
++                      buf_height != xmir_win->surface_height;
 +
-+        eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_HEIGHT, &height);
-+        eglQuerySurface(xmir_screen->egl_display, xmir_win->egl_surface, EGL_WIDTH, &width);
++    xclient_lagging = buf_width != xmir_win->window->drawable.width ||
++                      buf_height != xmir_win->window->drawable.height;
 +
-+        xmir_output_handle_resize(xmir_win, width, height);
++    if (xclient_lagging) {
++        if (xmir_screen->rootless) {
++            XID vlist[2] = {buf_width, buf_height};
++            ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
++                            serverClient);
++        } else {
++            /* Output resizing takes time, so start it going and let it
++             * finish next frame or so...
++             */
++            xmir_output_handle_resize(xmir_win, buf_width, buf_height);
++        }
++        /* Admittedly the client won't have time to redraw itself in the
++         * new size before the below repaint, but the important bit is that
++         * the X server is using the correct buffer dimensions immediately.
++         */
 +    }
 +
-+    if (xorg_list_is_empty(&xmir_win->link_damage))
-+        return;
++    if (xserver_lagging || !xorg_list_is_empty(&xmir_win->link_damage))
++        xmir_repaint(xmir_win);
 +
-+    dirty = xmir_window_get_dirty(xmir_screen, xmir_win);
-+    xmir_buffer_copy(xmir_screen, xmir_win, dirty);
++    if (xserver_lagging)
++        DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
 +}
 +
 +static void
@@ -6405,7 +6659,8 @@ Contributions from:
 +    struct xmir_window *xmir_win = ctx;
 +    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
 +
-+    xmir_post_to_eventloop(xmir_screen->submit_rendering_handler, &xmir_win);
++    xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
++                           xmir_win, 0);
 +}
 +
 +static Bool
@@ -6423,6 +6678,7 @@ Contributions from:
 +    xmir_window->window = window;
 +    xorg_list_init(&xmir_window->link_damage);
 +    xorg_list_init(&xmir_window->flip.entry);
++    xorg_list_init(&xmir_window->link_flattened);
 +
 +    screen->CreateWindow = xmir_screen->CreateWindow;
 +    ret = (*screen->CreateWindow) (window);
@@ -6437,6 +6693,14 @@ Contributions from:
 +    return ret;
 +}
 +
++static void
++xmir_window_update_region(struct xmir_window *xmir_window)
++{
++    WindowPtr window = xmir_window->window;
++    BoxRec box = {0, 0, window->drawable.width, window->drawable.height};
++    RegionReset(&xmir_window->region, &box);
++}
++
 +static Bool
 +xmir_realize_window(WindowPtr window)
 +{
@@ -6444,61 +6708,189 @@ Contributions from:
 +    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +    struct xmir_window *xmir_window = xmir_window_get(window);
 +    Bool ret;
-+    MirPixelFormat formats[1024];
-+    unsigned int n_formats, i;
 +    MirPixelFormat pixel_format = mir_pixel_format_invalid;
-+
++    Atom wm_type = 0;
 +    int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
 +    int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
 +    MirSurfaceSpec* spec = NULL;
++    WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
++    char wm_name[1024];
 +
 +    screen->RealizeWindow = xmir_screen->RealizeWindow;
 +    ret = (*screen->RealizeWindow) (window);
 +    xmir_screen->RealizeWindow = screen->RealizeWindow;
 +    screen->RealizeWindow = xmir_realize_window;
 +
-+    if (window->parent)
-+        return ret;
-+
-+    mir_connection_get_available_surface_formats (xmir_screen->conn, formats, 1024, &n_formats);
-+    for (i = 0; i < n_formats && pixel_format == mir_pixel_format_invalid; i++) {
-+        switch (formats[i]) {
-+        case mir_pixel_format_argb_8888:
-+        case mir_pixel_format_abgr_8888:
-+            if (window->drawable.depth == 32)
-+                pixel_format = formats[i];
-+            break;
-+        case mir_pixel_format_xrgb_8888:
-+        case mir_pixel_format_xbgr_8888:
-+        case mir_pixel_format_bgr_888:
-+            if (window->drawable.depth == 24)
-+                pixel_format = formats[i];
-+            break;
-+        default:
-+            break;
-+        }
++    if (xmir_screen->rootless && !window->parent) {
++        RegionNull(&window->clipList);
++        RegionNull(&window->borderClip);
++        RegionNull(&window->winSize);
 +    }
-+    spec = mir_connection_create_spec_for_normal_surface(xmir_screen->conn, mir_width, mir_height, pixel_format);
++    xmir_window_update_region(xmir_window);
 +
-+    if (spec == NULL) {
-+        ErrorF("failed to create a surface spec: %s\n", mir_connection_get_error_message(xmir_screen->conn));
++    xmir_get_window_name(window, wm_name, sizeof wm_name);
++    wm_type = xmir_get_window_prop_atom(window, GET_ATOM(_NET_WM_WINDOW_TYPE));
++    wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
++
++    XMIR_DEBUG(("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
++           "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
++           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
++           window == screen->root ? "ROOT " : "",
++           window, wm_name, mir_width, mir_height,
++           window->drawable.x, window->drawable.y,
++           window->parent,
++           window->drawable.depth,
++           window->redirectDraw, window->drawable.type,
++           window->drawable.class, window->visibility, window->viewable,
++           window->overrideRedirect, (unsigned long)wm_type, wm_transient_for));
++
++    if (!window->viewable) {
++        return ret;
++    } else if (xmir_screen->rootless) {
++        if (!window->parent || window->parent == screen->root) {
++            compRedirectWindow(serverClient, window,
++                               CompositeRedirectManual);
++            compRedirectSubwindows(serverClient, window,
++                                   CompositeRedirectAutomatic);
++        }
++        if (window->redirectDraw != RedirectDrawManual)
++            return ret;
++    } else if (window->parent) {
++        return ret;
++    }
++
++    if (window->drawable.depth == 32)
++        pixel_format = xmir_screen->depth32_pixel_format;
++    else if (window->drawable.depth == 24)
++        pixel_format = xmir_screen->depth24_pixel_format;
++    else {
++        ErrorF("No pixel format available for depth %d\n",
++               (int)window->drawable.depth);
 +        return FALSE;
 +    }
 +
-+    mir_surface_spec_set_buffer_usage(spec,
-+                                      xmir_screen->glamor
-+                                      ? mir_buffer_usage_hardware
-+                                      : mir_buffer_usage_software);
++    /* TODO: Replace pixel_format with the actual right answer from the
++     *       graphics driver when using EGL:
++     *         mir_connection_get_egl_pixel_format()
++     */
 +
-+    xmir_window->surface = mir_surface_create_sync(spec);
++    if (!wm_type)   /* Avoid spurious matches with undetected types */
++        wm_type = -1;
++
++    positioning_parent = wm_transient_for;
++    if (!positioning_parent) {
++        /* The toolkit has not provided a definite positioning parent so the
++         * next best option is to guess. But we can only reasonably guess for
++         * window types that are typically subordinate to normal windows...
++         */
++        Bool is_subordinate = wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU)
++                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_POPUP_MENU)
++                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_MENU)
++                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_COMBO)
++                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLBAR)
++                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_UTILITY)
++                           || wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP)
++                           || (wm_type == -1 && window->overrideRedirect);
++
++        if (is_subordinate)
++            positioning_parent = xmir_screen->last_focus;
++    }
++
++    if (xmir_screen->flatten && xmir_screen->flatten_top) {
++        WindowPtr top = xmir_screen->flatten_top->window;
++        int dx = window->drawable.x - top->drawable.x;
++        int dy = window->drawable.y - top->drawable.y;
++        xorg_list_append(&xmir_window->link_flattened,
++                         &xmir_screen->flattened_list);
++        ReparentWindow(window, top, dx, dy, serverClient);
++        XMIR_DEBUG(("Flattened window %p (reparented under %p %+d%+d)\n",
++                    window, top, dx, dy));
++        /* And thanks to the X Composite extension, window will now be
++         * automatically composited into the existing flatten_top surface
++         * so we retain only a single Mir surface, as Unity8 likes to see.
++         */
++        return ret;
++    }
++
++    if (xmir_screen->neverclosed) {
++        spec = mir_connection_create_spec_for_changes(xmir_screen->conn);
++    } else if (positioning_parent) {
++        struct xmir_window *rel = xmir_window_get(positioning_parent);
++        if (rel && rel->surface) {
++            short dx = window->drawable.x - rel->window->drawable.x;
++            short dy = window->drawable.y - rel->window->drawable.y;
++            MirRectangle placement = {dx, dy, 0, 0};
++
++            if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP)) {
++                spec = mir_connection_create_spec_for_tooltip(
++                    xmir_screen->conn, mir_width, mir_height, pixel_format,
++                    rel->surface, &placement);
++            } else if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
++                spec = mir_connection_create_spec_for_modal_dialog(
++                    xmir_screen->conn, mir_width, mir_height, pixel_format,
++                    rel->surface);
++            } else {  /* Probably a menu. If not, still close enough... */
++                MirEdgeAttachment edge = mir_edge_attachment_any;
++                if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU))
++                    edge = mir_edge_attachment_vertical;
++                spec = mir_connection_create_spec_for_menu(
++                    xmir_screen->conn,
++                    mir_width, mir_height, pixel_format, rel->surface,
++                    &placement, edge);
++            }
++        }
++    }
++
++    if (!spec) {
++        if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
++            spec = mir_connection_create_spec_for_dialog(
++                xmir_screen->conn, mir_width, mir_height, pixel_format);
++        } else {
++            spec = mir_connection_create_spec_for_normal_surface(
++                xmir_screen->conn, mir_width, mir_height, pixel_format);
++        }
++    }
++
++    mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
++                                    "Xmir root window");
++
++    xmir_window->surface_width = mir_width;
++    xmir_window->surface_height = mir_height;
++    xmir_window->buf_width = mir_width;
++    xmir_window->buf_height = mir_height;
++
++    if (xmir_screen->neverclosed) {
++        mir_surface_spec_set_width(spec, mir_width);
++        mir_surface_spec_set_height(spec, mir_height);
++        mir_surface_spec_set_pixel_format(spec, pixel_format);
++
++        xmir_window->surface = xmir_screen->neverclosed;
++        mir_surface_apply_spec(xmir_window->surface, spec);
++    } else {
++        mir_surface_spec_set_buffer_usage(spec,
++                                          xmir_screen->glamor
++                                          ? mir_buffer_usage_hardware
++                                          : mir_buffer_usage_software);
++        xmir_window->surface = mir_surface_create_sync(spec);
++    }
++    mir_surface_spec_release(spec);
++
 +    xmir_window->has_free_buffer = TRUE;
 +    if (!mir_surface_is_valid(xmir_window->surface)) {
 +        ErrorF("failed to create a surface: %s\n", mir_surface_get_error_message(xmir_window->surface));
 +        return FALSE;
 +    }
-+    RegionInit(&xmir_window->region, &(BoxRec){ 0, 0, window->drawable.width, window->drawable.height }, 1);
++    if (!xmir_screen->flatten_top)
++        xmir_screen->flatten_top = xmir_window;
 +    mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 +
++#if 0
++    /* Until recently (LP: #1391261) Mir's Android platform was still too buggy
++     * to deal with this. But we're also still blocked by Unity8 bugs:
++     * TODO: Fix bug LP: #1497828 to enable this in Unity8 (including ARM)
++     */
++    mir_surface_set_swapinterval(xmir_window->surface, 0);
++#endif
 +    xmir_window_enable_damage_tracking(xmir_window);
 +
 +    if (xmir_screen->glamor)
@@ -6542,7 +6934,7 @@ Contributions from:
 +{
 +    switch (vis) {
 +    case mir_surface_visibility_occluded: return "hidden";
-+    case mir_surface_visibility_exposed: return "visibile";
++    case mir_surface_visibility_exposed: return "visible";
 +    default: return "???";
 +    }
 +}
@@ -6552,25 +6944,29 @@ Contributions from:
 +{
 +    switch (attr) {
 +    case mir_surface_attrib_type:
-+        ErrorF("Type: %s\n", xmir_surface_type_str(val));
++        XMIR_DEBUG(("Type: %s\n", xmir_surface_type_str(val)));
 +        break;
 +    case mir_surface_attrib_state:
-+        ErrorF("State: %s\n", xmir_surface_state_str(val));
++        XMIR_DEBUG(("State: %s\n", xmir_surface_state_str(val)));
 +        break;
 +    case mir_surface_attrib_swapinterval:
-+        ErrorF("Swap interval: %i\n", val);
++        XMIR_DEBUG(("Swap interval: %i\n", val));
 +        break;
 +    case mir_surface_attrib_focus:
-+        ErrorF("Focus: %s\n", xmir_surface_focus_str(val));
++        XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
++        if (xmir_window->surface) {  /* It's a real Mir window */
++            xmir_window->xmir_screen->last_focus =
++                (val == mir_surface_focused) ? xmir_window->window : NULL;
++        }
 +        break;
 +    case mir_surface_attrib_dpi:
-+        ErrorF("DPI: %i\n", val);
++        XMIR_DEBUG(("DPI: %i\n", val));
 +        break;
 +    case mir_surface_attrib_visibility:
-+        ErrorF("Visibility: %s\n", xmir_surface_vis_str(val));
++        XMIR_DEBUG(("Visibility: %s\n", xmir_surface_vis_str(val)));
 +        break;
 +    default:
-+        ErrorF("Unhandled attribute %i\n", attr);
++        XMIR_DEBUG(("Unhandled attribute %i\n", attr));
 +        break;
 +    }
 +}
@@ -6578,8 +6974,23 @@ Contributions from:
 +void
 +xmir_close_surface(struct xmir_window *xmir_window)
 +{
-+    ErrorF("Root window closed, shutting down Xmir\n");
-+    GiveUp(0);
++    WindowPtr window = xmir_window->window;
++    struct xmir_screen *xmir_screen = xmir_screen_get(window->drawable.pScreen);
++
++    if (xmir_screen->rootless) {
++        xEvent event;
++        event.u.u.type = ClientMessage;
++        event.u.u.detail = 32;
++        event.u.clientMessage.window = window->drawable.id;
++        event.u.clientMessage.u.l.type = GET_ATOM(WM_PROTOCOLS);
++        event.u.clientMessage.u.l.longs0 = GET_ATOM(WM_DELETE_WINDOW);
++        event.u.clientMessage.u.l.longs1 = CurrentTime;
++        DeliverEvents(window, &event, 1, NullWindow);
++    } else {
++        ErrorF("Root window closed, shutting down Xmir\n");
++        GiveUp(0);
++        /*DeleteWindow(window, 1); ? */
++    }
 +}
 +
 +static void
@@ -6594,6 +7005,100 @@ Contributions from:
 +}
 +
 +static void
++xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
++{
++    struct xmir_screen *xmir_screen = benef->xmir_screen;
++    struct xmir_window *other;
++
++    XMIR_DEBUG(("flatten bequeath: %p --> %p\n",
++                dying->window, benef->window));
++
++    assert(!benef->surface);
++    benef->surface = dying->surface;
++    dying->surface = NULL;
++
++    ReparentWindow(benef->window, xmir_screen->screen->root,
++                   0, 0, serverClient);
++    compRedirectWindow(serverClient, benef->window, CompositeRedirectManual);
++    compRedirectSubwindows(serverClient, benef->window, CompositeRedirectAutomatic);
++
++    xorg_list_for_each_entry(other, &xmir_screen->flattened_list,
++                             link_flattened) {
++        ReparentWindow(other->window, benef->window, 0, 0, serverClient);
++    }
++
++    mir_surface_set_event_handler(benef->surface, xmir_surface_handle_event,
++                                  benef);
++
++    xmir_window_enable_damage_tracking(benef);
++
++    if (xmir_screen->glamor)
++        xmir_glamor_realize_window(xmir_screen, benef, benef->window);
++}
++
++static void
++xmir_clear_to_black(MirSurface *surface)
++{   /* Admittedly, this will only work for software surfaces */
++    MirBufferStream *stream = mir_surface_get_buffer_stream(surface);
++    MirGraphicsRegion region;
++
++    /* On error mir_buffer_stream_get_graphics_region leaves us uninitialized */
++    region.pixel_format = mir_pixel_format_invalid;
++    mir_buffer_stream_get_graphics_region(stream, &region);
++
++    switch (region.pixel_format) {
++        case mir_pixel_format_invalid: return; /* Probably hardware surface */
++        case mir_pixel_format_abgr_8888:
++        case mir_pixel_format_xbgr_8888:
++        case mir_pixel_format_argb_8888:
++        case mir_pixel_format_xrgb_8888: {
++            int y;
++            uint32_t *dest = (uint32_t*)region.vaddr;
++            for (y = 0; y < region.height; ++y) {
++                int x;
++                for (x = 0; x < region.width; ++x)
++                    dest[x] = 0xff000000;
++                dest = (uint32_t*)((char*)dest + region.stride);
++            }
++            break;
++        }
++        case mir_pixel_format_bgr_888:
++        case mir_pixel_format_rgb_888: {
++            int y;
++            char *dest = region.vaddr;
++            for (y = 0; y < region.height; ++y) {
++                memset(dest, 0, region.width*3);
++                dest += region.stride;
++            }
++            break;
++        }
++        case mir_pixel_format_rgb_565:
++        case mir_pixel_format_rgba_5551:
++        case mir_pixel_format_rgba_4444: {
++            uint16_t fill = 0;
++            int y;
++            uint16_t *dest = (uint16_t*)region.vaddr;
++            switch (region.pixel_format) {
++                case mir_pixel_format_rgb_565:   fill = 0x0000; break;
++                case mir_pixel_format_rgba_5551: fill = 0x0001; break;
++                case mir_pixel_format_rgba_4444: fill = 0x000f; break;
++                default: fill = 0;
++            }
++            for (y = 0; y < region.height; ++y) {
++                int x;
++                for (x = 0; x < region.width; ++x)
++                    dest[x] = fill;
++                dest = (uint16_t*)((char*)dest + region.stride);
++            }
++            break;
++        }
++        default:
++            return;
++    }
++    mir_buffer_stream_swap_buffers(stream, NULL, NULL);
++}
++
++static void
 +xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destroyed)
 +{
 +    struct xmir_window *xmir_window =
@@ -6601,6 +7106,8 @@ Contributions from:
 +
 +    if (!xmir_window)
 +        return;
++
++    XMIR_DEBUG(("Unmap/unrealize window %p\n", window));
 +
 +    if (!destroyed)
 +        xmir_window_disable_damage_tracking(xmir_window);
@@ -6612,11 +7119,35 @@ Contributions from:
 +    if (xmir_screen->glamor)
 +        xmir_glamor_unrealize_window(xmir_screen, xmir_window, window);
 +
++    xorg_list_del(&xmir_window->link_flattened);
++
 +    if (!xmir_window->surface)
 +        return;
 +
-+    mir_surface_release_sync(xmir_window->surface);
-+    xmir_window->surface = NULL;
++    mir_surface_set_event_handler(xmir_window->surface, NULL, NULL);
++
++    if (xmir_screen->flatten && xmir_screen->flatten_top == xmir_window) {
++        xmir_screen->flatten_top = NULL;
++        if (!xorg_list_is_empty(&xmir_screen->flattened_list)) {
++            xmir_screen->flatten_top =
++                xorg_list_first_entry(&xmir_screen->flattened_list,
++                                      struct xmir_window,
++                                      link_flattened);
++            xorg_list_del(&xmir_screen->flatten_top->link_flattened);
++            xmir_bequeath_surface(xmir_window, xmir_screen->flatten_top);
++        }
++    }
++
++    if (xmir_window->surface) {
++        if (xmir_screen->neverclose) {
++            xmir_screen->neverclosed = xmir_window->surface;
++            xmir_clear_to_black(xmir_screen->neverclosed);
++        } else {
++            mir_surface_release_sync(xmir_window->surface);
++        }
++
++        xmir_window->surface = NULL;
++    }
 +
 +    /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
 +    xmir_process_from_eventloop();
@@ -6630,6 +7161,9 @@ Contributions from:
 +    ScreenPtr screen = window->drawable.pScreen;
 +    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 +    Bool ret;
++
++    if (window == xmir_screen->last_focus)
++        xmir_screen->last_focus = NULL;
 +
 +    xmir_unmap_input(xmir_screen, window);
 +
@@ -6661,6 +7195,35 @@ Contributions from:
 +    return ret;
 +}
 +
++static void
++xmir_resize_window(WindowPtr window, int x, int y,
++                   unsigned int w, unsigned int h, WindowPtr sib)
++{
++    ScreenPtr screen = window->drawable.pScreen;
++    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
++    struct xmir_window *xmir_window = xmir_window_get(window);
++
++    screen->ResizeWindow = xmir_screen->ResizeWindow;
++    (*screen->ResizeWindow) (window, x, y, w, h, sib);
++    xmir_screen->ResizeWindow = screen->ResizeWindow;
++    screen->ResizeWindow = xmir_resize_window;
++
++    if (xmir_window->surface) {
++        /* This is correct in theory but most Mir shells don't do it yet */
++        MirSurfaceSpec *changes =
++            mir_connection_create_spec_for_changes(xmir_screen->conn);
++        mir_surface_spec_set_width(changes, w);
++        mir_surface_spec_set_height(changes, h);
++        mir_surface_apply_spec(xmir_window->surface, changes);
++        mir_surface_spec_release(changes);
++
++        XMIR_DEBUG(("X window %p resized to %ux%u %+d%+d with sibling %p\n",
++                    window, w, h, x, y, sib));
++    }
++
++    xmir_window_update_region(xmir_window);
++}
++
 +static Bool
 +xmir_close_screen(ScreenPtr screen)
 +{
@@ -6678,15 +7241,13 @@ Contributions from:
 +                                  &xmir_screen->output_list, link)
 +        xmir_output_destroy(xmir_output);
 +
-+    xmir_glamor_fini(xmir_screen);
++    if (xmir_screen->glamor)
++        xmir_glamor_fini(xmir_screen);
 +    mir_display_config_destroy(xmir_screen->display);
 +    mir_connection_release(xmir_screen->conn);
 +
 +    xmir_fini_thread_to_eventloop();
 +    free(xmir_screen->driver_name);
-+    free(xmir_screen->submit_rendering_handler);
-+    free(xmir_screen->input_handler);
-+    free(xmir_screen->hotplug_event_handler);
 +    free(xmir_screen);
 +
 +    return ret;
@@ -6711,7 +7272,8 @@ Contributions from:
 +Bool
 +DPMSSupported(void)
 +{
-+    return TRUE;
++    struct xmir_screen *xmir_screen = xmir_screen_get(screenInfo.screens[0]);
++    return !xmir_screen->rootless;
 +}
 +
 +int
@@ -6759,9 +7321,7 @@ Contributions from:
 +                                  &xmir_screen->damage_window_list,
 +                                  link_damage) {
 +        if (xmir_window->has_free_buffer) {
-+            RegionPtr dirty = xmir_window_get_dirty(xmir_screen, xmir_window);
-+
-+            xmir_buffer_copy(xmir_screen, xmir_window, dirty);
++            xmir_repaint(xmir_window);
 +        }
 +    }
 +}
@@ -6780,12 +7340,16 @@ Contributions from:
 +    if (!ret)
 +        return ret;
 +
-+    screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
++    if (!xmir_screen->rootless)
++        screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
++    else
++        screen->devPrivate = fbCreatePixmap(screen, 0, 0, screen->rootDepth, 0);
++
 +    if (!screen->devPrivate)
 +        return FALSE;
 +
 +#ifdef GLAMOR_HAS_GBM
-+    if (xmir_screen->glamor) {
++    if (xmir_screen->glamor && !xmir_screen->rootless) {
 +        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
 +
 +        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
@@ -6809,8 +7373,8 @@ Contributions from:
 +    struct xmir_visit_set_pixmap_window *visit = data;
 +
 +    if (fbGetWindowPixmap(window) == visit->old) {
-+	    window->drawable.pScreen->SetWindowPixmap(window, visit->new);
-+	    return WT_WALKCHILDREN;
++        window->drawable.pScreen->SetWindowPixmap(window, visit->new);
++        return WT_WALKCHILDREN;
 +    }
 +
 +    return WT_DONTWALKCHILDREN;
@@ -6819,22 +7383,22 @@ Contributions from:
 +static void
 +xmir_set_screen_pixmap(PixmapPtr pixmap)
 +{
-+	ScreenPtr screen = pixmap->drawable.pScreen;
-+	PixmapPtr old_front = screen->devPrivate;
-+	WindowPtr root;
++    ScreenPtr screen = pixmap->drawable.pScreen;
++    PixmapPtr old_front = screen->devPrivate;
++    WindowPtr root;
 +
-+	root = screen->root;
-+	if (root) {
-+		struct xmir_visit_set_pixmap_window visit = { old_front, pixmap };
-+		assert(fbGetWindowPixmap(root) == old_front);
-+		TraverseTree(root, xmir_visit_set_window_pixmap, &visit);
-+		assert(fbGetWindowPixmap(root) == pixmap);
-+	}
++    root = screen->root;
++    if (root) {
++        struct xmir_visit_set_pixmap_window visit = { old_front, pixmap };
++        assert(fbGetWindowPixmap(root) == old_front);
++        TraverseTree(root, xmir_visit_set_window_pixmap, &visit);
++        assert(fbGetWindowPixmap(root) == pixmap);
++    }
 +
-+	screen->devPrivate = pixmap;
++    screen->devPrivate = pixmap;
 +
-+	if (old_front)
-+		screen->DestroyPixmap(old_front);
++    if (old_front)
++        screen->DestroyPixmap(old_front);
 +}
 +
 +static Bool
@@ -6843,15 +7407,19 @@ Contributions from:
 +    struct xmir_screen *xmir_screen;
 +    MirConnection *conn;
 +    Pixel red_mask, blue_mask, green_mask;
-+    int ret, bpc, green_bpc, i;
++    int ret, bpc, i;
 +    int client_fd = -1;
 +    char *socket = NULL;
 +    const char *appid = "XMIR";
++    unsigned int formats, f;
++    MirPixelFormat format[1024];
 +
 +    if (!dixRegisterPrivateKey(&xmir_screen_private_key, PRIVATE_SCREEN, 0) ||
 +        !dixRegisterPrivateKey(&xmir_window_private_key, PRIVATE_WINDOW, 0) ||
 +        !dixRegisterPrivateKey(&xmir_pixmap_private_key, PRIVATE_PIXMAP, 0))
 +        return FALSE;
++
++    memset(&known_atom, 0, sizeof known_atom);
 +
 +    xmir_screen = calloc(sizeof *xmir_screen, 1);
 +    if (!xmir_screen)
@@ -6862,30 +7430,54 @@ Contributions from:
 +    xmir_init_thread_to_eventloop();
 +    dixSetPrivate(&pScreen->devPrivates, &xmir_screen_private_key, xmir_screen);
 +    xmir_screen->screen = pScreen;
-+    xmir_screen->submit_rendering_handler = xmir_register_handler(&xmir_handle_buffer_available, sizeof (struct xmir_window *));
-+    xmir_screen->input_handler = xmir_register_handler(&xmir_handle_input_in_main_thread, sizeof (XMirEventContext));
-+    xmir_screen->glamor = 1;
++    xmir_screen->glamor = glamor_dri;
 +
 +    for (i = 1; i < argc; i++) {
-+        if (strcmp(argv[i], "-mir") == 0) {
++        if (strcmp(argv[i], "-rootless") == 0) {
++            xmir_screen->rootless = 1;
++        } else if (strcmp(argv[i], "-flatten") == 0) {
++            xmir_screen->flatten = True;
++        } else if (strcmp(argv[i], "-neverclose") == 0) {
++            xmir_screen->neverclose = True;
++        } else if (strcmp(argv[i], "-mir") == 0) {
 +            appid = argv[++i];
 +        } else if (strcmp(argv[i], "-mirSocket") == 0) {
 +            socket = argv[++i];
 +        } else if (strcmp(argv[i], "-sw") == 0) {
-+            xmir_screen->glamor = 0;
++            xmir_screen->glamor = glamor_off;
 +        } else if (strcmp(argv[i], "-egl") == 0) {
-+            if (xmir_screen->glamor < 2)
-+                xmir_screen->glamor = 2;
++            if (xmir_screen->glamor != glamor_egl_sync)
++                xmir_screen->glamor = glamor_egl;
 +        } else if (strcmp(argv[i], "-2x") == 0) {
 +            xmir_screen->doubled = 1;
++        } else if (strcmp(argv[i], "-debug") == 0) {
++            xmir_debug_logging = True;
 +        } else if (strcmp(argv[i], "-damage") == 0) {
-+            xmir_screen->damage_all = true;
++            /* Ignored. Damage-all is now the default and only option. */
 +        } else if (strcmp(argv[i], "-egl_sync") == 0) {
-+            xmir_screen->glamor = 3;
++            xmir_screen->glamor = glamor_egl_sync;
 +        } else if (strcmp(argv[i], "-fd") == 0) {
 +            client_fd = (int)strtol(argv[++i], (char **)NULL, 0);
 +        }
 +    }
++
++    if (xmir_screen->flatten && !xmir_screen->rootless) {
++        FatalError("-flatten is not valid without -rootless\n");
++        return FALSE;
++    }
++    if (xmir_screen->neverclose && !xmir_screen->flatten) {
++        FatalError("-neverclose is not valid without -rootless -flatten\n");
++        return FALSE;
++    }
++
++#ifdef __arm__
++    if (xmir_screen->glamor == glamor_dri) {
++        XMIR_DEBUG(("ARM architecture: Defaulting to software mode because "
++                    "glamor is not stable\n"));
++        /* Hide the ARM glamor bugs for now so we can have working phones */
++        xmir_screen->glamor = glamor_off;
++    }
++#endif
 +
 +    if (client_fd != -1) {
 +        if (!AddClientOnOpenFD(client_fd)) {
@@ -6906,7 +7498,28 @@ Contributions from:
 +    xorg_list_init(&xmir_screen->output_list);
 +    xorg_list_init(&xmir_screen->input_list);
 +    xorg_list_init(&xmir_screen->damage_window_list);
++    xorg_list_init(&xmir_screen->flattened_list);
 +    xmir_screen->depth = 24;
++
++    mir_connection_get_available_surface_formats(xmir_screen->conn,
++        format, sizeof(format)/sizeof(format[0]), &formats);
++    for (f = 0; f < formats; ++f) {
++        switch (format[f]) {
++        case mir_pixel_format_argb_8888:
++        case mir_pixel_format_abgr_8888:
++            xmir_screen->depth32_pixel_format = format[f];
++            break;
++        case mir_pixel_format_xrgb_8888:
++        case mir_pixel_format_xbgr_8888:
++        case mir_pixel_format_bgr_888:
++            xmir_screen->depth24_pixel_format = format[f];
++            break;
++        default:
++            /* Other/new pixel formats don't need mentioning. We only
++               care about Xorg-compatible formats */
++            break;
++        }
++    }
 +
 +    xmir_screen->display = mir_connection_create_display_config(conn);
 +    if (xmir_screen->display == NULL) {
@@ -6914,28 +7527,43 @@ Contributions from:
 +        return FALSE;
 +    }
 +
++    /* This will change later as we learn more about the environment */
++    xmir_screen->dpi = 96;
++
 +    if (!xmir_screen_init_output(xmir_screen))
 +        return FALSE;
 +
 +    if (xmir_screen->glamor)
 +        xmir_screen_init_glamor(xmir_screen);
 +
-+    bpc = xmir_screen->depth / 3;
-+    green_bpc = xmir_screen->depth - 2 * bpc;
-+    blue_mask = (1 << bpc) - 1;
-+    green_mask = ((1 << green_bpc) - 1) << bpc;
-+    red_mask = blue_mask << (green_bpc + bpc);
++    bpc = 8;
++    green_mask = 0x00ff00;
++    switch (xmir_screen->depth24_pixel_format)
++    {
++    case mir_pixel_format_xrgb_8888:
++    case mir_pixel_format_bgr_888:  /* Little endian: Note the reversal */
++        red_mask = 0xff0000;
++        blue_mask = 0x0000ff;
++        break;
++    case mir_pixel_format_xbgr_8888:
++        red_mask = 0x0000ff;
++        blue_mask = 0xff0000;
++        break;
++    default:
++        ErrorF("No Mir-compatible TrueColor formats\n");
++        return FALSE;
++    }
 +
 +    miSetVisualTypesAndMasks(xmir_screen->depth,
 +                             ((1 << TrueColor) | (1 << DirectColor)),
-+                             green_bpc, TrueColor,
++                             bpc, TrueColor,
 +                             red_mask, green_mask, blue_mask);
 +
 +    miSetPixmapDepths();
 +
 +    ret = fbScreenInit(pScreen, NULL,
 +                       pScreen->width, pScreen->height,
-+                       96, 96, 0,
++                       xmir_screen->dpi, xmir_screen->dpi, 0,
 +                       BitsPerPixel(xmir_screen->depth));
 +    if (!ret)
 +        return FALSE;
@@ -6959,9 +7587,9 @@ Contributions from:
 +
 +#ifdef GLAMOR_HAS_GBM
 +    if (xmir_screen->glamor && !xmir_glamor_init(xmir_screen)) {
-+        if (xmir_screen->glamor > 1)
++        if (xmir_screen->glamor >= glamor_egl)
 +            FatalError("EGL requested, but not available\n");
-+        xmir_screen->glamor = 0;
++        xmir_screen->glamor = glamor_off;
 +    }
 +
 +    if (xmir_screen->glamor && xmir_screen->gbm && !xmir_dri2_screen_init(xmir_screen))
@@ -6979,6 +7607,9 @@ Contributions from:
 +
 +    xmir_screen->DestroyWindow = pScreen->DestroyWindow;
 +    pScreen->DestroyWindow = xmir_destroy_window;
++
++    xmir_screen->ResizeWindow = pScreen->ResizeWindow;
++    pScreen->ResizeWindow = xmir_resize_window;
 +
 +    xmir_screen->UnrealizeWindow = pScreen->UnrealizeWindow;
 +    pScreen->UnrealizeWindow = xmir_unrealize_window;
@@ -7029,9 +7660,12 @@ Contributions from:
 +        FatalError("Couldn't add screen\n");
 +    }
 +}
+diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
+new file mode 100644
+index 0000000..2425f1c
 --- /dev/null
 +++ b/hw/xmir/xmir.h
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,225 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -7082,12 +7716,13 @@ Contributions from:
 +#include <epoxy/egl.h>
 +#include <epoxy/gl.h>
 +
-+#define MIR_MAX_BUFFER_AGE 3
++struct xmir_window;
 +
 +struct xmir_screen {
 +    ScreenPtr screen;
 +
-+    int depth, windowed, glamor, doubled;
++    int depth, rootless, windowed, doubled;
++    enum {glamor_off=0, glamor_dri, glamor_egl, glamor_egl_sync} glamor;
 +
 +    CreateScreenResourcesProcPtr CreateScreenResources;
 +    CloseScreenProcPtr CloseScreen;
@@ -7095,6 +7730,7 @@ Contributions from:
 +    DestroyWindowProcPtr DestroyWindow;
 +    RealizeWindowProcPtr RealizeWindow;
 +    UnrealizeWindowProcPtr UnrealizeWindow;
++    ResizeWindowProcPtr ResizeWindow;
 +
 +    struct xorg_list output_list;
 +    struct xorg_list input_list;
@@ -7104,24 +7740,30 @@ Contributions from:
 +    MirDisplayConfiguration *display;
 +    MirPlatformPackage platform;
 +
-+    struct xmir_marshall_handler *input_handler;
-+    struct xmir_marshall_handler *hotplug_event_handler;
-+    struct xmir_marshall_handler *submit_rendering_handler;
-+
 +    /* Bookkeeping for eglSwapBuffers */
 +    pthread_mutex_t mutex;
 +    pthread_cond_t cond;
 +    pthread_t thread;
-+    int alive, damage_all;
++    int alive;
 +    struct xorg_list swap_list;
 +    void *swap_surface;
 +
 +    char *device_name, *driver_name;
-+    int drm_fd, dpms_on;
++    int drm_fd;
 +    void *egl_display, *egl_context, *swap_context;
 +    struct gbm_device *gbm;
 +    struct glamor_context *glamor_ctx;
 +    void *egl_surface;
++
++    MirPixelFormat depth24_pixel_format, depth32_pixel_format;
++    Bool flatten;
++    Bool neverclose;
++    MirSurface *neverclosed;
++    struct xorg_list flattened_list;
++    struct xmir_window *flatten_top;
++    WindowPtr last_focus;
++
++    int dpi;
 +
 +    DRI2InfoRec dri2;
 +};
@@ -7139,10 +7781,14 @@ Contributions from:
 +    DamagePtr damage;
 +    RegionRec region;
 +
++    int surface_width, surface_height;
++    int buf_width, buf_height;
++
 +    struct xorg_list link_damage;
-+    RegionRec past_damage[MIR_MAX_BUFFER_AGE];
-+    int damage_index, orientation;
++    int orientation;
 +    unsigned int has_free_buffer:1;
++
++    struct xorg_list link_flattened;
 +
 +    void *egl_surface, *image;
 +    PixmapPtr back_pixmap, front_pixmap, reuse_pixmap;
@@ -7155,6 +7801,8 @@ Contributions from:
 +        void *data;
 +        struct xorg_list entry;
 +    } flip;
++
++    char wm_name[256];
 +};
 +
 +struct xmir_input {
@@ -7166,7 +7814,6 @@ Contributions from:
 +    uint32_t id;
 +    int touch_id;
 +    struct xorg_list link;
-+    CursorPtr x_cursor;
 +};
 +
 +struct xmir_output {
@@ -7179,17 +7826,24 @@ Contributions from:
 +    Rotation rotation;
 +};
 +
++extern Bool xmir_debug_logging;
++#define XMIR_DEBUG(_args)  {if (xmir_debug_logging) ErrorF _args;}
++
 +struct xmir_window *xmir_window_get(WindowPtr window);
 +struct xmir_screen *xmir_screen_get(ScreenPtr screen);
 +struct xmir_pixmap *xmir_pixmap_get(PixmapPtr pixmap);
 +void xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap);
 +
 +void xmir_handle_surface_event(struct xmir_window *, MirSurfaceAttrib, int);
++void xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
++                                  struct xmir_window *xmir_win,
++                                  void *unused);
 +void xmir_close_surface(struct xmir_window *);
++
++void xmir_repaint(struct xmir_window *);
 +
 +/* xmir-input.c */
 +Bool xmir_screen_init_cursor(struct xmir_screen *xmir_screen);
-+void xmir_input_set_cursor(struct xmir_input *xmir_input);
 +
 +/* xmir-output.c */
 +Bool xmir_screen_init_output(struct xmir_screen *xmir_screen);
@@ -7222,19 +7876,13 @@ Contributions from:
 +void xmir_init_thread_to_eventloop(void);
 +void xmir_fini_thread_to_eventloop(void);
 +
-+struct xmir_marshall_handler *xmir_register_handler(void (*)(void *), size_t);
-+
-+void xmir_post_to_eventloop(struct xmir_marshall_handler *handler, void *msg);
++typedef void (xmir_event_callback)(struct xmir_screen*, struct xmir_window*,
++                                   void *arg);
++void xmir_post_to_eventloop(xmir_event_callback *cb,
++                            struct xmir_screen*, struct xmir_window*, void*);
 +void xmir_process_from_eventloop(void);
 +
 +/* xmir-input.c */
-+typedef struct XMirEventContext {
-+    struct xmir_screen *xmir_screen;
-+    struct xmir_window *xmir_window;
-+    const MirEvent *ev;
-+} XMirEventContext;
-+
-+void xmir_handle_input_in_main_thread(void *vctx);
 +void xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev, void *context);
 +
 +#define XMIR_CREATE_PIXMAP_USAGE_FLIP 0x10000000
@@ -7243,3 +7891,6 @@ Contributions from:
 +	(((major) * 10000000) + ((minor) * 100000) + ((patch) * 1000) + snap)
 +
 +#endif
+-- 
+2.6.2
+
