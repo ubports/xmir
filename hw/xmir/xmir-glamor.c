@@ -116,19 +116,15 @@ xmir_glamor_win_get_back(struct xmir_screen *xmir_screen, struct xmir_window *xm
 
     if (xmir_win && xmir_win->surface) {
         MirNativeBuffer *buffer;
-
-        struct gbm_import_fd_data gbm_data = {
-            0,
-            draw->width,
-            draw->height,
-            0,
-            GBM_FORMAT_ARGB8888
-        };
+        struct gbm_import_fd_data gbm_data;
 
         mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &buffer);
 
         gbm_data.fd = buffer->fd[0];
+        gbm_data.width = buffer->width;
+        gbm_data.height = buffer->height;
         gbm_data.stride = buffer->stride;
+        gbm_data.format = GBM_FORMAT_ARGB8888; /* TODO: detect this properly */
 
         bo = gbm_bo_import(xmir_screen->gbm, GBM_BO_IMPORT_FD, &gbm_data, GBM_BO_USE_RENDERING);
         xmir_pixmap->fake_back = false;
