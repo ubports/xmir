@@ -51,6 +51,8 @@
                      }
 
 STATIC_ATOM(UTF8_STRING);
+STATIC_ATOM(_NET_WM_NAME);
+
 STATIC_ATOM(WM_PROTOCOLS);
 STATIC_ATOM(WM_DELETE_WINDOW);
 
@@ -222,6 +224,13 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
     return False;
 }
 
+static Bool
+xmir_get_window_name(WindowPtr window, char *buf, size_t bufsize)
+{
+    return xmir_get_window_prop_string8(window, _NET_WM_NAME, buf, bufsize) ||
+           xmir_get_window_prop_string8(window, XA_WM_NAME, buf, bufsize);
+}
+
 static WindowPtr
 xmir_get_window_prop_window(WindowPtr window, ATOM atom)
 {
@@ -389,8 +398,7 @@ void xmir_repaint(struct xmir_window *xmir_win)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
     if (xmir_screen->rootless &&
-        xmir_get_window_prop_string8(xmir_win->window, XA_WM_NAME,
-                                     wm_name, sizeof wm_name) &&
+        xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name) &&
         strcmp(wm_name, xmir_win->wm_name)) {
         MirSurfaceSpec *rename =
             mir_connection_create_spec_for_changes(xmir_screen->conn);
@@ -574,6 +582,7 @@ xmir_realize_window(WindowPtr window)
     INIT_ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
 
     INIT_ATOM(UTF8_STRING);
+    INIT_ATOM(_NET_WM_NAME);
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
     ret = (*screen->RealizeWindow) (window);
@@ -587,8 +596,7 @@ xmir_realize_window(WindowPtr window)
     }
     xmir_window_update_region(xmir_window);
 
-    xmir_get_window_prop_string8(window, XA_WM_NAME,
-                                 wm_name, sizeof wm_name);
+    xmir_get_window_name(window, wm_name, sizeof wm_name);
     wm_type = xmir_get_window_prop_atom(window, _NET_WM_WINDOW_TYPE);
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
