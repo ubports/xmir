@@ -434,13 +434,6 @@ xmir_screen_init_output(struct xmir_screen *xmir_screen)
 
         snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
         xmir_output_create(xmir_screen, mir_output, name);
-
-        if (mir_output->connected) {
-            MirDisplayMode *mode = &mir_output->modes[mir_output->current_mode];
-            xmir_screen->dpi = mode->horizontal_resolution * 254 /
-                (10 * mir_output->physical_width_mm);
-            XMIR_DEBUG(("Initial DPI is %d\n", xmir_screen->dpi));
-        }
     }
 
     RRScreenSetSizeRange(xmir_screen->screen, 320, 200, INT16_MAX, INT16_MAX);

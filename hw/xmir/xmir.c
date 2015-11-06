@@ -1386,8 +1386,13 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
     }
 
-    /* This will change later as we learn more about the environment */
-    xmir_screen->dpi = 96;
+    /* Core DPI cannot report correct values (it's one value, we have multiple displays)
+     * Use the value from the -dpi commandline if set, or 96 otherwise.
+     *
+     * This matches the behaviour of all the desktop Xorg drivers. Clients which
+     * care can use the XRANDR extension to get correct per-output DPI information.
+     */
+    xmir_screen->dpi = monitorResolution > 0 ? monitorResolution : 96;
 
     if (!xmir_screen_init_output(xmir_screen))
         return FALSE;
