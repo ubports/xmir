@@ -1,4 +1,4 @@
-xorg-server (2:1.17.3-2ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.17.3-2ubuntu1) xenial; urgency=medium
 
   [ Robert Ancell ]
   * debian/patches/xmir.patch:
@@ -12,7 +12,7 @@ xorg-server (2:1.17.3-2ubuntu1) UNRELEASED; urgency=medium
     linux-Do-not-call-FatalError-from-xf86CloseConsole.patch:
     Dropped, upstream.
 
- -- Robert Ancell <robert.ancell@canonical.com>  Tue, 03 Nov 2015 10:23:16 +1300
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 10 Nov 2015 18:20:55 +0200
 
 xorg-server (2:1.17.3-2) unstable; urgency=medium
 
