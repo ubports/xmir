@@ -1,9 +1,16 @@
 xorg-server (2:1.17.3-2ubuntu1) UNRELEASED; urgency=medium
 
+  [ Robert Ancell ]
   * debian/patches/xmir.patch:
     - Update to latest version
   * debian/patches/xmir-rootless.patch:
     - Merged into xmir.patch
+
+  [ Timo Aaltonen ]
+  * Merge from Debian. (LP: #1511649)
+  * glamor-make-current-in-prepare-paths.diff,
+    linux-Do-not-call-FatalError-from-xf86CloseConsole.patch:
+    Dropped, upstream.
 
  -- Robert Ancell <robert.ancell@canonical.com>  Tue, 03 Nov 2015 10:23:16 +1300
 
