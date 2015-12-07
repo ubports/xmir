@@ -101,7 +101,7 @@ Build-Depends:
 #logind
   libdbus-1-dev (>= 1.0) [linux-any],
 # XMir
- libmirclient-dev (>= 0.13.1) [!arm64 !powerpc !ppc64el],
+ libmirclient-dev (>= 0.13.1) [!arm64 !powerpc !ppc64el !s390x],
  mir-client-platform-mesa-dev,
 Standards-Version: 3.9.6
 Vcs-Git: https://anonscm.debian.org/git/pkg-xorg/xserver/xorg-server.git
