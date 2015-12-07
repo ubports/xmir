@@ -415,7 +415,7 @@ glamor_egl_dri3_fd_name_from_tex(ScreenPtr screen,
 }
 
 unsigned int
-glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h)
+glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h, Bool linear)
 {
     return 0;
 }
@@ -549,11 +549,7 @@ xwl_glamor_init(struct xwl_screen *xwl_screen)
         return FALSE;
     }
 
-    if (!glamor_init(xwl_screen->screen,
-                     GLAMOR_INVERTED_Y_AXIS |
-                     GLAMOR_USE_EGL_SCREEN |
-                     GLAMOR_USE_SCREEN |
-                     GLAMOR_USE_PICTURE_SCREEN)) {
+    if (!glamor_init(xwl_screen->screen, GLAMOR_USE_EGL_SCREEN)) {
         ErrorF("Failed to initialize glamor\n");
         return FALSE;
     }

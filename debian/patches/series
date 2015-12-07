@@ -5,7 +5,6 @@
 03_static-nettle.diff
 05_Revert-Unload-submodules.diff
 #08_xfree86_fix_ia64_inx_outx.diff
-xext-fix-udeb-build.diff
 
 ## Ubuntu patches, not upstreamable
 105_nvidia_fglrx_autodetect.patch

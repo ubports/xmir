@@ -867,8 +867,9 @@ xf86NewInputDevice(InputInfoPtr pInfo, DeviceIntPtr *pdev, BOOL enable)
         if (fd != -1) {
             if (paused) {
                 /* Put on new_input_devices list for delayed probe */
-                new_input_devices = xnfrealloc(new_input_devices,
-                            sizeof(pInfo) * (new_input_devices_count + 1));
+                new_input_devices = xnfreallocarray(new_input_devices,
+                                                    new_input_devices_count + 1,
+                                                    sizeof(pInfo));
                 new_input_devices[new_input_devices_count] = pInfo;
                 new_input_devices_count++;
                 systemd_logind_release_fd(pInfo->major, pInfo->minor, fd);
@@ -1137,12 +1138,16 @@ xf86CheckMotionEvent4DGA(DeviceIntPtr device, int is_absolute,
                 dx = valuator_mask_get(mask, 0);
                 if (is_absolute)
                     dx -= device->last.valuators[0];
+                else if (valuator_mask_has_unaccelerated(mask))
+                    dx = valuator_mask_get_unaccelerated(mask, 0);
             }
 
             if (valuator_mask_isset(mask, 1)) {
                 dy = valuator_mask_get(mask, 1);
                 if (is_absolute)
                     dy -= device->last.valuators[1];
+                else if (valuator_mask_has_unaccelerated(mask))
+                    dy = valuator_mask_get_unaccelerated(mask, 1);
             }
 
             if (DGAStealMotionEvent(device, idx, dx, dy))
@@ -1326,47 +1331,21 @@ xf86PostButtonEventM(DeviceIntPtr device,
 }
 
 void
-xf86PostKeyEvent(DeviceIntPtr device,
-                 unsigned int key_code,
-                 int is_down,
-                 int is_absolute, int first_valuator, int num_valuators, ...)
+xf86PostKeyEvent(DeviceIntPtr device, unsigned int key_code, int is_down)
 {
-    va_list var;
-    int i = 0;
-    ValuatorMask mask;
-
-    XI_VERIFY_VALUATORS(num_valuators);
-
-    valuator_mask_zero(&mask);
-
-    va_start(var, num_valuators);
-    for (i = 0; i < num_valuators; i++)
-        valuator_mask_set(&mask, first_valuator + i, va_arg(var, int));
-
-    va_end(var);
-
-    xf86PostKeyEventM(device, key_code, is_down, is_absolute, &mask);
+    xf86PostKeyEventM(device, key_code, is_down);
 }
 
 void
 xf86PostKeyEventP(DeviceIntPtr device,
                   unsigned int key_code,
-                  int is_down,
-                  int is_absolute,
-                  int first_valuator, int num_valuators, const int *valuators)
+                  int is_down)
 {
-    ValuatorMask mask;
-
-    XI_VERIFY_VALUATORS(num_valuators);
-
-    valuator_mask_set_range(&mask, first_valuator, num_valuators, valuators);
-    xf86PostKeyEventM(device, key_code, is_down, is_absolute, &mask);
+    xf86PostKeyEventM(device, key_code, is_down);
 }
 
 void
-xf86PostKeyEventM(DeviceIntPtr device,
-                  unsigned int key_code,
-                  int is_down, int is_absolute, const ValuatorMask *mask)
+xf86PostKeyEventM(DeviceIntPtr device, unsigned int key_code, int is_down)
 {
 #if XFreeXDGA
     DeviceIntPtr pointer;
@@ -1382,8 +1361,7 @@ xf86PostKeyEventM(DeviceIntPtr device,
     }
 #endif
 
-    QueueKeyboardEvents(device,
-                        is_down ? KeyPress : KeyRelease, key_code, mask);
+    QueueKeyboardEvents(device, is_down ? KeyPress : KeyRelease, key_code);
 }
 
 void
@@ -1392,7 +1370,7 @@ xf86PostKeyboardEvent(DeviceIntPtr device, unsigned int key_code, int is_down)
     ValuatorMask mask;
 
     valuator_mask_zero(&mask);
-    xf86PostKeyEventM(device, key_code, is_down, 0, &mask);
+    xf86PostKeyEventM(device, key_code, is_down);
 }
 
 InputInfoPtr

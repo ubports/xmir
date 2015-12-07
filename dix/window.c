@@ -220,7 +220,6 @@ log_window_info(WindowPtr pWin, int depth)
     int i;
     const char *win_name, *visibility;
     BoxPtr rects;
-    ScreenPtr pScreen = pWin->drawable.pScreen;
 
     for (i = 0; i < (depth << 2); i++)
         ErrorF(" ");
@@ -240,7 +239,7 @@ log_window_info(WindowPtr pWin, int depth)
         ErrorF(" (%s compositing: pixmap %x)",
                (pWin->redirectDraw == RedirectDrawAutomatic) ?
                "automatic" : "manual",
-               (unsigned) pScreen->GetWindowPixmap(pWin)->drawable.id);
+               (unsigned) pWin->drawable.pScreen->GetWindowPixmap(pWin)->drawable.id);
 #endif
 
     switch (pWin->visibility) {
@@ -259,10 +258,10 @@ log_window_info(WindowPtr pWin, int depth)
     }
     ErrorF(", %s", visibility);
 
-    if (REGION_NOTEMPTY(pScreen, &pWin->clipList)) {
+    if (RegionNotEmpty(&pWin->clipList)) {
         ErrorF(", clip list:");
-        rects = REGION_RECTS(&pWin->clipList);
-        for (i = 0; i < REGION_NUM_RECTS(&pWin->clipList); i++)
+        rects = RegionRects(&pWin->clipList);
+        for (i = 0; i < RegionNumRects(&pWin->clipList); i++)
             ErrorF(" [(%d, %d) to (%d, %d)]",
                    rects[i].x1, rects[i].y1, rects[i].x2, rects[i].y2);
         ErrorF("; extents [(%d, %d) to (%d, %d)]",
@@ -380,10 +379,7 @@ SetWindowToDefaults(WindowPtr pWin)
     pWin->forcedBS = FALSE;
     pWin->redirectDraw = RedirectDrawNone;
     pWin->forcedBG = FALSE;
-
-#ifdef ROOTLESS
-    pWin->rootlessUnhittable = FALSE;
-#endif
+    pWin->unhittable = FALSE;
 
 #ifdef COMPOSITE
     pWin->damagedDescendants = FALSE;
@@ -1470,7 +1466,7 @@ ChangeWindowAttributes(WindowPtr pWin, Mask vmask, XID *vlist, ClientPtr client)
 
         RegionNull(&exposed);
         RegionSubtract(&exposed, &pWin->borderClip, &pWin->winSize);
-        miPaintWindow(pWin, &exposed, PW_BORDER);
+        pWin->drawable.pScreen->PaintWindow(pWin, &exposed, PW_BORDER);
         RegionUninit(&exposed);
     }
     return error;
@@ -3037,7 +3033,7 @@ dixSaveScreens(ClientPtr client, int on, int mode)
 
                 /* make it look like screen saver is off, so that
                  * NotClippedByChildren will compute a clip list
-                 * for the root window, so miPaintWindow works
+                 * for the root window, so PaintWindow works
                  */
                 screenIsSaved = SCREEN_SAVER_OFF;
                 (*pWin->drawable.pScreen->MoveWindow) (pWin,
