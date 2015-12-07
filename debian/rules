@@ -56,7 +56,7 @@ else
 endif
 
 # Mir isn't built on PPC
-ifneq (,$(filter $(DEB_HOST_ARCH), arm64 powerpc ppc64el))
+ifneq (,$(filter $(DEB_HOST_ARCH), arm64 powerpc ppc64el s390x))
 	build_xmir = --disable-xmir
 endif
 
