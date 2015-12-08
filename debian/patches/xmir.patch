@@ -46,11 +46,9 @@ Contributions from:
  create mode 100644 hw/xmir/xmir.c
  create mode 100644 hw/xmir/xmir.h
 
-diff --git a/configure.ac b/configure.ac
-index d8f0e74..56355fd 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -624,6 +624,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
+@@ -632,6 +632,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
  AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
@@ -58,7 +56,7 @@ index d8f0e74..56355fd 100644
  AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
  AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
  AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: no)]), [GLAMOR=$enableval], [GLAMOR=no])
-@@ -745,6 +746,7 @@ case $host_os in
+@@ -750,6 +751,7 @@ case $host_os in
  			XVFB=no
  			XNEST=no
  			XWAYLAND=no
@@ -66,7 +64,7 @@ index d8f0e74..56355fd 100644
  
  			COMPOSITE=no
  			DGA=no
-@@ -2474,6 +2476,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2494,6 +2496,27 @@ if test "x$XWAYLAND" = xyes; then
  		     [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
  fi
  
@@ -94,7 +92,7 @@ index d8f0e74..56355fd 100644
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2622,6 +2645,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2642,6 +2665,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -103,8 +101,6 @@ index d8f0e74..56355fd 100644
  test/Makefile
  test/xi1/Makefile
  test/xi2/Makefile
-diff --git a/hw/Makefile.am b/hw/Makefile.am
-index 19895dc..b7b958c 100644
 --- a/hw/Makefile.am
 +++ b/hw/Makefile.am
 @@ -30,6 +30,10 @@ if XWAYLAND
@@ -131,16 +127,10 @@ index 19895dc..b7b958c 100644
  
  relink:
  	$(AM_V_at)for i in $(SUBDIRS) ; do $(MAKE) -C $$i relink || exit 1 ; done
-diff --git a/hw/xmir/.gitignore b/hw/xmir/.gitignore
-new file mode 100644
-index 0000000..b6a16d4
 --- /dev/null
 +++ b/hw/xmir/.gitignore
 @@ -0,0 +1 @@
 +Xmir
-diff --git a/hw/xmir/Makefile.am b/hw/xmir/Makefile.am
-new file mode 100644
-index 0000000..be5225e
 --- /dev/null
 +++ b/hw/xmir/Makefile.am
 @@ -0,0 +1,61 @@
@@ -205,9 +195,6 @@ index 0000000..be5225e
 +
 +relink:
 +	$(AM_V_at)rm -f Xmir$(EXEEXT) && $(MAKE) Xmir$(EXEEXT)
-diff --git a/hw/xmir/dri2/Makefile.am b/hw/xmir/dri2/Makefile.am
-new file mode 100644
-index 0000000..696240c
 --- /dev/null
 +++ b/hw/xmir/dri2/Makefile.am
 @@ -0,0 +1,14 @@
@@ -225,9 +212,6 @@ index 0000000..696240c
 +	dri2ext.c \
 +	dri2int.h
 +
-diff --git a/hw/xmir/dri2/dri2.c b/hw/xmir/dri2/dri2.c
-new file mode 100644
-index 0000000..6aa19ba
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2.c
 @@ -0,0 +1,1398 @@
@@ -1629,9 +1613,6 @@ index 0000000..6aa19ba
 +    *is_param_recognized = FALSE;
 +    return Success;
 +}
-diff --git a/hw/xmir/dri2/dri2.h b/hw/xmir/dri2/dri2.h
-new file mode 100644
-index 0000000..318898b
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2.h
 @@ -0,0 +1,364 @@
@@ -1999,9 +1980,6 @@ index 0000000..318898b
 +extern Bool noDRI2Extension;
 +
 +#endif
-diff --git a/hw/xmir/dri2/dri2ext.c b/hw/xmir/dri2/dri2ext.c
-new file mode 100644
-index 0000000..befbb82
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2ext.c
 @@ -0,0 +1,683 @@
@@ -2688,9 +2666,6 @@ index 0000000..befbb82
 +
 +    DRI2ModuleSetup();
 +}
-diff --git a/hw/xmir/dri2/dri2int.h b/hw/xmir/dri2/dri2int.h
-new file mode 100644
-index 0000000..7f53eba
 --- /dev/null
 +++ b/hw/xmir/dri2/dri2int.h
 @@ -0,0 +1,26 @@
@@ -2720,9 +2695,6 @@ index 0000000..7f53eba
 + */
 +
 +extern Bool DRI2ModuleSetup(void);
-diff --git a/hw/xmir/xmir-cursor.c b/hw/xmir/xmir-cursor.c
-new file mode 100644
-index 0000000..81873a4
 --- /dev/null
 +++ b/hw/xmir/xmir-cursor.c
 @@ -0,0 +1,210 @@
@@ -2936,9 +2908,6 @@ index 0000000..81873a4
 +                               &xmir_pointer_sprite_funcs,
 +                               &xmir_pointer_screen_funcs, TRUE);
 +}
-diff --git a/hw/xmir/xmir-cvt.c b/hw/xmir/xmir-cvt.c
-new file mode 100644
-index 0000000..6070d77
 --- /dev/null
 +++ b/hw/xmir/xmir-cvt.c
 @@ -0,0 +1,304 @@
@@ -3246,9 +3215,6 @@ index 0000000..6070d77
 +
 +    return RRModeGet(&modeinfo, name);
 +}
-diff --git a/hw/xmir/xmir-dri2.c b/hw/xmir/xmir-dri2.c
-new file mode 100644
-index 0000000..b24d4b9
 --- /dev/null
 +++ b/hw/xmir/xmir-dri2.c
 @@ -0,0 +1,545 @@
@@ -3797,9 +3763,6 @@ index 0000000..b24d4b9
 +    ret = DRI2ScreenInit(xmir_screen->screen, &xmir_screen->dri2);
 +    return ret;
 +}
-diff --git a/hw/xmir/xmir-glamor.c b/hw/xmir/xmir-glamor.c
-new file mode 100644
-index 0000000..2438013
 --- /dev/null
 +++ b/hw/xmir/xmir-glamor.c
 @@ -0,0 +1,1173 @@
@@ -4976,9 +4939,6 @@ index 0000000..2438013
 +
 +    return TRUE;
 +}
-diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
-new file mode 100644
-index 0000000..2c3bb77
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
 @@ -0,0 +1,577 @@
@@ -5559,9 +5519,6 @@ index 0000000..2c3bb77
 +
 +    mieqFini();
 +}
-diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
-new file mode 100644
-index 0000000..5a54cf2
 --- /dev/null
 +++ b/hw/xmir/xmir-output.c
 @@ -0,0 +1,456 @@
@@ -6021,9 +5978,6 @@ index 0000000..5a54cf2
 +
 +    return TRUE;
 +}
-diff --git a/hw/xmir/xmir-thread-proxy.c b/hw/xmir/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..dbb187f
 --- /dev/null
 +++ b/hw/xmir/xmir-thread-proxy.c
 @@ -0,0 +1,109 @@
@@ -6136,9 +6090,6 @@ index 0000000..dbb187f
 +            msg.callback(msg.xmir_screen, msg.xmir_window, msg.arg);
 +    }
 +}
-diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-new file mode 100644
-index 0000000..a2e60b1
 --- /dev/null
 +++ b/hw/xmir/xmir.c
 @@ -0,0 +1,1518 @@
@@ -7660,9 +7611,6 @@ index 0000000..a2e60b1
 +        FatalError("Couldn't add screen\n");
 +    }
 +}
-diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
-new file mode 100644
-index 0000000..2425f1c
 --- /dev/null
 +++ b/hw/xmir/xmir.h
 @@ -0,0 +1,225 @@
@@ -7891,6 +7839,3 @@ index 0000000..2425f1c
 +	(((major) * 10000000) + ((minor) * 100000) + ((patch) * 1000) + snap)
 +
 +#endif
--- 
-2.6.2
-

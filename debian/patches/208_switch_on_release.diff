@@ -3,12 +3,11 @@ Description: Perform keyboard layout switches on key-release rather than key-pre
 Author: Bryce Harrington <bryce@ubuntu.com>
 Bug-Ubuntu: https://launchpad.net/bugs/36812
 Bug-Ubuntu: https://launchpad.net/bugs/711842
+Bug: https://bugs.freedesktop.org/show_bug.cgi?id=865
 
-Index: xorg-server-1.17.2/xkb/xkbActions.c
-===================================================================
---- xorg-server-1.17.2.orig/xkb/xkbActions.c
-+++ xorg-server-1.17.2/xkb/xkbActions.c
-@@ -351,22 +351,83 @@ _XkbFilterLatchState(XkbSrvInfoPtr xkbi,
+--- a/xkb/xkbActions.c
++++ b/xkb/xkbActions.c
+@@ -352,25 +352,86 @@ _XkbFilterLatchState(XkbSrvInfoPtr xkbi,
  }
  
  static int
@@ -36,6 +35,9 @@ Index: xorg-server-1.17.2/xkb/xkbActions.c
 +_XkbFilterLockGroup(XkbSrvInfoPtr xkbi,
                      XkbFilterPtr filter, unsigned keycode, XkbAction *pAction)
  {
+     if (filter->keycode == 0) /* initial press */
+         AccessXCancelRepeatKey(xkbi, keycode);
+ 
 -    if (pAction && (pAction->type == XkbSA_LockGroup)) {
 -        if (pAction->group.flags & XkbSA_GroupAbsolute)
 -            xkbi->state.locked_group = XkbSAGroup(&pAction->group);
@@ -100,7 +102,7 @@ Index: xorg-server-1.17.2/xkb/xkbActions.c
          filter->upAction = *pAction;
          if (!(filter->upAction.mods.flags & XkbSA_LockNoLock))
              xkbi->state.locked_mods |= pAction->mods.mask;
-@@ -1243,9 +1304,12 @@ XkbHandleActions(DeviceIntPtr dev, Devic
+@@ -1250,9 +1311,12 @@ XkbHandleActions(DeviceIntPtr dev, Devic
                  sendEvent = _XkbFilterLatchState(xkbi, filter, key, &act);
                  break;
              case XkbSA_LockMods:

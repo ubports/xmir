@@ -58,7 +58,7 @@ DO NOT UPSTREAM.
  int
  xf86platformAddDevice(int index)
  {
-@@ -537,6 +540,7 @@ xf86platformAddDevice(int index)
+@@ -540,6 +543,7 @@ xf86platformAddDevice(int index)
     }
     /* attach unbound to 0 protocol screen */
     AttachUnboundGPU(xf86Screens[0]->pScreen, xf86GPUScreens[i]->pScreen);
@@ -68,7 +68,7 @@ DO NOT UPSTREAM.
     RRTellChanged(xf86Screens[0]->pScreen);
 --- a/hw/xfree86/modes/xf86Crtc.c
 +++ b/hw/xfree86/modes/xf86Crtc.c
-@@ -3387,3 +3387,35 @@ xf86DetachAllCrtc(ScrnInfoPtr scrn)
+@@ -3562,3 +3562,35 @@ xf86DetachAllCrtc(ScrnInfoPtr scrn)
              crtc->x = crtc->y = 0;
          }
  }

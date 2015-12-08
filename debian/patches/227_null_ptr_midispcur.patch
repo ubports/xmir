@@ -3,11 +3,9 @@ Description: Check for NULL pointer before dereferencing pointer from miGetDCDev
 Author: Bryce Harrington <bryce@ubuntu.com>
 Bug-Ubuntu: https://launchpad.net/bugs/930936
 
-Index: xorg-server-1.17.2/mi/midispcur.c
-===================================================================
---- xorg-server-1.17.2.orig/mi/midispcur.c
-+++ xorg-server-1.17.2/mi/midispcur.c
-@@ -435,6 +435,10 @@ miDCRestoreUnderCursor(DeviceIntPtr pDev
+--- a/mi/midispcur.c
++++ b/mi/midispcur.c
+@@ -421,6 +421,10 @@ miDCRestoreUnderCursor(DeviceIntPtr pDev
      GCPtr pGC;
  
      pBuffer = miGetDCDevice(pDev, pScreen);

@@ -6,7 +6,7 @@ Last-Update: 2013-09-19
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -501,9 +501,9 @@ AC_MSG_RESULT([$FONTPATH])
+@@ -519,9 +519,9 @@ AC_MSG_RESULT([$FONTPATH])
  AC_ARG_WITH(xkb-path,         AS_HELP_STRING([--with-xkb-path=PATH], [Path to XKB base dir (default: ${datadir}/X11/xkb)]),
  				[ XKBPATH="$withval" ],
  				[ XKBPATH="${datadir}/X11/xkb" ])
@@ -18,7 +18,7 @@ Last-Update: 2013-09-19
  AC_ARG_WITH(default-xkb-rules, AS_HELP_STRING([--with-default-xkb-rules=RULES],
                                     [Keyboard ruleset (default: base/evdev)]),
                                  [ XKB_DFLT_RULES="$withval" ],
-@@ -1452,7 +1452,7 @@ AC_DEFINE_DIR(XKB_BIN_DIRECTORY, XKB_BIN
+@@ -1450,7 +1450,7 @@ AC_DEFINE_DIR(XKB_BIN_DIRECTORY, XKB_BIN
  dnl Make sure XKM_OUTPUT_DIR is an absolute path
  XKBOUTPUT_FIRSTCHAR=`echo $XKBOUTPUT | cut -b 1`
  if [[ x$XKBOUTPUT_FIRSTCHAR != x/ -a x$XKBOUTPUT_FIRSTCHAR != 'x$' ]] ; then
