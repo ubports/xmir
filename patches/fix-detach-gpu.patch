@@ -4,7 +4,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
 
 --- a/hw/xfree86/modes/xf86RandR12.c
 +++ b/hw/xfree86/modes/xf86RandR12.c
-@@ -1781,7 +1781,8 @@ xf86RandR14ProviderSetOutputSource(Scree
+@@ -1845,7 +1845,8 @@ xf86RandR14ProviderSetOutputSource(Scree
              ScreenPtr cmScreen = pScreen->current_master;
  
              xf86DetachOutputGPU(pScreen);
@@ -14,7 +14,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
          }
          provider->output_source = NULL;
          return TRUE;
-@@ -1792,7 +1793,8 @@ xf86RandR14ProviderSetOutputSource(Scree
+@@ -1856,7 +1857,8 @@ xf86RandR14ProviderSetOutputSource(Scree
  
      SetRootClip(source_provider->pScreen, FALSE);
  
@@ -24,7 +24,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
      AttachOutputGPU(source_provider->pScreen, pScreen);
  
      provider->output_source = source_provider;
-@@ -1809,7 +1811,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
+@@ -1873,7 +1875,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
          if (provider->offload_sink) {
              ScreenPtr cmScreen = pScreen->current_master;
              xf86DetachOutputGPU(pScreen);
@@ -34,7 +34,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
          }
  
          provider->offload_sink = NULL;
-@@ -1819,7 +1822,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
+@@ -1883,7 +1886,8 @@ xf86RandR14ProviderSetOffloadSink(Screen
      if (provider->offload_sink == sink_provider)
          return TRUE;
  
@@ -44,7 +44,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
      AttachOffloadGPU(sink_provider->pScreen, pScreen);
  
      provider->offload_sink = sink_provider;
-@@ -1898,12 +1902,14 @@ xf86RandR14ProviderDestroy(ScreenPtr scr
+@@ -1962,12 +1966,14 @@ xf86RandR14ProviderDestroy(ScreenPtr scr
              config->randr_provider->offload_sink = NULL;
              RRSetChanged(screen);
          }
@@ -63,7 +63,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
      config->randr_provider = NULL;
 --- a/dix/dispatch.c
 +++ b/dix/dispatch.c
-@@ -3951,6 +3951,8 @@ AttachUnboundGPU(ScreenPtr pScreen, Scre
+@@ -3952,6 +3952,8 @@ AttachUnboundGPU(ScreenPtr pScreen, Scre
      assert(new->isGPU);
      assert(!new->current_master);
      xorg_list_add(&new->unattached_head, &pScreen->unattached_list);
@@ -72,7 +72,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
      new->current_master = pScreen;
  }
  
-@@ -3975,7 +3977,8 @@ DetachOutputGPU(ScreenPtr slave)
+@@ -3976,7 +3978,8 @@ DetachOutputGPU(ScreenPtr slave)
  {
      assert(slave->isGPU);
      xorg_list_del(&slave->output_head);
@@ -82,7 +82,7 @@ Bug-Ubuntu: https://launchpad.net/bugs/1280743
  }
  
  void
-@@ -3991,6 +3994,7 @@ DetachOffloadGPU(ScreenPtr slave)
+@@ -3992,6 +3995,7 @@ DetachOffloadGPU(ScreenPtr slave)
  {
      assert(slave->isGPU);
      xorg_list_del(&slave->offload_head);

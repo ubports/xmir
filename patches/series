@@ -39,7 +39,6 @@ no-nv.patch
 # hybrid graphics fixes
 228_autobind_gpu.patch
 xf86-inactive-gpuscreen.patch
-xrandr-rroutputchanged-main.patch
 config-add-no-removal.patch
 xf86-ignore-conflicting-rr-caps.patch
 fix-detach-gpu.patch
@@ -50,4 +49,3 @@ xmir.patch
 xmir-desktop-file-hint-flag.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
-os-make-sure-the-clientswritable-fd-set-is-initialized.diff

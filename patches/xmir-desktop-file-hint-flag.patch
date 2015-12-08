@@ -8,11 +8,9 @@ Subject: [PATCH 3/4] xmir: Ignore --desktop_file_hint flag required by Unity8
  hw/xmir/xmir.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-index ef78cca..b9b7f2d 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
-@@ -123,6 +123,9 @@ ddxProcessArgument(int argc, char *argv[], int i)
+@@ -168,6 +168,9 @@ ddxProcessArgument(int argc, char *argv[
      } else if (!strcmp(argv[i], "-novtswitch") ||
                 !strncmp(argv[i], "vt", 2)) {
          return 1;
@@ -22,6 +20,3 @@ index ef78cca..b9b7f2d 100644
      } else if (!strcmp(argv[i], "-fd")) {
          if (!seen_shared)
              NoListenAll = 1;
--- 
-2.4.6
-
