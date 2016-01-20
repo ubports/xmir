@@ -45,14 +45,16 @@ endif
 
 
 ifeq ($(DEB_HOST_ARCH_OS), linux)
-	selinux = --enable-xselinux
-	wayland = --enable-xwayland
-	logind  = --enable-systemd-logind
+	selinux        = --enable-xselinux
+	wayland        = --enable-xwayland
+	logind         = --enable-systemd-logind
+	systemd-daemon = --with-systemd-daemon
 	build_xmir = --enable-xmir
 else
-	selinux = --disable-xselinux
-	wayland = --disable-xwayland
-	logind  = --disable-systemd-logind
+	selinux        = --disable-xselinux
+	wayland        = --disable-xwayland
+	logind         = --disable-systemd-logind
+	systemd-daemon = --without-systemd-daemon
 endif
 
 # Mir isn't built on PPC
@@ -176,6 +178,7 @@ confflags_main = \
 	--enable-xfree86-utils \
 	$(wayland) \
 	$(logind) \
+	$(systemd-daemon) \
 	--enable-suid-wrapper \
 	--enable-dmx \
 	--enable-xvfb \
@@ -210,6 +213,7 @@ confflags_udeb = \
 	--disable-xfree86-utils \
 	--disable-xwayland \
 	--disable-systemd-logind \
+	--without-systemd-daemon \
 	--disable-suid-wrapper \
 	--disable-dmx \
 	--disable-xvfb \
