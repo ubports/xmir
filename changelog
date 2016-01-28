@@ -1,3 +1,12 @@
+xorg-server (2:1.18.0-3ubuntu1) UNRELEASED; urgency=medium
+
+  * Merge from Debian experimental
+  * patches: Refreshed, dropped what's upstream.
+  * xmir-fixes.diff: Port xmir to 1.18.
+  * fix-ftbfs-ppc64el.patch: Dropped, not needed anymore.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Dec 2015 19:47:06 +0200
+
 xorg-server (2:1.18.0-3) unstable; urgency=medium
 
   * update-intel-pciids.diff: Sync dri2 mapping ids for intel.
@@ -5,14 +14,6 @@ xorg-server (2:1.18.0-3) unstable; urgency=medium
     recent mesa.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Wed, 27 Jan 2016 16:41:59 +0200
-
-xorg-server (2:1.18.0-1ubuntu1) UNRELEASED; urgency=medium
-
-  * Merge from Debian experimental
-  * patches: Refreshed, dropped what's upstream.
-  * xmir-fixes.diff: Port xmir to 1.18.
-
- -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Dec 2015 19:47:06 +0200
 
 xorg-server (2:1.18.0-2) unstable; urgency=medium
 
