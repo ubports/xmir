@@ -134,6 +134,7 @@ ddxUseMsg(void)
     ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
     ErrorF("    -neverclose        Never close the flattened rootless window\n");
     ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
+    ErrorF("-title <name>          Set title of the root window\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
     ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -163,6 +164,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
         return 1;
     }
     else if (strcmp(argv[i], "-mirSocket") == 0 ||
+             strcmp(argv[i], "-title") == 0 ||
              strcmp(argv[i], "-mir") == 0) {
         return 2;
     } else if (!strcmp(argv[i], "-novtswitch") ||
@@ -711,7 +713,7 @@ xmir_realize_window(WindowPtr window)
     }
 
     mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
-                                    "Xmir root window");
+                                             xmir_screen->root_title);
 
     xmir_window->surface_width = mir_width;
     xmir_window->surface_height = mir_height;
@@ -1290,6 +1292,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     dixSetPrivate(&pScreen->devPrivates, &xmir_screen_private_key, xmir_screen);
     xmir_screen->screen = pScreen;
     xmir_screen->glamor = glamor_dri;
+    xmir_screen->root_title = "Xmir root window";
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
@@ -1298,6 +1301,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
             xmir_screen->flatten = True;
         } else if (strcmp(argv[i], "-neverclose") == 0) {
             xmir_screen->neverclose = True;
+        } else if (strcmp(argv[i], "-title") == 0) {
+            xmir_screen->root_title = argv[++i];
         } else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
         } else if (strcmp(argv[i], "-mirSocket") == 0) {
