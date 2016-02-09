@@ -1,4 +1,4 @@
-xorg-server (2:1.18.1-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.18.1-1ubuntu1) xenial; urgency=medium
 
   * Merge from Debian experimental
   * patches: Refreshed, dropped what's upstream.
