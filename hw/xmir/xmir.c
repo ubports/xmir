@@ -433,7 +433,13 @@ void xmir_repaint(struct xmir_window *xmir_win)
     } else {
         if (!strcmp(xmir_screen->root_title, get_root_title_from_top_window)) {
             WindowPtr top = xmir_screen->screen->root->firstChild;
-            if (top && xmir_get_window_name(top, wm_name, sizeof wm_name))
+
+            /* Deal with window managers and their secret hidden, as well as
+               parenting windows... */
+            while (top && !xmir_get_window_name(top, wm_name, sizeof wm_name))
+                top = top->firstChild;
+
+            if (top) /* found the topmost named window */
                 new_name = wm_name;
         }
     }
