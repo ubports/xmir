@@ -422,7 +422,7 @@ void xmir_repaint(struct xmir_window *xmir_win)
     RegionPtr dirty = &xmir_win->region;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
     char wm_name[256];
-    const char *new_name = NULL;
+    const char *new_name = "";
 
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
@@ -434,17 +434,25 @@ void xmir_repaint(struct xmir_window *xmir_win)
         if (!strcmp(xmir_screen->root_title, get_root_title_from_top_window)) {
             WindowPtr top = xmir_screen->screen->root->firstChild;
 
-            /* Deal with window managers and their secret hidden, as well as
-               parenting windows... */
+            /* Find the top window that has a name set */
             while (top && !xmir_get_window_name(top, wm_name, sizeof wm_name))
                 top = top->firstChild;
 
-            if (top) /* found the topmost named window */
+            /* Unfortunately this is X11 so the top window may be a menu,
+               tooltip or dialog etc. So now find the actual app window. */
+            if (top) {
+                WindowPtr wm_parent_of_top = xmir_get_window_prop_window(top,
+                                                           XA_WM_TRANSIENT_FOR);
+                if (wm_parent_of_top)  /* that's a better guess */
+                    top = wm_parent_of_top;
+            }
+
+            if (top)
                 new_name = wm_name;
         }
     }
 
-    if (new_name && strcmp(new_name, xmir_win->wm_name)) {
+    if (strcmp(new_name, xmir_win->wm_name)) {
         MirSurfaceSpec *rename =
             mir_connection_create_spec_for_changes(xmir_screen->conn);
         mir_surface_spec_set_name(rename, new_name);
