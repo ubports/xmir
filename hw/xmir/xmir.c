@@ -1320,7 +1320,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     dixSetPrivate(&pScreen->devPrivates, &xmir_screen_private_key, xmir_screen);
     xmir_screen->screen = pScreen;
     xmir_screen->glamor = glamor_dri;
-    xmir_screen->root_title = "Xmir root window";
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
@@ -1361,6 +1360,13 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         FatalError("-neverclose is not valid without -rootless -flatten\n");
         return FALSE;
     }
+    if (xmir_screen->root_title && xmir_screen->rootless) {
+        FatalError("-title has no effect with -rootless (instead Mir uses the actual title of each X window that opens)\n");
+        return FALSE;
+    }
+
+    if (!xmir_screen->root_title)
+        xmir_screen->root_title = "Xmir root window";
 
 #ifdef __arm__
     if (xmir_screen->glamor == glamor_dri) {
