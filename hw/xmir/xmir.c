@@ -82,6 +82,8 @@ extern __GLXprovider __glXDRI2Provider;
 
 Bool xmir_debug_logging = False;
 
+static const char get_root_title_from_top_window[] = "@";
+
 static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 
 /* Required by GLX module */
@@ -420,19 +422,29 @@ void xmir_repaint(struct xmir_window *xmir_win)
     RegionPtr dirty = &xmir_win->region;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
     char wm_name[256];
+    const char *new_name = NULL;
 
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
-    if (xmir_screen->rootless &&
-        xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name) &&
-        strcmp(wm_name, xmir_win->wm_name)) {
+    if (xmir_screen->rootless) {
+        if (xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name))
+            new_name = wm_name;
+    } else {
+        if (!strcmp(xmir_screen->root_title, get_root_title_from_top_window)) {
+            WindowPtr top = xmir_screen->screen->root->firstChild;
+            if (top && xmir_get_window_name(top, wm_name, sizeof wm_name))
+                new_name = wm_name;
+        }
+    }
+
+    if (new_name && strcmp(new_name, xmir_win->wm_name)) {
         MirSurfaceSpec *rename =
             mir_connection_create_spec_for_changes(xmir_screen->conn);
-        mir_surface_spec_set_name(rename, wm_name);
+        mir_surface_spec_set_name(rename, new_name);
         mir_surface_apply_spec(xmir_win->surface, rename);
         mir_surface_spec_release(rename);
-        strncpy(xmir_win->wm_name, wm_name, sizeof(xmir_win->wm_name));
+        strncpy(xmir_win->wm_name, new_name, sizeof(xmir_win->wm_name));
     }
 
     switch (xmir_screen->glamor) {
@@ -712,8 +724,10 @@ xmir_realize_window(WindowPtr window)
         }
     }
 
-    mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
-                                             xmir_screen->root_title);
+    if (xmir_screen->rootless)
+        mir_surface_spec_set_name(spec, wm_name);
+    else if (strcmp(xmir_screen->root_title, get_root_title_from_top_window))
+        mir_surface_spec_set_name(spec, xmir_screen->root_title);
 
     xmir_window->surface_width = mir_width;
     xmir_window->surface_height = mir_height;
