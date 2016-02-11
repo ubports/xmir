@@ -90,7 +90,7 @@ struct xmir_screen {
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
     Bool flatten;
     Bool neverclose;
-    const char *root_title;
+    const char *title;
     MirSurface *neverclosed;
     struct xorg_list flattened_list;
     struct xmir_window *flatten_top;
