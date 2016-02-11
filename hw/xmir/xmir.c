@@ -82,7 +82,7 @@ extern __GLXprovider __glXDRI2Provider;
 
 Bool xmir_debug_logging = False;
 
-static const char get_root_title_from_top_window[] = "@";
+static const char get_title_from_top_window[] = "@";
 
 static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 
@@ -136,7 +136,7 @@ ddxUseMsg(void)
     ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
     ErrorF("    -neverclose        Never close the flattened rootless window\n");
     ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
-    ErrorF("-title <name>          Set title of the root window\n");
+    ErrorF("-title <name>          Set window title (@ = automatic)\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
     ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -427,32 +427,32 @@ void xmir_repaint(struct xmir_window *xmir_win)
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
-    if (xmir_screen->rootless) {
+    if (strcmp(xmir_screen->title, get_title_from_top_window)) {
+        new_name = NULL;  /* Fixed title mode. Never change it. */
+    } else if (xmir_screen->rootless) {
         if (xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name))
             new_name = wm_name;
-    } else {
-        if (!strcmp(xmir_screen->root_title, get_root_title_from_top_window)) {
-            WindowPtr top = xmir_screen->screen->root->firstChild;
+    } else { /* Try and guess from the most relevant app window */
+        WindowPtr top = xmir_screen->screen->root->firstChild;
 
-            /* Find the top window that has a name set */
-            while (top && !xmir_get_window_name(top, wm_name, sizeof wm_name))
-                top = top->firstChild;
+        /* Find the top window that has a name set */
+        while (top && !xmir_get_window_name(top, wm_name, sizeof wm_name))
+            top = top->firstChild;
 
-            /* Unfortunately this is X11 so the top window may be a menu,
-               tooltip or dialog etc. So now find the actual app window. */
-            if (top) {
-                WindowPtr wm_parent_of_top = xmir_get_window_prop_window(top,
+        /* Unfortunately this is X11 so the top window may be a menu,
+           tooltip or dialog etc. So now find the actual app window. */
+        if (top) {
+            WindowPtr wm_parent_of_top = xmir_get_window_prop_window(top,
                                                            XA_WM_TRANSIENT_FOR);
-                if (wm_parent_of_top)  /* that's a better guess */
-                    top = wm_parent_of_top;
-            }
-
-            if (top)
-                new_name = wm_name;
+            if (wm_parent_of_top)  /* that's a better guess */
+                top = wm_parent_of_top;
         }
+
+        if (top)
+            new_name = wm_name;
     }
 
-    if (strcmp(new_name, xmir_win->wm_name)) {
+    if (new_name && strcmp(new_name, xmir_win->wm_name)) {
         MirSurfaceSpec *rename =
             mir_connection_create_spec_for_changes(xmir_screen->conn);
         mir_surface_spec_set_name(rename, new_name);
@@ -738,10 +738,10 @@ xmir_realize_window(WindowPtr window)
         }
     }
 
-    if (xmir_screen->rootless)
+    if (strcmp(xmir_screen->title, get_title_from_top_window))
+        mir_surface_spec_set_name(spec, xmir_screen->title);
+    else if (xmir_screen->rootless)
         mir_surface_spec_set_name(spec, wm_name);
-    else if (strcmp(xmir_screen->root_title, get_root_title_from_top_window))
-        mir_surface_spec_set_name(spec, xmir_screen->root_title);
 
     xmir_window->surface_width = mir_width;
     xmir_window->surface_height = mir_height;
@@ -1329,7 +1329,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         } else if (strcmp(argv[i], "-neverclose") == 0) {
             xmir_screen->neverclose = True;
         } else if (strcmp(argv[i], "-title") == 0) {
-            xmir_screen->root_title = argv[++i];
+            xmir_screen->title = argv[++i];
         } else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
         } else if (strcmp(argv[i], "-mirSocket") == 0) {
@@ -1360,13 +1360,10 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         FatalError("-neverclose is not valid without -rootless -flatten\n");
         return FALSE;
     }
-    if (xmir_screen->root_title && xmir_screen->rootless) {
-        FatalError("-title has no effect with -rootless (instead Mir uses the actual title of each X window that opens)\n");
-        return FALSE;
-    }
 
-    if (!xmir_screen->root_title)
-        xmir_screen->root_title = "Xmir root window";
+    if (!xmir_screen->title)
+        xmir_screen->title = xmir_screen->rootless ? get_title_from_top_window
+                                                   : "Xmir root window";
 
 #ifdef __arm__
     if (xmir_screen->glamor == glamor_dri) {
