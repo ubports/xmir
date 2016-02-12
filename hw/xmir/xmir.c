@@ -422,43 +422,55 @@ void xmir_repaint(struct xmir_window *xmir_win)
     RegionPtr dirty = &xmir_win->region;
     MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
     char wm_name[256];
-    const char *new_name = "";
+    WindowPtr named = NULL;
 
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
     if (strcmp(xmir_screen->title, get_title_from_top_window)) {
-        new_name = NULL;  /* Fixed title mode. Never change it. */
+        /* Fixed title mode. Never change it. */
+        named = NULL;
     } else if (xmir_screen->rootless) {
-        if (xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name))
-            new_name = wm_name;
+        named = xmir_win->window;
     } else { /* Try and guess from the most relevant app window */
         WindowPtr top = xmir_screen->screen->root->firstChild;
+        WindowPtr top_named = NULL;
+        WindowPtr top_normal = NULL;
 
-        /* Find the top window that has a name set */
-        while (top && !xmir_get_window_name(top, wm_name, sizeof wm_name))
+        while (top) {
+            Atom wm_type;
+            WindowPtr app_window;
+            if (!top->viewable) {
+                top = top->nextSib;
+                continue;
+            }
+            app_window = xmir_get_window_prop_window(top, XA_WM_TRANSIENT_FOR);
+            if (app_window) {
+                named = app_window;
+                break;
+            }
+            wm_type = xmir_get_window_prop_atom(top,
+                                               GET_ATOM(_NET_WM_WINDOW_TYPE));
+            if (wm_type && wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_NORMAL))
+                top_normal = top;
+            if (xmir_get_window_name(top, wm_name, sizeof wm_name))
+                top_named = top;
+            
             top = top->firstChild;
-
-        /* Unfortunately this is X11 so the top window may be a menu,
-           tooltip or dialog etc. So now find the actual app window. */
-        if (top) {
-            WindowPtr wm_parent_of_top = xmir_get_window_prop_window(top,
-                                                           XA_WM_TRANSIENT_FOR);
-            if (wm_parent_of_top)  /* that's a better guess */
-                top = wm_parent_of_top;
         }
-
-        if (top)
-            new_name = wm_name;
+        if (!named)
+            named = top_normal ? top_normal : top_named;
     }
 
-    if (new_name && strcmp(new_name, xmir_win->wm_name)) {
+    if (named &&
+        xmir_get_window_name(named, wm_name, sizeof wm_name) &&
+        strcmp(wm_name, xmir_win->wm_name)) {
         MirSurfaceSpec *rename =
             mir_connection_create_spec_for_changes(xmir_screen->conn);
-        mir_surface_spec_set_name(rename, new_name);
+        mir_surface_spec_set_name(rename, wm_name);
         mir_surface_apply_spec(xmir_win->surface, rename);
         mir_surface_spec_release(rename);
-        strncpy(xmir_win->wm_name, new_name, sizeof(xmir_win->wm_name));
+        strncpy(xmir_win->wm_name, wm_name, sizeof(xmir_win->wm_name));
     }
 
     switch (xmir_screen->glamor) {
