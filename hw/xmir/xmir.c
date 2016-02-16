@@ -785,16 +785,6 @@ xmir_realize_window(WindowPtr window)
         xmir_screen->flatten_top = xmir_window;
     mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 
-    /*
-     * Traditional X apps actually get zero throttling, so an interval of
-     * zero is most appropriate, and of course avoids lag and provides
-     * maximum frame rates.
-     * This does however overclock DRI2 GLX clients who want an interval of
-     * one, but they are a tiny minority and much less important than
-     * minimizing lag right now. We'll fix that later. (LP: #1211186)
-     */
-    mir_surface_set_swapinterval(xmir_window->surface, 0);
-
     xmir_window_enable_damage_tracking(xmir_window);
 
     if (xmir_screen->glamor)
