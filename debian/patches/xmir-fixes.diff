@@ -17,7 +17,7 @@ Description: port xmir to 1.18
      } else {
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
-@@ -1211,7 +1211,7 @@ xmir_create_screen_resources(ScreenPtr s
+@@ -1256,7 +1256,7 @@ xmir_create_screen_resources(ScreenPtr s
      if (xmir_screen->glamor && !xmir_screen->rootless) {
          glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
  
