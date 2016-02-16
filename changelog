@@ -54,6 +54,15 @@ xorg-server (2:1.17.99.902-1) experimental; urgency=medium
 
  -- Julien Cristau <jcristau@debian.org>  Thu, 29 Oct 2015 09:58:55 +0000
 
+xorg-server (2:1.17.3-2ubuntu3) xenial; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Add ability to set title for XMir (LP: #1542028)
+    - Use swapinterval 0 (LP: #1502738)
+    - Add sufficient traversal hacks for Matchbox
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 15 Feb 2016 17:32:21 -0800
+
 xorg-server (2:1.17.3-2ubuntu2) xenial; urgency=medium
 
   * Disable mir on s390x.
