@@ -1,3 +1,12 @@
+xorg-server (2:1.17.3-2ubuntu2) xenial; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Add ability to set title for XMir (LP: #1542028)
+    - Use swapinterval 0 (LP: #1502738)
+    - Add sufficient traversal hacks for Matchbox
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 15 Feb 2016 17:32:21 -0800
+
 xorg-server (2:1.17.3-2ubuntu1) xenial; urgency=medium
 
   [ Robert Ancell ]

@@ -1,4 +1,4 @@
-From debdda3bfd737885c4fbbbcff06518c507009077 Mon Sep 17 00:00:00 2001
+From 47d65374fdc820777aaf84018574b8ce0d303dac Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 15 May 2015 14:58:59 +1200
 Subject: [PATCH 1/3] XMir DDX
@@ -15,20 +15,20 @@ Contributions from:
  hw/xmir/.gitignore          |    1 +
  hw/xmir/Makefile.am         |   61 ++
  hw/xmir/dri2/Makefile.am    |   14 +
- hw/xmir/dri2/dri2.c         | 1398 +++++++++++++++++++++++++++++++++++++++
- hw/xmir/dri2/dri2.h         |  364 +++++++++++
+ hw/xmir/dri2/dri2.c         | 1398 ++++++++++++++++++++++++++++++++++++++
+ hw/xmir/dri2/dri2.h         |  364 ++++++++++
  hw/xmir/dri2/dri2ext.c      |  683 +++++++++++++++++++
  hw/xmir/dri2/dri2int.h      |   26 +
  hw/xmir/xmir-cursor.c       |  210 ++++++
  hw/xmir/xmir-cvt.c          |  304 +++++++++
- hw/xmir/xmir-dri2.c         |  545 ++++++++++++++++
- hw/xmir/xmir-glamor.c       | 1173 +++++++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  577 ++++++++++++++++
- hw/xmir/xmir-output.c       |  456 +++++++++++++
- hw/xmir/xmir-thread-proxy.c |  109 ++++
- hw/xmir/xmir.c              | 1518 +++++++++++++++++++++++++++++++++++++++++++
- hw/xmir/xmir.h              |  225 +++++++
- 18 files changed, 7696 insertions(+), 2 deletions(-)
+ hw/xmir/xmir-dri2.c         |  545 +++++++++++++++
+ hw/xmir/xmir-glamor.c       | 1173 ++++++++++++++++++++++++++++++++
+ hw/xmir/xmir-input.c        |  566 ++++++++++++++++
+ hw/xmir/xmir-output.c       |  449 ++++++++++++
+ hw/xmir/xmir-thread-proxy.c |  109 +++
+ hw/xmir/xmir.c              | 1574 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir.h              |  226 +++++++
+ 18 files changed, 7735 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -4978,10 +4978,10 @@ index 0000000..2438013
 +}
 diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
 new file mode 100644
-index 0000000..2c3bb77
+index 0000000..727fc56
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,577 @@
+@@ -0,0 +1,566 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5489,17 +5489,6 @@ index 0000000..2c3bb77
 +        xmir_close_surface(xmir_window);
 +        break;
 +    case mir_event_type_surface_output:
-+        {
-+            ScreenPtr screen = xmir_screen->screen;
-+            MirSurfaceOutputEvent const* soe =
-+                mir_event_get_surface_output_event(ev);
-+            int dpi = mir_surface_output_event_get_dpi(soe);
-+            xmir_screen->dpi = dpi;
-+            screen->mmWidth = screen->width * 254 / (10 * dpi);
-+            screen->mmHeight = screen->height * 254 / (10 * dpi);
-+            XMIR_DEBUG(("Now screen is %hdx%hd mm\n",
-+                        screen->mmWidth, screen->mmHeight));
-+        }
 +        break;
 +    default:
 +        ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
@@ -5561,10 +5550,10 @@ index 0000000..2c3bb77
 +}
 diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
 new file mode 100644
-index 0000000..5a54cf2
+index 0000000..bde0940
 --- /dev/null
 +++ b/hw/xmir/xmir-output.c
-@@ -0,0 +1,456 @@
+@@ -0,0 +1,449 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6001,13 +5990,6 @@ index 0000000..5a54cf2
 +
 +        snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
 +        xmir_output_create(xmir_screen, mir_output, name);
-+
-+        if (mir_output->connected) {
-+            MirDisplayMode *mode = &mir_output->modes[mir_output->current_mode];
-+            xmir_screen->dpi = mode->horizontal_resolution * 254 /
-+                (10 * mir_output->physical_width_mm);
-+            XMIR_DEBUG(("Initial DPI is %d\n", xmir_screen->dpi));
-+        }
 +    }
 +
 +    RRScreenSetSizeRange(xmir_screen->screen, 320, 200, INT16_MAX, INT16_MAX);
@@ -6138,10 +6120,10 @@ index 0000000..dbb187f
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..a2e60b1
+index 0000000..12abaef
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,1518 @@
+@@ -0,0 +1,1574 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6226,6 +6208,8 @@ index 0000000..a2e60b1
 +
 +Bool xmir_debug_logging = False;
 +
++static const char get_title_from_top_window[] = "@";
++
 +static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 +
 +/* Required by GLX module */
@@ -6278,6 +6262,7 @@ index 0000000..a2e60b1
 +    ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
 +    ErrorF("    -neverclose        Never close the flattened rootless window\n");
 +    ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
++    ErrorF("-title <name>          Set window title (@ = automatic)\n");
 +    ErrorF("-sw                    disable glamor rendering\n");
 +    ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
 +    ErrorF("-egl_sync              same as -egl, but with synchronous page flips.\n");
@@ -6307,6 +6292,7 @@ index 0000000..a2e60b1
 +        return 1;
 +    }
 +    else if (strcmp(argv[i], "-mirSocket") == 0 ||
++             strcmp(argv[i], "-title") == 0 ||
 +             strcmp(argv[i], "-mir") == 0) {
 +        return 2;
 +    } else if (!strcmp(argv[i], "-novtswitch") ||
@@ -6559,12 +6545,48 @@ index 0000000..a2e60b1
 +    RegionPtr dirty = &xmir_win->region;
 +    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
 +    char wm_name[256];
++    WindowPtr named = NULL;
 +
 +    if (!xmir_win->has_free_buffer)
 +        ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 +
-+    if (xmir_screen->rootless &&
-+        xmir_get_window_name(xmir_win->window, wm_name, sizeof wm_name) &&
++    if (strcmp(xmir_screen->title, get_title_from_top_window)) {
++        /* Fixed title mode. Never change it. */
++        named = NULL;
++    } else if (xmir_screen->rootless) {
++        named = xmir_win->window;
++    } else { /* Try and guess from the most relevant app window */
++        WindowPtr top = xmir_screen->screen->root->firstChild;
++        WindowPtr top_named = NULL;
++        WindowPtr top_normal = NULL;
++
++        while (top) {
++            Atom wm_type;
++            WindowPtr app_window;
++            if (!top->viewable) {
++                top = top->nextSib;
++                continue;
++            }
++            app_window = xmir_get_window_prop_window(top, XA_WM_TRANSIENT_FOR);
++            if (app_window) {
++                named = app_window;
++                break;
++            }
++            wm_type = xmir_get_window_prop_atom(top,
++                                               GET_ATOM(_NET_WM_WINDOW_TYPE));
++            if (wm_type && wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_NORMAL))
++                top_normal = top;
++            if (xmir_get_window_name(top, wm_name, sizeof wm_name))
++                top_named = top;
++            
++            top = top->firstChild;
++        }
++        if (!named)
++            named = top_normal ? top_normal : top_named;
++    }
++
++    if (named &&
++        xmir_get_window_name(named, wm_name, sizeof wm_name) &&
 +        strcmp(wm_name, xmir_win->wm_name)) {
 +        MirSurfaceSpec *rename =
 +            mir_connection_create_spec_for_changes(xmir_screen->conn);
@@ -6851,8 +6873,10 @@ index 0000000..a2e60b1
 +        }
 +    }
 +
-+    mir_surface_spec_set_name(spec, xmir_screen->rootless ? wm_name :
-+                                    "Xmir root window");
++    if (strcmp(xmir_screen->title, get_title_from_top_window))
++        mir_surface_spec_set_name(spec, xmir_screen->title);
++    else if (xmir_screen->rootless)
++        mir_surface_spec_set_name(spec, wm_name);
 +
 +    xmir_window->surface_width = mir_width;
 +    xmir_window->surface_height = mir_height;
@@ -6884,13 +6908,16 @@ index 0000000..a2e60b1
 +        xmir_screen->flatten_top = xmir_window;
 +    mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
 +
-+#if 0
-+    /* Until recently (LP: #1391261) Mir's Android platform was still too buggy
-+     * to deal with this. But we're also still blocked by Unity8 bugs:
-+     * TODO: Fix bug LP: #1497828 to enable this in Unity8 (including ARM)
++    /*
++     * Traditional X apps actually get zero throttling, so an interval of
++     * zero is most appropriate, and of course avoids lag and provides
++     * maximum frame rates.
++     * This does however overclock DRI2 GLX clients who want an interval of
++     * one, but they are a tiny minority and much less important than
++     * minimizing lag right now. We'll fix that later. (LP: #1211186)
 +     */
 +    mir_surface_set_swapinterval(xmir_window->surface, 0);
-+#endif
++
 +    xmir_window_enable_damage_tracking(xmir_window);
 +
 +    if (xmir_screen->glamor)
@@ -7439,6 +7466,8 @@ index 0000000..a2e60b1
 +            xmir_screen->flatten = True;
 +        } else if (strcmp(argv[i], "-neverclose") == 0) {
 +            xmir_screen->neverclose = True;
++        } else if (strcmp(argv[i], "-title") == 0) {
++            xmir_screen->title = argv[++i];
 +        } else if (strcmp(argv[i], "-mir") == 0) {
 +            appid = argv[++i];
 +        } else if (strcmp(argv[i], "-mirSocket") == 0) {
@@ -7469,6 +7498,10 @@ index 0000000..a2e60b1
 +        FatalError("-neverclose is not valid without -rootless -flatten\n");
 +        return FALSE;
 +    }
++
++    if (!xmir_screen->title)
++        xmir_screen->title = xmir_screen->rootless ? get_title_from_top_window
++                                                   : "Xmir root window";
 +
 +#ifdef __arm__
 +    if (xmir_screen->glamor == glamor_dri) {
@@ -7527,8 +7560,13 @@ index 0000000..a2e60b1
 +        return FALSE;
 +    }
 +
-+    /* This will change later as we learn more about the environment */
-+    xmir_screen->dpi = 96;
++    /* Core DPI cannot report correct values (it's one value, we have multiple displays)
++     * Use the value from the -dpi commandline if set, or 96 otherwise.
++     *
++     * This matches the behaviour of all the desktop Xorg drivers. Clients which
++     * care can use the XRANDR extension to get correct per-output DPI information.
++     */
++    xmir_screen->dpi = monitorResolution > 0 ? monitorResolution : 96;
 +
 +    if (!xmir_screen_init_output(xmir_screen))
 +        return FALSE;
@@ -7662,10 +7700,10 @@ index 0000000..a2e60b1
 +}
 diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
 new file mode 100644
-index 0000000..2425f1c
+index 0000000..0bb4b1d
 --- /dev/null
 +++ b/hw/xmir/xmir.h
-@@ -0,0 +1,225 @@
+@@ -0,0 +1,226 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -7758,6 +7796,7 @@ index 0000000..2425f1c
 +    MirPixelFormat depth24_pixel_format, depth32_pixel_format;
 +    Bool flatten;
 +    Bool neverclose;
++    const char *title;
 +    MirSurface *neverclosed;
 +    struct xorg_list flattened_list;
 +    struct xmir_window *flatten_top;
@@ -7892,5 +7931,5 @@ index 0000000..2425f1c
 +
 +#endif
 -- 
-2.6.2
+2.7.0
 
