@@ -1,4 +1,4 @@
-From 47d65374fdc820777aaf84018574b8ce0d303dac Mon Sep 17 00:00:00 2001
+From efc26decfbefc45cdb36110c019272fbaf41284f Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 15 May 2015 14:58:59 +1200
 Subject: [PATCH 1/3] XMir DDX
@@ -24,11 +24,11 @@ Contributions from:
  hw/xmir/xmir-dri2.c         |  545 +++++++++++++++
  hw/xmir/xmir-glamor.c       | 1173 ++++++++++++++++++++++++++++++++
  hw/xmir/xmir-input.c        |  566 ++++++++++++++++
- hw/xmir/xmir-output.c       |  449 ++++++++++++
+ hw/xmir/xmir-output.c       |  449 +++++++++++++
  hw/xmir/xmir-thread-proxy.c |  109 +++
- hw/xmir/xmir.c              | 1574 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir.c              | 1564 +++++++++++++++++++++++++++++++++++++++++++
  hw/xmir/xmir.h              |  226 +++++++
- 18 files changed, 7735 insertions(+), 2 deletions(-)
+ 18 files changed, 7725 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -6120,10 +6120,10 @@ index 0000000..dbb187f
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..12abaef
+index 0000000..033ae92
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,1574 @@
+@@ -0,0 +1,1564 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6907,16 +6907,6 @@ index 0000000..12abaef
 +    if (!xmir_screen->flatten_top)
 +        xmir_screen->flatten_top = xmir_window;
 +    mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
-+
-+    /*
-+     * Traditional X apps actually get zero throttling, so an interval of
-+     * zero is most appropriate, and of course avoids lag and provides
-+     * maximum frame rates.
-+     * This does however overclock DRI2 GLX clients who want an interval of
-+     * one, but they are a tiny minority and much less important than
-+     * minimizing lag right now. We'll fix that later. (LP: #1211186)
-+     */
-+    mir_surface_set_swapinterval(xmir_window->surface, 0);
 +
 +    xmir_window_enable_damage_tracking(xmir_window);
 +
