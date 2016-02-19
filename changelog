@@ -60,6 +60,13 @@ xorg-server (2:1.17.99.902-1) experimental; urgency=medium
 
  -- Julien Cristau <jcristau@debian.org>  Thu, 29 Oct 2015 09:58:55 +0000
 
+xorg-server (2:1.17.3-2ubuntu4) xenial; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Revert swapinterval 0 change
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Tue, 16 Feb 2016 09:35:17 -0800
+
 xorg-server (2:1.17.3-2ubuntu3) xenial; urgency=medium
 
   * debian/patches/xmir.patch:
