@@ -760,24 +760,6 @@ xmir_realize_window(WindowPtr window)
     xmir_window->buf_width = mir_width;
     xmir_window->buf_height = mir_height;
 
-    if (!xmir_screen->rootless) {
-        MirDisplayConfiguration *conf =
-            mir_connection_create_display_config(xmir_screen->conn);
-        unsigned int i;
-        for (i = 0; i < conf->num_outputs; ++i) {
-            const MirDisplayOutput *out = conf->outputs + i;
-            if (out->connected && out->used) {
-                /* No other way to identify "primary" ? */
-                ErrorF("Using primary output ID %u\n",
-                       (unsigned)out->output_id);
-                mir_surface_spec_set_fullscreen_on_output(spec,
-                    out->output_id);
-                break;
-            }
-        }
-        mir_display_config_destroy(conf);
-    }
-
     if (xmir_screen->neverclosed) {
         mir_surface_spec_set_width(spec, mir_width);
         mir_surface_spec_set_height(spec, mir_height);
