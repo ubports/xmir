@@ -50,3 +50,4 @@ xmir-desktop-file-hint-flag.patch
 drm_device_keep_trying.patch
 xi2-resize-touch.patch
 xmir-fixes.diff
+fix-xineramaqueryscreens-for-reverse-prime.diff
