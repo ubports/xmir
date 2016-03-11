@@ -1,3 +1,9 @@
+xorg-server (2:1.18.1-1ubuntu4) UNRELEASED; urgency=medium
+
+  * glamor: Fix font rendering issue. (LP: #1555960)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 11 Mar 2016 08:20:50 +0200
+
 xorg-server (2:1.18.1-1ubuntu3) xenial; urgency=medium
 
   * Merge xmir changes from 2:1.17.3-2ubuntu4.
