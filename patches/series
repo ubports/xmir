@@ -8,7 +8,7 @@
 
 
 ## Ubuntu patches, not upstreamable
-105_nvidia_fglrx_autodetect.patch
+105_nvidia_autodetect.patch
 168_glibc_trace_to_stderr.patch
 188_default_primary_to_first_busid.patch
 190_cache-xkbcomp_output_for_fast_start_up.patch
