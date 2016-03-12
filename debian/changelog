@@ -5,6 +5,7 @@ xorg-server (2:1.18.2-1ubuntu1) UNRELEASED; urgency=medium
     glamor-factor-out-glamor-set-color.diff,
     glamor-source-pictures-are-always-depth-32.diff:
     Deleted, upstream.
+  * xmir-fixes.diff: Updated for glamor changes.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Sat, 12 Mar 2016 08:59:43 +0200
 
