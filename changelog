@@ -1,4 +1,4 @@
-xorg-server (2:1.18.2-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.18.2-2ubuntu1) UNRELEASED; urgency=medium
 
   * Merge from Debian.
   * fix-xineramaqueryscreens-for-reverse-prime.diff,
@@ -10,6 +10,15 @@ xorg-server (2:1.18.2-1ubuntu1) UNRELEASED; urgency=medium
     need to handle fglrx anymore.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Sat, 12 Mar 2016 08:59:43 +0200
+
+xorg-server (2:1.18.2-2) unstable; urgency=medium
+
+  * regression fixes/workarounds:
+    vidmode-reduce-verbosity-of-getmodeline.diff (Closes: #818634)
+    glamor-swizzle-red-to-0-for-alpha-textures.diff
+    revert-eb5108b870.diff (Closes: #818172)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 22 Mar 2016 09:47:25 +0200
 
 xorg-server (2:1.18.2-1) unstable; urgency=medium
 
