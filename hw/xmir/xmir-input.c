@@ -467,6 +467,33 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
 }
 
 static void
+xmir_handle_keymap_event(struct xmir_input *xmir_input,
+                                MirKeymapEvent const* ev)
+{
+    char * buffer = NULL;
+    size_t length = 0;
+    DeviceIntPtr master;
+    XkbDescPtr xkb;
+    XkbChangesRec changes = { 0 };
+
+    mir_keymap_event_get_keymap_buffer(ev, (char const **)&buffer, &length);
+
+    buffer[length] = '\0';
+
+    xkb = XkbCompileKeymapFromString(xmir_input->keyboard, buffer, length);
+
+    XkbUpdateDescActions(xkb, xkb->min_key_code, XkbNumKeys(xkb), &changes);
+
+    XkbDeviceApplyKeymap(xmir_input->keyboard, xkb);
+
+    master = GetMaster(xmir_input->keyboard, MASTER_KEYBOARD);
+    if (master && master->lastSlave == xmir_input->keyboard)
+        XkbDeviceApplyKeymap(master, xkb);
+
+    XkbFreeKeyboard(xkb, XkbAllComponentsMask, TRUE);
+}
+
+static void
 xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
                                          struct xmir_window *xmir_window,
                                          void *arg)
@@ -505,6 +532,9 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
         xmir_close_surface(xmir_window);
         break;
     case mir_event_type_surface_output:
+        break;
+    case mir_event_type_keymap:
+        xmir_handle_keymap_event(xmir_input, mir_event_get_keymap_event(ev));
         break;
     default:
         ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
