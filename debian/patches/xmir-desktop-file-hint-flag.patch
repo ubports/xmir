@@ -1,16 +1,18 @@
-From 938313b76b0e3279a94af931cbe5fd34b8cb580c Mon Sep 17 00:00:00 2001
+From de9e6e1d66680e717471df2c4032e590fd1b9ae0 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
-Date: Mon, 13 Jul 2015 15:54:32 +1200
-Subject: [PATCH 3/4] xmir: Ignore --desktop_file_hint flag required by Unity8
- to decide which application is starting
+Date: Fri, 29 Apr 2016 14:58:28 +0200
+Subject: [PATCH xserver 2/3] xmir: Ignore --desktop_file_hint flag required by
+ Unity8 to decide which application is starting
 
 ---
  hw/xmir/xmir.c | 3 +++
  1 file changed, 3 insertions(+)
 
+diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
+index 5526958..ea85f1a 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
-@@ -168,6 +168,9 @@ ddxProcessArgument(int argc, char *argv[
+@@ -172,6 +172,9 @@ ddxProcessArgument(int argc, char *argv[], int i)
      } else if (!strcmp(argv[i], "-novtswitch") ||
                 !strncmp(argv[i], "vt", 2)) {
          return 1;
@@ -20,3 +22,6 @@ Subject: [PATCH 3/4] xmir: Ignore --desktop_file_hint flag required by Unity8
      } else if (!strcmp(argv[i], "-fd")) {
          if (!seen_shared)
              NoListenAll = 1;
+-- 
+2.7.4
+

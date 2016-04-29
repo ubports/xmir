@@ -1,7 +1,7 @@
-From efc26decfbefc45cdb36110c019272fbaf41284f Mon Sep 17 00:00:00 2001
+From b97cd5fc8d76dcb45fac1965c8251e7d31e641b3 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
-Date: Fri, 15 May 2015 14:58:59 +1200
-Subject: [PATCH 1/3] XMir DDX
+Date: Fri, 29 Apr 2016 14:57:53 +0200
+Subject: [PATCH xserver 1/3] XMir DDX
 
 Contributions from:
   Maarten Lankhorst <maarten.lankhorst@ubuntu.com>
@@ -22,13 +22,13 @@ Contributions from:
  hw/xmir/xmir-cursor.c       |  210 ++++++
  hw/xmir/xmir-cvt.c          |  304 +++++++++
  hw/xmir/xmir-dri2.c         |  545 +++++++++++++++
- hw/xmir/xmir-glamor.c       | 1173 ++++++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  566 ++++++++++++++++
+ hw/xmir/xmir-glamor.c       | 1160 ++++++++++++++++++++++++++++++++
+ hw/xmir/xmir-input.c        |  594 ++++++++++++++++
  hw/xmir/xmir-output.c       |  449 +++++++++++++
  hw/xmir/xmir-thread-proxy.c |  109 +++
  hw/xmir/xmir.c              | 1564 +++++++++++++++++++++++++++++++++++++++++++
  hw/xmir/xmir.h              |  226 +++++++
- 18 files changed, 7725 insertions(+), 2 deletions(-)
+ 18 files changed, 7740 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -47,10 +47,10 @@ Contributions from:
  create mode 100644 hw/xmir/xmir.h
 
 diff --git a/configure.ac b/configure.ac
-index d8f0e74..56355fd 100644
+index 77cf234..8bf62a0 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -624,6 +624,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
+@@ -628,6 +628,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
  AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
@@ -58,7 +58,7 @@ index d8f0e74..56355fd 100644
  AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
  AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
  AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: no)]), [GLAMOR=$enableval], [GLAMOR=no])
-@@ -745,6 +746,7 @@ case $host_os in
+@@ -746,6 +747,7 @@ case $host_os in
  			XVFB=no
  			XNEST=no
  			XWAYLAND=no
@@ -66,7 +66,7 @@ index d8f0e74..56355fd 100644
  
  			COMPOSITE=no
  			DGA=no
-@@ -2474,6 +2476,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2482,6 +2484,27 @@ if test "x$XWAYLAND" = xyes; then
  		     [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
  fi
  
@@ -3799,10 +3799,10 @@ index 0000000..b24d4b9
 +}
 diff --git a/hw/xmir/xmir-glamor.c b/hw/xmir/xmir-glamor.c
 new file mode 100644
-index 0000000..2438013
+index 0000000..7ad0245
 --- /dev/null
 +++ b/hw/xmir/xmir-glamor.c
-@@ -0,0 +1,1173 @@
+@@ -0,0 +1,1160 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -4025,7 +4025,7 @@ index 0000000..2438013
 +
 +    pixmap_priv_get_scale(src_pixmap_priv, &src_xscale, &src_yscale);
 +
-+    if (src_pixmap_priv->base.gl_fbo == GLAMOR_FBO_UNATTACHED)
++    if (src_pixmap_priv->gl_fbo == GLAMOR_FBO_UNATTACHED)
 +        FatalError("aeiou\n");
 +
 +    glViewport(dx, dy, width + dx, height + dy);
@@ -4036,7 +4036,7 @@ index 0000000..2438013
 +
 +    if (!fbo) {
 +       glActiveTexture(GL_TEXTURE0);
-+       glBindTexture(GL_TEXTURE_2D, src_pixmap_priv->base.fbo->tex);
++       glBindTexture(GL_TEXTURE_2D, src_pixmap_priv->fbo->tex);
 +
 +        if (glamor_priv->gl_flavor == GLAMOR_GL_DESKTOP) {
 +            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -4077,13 +4077,8 @@ index 0000000..2438013
 +        _tx1 = v_from_x_coord_x(dst_xscale, dbox.x1);
 +        _tx2 = v_from_x_coord_x(dst_xscale, dbox.x2);
 +
-+        if (xmir_screen->gbm) {
-+            _ty1 = v_from_x_coord_y_inverted(dst_yscale, dbox.y1);
-+            _ty2 = v_from_x_coord_y_inverted(dst_yscale, dbox.y2);
-+        } else {
-+            _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
-+            _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
-+        }
++        _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
++        _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
 +
 +        /* upper left */
 +        vertices[0] = _tx1;
@@ -4122,13 +4117,8 @@ index 0000000..2438013
 +        _tx1 = v_from_x_coord_x(dst_xscale, dbox.x1);
 +        _tx2 = v_from_x_coord_x(dst_xscale, dbox.x2);
 +
-+        if (xmir_screen->gbm) {
-+            _ty1 = v_from_x_coord_y_inverted(dst_yscale, dbox.y1);
-+            _ty2 = v_from_x_coord_y_inverted(dst_yscale, dbox.y2);
-+        } else {
-+            _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
-+            _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
-+        }
++        _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
++        _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
 +
 +        /* upper right */
 +        vertices[0] = _tx2;
@@ -4173,7 +4163,7 @@ index 0000000..2438013
 +    DebugF("Box: (%i,%i)->(%i,%i)\n", ext->x1, ext->y1, ext->x2, ext->y2);
 +
 +    if (epoxy_has_gl_extension("GL_EXT_framebuffer_blit") && !xmir_screen->doubled && !orientation) {
-+        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->base.fbo->fb);
++        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->fbo->fb);
 +
 +        glBlitFramebuffer(ext->x1, ext->y2, ext->x2, ext->y1,
 +                          ext->x1 + dx, ext->y2 + dy, ext->x2 + dx, ext->y1 + dy,
@@ -4209,7 +4199,7 @@ index 0000000..2438013
 +        PixmapPtr from = screen->GetWindowPixmap(window);
 +        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(back);
 +
-+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
++        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->fbo->fb);
 +        xmir_glamor_copy_egl_common(&window->drawable, from, glamor_get_pixmap_private(from),
 +                                    RegionExtents(dirty),
 +                                    back->drawable.width, back->drawable.height, 0, 0, xmir_win->orientation);
@@ -4412,9 +4402,9 @@ index 0000000..2438013
 +         * rotating back and forth.
 +         */
 +        glamor_set_pixmap_type(src_pixmap, GLAMOR_TEXTURE_DRM);
-+        src_pixmap_priv->base.fbo->external = TRUE;
++        src_pixmap_priv->fbo->external = TRUE;
 +
-+        xmir_win->image = eglCreateImageKHR(xmir_screen->egl_display, xmir_screen->egl_context, EGL_GL_TEXTURE_2D_KHR, (EGLClientBuffer)(intptr_t)src_pixmap_priv->base.fbo->tex, attribs);
++        xmir_win->image = eglCreateImageKHR(xmir_screen->egl_display, xmir_screen->egl_context, EGL_GL_TEXTURE_2D_KHR, (EGLClientBuffer)(intptr_t)src_pixmap_priv->fbo->tex, attribs);
 +        if (!xmir_win->image) {
 +            GLint error;
 +            ErrorF("eglCreateImageKHR failed with %x\n", eglGetError());
@@ -4821,7 +4811,7 @@ index 0000000..2438013
 +}
 +
 +unsigned int
-+glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h)
++glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h, Bool linear)
 +{
 +    return 0;
 +}
@@ -4949,10 +4939,7 @@ index 0000000..2438013
 +    }
 +
 +    if (!glamor_init(screen,
-+                     GLAMOR_INVERTED_Y_AXIS |
 +                     GLAMOR_USE_EGL_SCREEN |
-+                     GLAMOR_USE_SCREEN |
-+                     GLAMOR_USE_PICTURE_SCREEN |
 +                     GLAMOR_NO_DRI3)) {
 +        ErrorF("Failed to initialize glamor\n");
 +        return FALSE;
@@ -4978,10 +4965,10 @@ index 0000000..2438013
 +}
 diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
 new file mode 100644
-index 0000000..727fc56
+index 0000000..e5fd2d5
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,566 @@
+@@ -0,0 +1,594 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5362,15 +5349,13 @@ index 0000000..727fc56
 +    case mir_input_event_type_key: {
 +        MirKeyboardEvent const *kev;
 +        MirKeyboardAction action;
-+        ValuatorMask mask;
 +
 +        kev = mir_input_event_get_keyboard_event(ev);
 +        action = mir_keyboard_event_action(kev);
 +
-+        valuator_mask_zero(&mask);
 +        QueueKeyboardEvents(xmir_input->keyboard,
 +                            action == mir_keyboard_action_up ? KeyRelease : KeyPress,
-+                            mir_keyboard_event_scan_code(kev) + 8, &mask);
++                            mir_keyboard_event_scan_code(kev) + 8);
 +        break;
 +    }
 +    case mir_input_event_type_touch: {
@@ -5451,6 +5436,33 @@ index 0000000..727fc56
 +}
 +
 +static void
++xmir_handle_keymap_event(struct xmir_input *xmir_input,
++                                MirKeymapEvent const* ev)
++{
++    char * buffer = NULL;
++    size_t length = 0;
++    DeviceIntPtr master;
++    XkbDescPtr xkb;
++    XkbChangesRec changes = { 0 };
++
++    mir_keymap_event_get_keymap_buffer(ev, (char const **)&buffer, &length);
++
++    buffer[length] = '\0';
++
++    xkb = XkbCompileKeymapFromString(xmir_input->keyboard, buffer, length);
++
++    XkbUpdateDescActions(xkb, xkb->min_key_code, XkbNumKeys(xkb), &changes);
++
++    XkbDeviceApplyKeymap(xmir_input->keyboard, xkb);
++
++    master = GetMaster(xmir_input->keyboard, MASTER_KEYBOARD);
++    if (master && master->lastSlave == xmir_input->keyboard)
++        XkbDeviceApplyKeymap(master, xkb);
++
++    XkbFreeKeyboard(xkb, XkbAllComponentsMask, TRUE);
++}
++
++static void
 +xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
 +                                         struct xmir_window *xmir_window,
 +                                         void *arg)
@@ -5489,6 +5501,9 @@ index 0000000..727fc56
 +        xmir_close_surface(xmir_window);
 +        break;
 +    case mir_event_type_surface_output:
++        break;
++    case mir_event_type_keymap:
++        xmir_handle_keymap_event(xmir_input, mir_event_get_keymap_event(ev));
 +        break;
 +    default:
 +        ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
@@ -5550,7 +5565,7 @@ index 0000000..727fc56
 +}
 diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
 new file mode 100644
-index 0000000..bde0940
+index 0000000..f538749
 --- /dev/null
 +++ b/hw/xmir/xmir-output.c
 @@ -0,0 +1,449 @@
@@ -5883,10 +5898,10 @@ index 0000000..bde0940
 +
 +    if (xmir_screen->glamor) {
 +        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
-+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
++        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->fbo->fb);
 +        glClearColor(0., 0., 0., 1.);
 +        glClear(GL_COLOR_BUFFER_BIT);
-+        glamor_copy_n_to_n_nf(&screen->root->drawable, &pixmap->drawable,
++        glamor_copy(&screen->root->drawable, &pixmap->drawable,
 +                              NULL, &copy_box, 1, 0, 0, FALSE, FALSE, 0, NULL);
 +        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 +    } else {
@@ -6120,7 +6135,7 @@ index 0000000..dbb187f
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..033ae92
+index 0000000..5526958
 --- /dev/null
 +++ b/hw/xmir/xmir.c
 @@ -0,0 +1,1564 @@
@@ -6578,7 +6593,7 @@ index 0000000..033ae92
 +                top_normal = top;
 +            if (xmir_get_window_name(top, wm_name, sizeof wm_name))
 +                top_named = top;
-+            
++
 +            top = top->firstChild;
 +        }
 +        if (!named)
@@ -7369,7 +7384,7 @@ index 0000000..033ae92
 +    if (xmir_screen->glamor && !xmir_screen->rootless) {
 +        glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
 +
-+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
++        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->fbo->fb);
 +        glClear(GL_COLOR_BUFFER_BIT);
 +        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 +
@@ -7921,5 +7936,5 @@ index 0000000..0bb4b1d
 +
 +#endif
 -- 
-2.7.0
+2.7.4
 
