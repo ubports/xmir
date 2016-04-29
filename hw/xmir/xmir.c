@@ -455,7 +455,7 @@ void xmir_repaint(struct xmir_window *xmir_win)
                 top_normal = top;
             if (xmir_get_window_name(top, wm_name, sizeof wm_name))
                 top_named = top;
-            
+
             top = top->firstChild;
         }
         if (!named)
