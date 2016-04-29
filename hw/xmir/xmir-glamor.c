@@ -220,7 +220,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
 
     pixmap_priv_get_scale(src_pixmap_priv, &src_xscale, &src_yscale);
 
-    if (src_pixmap_priv->base.gl_fbo == GLAMOR_FBO_UNATTACHED)
+    if (src_pixmap_priv->gl_fbo == GLAMOR_FBO_UNATTACHED)
         FatalError("aeiou\n");
 
     glViewport(dx, dy, width + dx, height + dy);
@@ -231,7 +231,7 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
 
     if (!fbo) {
        glActiveTexture(GL_TEXTURE0);
-       glBindTexture(GL_TEXTURE_2D, src_pixmap_priv->base.fbo->tex);
+       glBindTexture(GL_TEXTURE_2D, src_pixmap_priv->fbo->tex);
 
         if (glamor_priv->gl_flavor == GLAMOR_GL_DESKTOP) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -272,13 +272,8 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
         _tx1 = v_from_x_coord_x(dst_xscale, dbox.x1);
         _tx2 = v_from_x_coord_x(dst_xscale, dbox.x2);
 
-        if (xmir_screen->gbm) {
-            _ty1 = v_from_x_coord_y_inverted(dst_yscale, dbox.y1);
-            _ty2 = v_from_x_coord_y_inverted(dst_yscale, dbox.y2);
-        } else {
-            _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
-            _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
-        }
+        _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
+        _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
 
         /* upper left */
         vertices[0] = _tx1;
@@ -317,13 +312,8 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
         _tx1 = v_from_x_coord_x(dst_xscale, dbox.x1);
         _tx2 = v_from_x_coord_x(dst_xscale, dbox.x2);
 
-        if (xmir_screen->gbm) {
-            _ty1 = v_from_x_coord_y_inverted(dst_yscale, dbox.y1);
-            _ty2 = v_from_x_coord_y_inverted(dst_yscale, dbox.y2);
-        } else {
-            _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
-            _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
-        }
+        _ty1 = v_from_x_coord_y(dst_yscale, dbox.y1);
+        _ty2 = v_from_x_coord_y(dst_yscale, dbox.y2);
 
         /* upper right */
         vertices[0] = _tx2;
@@ -368,7 +358,7 @@ xmir_glamor_copy_egl_common(DrawablePtr src, PixmapPtr src_pixmap,
     DebugF("Box: (%i,%i)->(%i,%i)\n", ext->x1, ext->y1, ext->x2, ext->y2);
 
     if (epoxy_has_gl_extension("GL_EXT_framebuffer_blit") && !xmir_screen->doubled && !orientation) {
-        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->base.fbo->fb);
+        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->fbo->fb);
 
         glBlitFramebuffer(ext->x1, ext->y2, ext->x2, ext->y1,
                           ext->x1 + dx, ext->y2 + dy, ext->x2 + dx, ext->y1 + dy,
@@ -404,7 +394,7 @@ xmir_glamor_copy_gbm(struct xmir_screen *xmir_screen, struct xmir_window *xmir_w
         PixmapPtr from = screen->GetWindowPixmap(window);
         glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(back);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->fbo->fb);
         xmir_glamor_copy_egl_common(&window->drawable, from, glamor_get_pixmap_private(from),
                                     RegionExtents(dirty),
                                     back->drawable.width, back->drawable.height, 0, 0, xmir_win->orientation);
@@ -607,9 +597,9 @@ xmir_glamor_copy_egl_queue(struct xmir_screen *xmir_screen, struct xmir_window *
          * rotating back and forth.
          */
         glamor_set_pixmap_type(src_pixmap, GLAMOR_TEXTURE_DRM);
-        src_pixmap_priv->base.fbo->external = TRUE;
+        src_pixmap_priv->fbo->external = TRUE;
 
-        xmir_win->image = eglCreateImageKHR(xmir_screen->egl_display, xmir_screen->egl_context, EGL_GL_TEXTURE_2D_KHR, (EGLClientBuffer)(intptr_t)src_pixmap_priv->base.fbo->tex, attribs);
+        xmir_win->image = eglCreateImageKHR(xmir_screen->egl_display, xmir_screen->egl_context, EGL_GL_TEXTURE_2D_KHR, (EGLClientBuffer)(intptr_t)src_pixmap_priv->fbo->tex, attribs);
         if (!xmir_win->image) {
             GLint error;
             ErrorF("eglCreateImageKHR failed with %x\n", eglGetError());
@@ -1016,7 +1006,7 @@ glamor_egl_dri3_fd_name_from_tex(ScreenPtr screen,
 }
 
 unsigned int
-glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h)
+glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h, Bool linear)
 {
     return 0;
 }
@@ -1144,10 +1134,7 @@ xmir_glamor_init(struct xmir_screen *xmir_screen)
     }
 
     if (!glamor_init(screen,
-                     GLAMOR_INVERTED_Y_AXIS |
                      GLAMOR_USE_EGL_SCREEN |
-                     GLAMOR_USE_SCREEN |
-                     GLAMOR_USE_PICTURE_SCREEN |
                      GLAMOR_NO_DRI3)) {
         ErrorF("Failed to initialize glamor\n");
         return FALSE;

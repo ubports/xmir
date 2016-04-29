@@ -327,10 +327,10 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 
     if (xmir_screen->glamor) {
         glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(pixmap);
-        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->fbo->fb);
         glClearColor(0., 0., 0., 1.);
         glClear(GL_COLOR_BUFFER_BIT);
-        glamor_copy_n_to_n_nf(&screen->root->drawable, &pixmap->drawable,
+        glamor_copy(&screen->root->drawable, &pixmap->drawable,
                               NULL, &copy_box, 1, 0, 0, FALSE, FALSE, 0, NULL);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     } else {
