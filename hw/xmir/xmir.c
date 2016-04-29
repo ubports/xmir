@@ -1246,7 +1246,7 @@ xmir_create_screen_resources(ScreenPtr screen)
     if (xmir_screen->glamor && !xmir_screen->rootless) {
         glamor_pixmap_private *pixmap_priv = glamor_get_pixmap_private(screen->devPrivate);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->base.fbo->fb);
+        glBindFramebuffer(GL_FRAMEBUFFER, pixmap_priv->fbo->fb);
         glClear(GL_COLOR_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
