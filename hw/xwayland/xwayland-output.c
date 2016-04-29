@@ -257,15 +257,7 @@ xwl_output_create(struct xwl_screen *xwl_screen, uint32_t id)
     xwl_output->server_output_id = id;
     wl_output_add_listener(xwl_output->output, &output_listener, xwl_output);
 
-<<<<<<< HEAD
-    if (snprintf(name, sizeof name, "XWAYLAND%d", serial++) < 0) {
-        ErrorF("create_output ENOMEM\n");
-        free(xwl_output);
-        return NULL;
-    }
-=======
     snprintf(name, sizeof name, "XWAYLAND%d", serial++);
->>>>>>> server-1.18-branch
 
     xwl_output->xwl_screen = xwl_screen;
     xwl_output->randr_crtc = RRCrtcCreate(xwl_screen->screen, xwl_output);
@@ -304,8 +296,6 @@ xwl_output_destroy(struct xwl_output *xwl_output)
     int width = 0, height = 0;
 
     wl_output_destroy(xwl_output->output);
-<<<<<<< HEAD
-=======
     xorg_list_del(&xwl_output->link);
     RRCrtcDestroy(xwl_output->randr_crtc);
     RROutputDestroy(xwl_output->randr_output);
@@ -314,7 +304,6 @@ xwl_output_destroy(struct xwl_output *xwl_output)
         output_get_new_size(it, &height, &width);
     update_screen_size(xwl_output, width, height);
 
->>>>>>> server-1.18-branch
     free(xwl_output);
 }
 

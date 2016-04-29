@@ -815,8 +815,6 @@ create_input_device(struct xwl_screen *xwl_screen, uint32_t id, uint32_t version
 void
 xwl_seat_destroy(struct xwl_seat *xwl_seat)
 {
-<<<<<<< HEAD
-=======
     struct xwl_touch *xwl_touch, *next_xwl_touch;
 
     xorg_list_for_each_entry_safe(xwl_touch, next_xwl_touch,
@@ -825,7 +823,6 @@ xwl_seat_destroy(struct xwl_seat *xwl_seat)
         free(xwl_touch);
     }
 
->>>>>>> server-1.18-branch
     wl_seat_destroy(xwl_seat->seat);
     wl_surface_destroy(xwl_seat->cursor);
     if (xwl_seat->cursor_frame_cb)
