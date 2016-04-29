@@ -46,11 +46,11 @@ Contributions from:
  create mode 100644 hw/xmir/xmir.c
  create mode 100644 hw/xmir/xmir.h
 
-diff --git a/configure.ac b/configure.ac
-index d8f0e74..56355fd 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -624,6 +624,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_STRING([--enable-xvfb], [Build Xvfb server
+Index: xorg-server-1.18.3/configure.ac
+===================================================================
+--- xorg-server-1.18.3.orig/configure.ac
++++ xorg-server-1.18.3/configure.ac
+@@ -633,6 +633,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
  AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
@@ -58,7 +58,7 @@ index d8f0e74..56355fd 100644
  AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
  AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
  AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: no)]), [GLAMOR=$enableval], [GLAMOR=no])
-@@ -745,6 +746,7 @@ case $host_os in
+@@ -751,6 +752,7 @@ case $host_os in
  			XVFB=no
  			XNEST=no
  			XWAYLAND=no
@@ -66,7 +66,7 @@ index d8f0e74..56355fd 100644
  
  			COMPOSITE=no
  			DGA=no
-@@ -2474,6 +2476,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2503,6 +2505,27 @@ if test "x$XWAYLAND" = xyes; then
  		     [${WAYLAND_PREFIX}/bin$PATH_SEPARATOR$PATH])
  fi
  
@@ -94,7 +94,7 @@ index d8f0e74..56355fd 100644
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2622,6 +2645,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2651,6 +2674,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -103,10 +103,10 @@ index d8f0e74..56355fd 100644
  test/Makefile
  test/xi1/Makefile
  test/xi2/Makefile
-diff --git a/hw/Makefile.am b/hw/Makefile.am
-index 19895dc..b7b958c 100644
---- a/hw/Makefile.am
-+++ b/hw/Makefile.am
+Index: xorg-server-1.18.3/hw/Makefile.am
+===================================================================
+--- xorg-server-1.18.3.orig/hw/Makefile.am
++++ xorg-server-1.18.3/hw/Makefile.am
 @@ -30,6 +30,10 @@ if XWAYLAND
  XWAYLAND_SUBDIRS = xwayland
  endif
@@ -131,18 +131,16 @@ index 19895dc..b7b958c 100644
  
  relink:
  	$(AM_V_at)for i in $(SUBDIRS) ; do $(MAKE) -C $$i relink || exit 1 ; done
-diff --git a/hw/xmir/.gitignore b/hw/xmir/.gitignore
-new file mode 100644
-index 0000000..b6a16d4
+Index: xorg-server-1.18.3/hw/xmir/.gitignore
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/.gitignore
++++ xorg-server-1.18.3/hw/xmir/.gitignore
 @@ -0,0 +1 @@
 +Xmir
-diff --git a/hw/xmir/Makefile.am b/hw/xmir/Makefile.am
-new file mode 100644
-index 0000000..be5225e
+Index: xorg-server-1.18.3/hw/xmir/Makefile.am
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/Makefile.am
++++ xorg-server-1.18.3/hw/xmir/Makefile.am
 @@ -0,0 +1,61 @@
 +bin_PROGRAMS = Xmir
 +
@@ -205,11 +203,10 @@ index 0000000..be5225e
 +
 +relink:
 +	$(AM_V_at)rm -f Xmir$(EXEEXT) && $(MAKE) Xmir$(EXEEXT)
-diff --git a/hw/xmir/dri2/Makefile.am b/hw/xmir/dri2/Makefile.am
-new file mode 100644
-index 0000000..696240c
+Index: xorg-server-1.18.3/hw/xmir/dri2/Makefile.am
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/Makefile.am
++++ xorg-server-1.18.3/hw/xmir/dri2/Makefile.am
 @@ -0,0 +1,14 @@
 +noinst_LTLIBRARIES = libdri2.la
 +
@@ -225,11 +222,10 @@ index 0000000..696240c
 +	dri2ext.c \
 +	dri2int.h
 +
-diff --git a/hw/xmir/dri2/dri2.c b/hw/xmir/dri2/dri2.c
-new file mode 100644
-index 0000000..6aa19ba
+Index: xorg-server-1.18.3/hw/xmir/dri2/dri2.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2.c
++++ xorg-server-1.18.3/hw/xmir/dri2/dri2.c
 @@ -0,0 +1,1398 @@
 +/*
 + * Copyright © 2007, 2008 Red Hat, Inc.
@@ -1629,11 +1625,10 @@ index 0000000..6aa19ba
 +    *is_param_recognized = FALSE;
 +    return Success;
 +}
-diff --git a/hw/xmir/dri2/dri2.h b/hw/xmir/dri2/dri2.h
-new file mode 100644
-index 0000000..318898b
+Index: xorg-server-1.18.3/hw/xmir/dri2/dri2.h
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2.h
++++ xorg-server-1.18.3/hw/xmir/dri2/dri2.h
 @@ -0,0 +1,364 @@
 +/*
 + * Copyright © 2007 Red Hat, Inc.
@@ -1999,11 +1994,10 @@ index 0000000..318898b
 +extern Bool noDRI2Extension;
 +
 +#endif
-diff --git a/hw/xmir/dri2/dri2ext.c b/hw/xmir/dri2/dri2ext.c
-new file mode 100644
-index 0000000..befbb82
+Index: xorg-server-1.18.3/hw/xmir/dri2/dri2ext.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2ext.c
++++ xorg-server-1.18.3/hw/xmir/dri2/dri2ext.c
 @@ -0,0 +1,683 @@
 +/*
 + * Copyright © 2008 Red Hat, Inc.
@@ -2688,11 +2682,10 @@ index 0000000..befbb82
 +
 +    DRI2ModuleSetup();
 +}
-diff --git a/hw/xmir/dri2/dri2int.h b/hw/xmir/dri2/dri2int.h
-new file mode 100644
-index 0000000..7f53eba
+Index: xorg-server-1.18.3/hw/xmir/dri2/dri2int.h
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/dri2/dri2int.h
++++ xorg-server-1.18.3/hw/xmir/dri2/dri2int.h
 @@ -0,0 +1,26 @@
 +/*
 + * Copyright © 2011 Daniel Stone
@@ -2720,11 +2713,10 @@ index 0000000..7f53eba
 + */
 +
 +extern Bool DRI2ModuleSetup(void);
-diff --git a/hw/xmir/xmir-cursor.c b/hw/xmir/xmir-cursor.c
-new file mode 100644
-index 0000000..81873a4
+Index: xorg-server-1.18.3/hw/xmir/xmir-cursor.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-cursor.c
++++ xorg-server-1.18.3/hw/xmir/xmir-cursor.c
 @@ -0,0 +1,210 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -2936,11 +2928,10 @@ index 0000000..81873a4
 +                               &xmir_pointer_sprite_funcs,
 +                               &xmir_pointer_screen_funcs, TRUE);
 +}
-diff --git a/hw/xmir/xmir-cvt.c b/hw/xmir/xmir-cvt.c
-new file mode 100644
-index 0000000..6070d77
+Index: xorg-server-1.18.3/hw/xmir/xmir-cvt.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-cvt.c
++++ xorg-server-1.18.3/hw/xmir/xmir-cvt.c
 @@ -0,0 +1,304 @@
 +/* Copied from hw/xfree86/modes/xf86cvt.c into xmir DDX and
 + * changed to generate an RRMode */
@@ -3246,11 +3237,10 @@ index 0000000..6070d77
 +
 +    return RRModeGet(&modeinfo, name);
 +}
-diff --git a/hw/xmir/xmir-dri2.c b/hw/xmir/xmir-dri2.c
-new file mode 100644
-index 0000000..b24d4b9
+Index: xorg-server-1.18.3/hw/xmir/xmir-dri2.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-dri2.c
++++ xorg-server-1.18.3/hw/xmir/xmir-dri2.c
 @@ -0,0 +1,545 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -3797,11 +3787,10 @@ index 0000000..b24d4b9
 +    ret = DRI2ScreenInit(xmir_screen->screen, &xmir_screen->dri2);
 +    return ret;
 +}
-diff --git a/hw/xmir/xmir-glamor.c b/hw/xmir/xmir-glamor.c
-new file mode 100644
-index 0000000..2438013
+Index: xorg-server-1.18.3/hw/xmir/xmir-glamor.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-glamor.c
++++ xorg-server-1.18.3/hw/xmir/xmir-glamor.c
 @@ -0,0 +1,1173 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -4976,12 +4965,11 @@ index 0000000..2438013
 +
 +    return TRUE;
 +}
-diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
-new file mode 100644
-index 0000000..727fc56
+Index: xorg-server-1.18.3/hw/xmir/xmir-input.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,566 @@
++++ xorg-server-1.18.3/hw/xmir/xmir-input.c
+@@ -0,0 +1,596 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5451,6 +5439,33 @@ index 0000000..727fc56
 +}
 +
 +static void
++xmir_handle_keymap_event(struct xmir_input *xmir_input,
++                                MirKeymapEvent const* ev)
++{
++    char * buffer = NULL;
++    size_t length = 0;
++    DeviceIntPtr master;
++    XkbDescPtr xkb;
++    XkbChangesRec changes = { 0 };
++
++    mir_keymap_event_get_keymap_buffer(ev, (char const **)&buffer, &length);
++    
++    buffer[length] = '\0';
++
++    xkb = XkbCompileKeymapFromString(xmir_input->keyboard, buffer, length);
++
++    XkbUpdateDescActions(xkb, xkb->min_key_code, XkbNumKeys(xkb), &changes);
++
++    XkbDeviceApplyKeymap(xmir_input->keyboard, xkb);
++
++    master = GetMaster(xmir_input->keyboard, MASTER_KEYBOARD);
++    if (master && master->lastSlave == xmir_input->keyboard)
++        XkbDeviceApplyKeymap(master, xkb);
++
++    XkbFreeKeyboard(xkb, XkbAllComponentsMask, TRUE);
++}
++
++static void
 +xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
 +                                         struct xmir_window *xmir_window,
 +                                         void *arg)
@@ -5489,6 +5504,9 @@ index 0000000..727fc56
 +        xmir_close_surface(xmir_window);
 +        break;
 +    case mir_event_type_surface_output:
++        break;
++    case mir_event_type_keymap:
++        xmir_handle_keymap_event(xmir_input, mir_event_get_keymap_event(ev));
 +        break;
 +    default:
 +        ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
@@ -5548,11 +5566,10 @@ index 0000000..727fc56
 +
 +    mieqFini();
 +}
-diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
-new file mode 100644
-index 0000000..bde0940
+Index: xorg-server-1.18.3/hw/xmir/xmir-output.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-output.c
++++ xorg-server-1.18.3/hw/xmir/xmir-output.c
 @@ -0,0 +1,449 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -6003,11 +6020,10 @@ index 0000000..bde0940
 +
 +    return TRUE;
 +}
-diff --git a/hw/xmir/xmir-thread-proxy.c b/hw/xmir/xmir-thread-proxy.c
-new file mode 100644
-index 0000000..dbb187f
+Index: xorg-server-1.18.3/hw/xmir/xmir-thread-proxy.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir-thread-proxy.c
++++ xorg-server-1.18.3/hw/xmir/xmir-thread-proxy.c
 @@ -0,0 +1,109 @@
 +/*
 + * Copyright © 2012-2015 Canonical Ltd
@@ -6118,11 +6134,10 @@ index 0000000..dbb187f
 +            msg.callback(msg.xmir_screen, msg.xmir_window, msg.arg);
 +    }
 +}
-diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-new file mode 100644
-index 0000000..033ae92
+Index: xorg-server-1.18.3/hw/xmir/xmir.c
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir.c
++++ xorg-server-1.18.3/hw/xmir/xmir.c
 @@ -0,0 +1,1564 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -7688,11 +7703,10 @@ index 0000000..033ae92
 +        FatalError("Couldn't add screen\n");
 +    }
 +}
-diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
-new file mode 100644
-index 0000000..0bb4b1d
+Index: xorg-server-1.18.3/hw/xmir/xmir.h
+===================================================================
 --- /dev/null
-+++ b/hw/xmir/xmir.h
++++ xorg-server-1.18.3/hw/xmir/xmir.h
 @@ -0,0 +1,226 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
@@ -7920,6 +7934,3 @@ index 0000000..0bb4b1d
 +	(((major) * 10000000) + ((minor) * 100000) + ((patch) * 1000) + snap)
 +
 +#endif
--- 
-2.7.0
-

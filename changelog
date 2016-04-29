@@ -1,3 +1,10 @@
+xorg-server (2:1.18.3-1ubuntu2.1) xenial; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Pass keymap from Mir to Xkb (LP: #1566487)
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Fri, 29 Apr 2016 15:43:38 +0200
+
 xorg-server (2:1.18.3-1ubuntu2) xenial; urgency=medium
 
   * Disable 190_cache-xkbcomp_output_for_fast_start_up.patch for now,
