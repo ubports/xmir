@@ -1032,7 +1032,8 @@ DRICreateContext(ScreenPtr pScreen, VisualPtr visual,
     }
 
     /* track this in case the client dies before cleanup */
-    AddResource(context, DRIContextPrivResType, (void *) pDRIContextPriv);
+    if (!AddResource(context, DRIContextPrivResType, (void *) pDRIContextPriv))
+        return FALSE;
 
     return TRUE;
 }
@@ -1263,8 +1264,9 @@ DRICreateDrawable(ScreenPtr pScreen, ClientPtr client, DrawablePtr pDrawable,
         }
 
         /* track this in case the client dies */
-        AddResource(FakeClientID(client->index), DRIDrawablePrivResType,
-                    (void *) (intptr_t) pDrawable->id);
+        if (!AddResource(FakeClientID(client->index), DRIDrawablePrivResType,
+                         (void *) (intptr_t) pDrawable->id))
+            return FALSE;
 
         if (pDRIDrawablePriv->hwDrawable) {
             drmUpdateDrawableInfo(pDRIPriv->drmFD,
@@ -1691,7 +1693,7 @@ DRISwapContext(int drmFD, void *oldctx, void *newctx)
 
     if (!newContext) {
         DRIDrvMsg(pScreen->myNum, X_ERROR,
-                  "[DRI] Context Switch Error: oldContext=%x, newContext=%x\n",
+                  "[DRI] Context Switch Error: oldContext=%p, newContext=%p\n",
                   oldContext, newContext);
         return;
     }

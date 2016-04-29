@@ -88,6 +88,9 @@ int limitNoFile = -1;
 
 int KeepStdout = 0;
 
+/* The actual user defined max number of clients */
+int LimitClients = LIMITCLIENTS;
+
 static OsSigWrapperPtr OsSigWrapper = NULL;
 
 OsSigWrapperPtr
@@ -157,8 +160,10 @@ void
 OsInit(void)
 {
     static Bool been_here = FALSE;
+#ifndef XQUARTZ
     static const char *devnull = "/dev/null";
     char fname[PATH_MAX];
+#endif
 
     if (!been_here) {
 #if !defined(WIN32) || defined(__CYGWIN__)
