@@ -1403,6 +1403,13 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     mir_connection_get_available_surface_formats(xmir_screen->conn,
         format, sizeof(format)/sizeof(format[0]), &formats);
+
+#if 0  /* Emulate the Mir Android graphics platform for LP: #1573470 */
+    format[0] = mir_pixel_format_abgr_8888;
+    format[1] = mir_pixel_format_xbgr_8888;
+    formats = 2;
+#endif
+
     for (f = 0; f < formats; ++f) {
         switch (format[f]) {
         case mir_pixel_format_argb_8888:
