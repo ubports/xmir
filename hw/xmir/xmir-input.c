@@ -476,8 +476,6 @@ xmir_handle_keymap_event(struct xmir_input *xmir_input,
 
     mir_keymap_event_get_keymap_buffer(ev, (char const **)&buffer, &length);
 
-    buffer[length] = '\0';
-
     xkb = XkbCompileKeymapFromString(xmir_input->keyboard, buffer, length);
 
     XkbUpdateDescActions(xkb, xkb->min_key_code, XkbNumKeys(xkb), &changes);
