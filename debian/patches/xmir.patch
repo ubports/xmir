@@ -1,4 +1,4 @@
-From b97cd5fc8d76dcb45fac1965c8251e7d31e641b3 Mon Sep 17 00:00:00 2001
+From b91d0ee0a8f92865dbf0ab6b402ff15a19aa6992 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 29 Apr 2016 14:57:53 +0200
 Subject: [PATCH xserver 1/3] XMir DDX
@@ -23,12 +23,12 @@ Contributions from:
  hw/xmir/xmir-cvt.c          |  304 +++++++++
  hw/xmir/xmir-dri2.c         |  545 +++++++++++++++
  hw/xmir/xmir-glamor.c       | 1160 ++++++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  594 ++++++++++++++++
+ hw/xmir/xmir-input.c        |  592 ++++++++++++++++
  hw/xmir/xmir-output.c       |  449 +++++++++++++
  hw/xmir/xmir-thread-proxy.c |  109 +++
- hw/xmir/xmir.c              | 1564 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir.c              | 1571 +++++++++++++++++++++++++++++++++++++++++++
  hw/xmir/xmir.h              |  226 +++++++
- 18 files changed, 7740 insertions(+), 2 deletions(-)
+ 18 files changed, 7745 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -94,7 +94,7 @@ index 77cf234..8bf62a0 100644
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2622,6 +2645,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2630,6 +2653,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -4965,10 +4965,10 @@ index 0000000..7ad0245
 +}
 diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
 new file mode 100644
-index 0000000..e5fd2d5
+index 0000000..14c4709
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,594 @@
+@@ -0,0 +1,592 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5446,8 +5446,6 @@ index 0000000..e5fd2d5
 +    XkbChangesRec changes = { 0 };
 +
 +    mir_keymap_event_get_keymap_buffer(ev, (char const **)&buffer, &length);
-+
-+    buffer[length] = '\0';
 +
 +    xkb = XkbCompileKeymapFromString(xmir_input->keyboard, buffer, length);
 +
@@ -6135,10 +6133,10 @@ index 0000000..dbb187f
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..5526958
+index 0000000..34f78c9
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,1564 @@
+@@ -0,0 +1,1571 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -7541,6 +7539,13 @@ index 0000000..5526958
 +
 +    mir_connection_get_available_surface_formats(xmir_screen->conn,
 +        format, sizeof(format)/sizeof(format[0]), &formats);
++
++#if 0  /* Emulate the Mir Android graphics platform for LP: #1573470 */
++    format[0] = mir_pixel_format_abgr_8888;
++    format[1] = mir_pixel_format_xbgr_8888;
++    formats = 2;
++#endif
++
 +    for (f = 0; f < formats; ++f) {
 +        switch (format[f]) {
 +        case mir_pixel_format_argb_8888:

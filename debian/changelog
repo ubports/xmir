@@ -1,3 +1,10 @@
+xorg-server (2:1.18.3-1ubuntu4) yakkety; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Fix recently added keymap code
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Wed, 04 May 2016 09:11:32 +1200
+
 xorg-server (2:1.18.3-1ubuntu3) yakkety; urgency=medium
 
   * debian/patches/xmir.patch:
