@@ -1,3 +1,12 @@
+xorg-server (2:1.18.3-1ubuntu2.2) xenial; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Fix recently added keymap code
+  * debian/patches/xmir-fixes.diff:
+    - Merged into xmir.patch
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Wed, 04 May 2016 12:19:14 +1200
+
 xorg-server (2:1.18.3-1ubuntu2.1) xenial; urgency=medium
 
   * debian/patches/xmir.patch:
