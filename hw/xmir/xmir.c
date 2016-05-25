@@ -858,17 +858,17 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
          * and not necessarily on top. But this event came from Mir so we
          * can assume for now that we are on top and have focus. Until the Mir
          * semantics change... which they should.
+         */
         {
         struct xmir_input *xmir_input =
             xorg_list_first_entry(&xmir_window->xmir_screen->input_list,
                 struct xmir_input, link);
         Window focussed = (val == mir_surface_focused) ?
-            xmir_window->window->drawable.id : 0;
-        SetInputFocus(serverClient, GetMaster(xmir_input->keyboard, MASTER_KEYBOARD), focussed,
-                      RevertToNone, CurrentTime, False);
+                          xmir_window->window->drawable.id : None;
+        SetInputFocus(serverClient,
+                      GetMaster(xmir_input->keyboard, MASTER_KEYBOARD),
+                      focussed, RevertToParent, CurrentTime, True);
         }
-         */
-
         break;
     case mir_surface_attrib_dpi:
         XMIR_DEBUG(("DPI: %i\n", val));
