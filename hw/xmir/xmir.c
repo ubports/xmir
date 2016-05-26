@@ -631,11 +631,11 @@ xmir_realize_window(WindowPtr window)
     wm_type = xmir_get_window_prop_atom(window, GET_ATOM(_NET_WM_WINDOW_TYPE));
     wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 
-    XMIR_DEBUG(("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
+    XMIR_DEBUG(("Realize %swindow %p id=0x%x \"%s\": %dx%d %+d%+d parent=%p\n"
            "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
            "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
            window == screen->root ? "ROOT " : "",
-           window, wm_name, mir_width, mir_height,
+           window, (int)window->drawable.id, wm_name, mir_width, mir_height,
            window->drawable.x, window->drawable.y,
            window->parent,
            window->drawable.depth,
@@ -833,6 +833,59 @@ xmir_surface_vis_str(MirSurfaceVisibility vis)
     }
 }
 
+static Window
+xmir_get_current_input_focus(DeviceIntPtr kbd)
+{
+    Window id = None;
+    FocusClassPtr focus = kbd->focus;
+    if (focus->win == NoneWin)
+        id = None;
+    else if (focus->win == PointerRootWin)
+        id = PointerRoot;
+    else
+        id = focus->win->drawable.id;
+    return id;
+}
+
+static void
+xmir_handle_focus_event(struct xmir_window *xmir_window,
+                        MirSurfaceFocusState state)
+{
+    struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
+    DeviceIntPtr keyboard = PickKeyboard(serverClient);
+
+    if (xmir_window->surface) {  /* It's a real Mir window */
+        xmir_screen->last_focus = (state == mir_surface_focused) ?
+                                  xmir_window->window : NULL;
+    }
+
+    if (xmir_screen->rootless) {
+        Window id = (state == mir_surface_focused) ?
+                    xmir_window->window->drawable.id : None;
+        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
+                      False);
+    } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
+        /*
+         * So as to not break default behaviour, we only hack focus within
+         * the root window when in Unity8 invasive mode (-title @).
+         */
+        Window id = None;
+        if (state == mir_surface_focused) {
+            id = xmir_screen->saved_focus;
+            if (id == None)
+                id = PointerRoot;
+            XMIR_DEBUG(("Restore id %x\n", (int)id));
+        } else {
+            xmir_screen->saved_focus = xmir_get_current_input_focus(keyboard);
+            XMIR_DEBUG(("Save id %x\n", (int)xmir_screen->saved_focus));
+            id = None;
+        }
+        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
+                      False);
+    }
+    /* else normal root window mode -- Xmir does not interfere in focus */
+}
+
 void
 xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr, int val)
 {
@@ -848,23 +901,7 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
         break;
     case mir_surface_attrib_focus:
         XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
-        if (xmir_window->surface) {  /* It's a real Mir window */
-            xmir_window->xmir_screen->last_focus =
-                (val == mir_surface_focused) ? xmir_window->window : NULL;
-        }
-        /* Warning: Confusion alert!
-         * In Mir, "focus" means on top and has keyboard focus.
-         * In X and the rest of the world, "focus" just means keyboard focus
-         * and not necessarily on top. But this event came from Mir so we
-         * can assume for now that we are on top and have focus. Until the Mir
-         * semantics change... which they should.
-         */
-        {
-        Window focussed = (val == mir_surface_focused) ?
-                          xmir_window->window->drawable.id : None;
-        SetInputFocus(serverClient, inputInfo.keyboard,
-                      focussed, RevertToParent, CurrentTime, True);
-        }
+        xmir_handle_focus_event(xmir_window, (MirSurfaceFocusState)val);
         break;
     case mir_surface_attrib_dpi:
         XMIR_DEBUG(("DPI: %i\n", val));
