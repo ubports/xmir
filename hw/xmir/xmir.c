@@ -860,13 +860,9 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
          * semantics change... which they should.
          */
         {
-        struct xmir_input *xmir_input =
-            xorg_list_first_entry(&xmir_window->xmir_screen->input_list,
-                struct xmir_input, link);
         Window focussed = (val == mir_surface_focused) ?
                           xmir_window->window->drawable.id : None;
-        SetInputFocus(serverClient,
-                      GetMaster(xmir_input->keyboard, MASTER_KEYBOARD),
+        SetInputFocus(serverClient, inputInfo.keyboard,
                       focussed, RevertToParent, CurrentTime, True);
         }
         break;
