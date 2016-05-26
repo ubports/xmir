@@ -855,7 +855,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
                         MirSurfaceFocusState state)
 {
     struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
-    DeviceIntPtr keyboard = PickKeyboard(serverClient);
+    DeviceIntPtr keyboard = inputInfo.keyboard; /*PickKeyboard(serverClient);*/
 
     if (xmir_window->surface) {  /* It's a real Mir window */
         xmir_screen->last_focus = (state == mir_surface_focused) ?
@@ -877,13 +877,11 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
             id = xmir_screen->saved_focus;
             if (id == None)
                 id = PointerRoot;
-            XMIR_DEBUG(("Restore id %x\n", (int)id));
         } else {
             xmir_screen->saved_focus = xmir_get_current_input_focus(keyboard);
-            XMIR_DEBUG(("Save id %x\n", (int)xmir_screen->saved_focus));
             id = None;
         }
-        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
+        SetInputFocus(serverClient, keyboard, id, RevertToNone, CurrentTime,
                       False);
     }
     /* else normal root window mode -- Xmir does not interfere in focus */
