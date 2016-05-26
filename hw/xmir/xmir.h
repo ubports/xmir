@@ -95,6 +95,7 @@ struct xmir_screen {
     struct xorg_list flattened_list;
     struct xmir_window *flatten_top;
     WindowPtr last_focus;
+    Window saved_focus;
 
     int dpi;
 
