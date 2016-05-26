@@ -855,7 +855,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
                         MirSurfaceFocusState state)
 {
     struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
-    DeviceIntPtr keyboard = inputInfo.keyboard; /*PickKeyboard(serverClient);*/
+    DeviceIntPtr keyboard = PickKeyboard(serverClient);
 
     if (xmir_window->surface) {  /* It's a real Mir window */
         xmir_screen->last_focus = (state == mir_surface_focused) ?
@@ -877,11 +877,13 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
             id = xmir_screen->saved_focus;
             if (id == None)
                 id = PointerRoot;
+            XMIR_DEBUG(("Restore id %x\n", (int)id));
         } else {
             xmir_screen->saved_focus = xmir_get_current_input_focus(keyboard);
+            XMIR_DEBUG(("Save id %x\n", (int)xmir_screen->saved_focus));
             id = None;
         }
-        SetInputFocus(serverClient, keyboard, id, RevertToNone, CurrentTime,
+        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
                       False);
     }
     /* else normal root window mode -- Xmir does not interfere in focus */
@@ -902,23 +904,7 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
         break;
     case mir_surface_attrib_focus:
         XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
-        if (xmir_window->surface) {  /* It's a real Mir window */
-            xmir_window->xmir_screen->last_focus =
-                (val == mir_surface_focused) ? xmir_window->window : NULL;
-        }
-        /* Warning: Confusion alert!
-         * In Mir, "focus" means on top and has keyboard focus.
-         * In X and the rest of the world, "focus" just means keyboard focus
-         * and not necessarily on top. But this event came from Mir so we
-         * can assume for now that we are on top and have focus. Until the Mir
-         * semantics change... which they should.
-         */
-        {
-        Window focussed = (val == mir_surface_focused) ?
-                          xmir_window->window->drawable.id : None;
-        SetInputFocus(serverClient, inputInfo.keyboard,
-                      focussed, RevertToParent, CurrentTime, True);
-        }
+        xmir_handle_focus_event(xmir_window, (MirSurfaceFocusState)val);
         break;
     case mir_surface_attrib_dpi:
         XMIR_DEBUG(("DPI: %i\n", val));
