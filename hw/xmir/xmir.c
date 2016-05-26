@@ -633,7 +633,8 @@ xmir_realize_window(WindowPtr window)
 
     XMIR_DEBUG(("Realize %swindow %p id=0x%x \"%s\": %dx%d %+d%+d parent=%p\n"
            "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
-           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
+           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu(%s)\n"
+           "\tWM_TRANSIENT_FOR=%p\n",
            window == screen->root ? "ROOT " : "",
            window, (int)window->drawable.id, wm_name, mir_width, mir_height,
            window->drawable.x, window->drawable.y,
@@ -641,7 +642,9 @@ xmir_realize_window(WindowPtr window)
            window->drawable.depth,
            window->redirectDraw, window->drawable.type,
            window->drawable.class, window->visibility, window->viewable,
-           window->overrideRedirect, (unsigned long)wm_type, wm_transient_for));
+           window->overrideRedirect,
+           (unsigned long)wm_type, NameForAtom(wm_type)?:"",
+           wm_transient_for));
 
     if (!window->viewable) {
         return ret;
