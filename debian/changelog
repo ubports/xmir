@@ -1,3 +1,11 @@
+xorg-server (2:1.18.3-1ubuntu5) UNRELEASED; urgency=medium
+
+  * randr-adjust-masters-last-set-time.diff,
+    randr-do-not-check-the-screen-size.diff:
+    Fix issues changing display mode on prime setups. (LP: #1586260)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 27 May 2016 11:50:02 +0300
+
 xorg-server (2:1.18.3-1ubuntu4) yakkety; urgency=medium
 
   * debian/patches/xmir.patch:
