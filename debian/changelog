@@ -1,3 +1,10 @@
+xorg-server (2:1.18.3-1ubuntu6) yakkety; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Add focus/unfocus event passing (LP: #1582471)
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Wed, 01 Jun 2016 11:07:46 +1200
+
 xorg-server (2:1.18.3-1ubuntu5) yakkety; urgency=medium
 
   * randr-adjust-masters-last-set-time.diff,

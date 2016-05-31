@@ -1,4 +1,4 @@
-From b91d0ee0a8f92865dbf0ab6b402ff15a19aa6992 Mon Sep 17 00:00:00 2001
+From eb0fb72f618ea17a90d6c535d38e12b5f95fcec8 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 29 Apr 2016 14:57:53 +0200
 Subject: [PATCH xserver 1/3] XMir DDX
@@ -9,26 +9,27 @@ Contributions from:
   Robert Ancell <robert.ancell@canonical.com>
   Andreas Pokorny <andreas.pokorny@canonical.com>
   Daniel van Vugt <daniel.van.vugt@canonical.com>
+  Chris Townsend <christopher.townsend@canonical.com>
 ---
  configure.ac                |   25 +
  hw/Makefile.am              |    9 +-
  hw/xmir/.gitignore          |    1 +
  hw/xmir/Makefile.am         |   61 ++
  hw/xmir/dri2/Makefile.am    |   14 +
- hw/xmir/dri2/dri2.c         | 1398 ++++++++++++++++++++++++++++++++++++++
+ hw/xmir/dri2/dri2.c         | 1398 +++++++++++++++++++++++++++++++++++++
  hw/xmir/dri2/dri2.h         |  364 ++++++++++
- hw/xmir/dri2/dri2ext.c      |  683 +++++++++++++++++++
+ hw/xmir/dri2/dri2ext.c      |  683 ++++++++++++++++++
  hw/xmir/dri2/dri2int.h      |   26 +
  hw/xmir/xmir-cursor.c       |  210 ++++++
- hw/xmir/xmir-cvt.c          |  304 +++++++++
- hw/xmir/xmir-dri2.c         |  545 +++++++++++++++
- hw/xmir/xmir-glamor.c       | 1160 ++++++++++++++++++++++++++++++++
+ hw/xmir/xmir-cvt.c          |  304 ++++++++
+ hw/xmir/xmir-dri2.c         |  551 +++++++++++++++
+ hw/xmir/xmir-glamor.c       | 1160 +++++++++++++++++++++++++++++++
  hw/xmir/xmir-input.c        |  592 ++++++++++++++++
- hw/xmir/xmir-output.c       |  449 +++++++++++++
+ hw/xmir/xmir-output.c       |  449 ++++++++++++
  hw/xmir/xmir-thread-proxy.c |  109 +++
- hw/xmir/xmir.c              | 1571 +++++++++++++++++++++++++++++++++++++++++++
- hw/xmir/xmir.h              |  226 +++++++
- 18 files changed, 7745 insertions(+), 2 deletions(-)
+ hw/xmir/xmir.c              | 1622 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir.h              |  227 ++++++
+ 18 files changed, 7803 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -3248,10 +3249,10 @@ index 0000000..6070d77
 +}
 diff --git a/hw/xmir/xmir-dri2.c b/hw/xmir/xmir-dri2.c
 new file mode 100644
-index 0000000..b24d4b9
+index 0000000..e1d02f0
 --- /dev/null
 +++ b/hw/xmir/xmir-dri2.c
-@@ -0,0 +1,545 @@
+@@ -0,0 +1,551 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -3743,10 +3744,16 @@ index 0000000..b24d4b9
 +
 +static int xmir_dri_get_msc(DrawablePtr draw, CARD64 *ust, CARD64 *msc)
 +{
-+    /* TODO: Implement this?
-+     * At least doing nothing like this is enough to shut up Chromium
-+     * error messages.
-+     */
++    /* TODO: Implement this properly after Mir implements it. */
++    const uint64_t now_us = GetTimeInMicros();
++    const uint64_t fake_frame_rate_hz = 60;
++    const uint64_t fake_frame_time_us = 1000000 / fake_frame_rate_hz;
++    const uint64_t fake_msc = now_us / fake_frame_time_us;
++    const uint64_t fake_ust = fake_msc * fake_frame_time_us;
++    if (ust)
++        *(uint64_t*)ust = fake_ust;
++    if (msc)
++        *(uint64_t*)msc = fake_msc;
 +    return Success;
 +}
 +
@@ -6133,10 +6140,10 @@ index 0000000..dbb187f
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..34f78c9
+index 0000000..ee5fff5
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,1571 @@
+@@ -0,0 +1,1622 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6767,17 +6774,20 @@ index 0000000..34f78c9
 +    wm_type = xmir_get_window_prop_atom(window, GET_ATOM(_NET_WM_WINDOW_TYPE));
 +    wm_transient_for = xmir_get_window_prop_window(window, XA_WM_TRANSIENT_FOR);
 +
-+    XMIR_DEBUG(("Realize %swindow %p \"%s\": %dx%d %+d%+d parent=%p\n"
++    XMIR_DEBUG(("Realize %swindow %p id=0x%x \"%s\": %dx%d %+d%+d parent=%p\n"
 +           "\tdepth=%d redir=%u type=%hu class=%u visibility=%u viewable=%u\n"
-+           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu WM_TRANSIENT_FOR=%p\n",
++           "\toverride=%d _NET_WM_WINDOW_TYPE=%lu(%s)\n"
++           "\tWM_TRANSIENT_FOR=%p\n",
 +           window == screen->root ? "ROOT " : "",
-+           window, wm_name, mir_width, mir_height,
++           window, (int)window->drawable.id, wm_name, mir_width, mir_height,
 +           window->drawable.x, window->drawable.y,
 +           window->parent,
 +           window->drawable.depth,
 +           window->redirectDraw, window->drawable.type,
 +           window->drawable.class, window->visibility, window->viewable,
-+           window->overrideRedirect, (unsigned long)wm_type, wm_transient_for));
++           window->overrideRedirect,
++           (unsigned long)wm_type, NameForAtom(wm_type)?:"",
++           wm_transient_for));
 +
 +    if (!window->viewable) {
 +        return ret;
@@ -6969,6 +6979,57 @@ index 0000000..34f78c9
 +    }
 +}
 +
++static Window
++xmir_get_current_input_focus(DeviceIntPtr kbd)
++{
++    Window id = None;
++    FocusClassPtr focus = kbd->focus;
++    if (focus->win == NoneWin)
++        id = None;
++    else if (focus->win == PointerRootWin)
++        id = PointerRoot;
++    else
++        id = focus->win->drawable.id;
++    return id;
++}
++
++static void
++xmir_handle_focus_event(struct xmir_window *xmir_window,
++                        MirSurfaceFocusState state)
++{
++    struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
++    DeviceIntPtr keyboard = inputInfo.keyboard; /*PickKeyboard(serverClient);*/
++
++    if (xmir_window->surface) {  /* It's a real Mir window */
++        xmir_screen->last_focus = (state == mir_surface_focused) ?
++                                  xmir_window->window : NULL;
++    }
++
++    if (xmir_screen->rootless) {
++        Window id = (state == mir_surface_focused) ?
++                    xmir_window->window->drawable.id : None;
++        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
++                      False);
++    } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
++        /*
++         * So as to not break default behaviour, we only hack focus within
++         * the root window when in Unity8 invasive mode (-title @).
++         */
++        Window id = None;
++        if (state == mir_surface_focused) {
++            id = xmir_screen->saved_focus;
++            if (id == None)
++                id = PointerRoot;
++        } else {
++            xmir_screen->saved_focus = xmir_get_current_input_focus(keyboard);
++            id = None;
++        }
++        SetInputFocus(serverClient, keyboard, id, RevertToNone, CurrentTime,
++                      False);
++    }
++    /* else normal root window mode -- Xmir does not interfere in focus */
++}
++
 +void
 +xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr, int val)
 +{
@@ -6984,10 +7045,7 @@ index 0000000..34f78c9
 +        break;
 +    case mir_surface_attrib_focus:
 +        XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
-+        if (xmir_window->surface) {  /* It's a real Mir window */
-+            xmir_window->xmir_screen->last_focus =
-+                (val == mir_surface_focused) ? xmir_window->window : NULL;
-+        }
++        xmir_handle_focus_event(xmir_window, (MirSurfaceFocusState)val);
 +        break;
 +    case mir_surface_attrib_dpi:
 +        XMIR_DEBUG(("DPI: %i\n", val));
@@ -7710,10 +7768,10 @@ index 0000000..34f78c9
 +}
 diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
 new file mode 100644
-index 0000000..0bb4b1d
+index 0000000..310e6b9
 --- /dev/null
 +++ b/hw/xmir/xmir.h
-@@ -0,0 +1,226 @@
+@@ -0,0 +1,227 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -7811,6 +7869,7 @@ index 0000000..0bb4b1d
 +    struct xorg_list flattened_list;
 +    struct xmir_window *flatten_top;
 +    WindowPtr last_focus;
++    Window saved_focus;
 +
 +    int dpi;
 +
@@ -7941,5 +8000,5 @@ index 0000000..0bb4b1d
 +
 +#endif
 -- 
-2.7.4
+2.8.1
 
