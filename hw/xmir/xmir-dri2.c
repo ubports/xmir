@@ -489,10 +489,16 @@ xmir_dri2_swap_limit_validate(DrawablePtr draw, int swap_limit)
 
 static int xmir_dri_get_msc(DrawablePtr draw, CARD64 *ust, CARD64 *msc)
 {
-    /* TODO: Implement this?
-     * At least doing nothing like this is enough to shut up Chromium
-     * error messages.
-     */
+    /* TODO: Implement this properly after Mir implements it. */
+    const uint64_t now_us = GetTimeInMicros();
+    const uint64_t fake_frame_rate_hz = 60;
+    const uint64_t fake_frame_time_us = 1000000 / fake_frame_rate_hz;
+    const uint64_t fake_msc = now_us / fake_frame_time_us;
+    const uint64_t fake_ust = fake_msc * fake_frame_time_us;
+    if (ust)
+        *(uint64_t*)ust = fake_ust;
+    if (msc)
+        *(uint64_t*)msc = fake_msc;
     return Success;
 }
 
