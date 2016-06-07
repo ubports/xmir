@@ -857,9 +857,6 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
     struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
     DeviceIntPtr keyboard = inputInfo.keyboard; /*PickKeyboard(serverClient);*/
 
-    if (xmir_screen->destroying_root)
-        return;
-
     if (xmir_window->surface) {  /* It's a real Mir window */
         xmir_screen->last_focus = (state == mir_surface_focused) ?
                                   xmir_window->window : NULL;
@@ -1131,9 +1128,6 @@ xmir_destroy_window(WindowPtr window)
     ScreenPtr screen = window->drawable.pScreen;
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     Bool ret;
-
-    if (!window->parent)
-        xmir_screen->destroying_root = TRUE;
 
     xmir_unmap_input(xmir_screen, window);
     xmir_unmap_surface(xmir_screen, window, TRUE);
