@@ -64,19 +64,21 @@ static struct {
     Atom _NET_WM_WINDOW_TYPE_COMBO;
     Atom _NET_WM_WINDOW_TYPE_DND;
     Atom _NET_WM_WINDOW_TYPE_NORMAL;
+    Atom _MIR_WM_PERSISTENT_ID;
 } known_atom;
 
-static Atom get_atom(const char *name, Atom *cache)
+static Atom get_atom(const char *name, Atom *cache, Bool create)
 {
     if (!*cache) {
-        *cache = MakeAtom(name, strlen(name), False);
+        *cache = MakeAtom(name, strlen(name), create);
         if (*cache)
             XMIR_DEBUG(("Atom %s = %lu\n", name, (unsigned long)*cache));
     }
     return *cache;
 }
 
-#define GET_ATOM(_a) get_atom(#_a, &known_atom._a)
+#define GET_ATOM(_a)  get_atom(#_a, &known_atom._a, False)
+#define MAKE_ATOM(_a) get_atom(#_a, &known_atom._a, True)
 
 extern __GLXprovider __glXDRI2Provider;
 
@@ -613,6 +615,7 @@ xmir_realize_window(WindowPtr window)
     int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
     MirSurfaceSpec* spec = NULL;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
+    MirPersistentId *persistent_id = NULL;
     char wm_name[1024];
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
@@ -778,6 +781,17 @@ xmir_realize_window(WindowPtr window)
         xmir_window->surface = mir_surface_create_sync(spec);
     }
     mir_surface_spec_release(spec);
+
+    persistent_id =
+        mir_surface_request_persistent_id_sync(xmir_window->surface);
+    if (mir_persistent_id_is_valid(persistent_id)) {
+        const char *str = mir_persistent_id_as_string(persistent_id);
+        dixChangeWindowProperty(serverClient, window,
+                                MAKE_ATOM(_MIR_WM_PERSISTENT_ID),
+                                XA_STRING, 8, PropModeReplace,
+                                strlen(str), (void*)str, FALSE);
+    }
+    mir_persistent_id_release(persistent_id);
 
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
