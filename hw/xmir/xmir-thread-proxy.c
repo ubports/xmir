@@ -96,14 +96,20 @@ xmir_post_to_eventloop(xmir_event_callback *cb,
 }
 
 void
-xmir_process_from_eventloop(void)
+xmir_process_from_eventloop_except(const struct xmir_window *w)
 {
     for (;;) {
         struct message msg;
         ssize_t got = read(pipefds[0], &msg, sizeof msg);
         if (got < 0)
             return;
-        if (got == sizeof(msg))
+        if (got == sizeof(msg) && w != msg.xmir_window)
             msg.callback(msg.xmir_screen, msg.xmir_window, msg.arg);
     }
+}
+
+void
+xmir_process_from_eventloop(void)
+{
+    xmir_process_from_eventloop_except(NULL);
 }

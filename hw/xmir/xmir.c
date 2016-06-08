@@ -1097,8 +1097,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
         xmir_window->surface = NULL;
     }
 
-    /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
-    xmir_process_from_eventloop();
+    xmir_process_from_eventloop_except(xmir_window);
 
     RegionUninit(&xmir_window->region);
 }
