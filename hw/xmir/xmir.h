@@ -216,6 +216,7 @@ typedef void (xmir_event_callback)(struct xmir_screen*, struct xmir_window*,
 void xmir_post_to_eventloop(xmir_event_callback *cb,
                             struct xmir_screen*, struct xmir_window*, void*);
 void xmir_process_from_eventloop(void);
+void xmir_process_from_eventloop_except(const struct xmir_window*);
 
 /* xmir-input.c */
 void xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev, void *context);
