@@ -309,6 +309,31 @@ xmir_get_window_prop_atom(WindowPtr window, ATOM name)
     return 0;
 }
 
+enum XWMHints_flag {
+    InputHint = 1
+    /* There are more but not yet required */
+};
+
+struct XWMHints {
+    CARD32 flags;
+    CARD32 input;
+    /* There are more but not yet required */
+};
+
+static struct XWMHints*
+xmir_get_window_prop_hints(WindowPtr window)
+{
+    if (window->optional) {
+        PropertyPtr p = window->optional->userProps;
+        while (p) {
+            if (p->propertyName == XA_WM_HINTS)
+                return (struct XWMHints*)&p->data;
+            p = p->next;
+        }
+    }
+    return NULL;
+}
+
 static void
 damage_report(DamagePtr pDamage, RegionPtr pRegion, void *data)
 {
@@ -616,6 +641,7 @@ xmir_realize_window(WindowPtr window)
     MirSurfaceSpec* spec = NULL;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
     MirPersistentId *persistent_id = NULL;
+    struct XWMHints *wm_hints = NULL;
     char wm_name[1024];
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
@@ -648,6 +674,14 @@ xmir_realize_window(WindowPtr window)
            window->overrideRedirect,
            (unsigned long)wm_type, NameForAtom(wm_type)?:"",
            wm_transient_for));
+
+    wm_hints = xmir_get_window_prop_hints(window);
+    if (wm_hints) {
+        XMIR_DEBUG(("\tWM_HINTS={flags=0x%x,input=0x%x}\n",
+                    wm_hints->flags, wm_hints->input));
+    } else {
+        XMIR_DEBUG(("\tWM_HINTS=<none>\n"));
+    }
 
     if (!window->viewable) {
         return ret;
@@ -880,10 +914,14 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
     }
 
     if (xmir_screen->rootless) {
-        Window id = (state == mir_surface_focused) ?
-                    xmir_window->window->drawable.id : None;
-        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
-                      False);
+        const struct XWMHints *hints =
+            xmir_get_window_prop_hints(xmir_window->window);
+        if (!hints || !((hints->flags & InputHint) && !hints->input)) {
+            Window id = (state == mir_surface_focused) ?
+                        xmir_window->window->drawable.id : None;
+            SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
+                          False);
+        }
     } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
         /*
          * So as to not break default behaviour, we only hack focus within
