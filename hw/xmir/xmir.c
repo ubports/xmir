@@ -406,9 +406,14 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
     line_len = (x2 - x1) * bpp;
     for (y = y1; y < y2; ++y) {
         memcpy(dst, src, line_len);
+        if (x2 < region.width)
+            memset(dst+x2*bpp, 0, (region.width - x2)*bpp);
         src += src_stride;
         dst += region.stride;
     }
+
+    if (y2 < region.height)
+        memset(dst, 0, (region.height - y2)*region.stride);
 }
 
 static void
@@ -555,6 +560,9 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
     xclient_lagging = buf_width != xmir_win->window->drawable.width ||
                       buf_height != xmir_win->window->drawable.height;
 
+    if (xserver_lagging || !xorg_list_is_empty(&xmir_win->link_damage))
+        xmir_repaint(xmir_win);
+
     if (xclient_lagging) {
         if (xmir_screen->rootless) {
             XID vlist[2] = {buf_width, buf_height};
@@ -571,9 +579,6 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
          * the X server is using the correct buffer dimensions immediately.
          */
     }
-
-    if (xserver_lagging || !xorg_list_is_empty(&xmir_win->link_damage))
-        xmir_repaint(xmir_win);
 
     if (xserver_lagging)
         DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
