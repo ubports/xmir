@@ -1637,6 +1637,21 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     xmir_screen->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = xmir_close_screen;
 
+    {
+        int v;
+        XMIR_DEBUG(("XMir initialized with %hd visuals:\n",
+                    pScreen->numVisuals));
+        for (v = 0; v < pScreen->numVisuals; ++v) {
+            VisualPtr visual = pScreen->visuals + v;
+            XMIR_DEBUG(("\tVisual id 0x%x: %lx %lx %lx, %hd planes\n",
+                        (int)visual->vid,
+                        (long)visual->redMask,
+                        (long)visual->greenMask,
+                        (long)visual->blueMask,
+                        visual->nplanes));
+        }
+    }
+
     return ret;
 }
 
