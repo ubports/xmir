@@ -1,9 +1,9 @@
-xorg-server (2:1.18.3-1ubuntu7) UNRELEASED; urgency=medium
+xorg-server (2:1.18.3-1ubuntu7) yakkety; urgency=medium
 
   * glamor-disable-logic-ops-when-doing-compositing.diff: Fix
     libreoffice with glamor. (LP: #1575000)
 
- -- Timo Aaltonen <tjaalton@debian.org>  Tue, 05 Jul 2016 02:06:06 +0300
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 05 Jul 2016 02:08:01 +0300
 
 xorg-server (2:1.18.3-1ubuntu6) yakkety; urgency=medium
 
