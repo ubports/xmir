@@ -1,0 +1,57 @@
+commit 743b6f231e999d8b2909228412266dc13cc433c5
+Author: Keith Packard <keithp@keithp.com>
+Date:   Fri May 13 04:25:43 2016 -0700
+
+    glamor: Disable logic ops when doing compositing [v4]
+    
+    If the logic op gets left enabled, it overrides the blending
+    operation, causing incorrect contents on the display.
+    
+    v2: Disable only on non-ES2, but disable even for PictOpSrc
+    
+    v3: Found another place this is needed in
+        glamor_composite_set_shader_blend
+    
+    v4: Remove change dependent on new glamor_set_composite_texture
+        API. This belongs in a different patch.
+        Found by Emil Velikov <emil.l.velikov@gmail.com>
+    
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    Reviewed-by: Michel Dänzer <michel.daenzer@amd.com>
+
+diff --git a/glamor/glamor_program.c b/glamor/glamor_program.c
+index 0a94de6..322d198 100644
+--- a/glamor/glamor_program.c
++++ b/glamor/glamor_program.c
+@@ -445,6 +445,7 @@ static struct blendinfo composite_op_info[] = {
+ static void
+ glamor_set_blend(CARD8 op, glamor_program_alpha alpha, PicturePtr dst)
+ {
++    glamor_screen_private *glamor_priv = glamor_get_screen_private(dst->pDrawable->pScreen);
+     GLenum src_blend, dst_blend;
+     struct blendinfo *op_info;
+ 
+@@ -459,6 +460,9 @@ glamor_set_blend(CARD8 op, glamor_program_alpha alpha, PicturePtr dst)
+         break;
+     }
+ 
++    if (glamor_priv->gl_flavor != GLAMOR_GL_ES2)
++        glDisable(GL_COLOR_LOGIC_OP);
++
+     if (op == PictOpSrc)
+         return;
+ 
+diff --git a/glamor/glamor_render.c b/glamor/glamor_render.c
+index 88781d9..aa3a566 100644
+--- a/glamor/glamor_render.c
++++ b/glamor/glamor_render.c
+@@ -1091,6 +1091,9 @@ glamor_composite_set_shader_blend(glamor_screen_private *glamor_priv,
+         }
+     }
+ 
++    if (glamor_priv->gl_flavor != GLAMOR_GL_ES2)
++        glDisable(GL_COLOR_LOGIC_OP);
++
+     if (op_info->source_blend == GL_ONE && op_info->dest_blend == GL_ZERO) {
+         glDisable(GL_BLEND);
+     }
