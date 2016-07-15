@@ -91,6 +91,7 @@ struct xmir_screen {
     Bool flatten;
     Bool neverclose;
     Bool destroying_root;
+    Bool closing;
     const char *title;
     MirSurface *neverclosed;
     struct xorg_list flattened_list;

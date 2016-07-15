@@ -86,6 +86,12 @@ Bool xmir_debug_logging = False;
 
 static const char get_title_from_top_window[] = "@";
 
+struct xmir_swap {
+    int server_generation;
+    struct xmir_screen *xmir_screen;
+    struct xmir_window *xmir_window;
+};
+
 static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 
 /* Required by GLX module */
@@ -448,11 +454,21 @@ xmir_get_current_buffer_dimensions(
     }
 }
 
+static void
+xmir_swap(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
+{
+    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+    struct xmir_swap *swap = calloc(sizeof(struct xmir_swap), 1);
+    swap->server_generation = serverGeneration;
+    swap->xmir_screen = xmir_screen;
+    swap->xmir_window = xmir_win;
+    mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received, swap);
+}
+
 void xmir_repaint(struct xmir_window *xmir_win)
 {
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
     RegionPtr dirty = &xmir_win->region;
-    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
     char wm_name[256];
     WindowPtr named = NULL;
 
@@ -509,14 +525,12 @@ void xmir_repaint(struct xmir_window *xmir_win)
     case glamor_off:
         xmir_sw_copy(xmir_screen, xmir_win, dirty);
         xmir_win->has_free_buffer = FALSE;
-        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
-                                       xmir_win);
+        xmir_swap(xmir_screen, xmir_win);
         break;
     case glamor_dri:
         xmir_glamor_copy(xmir_screen, xmir_win, dirty);
         xmir_win->has_free_buffer = FALSE;
-        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
-                                       xmir_win);
+        xmir_swap(xmir_screen, xmir_win);
         break;
     case glamor_egl:
     case glamor_egl_sync:
@@ -587,11 +601,15 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
 static void
 xmir_handle_buffer_received(MirBufferStream *stream, void *ctx)
 {
-    struct xmir_window *xmir_win = ctx;
-    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
+    struct xmir_swap *swap = ctx;
+    struct xmir_screen *xmir_screen = swap->xmir_screen;
 
-    xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
-                           xmir_win, 0);
+    if (swap->server_generation == serverGeneration && !xmir_screen->closing) {
+        xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
+                               swap->xmir_window, 0);
+    }
+
+    free(swap);
 }
 
 static Bool
@@ -1237,6 +1255,8 @@ xmir_close_screen(ScreenPtr screen)
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     struct xmir_output *xmir_output, *next_xmir_output;
     Bool ret;
+
+    xmir_screen->closing = TRUE;
 
     if (xmir_screen->glamor && xmir_screen->gbm)
         DRI2CloseScreen(screen);
