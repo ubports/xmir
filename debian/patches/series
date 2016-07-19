@@ -55,4 +55,3 @@ drm_device_keep_trying.patch
 xi2-resize-touch.patch
 randr-adjust-masters-last-set-time.diff
 randr-do-not-check-the-screen-size.diff
-glamor-disable-logic-ops-when-doing-compositing.diff
