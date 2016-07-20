@@ -376,15 +376,20 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
 {
     switch (mir_input_event_get_type(ev)) {
     case mir_input_event_type_key: {
-        MirKeyboardEvent const *kev;
-        MirKeyboardAction action;
+        MirKeyboardEvent const *kev = mir_input_event_get_keyboard_event(ev);
+        MirKeyboardAction action = mir_keyboard_event_action(kev);
+        int code = mir_keyboard_event_scan_code(kev) + 8;
+        ValuatorMask mask;
 
-        kev = mir_input_event_get_keyboard_event(ev);
-        action = mir_keyboard_event_action(kev);
-
-        QueueKeyboardEvents(xmir_input->keyboard,
-                            action == mir_keyboard_action_up ? KeyRelease : KeyPress,
-                            mir_keyboard_event_scan_code(kev) + 8);
+        valuator_mask_zero(&mask);
+        if (action == mir_keyboard_action_down ||
+            action == mir_keyboard_action_repeat) {
+            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code, &mask);
+        }
+        if (action == mir_keyboard_action_up ||
+            action == mir_keyboard_action_repeat) {
+            QueueKeyboardEvents(xmir_input->keyboard, KeyRelease, code, &mask);
+        }
         break;
     }
     case mir_input_event_type_touch: {
