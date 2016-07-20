@@ -1,3 +1,11 @@
+xorg-server (2:1.18.4-1ubuntu1) yakkety; urgency=medium
+
+  * Merge from debian.
+  * glamor-disable-logic-ops-when-doing-compositing.diff: Dropped,
+    upstream.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 20 Jul 2016 08:22:32 +0300
+
 xorg-server (2:1.18.4-1) unstable; urgency=medium
 
   * New upstream stable release.
@@ -5,14 +13,6 @@ xorg-server (2:1.18.4-1) unstable; urgency=medium
     Dropped, upstream.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Wed, 20 Jul 2016 06:00:21 +0300
-
-xorg-server (2:1.18.3-2ubuntu1) UNRELEASED; urgency=medium
-
-  * Merge from debian.
-  * glamor-disable-logic-ops-when-doing-compositing.diff: Dropped,
-    included in upstream-fixes.diff.
-
- -- Timo Aaltonen <tjaalton@debian.org>  Tue, 19 Jul 2016 09:52:09 +0300
 
 xorg-server (2:1.18.3-2) unstable; urgency=medium
 
