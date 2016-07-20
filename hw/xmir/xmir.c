@@ -64,25 +64,33 @@ static struct {
     Atom _NET_WM_WINDOW_TYPE_COMBO;
     Atom _NET_WM_WINDOW_TYPE_DND;
     Atom _NET_WM_WINDOW_TYPE_NORMAL;
+    Atom _MIR_WM_PERSISTENT_ID;
 } known_atom;
 
-static Atom get_atom(const char *name, Atom *cache)
+static Atom get_atom(const char *name, Atom *cache, Bool create)
 {
     if (!*cache) {
-        *cache = MakeAtom(name, strlen(name), False);
+        *cache = MakeAtom(name, strlen(name), create);
         if (*cache)
             XMIR_DEBUG(("Atom %s = %lu\n", name, (unsigned long)*cache));
     }
     return *cache;
 }
 
-#define GET_ATOM(_a) get_atom(#_a, &known_atom._a)
+#define GET_ATOM(_a)  get_atom(#_a, &known_atom._a, False)
+#define MAKE_ATOM(_a) get_atom(#_a, &known_atom._a, True)
 
 extern __GLXprovider __glXDRI2Provider;
 
 Bool xmir_debug_logging = False;
 
 static const char get_title_from_top_window[] = "@";
+
+struct xmir_swap {
+    int server_generation;
+    struct xmir_screen *xmir_screen;
+    struct xmir_window *xmir_window;
+};
 
 static void xmir_handle_buffer_received(MirBufferStream *stream, void *ctx);
 
@@ -307,6 +315,31 @@ xmir_get_window_prop_atom(WindowPtr window, ATOM name)
     return 0;
 }
 
+enum XWMHints_flag {
+    InputHint = 1
+    /* There are more but not yet required */
+};
+
+struct XWMHints {
+    CARD32 flags;
+    CARD32 input;
+    /* There are more but not yet required */
+};
+
+static struct XWMHints*
+xmir_get_window_prop_hints(WindowPtr window)
+{
+    if (window->optional) {
+        PropertyPtr p = window->optional->userProps;
+        while (p) {
+            if (p->propertyName == XA_WM_HINTS)
+                return (struct XWMHints*)&p->data;
+            p = p->next;
+        }
+    }
+    return NULL;
+}
+
 static void
 damage_report(DamagePtr pDamage, RegionPtr pRegion, void *data)
 {
@@ -379,9 +412,14 @@ xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, Regi
     line_len = (x2 - x1) * bpp;
     for (y = y1; y < y2; ++y) {
         memcpy(dst, src, line_len);
+        if (x2 < region.width)
+            memset(dst+x2*bpp, 0, (region.width - x2)*bpp);
         src += src_stride;
         dst += region.stride;
     }
+
+    if (y2 < region.height)
+        memset(dst, 0, (region.height - y2)*region.stride);
 }
 
 static void
@@ -416,11 +454,21 @@ xmir_get_current_buffer_dimensions(
     }
 }
 
+static void
+xmir_swap(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
+{
+    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+    struct xmir_swap *swap = calloc(sizeof(struct xmir_swap), 1);
+    swap->server_generation = serverGeneration;
+    swap->xmir_screen = xmir_screen;
+    swap->xmir_window = xmir_win;
+    mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received, swap);
+}
+
 void xmir_repaint(struct xmir_window *xmir_win)
 {
     struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
     RegionPtr dirty = &xmir_win->region;
-    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
     char wm_name[256];
     WindowPtr named = NULL;
 
@@ -477,14 +525,12 @@ void xmir_repaint(struct xmir_window *xmir_win)
     case glamor_off:
         xmir_sw_copy(xmir_screen, xmir_win, dirty);
         xmir_win->has_free_buffer = FALSE;
-        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
-                                       xmir_win);
+        xmir_swap(xmir_screen, xmir_win);
         break;
     case glamor_dri:
         xmir_glamor_copy(xmir_screen, xmir_win, dirty);
         xmir_win->has_free_buffer = FALSE;
-        mir_buffer_stream_swap_buffers(stream, xmir_handle_buffer_received,
-                                       xmir_win);
+        xmir_swap(xmir_screen, xmir_win);
         break;
     case glamor_egl:
     case glamor_egl_sync:
@@ -528,6 +574,9 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
     xclient_lagging = buf_width != xmir_win->window->drawable.width ||
                       buf_height != xmir_win->window->drawable.height;
 
+    if (xserver_lagging || !xorg_list_is_empty(&xmir_win->link_damage))
+        xmir_repaint(xmir_win);
+
     if (xclient_lagging) {
         if (xmir_screen->rootless) {
             XID vlist[2] = {buf_width, buf_height};
@@ -545,9 +594,6 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
          */
     }
 
-    if (xserver_lagging || !xorg_list_is_empty(&xmir_win->link_damage))
-        xmir_repaint(xmir_win);
-
     if (xserver_lagging)
         DamageDamageRegion(&xmir_win->window->drawable, &xmir_win->region);
 }
@@ -555,11 +601,15 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
 static void
 xmir_handle_buffer_received(MirBufferStream *stream, void *ctx)
 {
-    struct xmir_window *xmir_win = ctx;
-    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
+    struct xmir_swap *swap = ctx;
+    struct xmir_screen *xmir_screen = swap->xmir_screen;
 
-    xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
-                           xmir_win, 0);
+    if (swap->server_generation == serverGeneration && !xmir_screen->closing) {
+        xmir_post_to_eventloop(xmir_handle_buffer_available, xmir_screen,
+                               swap->xmir_window, 0);
+    }
+
+    free(swap);
 }
 
 static Bool
@@ -613,6 +663,8 @@ xmir_realize_window(WindowPtr window)
     int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
     MirSurfaceSpec* spec = NULL;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
+    MirPersistentId *persistent_id = NULL;
+    struct XWMHints *wm_hints = NULL;
     char wm_name[1024];
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
@@ -645,6 +697,14 @@ xmir_realize_window(WindowPtr window)
            window->overrideRedirect,
            (unsigned long)wm_type, NameForAtom(wm_type)?:"",
            wm_transient_for));
+
+    wm_hints = xmir_get_window_prop_hints(window);
+    if (wm_hints) {
+        XMIR_DEBUG(("\tWM_HINTS={flags=0x%x,input=0x%x}\n",
+                    wm_hints->flags, wm_hints->input));
+    } else {
+        XMIR_DEBUG(("\tWM_HINTS=<none>\n"));
+    }
 
     if (!window->viewable) {
         return ret;
@@ -779,6 +839,17 @@ xmir_realize_window(WindowPtr window)
     }
     mir_surface_spec_release(spec);
 
+    persistent_id =
+        mir_surface_request_persistent_id_sync(xmir_window->surface);
+    if (mir_persistent_id_is_valid(persistent_id)) {
+        const char *str = mir_persistent_id_as_string(persistent_id);
+        dixChangeWindowProperty(serverClient, window,
+                                MAKE_ATOM(_MIR_WM_PERSISTENT_ID),
+                                XA_STRING, 8, PropModeReplace,
+                                strlen(str), (void*)str, FALSE);
+    }
+    mir_persistent_id_release(persistent_id);
+
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
         ErrorF("failed to create a surface: %s\n", mir_surface_get_error_message(xmir_window->surface));
@@ -857,16 +928,23 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
     struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
     DeviceIntPtr keyboard = inputInfo.keyboard; /*PickKeyboard(serverClient);*/
 
+    if (xmir_screen->destroying_root)
+        return;
+
     if (xmir_window->surface) {  /* It's a real Mir window */
         xmir_screen->last_focus = (state == mir_surface_focused) ?
                                   xmir_window->window : NULL;
     }
 
     if (xmir_screen->rootless) {
-        Window id = (state == mir_surface_focused) ?
-                    xmir_window->window->drawable.id : None;
-        SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
-                      False);
+        const struct XWMHints *hints =
+            xmir_get_window_prop_hints(xmir_window->window);
+        if (!hints || !((hints->flags & InputHint) && !hints->input)) {
+            Window id = (state == mir_surface_focused) ?
+                        xmir_window->window->drawable.id : None;
+            SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
+                          False);
+        }
     } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
         /*
          * So as to not break default behaviour, we only hack focus within
@@ -1094,8 +1172,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
         xmir_window->surface = NULL;
     }
 
-    /* drain all events from input and damage to prevent a race condition after mir_surface_release_sync */
-    xmir_process_from_eventloop();
+    xmir_process_from_eventloop_except(xmir_window);
 
     RegionUninit(&xmir_window->region);
 }
@@ -1128,6 +1205,9 @@ xmir_destroy_window(WindowPtr window)
     ScreenPtr screen = window->drawable.pScreen;
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     Bool ret;
+
+    if (!window->parent)
+        xmir_screen->destroying_root = TRUE;
 
     xmir_unmap_input(xmir_screen, window);
     xmir_unmap_surface(xmir_screen, window, TRUE);
@@ -1175,6 +1255,8 @@ xmir_close_screen(ScreenPtr screen)
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     struct xmir_output *xmir_output, *next_xmir_output;
     Bool ret;
+
+    xmir_screen->closing = TRUE;
 
     if (xmir_screen->glamor && xmir_screen->gbm)
         DRI2CloseScreen(screen);
@@ -1579,6 +1661,21 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     xmir_screen->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = xmir_close_screen;
+
+    {
+        int v;
+        XMIR_DEBUG(("XMir initialized with %hd visuals:\n",
+                    pScreen->numVisuals));
+        for (v = 0; v < pScreen->numVisuals; ++v) {
+            VisualPtr visual = pScreen->visuals + v;
+            XMIR_DEBUG(("\tVisual id 0x%x: %lx %lx %lx, %hd planes\n",
+                        (int)visual->vid,
+                        (long)visual->redMask,
+                        (long)visual->greenMask,
+                        (long)visual->blueMask,
+                        visual->nplanes));
+        }
+    }
 
     return ret;
 }

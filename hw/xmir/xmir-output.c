@@ -217,9 +217,6 @@ xmir_update_config(struct xmir_screen *xmir_screen)
     MirDisplayOutput **mir_output;
     struct xmir_output *xmir_output;
 
-    if (xmir_screen->windowed)
-        return;
-
     new_config = mir_connection_create_display_config(xmir_screen->conn);
     if (new_config->num_outputs != xmir_screen->display->num_outputs)
         FatalError("Number of outputs changed on update.\n");
@@ -301,20 +298,6 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 
     if (xmir_screen->rootless)
         return;
-
-    if (!xmir_screen->windowed) {
-        xmir_screen->windowed = 1;
-
-        XMIR_DEBUG(("Root resized, removing all outputs and inserting fake output\n"));
-
-        while (!xorg_list_is_empty(&xmir_screen->output_list)) {
-            struct xmir_output *xmir_output = xorg_list_first_entry(&xmir_screen->output_list, typeof(*xmir_output), link);
-
-            RRCrtcDestroy(xmir_output->randr_crtc);
-            RROutputDestroy(xmir_output->randr_output);
-            xmir_output_destroy(xmir_output);
-        }
-    }
 
     XMIR_DEBUG(("Output resized %ix%i with rotation %i\n",
                 width, height, xmir_window->orientation));

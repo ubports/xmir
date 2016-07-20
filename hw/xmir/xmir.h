@@ -53,7 +53,7 @@ struct xmir_window;
 struct xmir_screen {
     ScreenPtr screen;
 
-    int depth, rootless, windowed, doubled;
+    int depth, rootless, doubled;
     enum {glamor_off=0, glamor_dri, glamor_egl, glamor_egl_sync} glamor;
 
     CreateScreenResourcesProcPtr CreateScreenResources;
@@ -90,6 +90,8 @@ struct xmir_screen {
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
     Bool flatten;
     Bool neverclose;
+    Bool destroying_root;
+    Bool closing;
     const char *title;
     MirSurface *neverclosed;
     struct xorg_list flattened_list;
@@ -215,6 +217,7 @@ typedef void (xmir_event_callback)(struct xmir_screen*, struct xmir_window*,
 void xmir_post_to_eventloop(xmir_event_callback *cb,
                             struct xmir_screen*, struct xmir_window*, void*);
 void xmir_process_from_eventloop(void);
+void xmir_process_from_eventloop_except(const struct xmir_window*);
 
 /* xmir-input.c */
 void xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev, void *context);
