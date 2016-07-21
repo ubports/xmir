@@ -331,16 +331,12 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         int y;
         for (y = copy_box.y1; y < copy_box.y2; ++y) {
             memcpy(dst, src, line_len);
-            /* Bother filling the edges?
             memset(dst+line_len, 0, dst_stride-line_len);
-            */
             src += src_stride;
             dst += dst_stride;
         }
-        /* Bother filling the edges?
         if (y < window_height)
             memset(dst, 0, (window_height - y) * dst_stride);
-        */
     }
 
     screen->width = window_width;
