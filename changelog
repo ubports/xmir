@@ -1,7 +1,12 @@
 xorg-server (2:1.18.3-1ubuntu2.3) UNRELEASED; urgency=medium
 
+  [ Timo Aaltonen ]
   * control: Add Conflicts/Replaces on xserver-xorg-video-glamoregl.
     (LP: #1574320)
+
+  [ Łukasz 'sil2100' Zemczak ]
+  * debian/control, debian/rules:
+    - Build xmir for arm64 (LP: #1604851).
 
  -- Timo Aaltonen <tjaalton@debian.org>  Tue, 05 Jul 2016 01:53:51 +0300
 
