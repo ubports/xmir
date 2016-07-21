@@ -141,9 +141,7 @@ ddxUseMsg(void)
 {
     ErrorF("-rootless              Run rootless\n");
     ErrorF("  -flatten             Flatten rootless X windows into a single surface\n");
-    ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
     ErrorF("    -neverclose        Never close the flattened rootless window\n");
-    ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
     ErrorF("-title <name>          Set window title (@ = automatic)\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
