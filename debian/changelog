@@ -1,3 +1,15 @@
+xorg-server (2:1.18.4-1ubuntu3) yakkety; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Fix bottom/right edge corruption. (LP: #1510849)
+    - Fix key repeat. (LP: #1591356)
+    - Don't delete outputs without replacing them. (LP: #1504422) (LP: #1602561)
+    - Xmir -debug: Log WM types by name and number.
+    - Implement fake GLX frame notification/timing.
+    - Improve focus tracking.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 21 Jul 2016 11:42:03 +0200
+
 xorg-server (2:1.18.4-1ubuntu2) yakkety; urgency=medium
 
   * debian/control, debian/rules:
