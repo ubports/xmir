@@ -42,7 +42,7 @@ static int
 xmir_pointer_proc(DeviceIntPtr device, int what)
 {
 #define NBUTTONS 10
-#define NAXES 2
+#define NAXES 4
     BYTE map[NBUTTONS + 1];
     int i = 0;
     Atom btn_labels[NBUTTONS] = { 0 };
@@ -66,8 +66,10 @@ xmir_pointer_proc(DeviceIntPtr device, int what)
 
         axes_labels[0] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_X);
         axes_labels[1] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_Y);
+        axes_labels[2] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_HWHEEL);
+        axes_labels[3] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_WHEEL);
 
-        if (!InitValuatorClassDeviceStruct(device, 2, btn_labels,
+        if (!InitValuatorClassDeviceStruct(device, NAXES, btn_labels,
                                            GetMotionHistorySize(), Absolute))
             return BadValue;
 
@@ -76,6 +78,13 @@ xmir_pointer_proc(DeviceIntPtr device, int what)
                                0, 0xFFFF, 10000, 0, 10000, Absolute);
         InitValuatorAxisStruct(device, 1, axes_labels[1],
                                0, 0xFFFF, 10000, 0, 10000, Absolute);
+        InitValuatorAxisStruct(device, 2, axes_labels[2],
+                               NO_AXIS_LIMITS, NO_AXIS_LIMITS, 0, 0, 0, Relative);
+        InitValuatorAxisStruct(device, 3, axes_labels[3],
+                               NO_AXIS_LIMITS, NO_AXIS_LIMITS, 0, 0, 0, Relative);
+
+        SetScrollValuator(device, 2, SCROLL_TYPE_HORIZONTAL, 1.0, SCROLL_FLAG_NONE);
+        SetScrollValuator(device, 3, SCROLL_TYPE_VERTICAL, 1.0, SCROLL_FLAG_PREFERRED);
 
         if (!InitPtrFeedbackClassDeviceStruct(device, xmir_pointer_control))
             return BadValue;
@@ -220,7 +229,7 @@ pointer_handle_motion(struct xmir_input *xmir_input,
 {
     int sx = mir_pointer_event_axis_value(pev, mir_pointer_axis_x);
     int sy = mir_pointer_event_axis_value(pev, mir_pointer_axis_y);
-    int vscroll = 0;
+    float vscroll, hscroll;
     ValuatorMask mask;
 
     pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy);
@@ -230,17 +239,17 @@ pointer_handle_motion(struct xmir_input *xmir_input,
     valuator_mask_zero(&mask);
     valuator_mask_set(&mask, 0, sx);
     valuator_mask_set(&mask, 1, sy);
-
     QueuePointerEvents(xmir_input->pointer, MotionNotify, 0,
                        POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
 
-    /* Mouse wheel: Moving the wheel is a press+release of button 4/5 */
     vscroll = mir_pointer_event_axis_value(pev, mir_pointer_axis_vscroll);
-    if (vscroll) {
-        int button = vscroll < 0 ? 5 : 4;
+    hscroll = mir_pointer_event_axis_value(pev, mir_pointer_axis_hscroll);
+    if (vscroll || hscroll) {
         valuator_mask_zero(&mask);
-        QueuePointerEvents(xmir_input->pointer, ButtonPress, button, 0, &mask);
-        QueuePointerEvents(xmir_input->pointer, ButtonRelease, button, 0, &mask);
+        valuator_mask_set_double(&mask, 3, -vscroll);
+        valuator_mask_set_double(&mask, 2, hscroll);
+        QueuePointerEvents(xmir_input->pointer, MotionNotify, 0,
+                           POINTER_RELATIVE, &mask);
     }
 }
 
