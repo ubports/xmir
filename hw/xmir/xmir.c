@@ -141,9 +141,7 @@ ddxUseMsg(void)
 {
     ErrorF("-rootless              Run rootless\n");
     ErrorF("  -flatten             Flatten rootless X windows into a single surface\n");
-    ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
     ErrorF("    -neverclose        Never close the flattened rootless window\n");
-    ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
     ErrorF("-title <name>          Set window title (@ = automatic)\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
@@ -1567,11 +1565,14 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
     }
 
-    /* Core DPI cannot report correct values (it's one value, we have multiple displays)
-     * Use the value from the -dpi commandline if set, or 96 otherwise.
+    /*
+     * Core DPI cannot report correct values (it's one value and we might have
+     * multiple displays). Use the value from the -dpi command line if set, or
+     * 96 otherwise.
      *
-     * This matches the behaviour of all the desktop Xorg drivers. Clients which
-     * care can use the XRANDR extension to get correct per-output DPI information.
+     * This matches the behaviour of all the desktop Xorg drivers. Clients
+     * which care can use the XRandR extension to get correct per-output DPI
+     * information.
      */
     xmir_screen->dpi = monitorResolution > 0 ? monitorResolution : 96;
 
