@@ -1,3 +1,10 @@
+xorg-server (2:1.18.4-1ubuntu2) yakkety; urgency=medium
+
+  * debian/control, debian/rules:
+    - Build xmir for arm64 (LP: #1604851).
+
+ -- Łukasz 'sil2100' Zemczak <lukasz.zemczak@ubuntu.com>  Wed, 20 Jul 2016 18:55:21 +0200
+
 xorg-server (2:1.18.4-1ubuntu1) yakkety; urgency=medium
 
   * Merge from debian.
