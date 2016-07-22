@@ -942,13 +942,15 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
     }
 
     if (xmir_screen->rootless) {
-        const XWMHints *hints =
-            xmir_get_window_prop_hints(xmir_window->window);
-        if (!hints || !((hints->flags & InputHint) && !hints->input)) {
+        WindowPtr window = xmir_window->window;
+        const XWMHints *hints = xmir_get_window_prop_hints(window);
+        Bool refuse_focus = window->overrideRedirect ||
+            (hints && (hints->flags & InputHint) && !hints->input);
+        if (!refuse_focus) {
             Window id = (state == mir_surface_focused) ?
-                        xmir_window->window->drawable.id : None;
-            SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
-                          False);
+                        window->drawable.id : None;
+            SetInputFocus(serverClient, keyboard, id, RevertToParent,
+                          CurrentTime, False);
         }
     } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
         /*
