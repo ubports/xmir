@@ -389,13 +389,18 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
         MirKeyboardAction action = mir_keyboard_event_action(kev);
         int code = mir_keyboard_event_scan_code(kev) + 8;
 
-        if (action == mir_keyboard_action_down ||
-            action == mir_keyboard_action_repeat) {
-            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code);
-        }
+        /*
+         * Note: mir_keyboard_action_repeat must KeyRelease then KeyPress
+         * because it is already preceded by mir_keyboard_action_down and will
+         * be followed by mir_keyboard_action_up.
+         */
         if (action == mir_keyboard_action_up ||
             action == mir_keyboard_action_repeat) {
             QueueKeyboardEvents(xmir_input->keyboard, KeyRelease, code);
+        }
+        if (action == mir_keyboard_action_down ||
+            action == mir_keyboard_action_repeat) {
+            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code);
         }
         break;
     }
