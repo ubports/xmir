@@ -318,20 +318,27 @@ enum XWMHints_flag {
     /* There are more but not yet required */
 };
 
-struct XWMHints {
-    CARD32 flags;
-    CARD32 input;
-    /* There are more but not yet required */
-};
+typedef struct {
+    long flags;     /* marks which fields in this structure are defined */
+    Bool input;     /* does this application rely on the window manager to
+                       get keyboard input? */
+    int initial_state;      /* see below */
+    Pixmap icon_pixmap;     /* pixmap to be used as icon */
+    Window icon_window;     /* window to be used as icon */
+    int icon_x, icon_y;     /* initial position of icon */
+    Pixmap icon_mask;       /* icon mask bitmap */
+    XID window_group;       /* id of related window group */
+    /* this structure may be extended in the future */
+} XWMHints;
 
-static struct XWMHints*
+static XWMHints*
 xmir_get_window_prop_hints(WindowPtr window)
 {
     if (window->optional) {
         PropertyPtr p = window->optional->userProps;
         while (p) {
             if (p->propertyName == XA_WM_HINTS)
-                return (struct XWMHints*)&p->data;
+                return (XWMHints*)p->data;
             p = p->next;
         }
     }
@@ -662,7 +669,7 @@ xmir_realize_window(WindowPtr window)
     MirSurfaceSpec* spec = NULL;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
     MirPersistentId *persistent_id = NULL;
-    struct XWMHints *wm_hints = NULL;
+    XWMHints *wm_hints = NULL;
     char wm_name[1024];
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
@@ -698,8 +705,8 @@ xmir_realize_window(WindowPtr window)
 
     wm_hints = xmir_get_window_prop_hints(window);
     if (wm_hints) {
-        XMIR_DEBUG(("\tWM_HINTS={flags=0x%x,input=0x%x}\n",
-                    wm_hints->flags, wm_hints->input));
+        XMIR_DEBUG(("\tWM_HINTS={flags=0x%lx,input=%s}\n",
+                    wm_hints->flags, wm_hints->input?"True":"False"));
     } else {
         XMIR_DEBUG(("\tWM_HINTS=<none>\n"));
     }
@@ -935,7 +942,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
     }
 
     if (xmir_screen->rootless) {
-        const struct XWMHints *hints =
+        const XWMHints *hints =
             xmir_get_window_prop_hints(xmir_window->window);
         if (!hints || !((hints->flags & InputHint) && !hints->input)) {
             Window id = (state == mir_surface_focused) ?
