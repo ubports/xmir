@@ -1,3 +1,14 @@
+xorg-server (2:1.18.4-1ubuntu4) yakkety; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Fix button/menu focus failures (LP: #1590553)
+    - Implement XWMHints properly
+    - Add smooth touchpad scroll support (LP: #1603917)
+    - Fix key repeat order
+    - Remove links to Unity8 bugs that are now fixed.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 28 Jul 2016 14:31:22 +1200
+
 xorg-server (2:1.18.4-1ubuntu3) yakkety; urgency=medium
 
   * debian/patches/xmir.patch:

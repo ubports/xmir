@@ -1,4 +1,4 @@
-From c93f490c0c560c82ffc2dd3b6095f6e390b0fb81 Mon Sep 17 00:00:00 2001
+From f270f91a106d212e5b4a920a64e88f56d40a8336 Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 29 Apr 2016 14:57:53 +0200
 Subject: [PATCH xserver 1/3] XMir DDX
@@ -16,7 +16,7 @@ Contributions from:
  hw/xmir/.gitignore          |    1 +
  hw/xmir/Makefile.am         |   61 ++
  hw/xmir/dri2/Makefile.am    |   14 +
- hw/xmir/dri2/dri2.c         | 1398 +++++++++++++++++++++++++++++++++++
+ hw/xmir/dri2/dri2.c         | 1398 ++++++++++++++++++++++++++++++++++
  hw/xmir/dri2/dri2.h         |  364 +++++++++
  hw/xmir/dri2/dri2ext.c      |  683 +++++++++++++++++
  hw/xmir/dri2/dri2int.h      |   26 +
@@ -24,12 +24,12 @@ Contributions from:
  hw/xmir/xmir-cvt.c          |  304 ++++++++
  hw/xmir/xmir-dri2.c         |  551 ++++++++++++++
  hw/xmir/xmir-glamor.c       | 1160 +++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  595 +++++++++++++++
+ hw/xmir/xmir-input.c        |  609 +++++++++++++++
  hw/xmir/xmir-output.c       |  428 +++++++++++
  hw/xmir/xmir-thread-proxy.c |  115 +++
- hw/xmir/xmir.c              | 1719 +++++++++++++++++++++++++++++++++++++++++++
+ hw/xmir/xmir.c              | 1729 +++++++++++++++++++++++++++++++++++++++++++
  hw/xmir/xmir.h              |  230 ++++++
- 18 files changed, 7891 insertions(+), 2 deletions(-)
+ 18 files changed, 7915 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -4972,10 +4972,10 @@ index 0000000..7ad0245
 +}
 diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
 new file mode 100644
-index 0000000..e62e16c
+index 0000000..21b7abe
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,595 @@
+@@ -0,0 +1,609 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5020,7 +5020,7 @@ index 0000000..e62e16c
 +xmir_pointer_proc(DeviceIntPtr device, int what)
 +{
 +#define NBUTTONS 10
-+#define NAXES 2
++#define NAXES 4
 +    BYTE map[NBUTTONS + 1];
 +    int i = 0;
 +    Atom btn_labels[NBUTTONS] = { 0 };
@@ -5044,8 +5044,10 @@ index 0000000..e62e16c
 +
 +        axes_labels[0] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_X);
 +        axes_labels[1] = XIGetKnownProperty(AXIS_LABEL_PROP_ABS_Y);
++        axes_labels[2] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_HWHEEL);
++        axes_labels[3] = XIGetKnownProperty(AXIS_LABEL_PROP_REL_WHEEL);
 +
-+        if (!InitValuatorClassDeviceStruct(device, 2, btn_labels,
++        if (!InitValuatorClassDeviceStruct(device, NAXES, btn_labels,
 +                                           GetMotionHistorySize(), Absolute))
 +            return BadValue;
 +
@@ -5054,6 +5056,13 @@ index 0000000..e62e16c
 +                               0, 0xFFFF, 10000, 0, 10000, Absolute);
 +        InitValuatorAxisStruct(device, 1, axes_labels[1],
 +                               0, 0xFFFF, 10000, 0, 10000, Absolute);
++        InitValuatorAxisStruct(device, 2, axes_labels[2],
++                               NO_AXIS_LIMITS, NO_AXIS_LIMITS, 0, 0, 0, Relative);
++        InitValuatorAxisStruct(device, 3, axes_labels[3],
++                               NO_AXIS_LIMITS, NO_AXIS_LIMITS, 0, 0, 0, Relative);
++
++        SetScrollValuator(device, 2, SCROLL_TYPE_HORIZONTAL, 1.0, SCROLL_FLAG_NONE);
++        SetScrollValuator(device, 3, SCROLL_TYPE_VERTICAL, 1.0, SCROLL_FLAG_PREFERRED);
 +
 +        if (!InitPtrFeedbackClassDeviceStruct(device, xmir_pointer_control))
 +            return BadValue;
@@ -5198,7 +5207,7 @@ index 0000000..e62e16c
 +{
 +    int sx = mir_pointer_event_axis_value(pev, mir_pointer_axis_x);
 +    int sy = mir_pointer_event_axis_value(pev, mir_pointer_axis_y);
-+    int vscroll = 0;
++    float vscroll, hscroll;
 +    ValuatorMask mask;
 +
 +    pointer_ensure_focus(xmir_input, xmir_window, xmir_input->pointer, sx, sy);
@@ -5208,17 +5217,17 @@ index 0000000..e62e16c
 +    valuator_mask_zero(&mask);
 +    valuator_mask_set(&mask, 0, sx);
 +    valuator_mask_set(&mask, 1, sy);
-+
 +    QueuePointerEvents(xmir_input->pointer, MotionNotify, 0,
 +                       POINTER_ABSOLUTE | POINTER_SCREEN, &mask);
 +
-+    /* Mouse wheel: Moving the wheel is a press+release of button 4/5 */
 +    vscroll = mir_pointer_event_axis_value(pev, mir_pointer_axis_vscroll);
-+    if (vscroll) {
-+        int button = vscroll < 0 ? 5 : 4;
++    hscroll = mir_pointer_event_axis_value(pev, mir_pointer_axis_hscroll);
++    if (vscroll || hscroll) {
 +        valuator_mask_zero(&mask);
-+        QueuePointerEvents(xmir_input->pointer, ButtonPress, button, 0, &mask);
-+        QueuePointerEvents(xmir_input->pointer, ButtonRelease, button, 0, &mask);
++        valuator_mask_set_double(&mask, 3, -vscroll);
++        valuator_mask_set_double(&mask, 2, hscroll);
++        QueuePointerEvents(xmir_input->pointer, MotionNotify, 0,
++                           POINTER_RELATIVE, &mask);
 +    }
 +}
 +
@@ -5358,13 +5367,18 @@ index 0000000..e62e16c
 +        MirKeyboardAction action = mir_keyboard_event_action(kev);
 +        int code = mir_keyboard_event_scan_code(kev) + 8;
 +
-+        if (action == mir_keyboard_action_down ||
-+            action == mir_keyboard_action_repeat) {
-+            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code);
-+        }
++        /*
++         * Note: mir_keyboard_action_repeat must KeyRelease then KeyPress
++         * because it is already preceded by mir_keyboard_action_down and will
++         * be followed by mir_keyboard_action_up.
++         */
 +        if (action == mir_keyboard_action_up ||
 +            action == mir_keyboard_action_repeat) {
 +            QueueKeyboardEvents(xmir_input->keyboard, KeyRelease, code);
++        }
++        if (action == mir_keyboard_action_down ||
++            action == mir_keyboard_action_repeat) {
++            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code);
 +        }
 +        break;
 +    }
@@ -6128,10 +6142,10 @@ index 0000000..bfe64f0
 +}
 diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
 new file mode 100644
-index 0000000..b0fedfc
+index 0000000..f53eda6
 --- /dev/null
 +++ b/hw/xmir/xmir.c
-@@ -0,0 +1,1719 @@
+@@ -0,0 +1,1729 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -6275,9 +6289,7 @@ index 0000000..b0fedfc
 +{
 +    ErrorF("-rootless              Run rootless\n");
 +    ErrorF("  -flatten             Flatten rootless X windows into a single surface\n");
-+    ErrorF("                       (Unity8 requires -flatten; LP: #1497085)\n");
 +    ErrorF("    -neverclose        Never close the flattened rootless window\n");
-+    ErrorF("                       (ugly workaround for Unity8 bug LP: #1501346)\n");
 +    ErrorF("-title <name>          Set window title (@ = automatic)\n");
 +    ErrorF("-sw                    disable glamor rendering\n");
 +    ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
@@ -6451,20 +6463,27 @@ index 0000000..b0fedfc
 +    /* There are more but not yet required */
 +};
 +
-+struct XWMHints {
-+    CARD32 flags;
-+    CARD32 input;
-+    /* There are more but not yet required */
-+};
++typedef struct {
++    long flags;     /* marks which fields in this structure are defined */
++    Bool input;     /* does this application rely on the window manager to
++                       get keyboard input? */
++    int initial_state;      /* see below */
++    Pixmap icon_pixmap;     /* pixmap to be used as icon */
++    Window icon_window;     /* window to be used as icon */
++    int icon_x, icon_y;     /* initial position of icon */
++    Pixmap icon_mask;       /* icon mask bitmap */
++    XID window_group;       /* id of related window group */
++    /* this structure may be extended in the future */
++} XWMHints;
 +
-+static struct XWMHints*
++static XWMHints*
 +xmir_get_window_prop_hints(WindowPtr window)
 +{
 +    if (window->optional) {
 +        PropertyPtr p = window->optional->userProps;
 +        while (p) {
 +            if (p->propertyName == XA_WM_HINTS)
-+                return (struct XWMHints*)&p->data;
++                return (XWMHints*)p->data;
 +            p = p->next;
 +        }
 +    }
@@ -6795,7 +6814,7 @@ index 0000000..b0fedfc
 +    MirSurfaceSpec* spec = NULL;
 +    WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
 +    MirPersistentId *persistent_id = NULL;
-+    struct XWMHints *wm_hints = NULL;
++    XWMHints *wm_hints = NULL;
 +    char wm_name[1024];
 +
 +    screen->RealizeWindow = xmir_screen->RealizeWindow;
@@ -6831,8 +6850,8 @@ index 0000000..b0fedfc
 +
 +    wm_hints = xmir_get_window_prop_hints(window);
 +    if (wm_hints) {
-+        XMIR_DEBUG(("\tWM_HINTS={flags=0x%x,input=0x%x}\n",
-+                    wm_hints->flags, wm_hints->input));
++        XMIR_DEBUG(("\tWM_HINTS={flags=0x%lx,input=%s}\n",
++                    wm_hints->flags, wm_hints->input?"True":"False"));
 +    } else {
 +        XMIR_DEBUG(("\tWM_HINTS=<none>\n"));
 +    }
@@ -7068,13 +7087,15 @@ index 0000000..b0fedfc
 +    }
 +
 +    if (xmir_screen->rootless) {
-+        const struct XWMHints *hints =
-+            xmir_get_window_prop_hints(xmir_window->window);
-+        if (!hints || !((hints->flags & InputHint) && !hints->input)) {
++        WindowPtr window = xmir_window->window;
++        const XWMHints *hints = xmir_get_window_prop_hints(window);
++        Bool refuse_focus = window->overrideRedirect ||
++            (hints && (hints->flags & InputHint) && !hints->input);
++        if (!refuse_focus) {
 +            Window id = (state == mir_surface_focused) ?
-+                        xmir_window->window->drawable.id : None;
-+            SetInputFocus(serverClient, keyboard, id, RevertToParent, CurrentTime,
-+                          False);
++                        window->drawable.id : None;
++            SetInputFocus(serverClient, keyboard, id, RevertToParent,
++                          CurrentTime, False);
 +        }
 +    } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
 +        /*
@@ -7698,11 +7719,14 @@ index 0000000..b0fedfc
 +        return FALSE;
 +    }
 +
-+    /* Core DPI cannot report correct values (it's one value, we have multiple displays)
-+     * Use the value from the -dpi commandline if set, or 96 otherwise.
++    /*
++     * Core DPI cannot report correct values (it's one value and we might have
++     * multiple displays). Use the value from the -dpi command line if set, or
++     * 96 otherwise.
 +     *
-+     * This matches the behaviour of all the desktop Xorg drivers. Clients which
-+     * care can use the XRANDR extension to get correct per-output DPI information.
++     * This matches the behaviour of all the desktop Xorg drivers. Clients
++     * which care can use the XRandR extension to get correct per-output DPI
++     * information.
 +     */
 +    xmir_screen->dpi = monitorResolution > 0 ? monitorResolution : 96;
 +
