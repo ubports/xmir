@@ -402,7 +402,7 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
         }
         if (action == mir_keyboard_action_down ||
             action == mir_keyboard_action_repeat) {
-            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code);
+            QueueKeyboardEvents(xmir_input->keyboard, KeyPress, code, &mask);
         }
         break;
     }
