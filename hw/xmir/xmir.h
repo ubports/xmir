@@ -49,11 +49,12 @@
 #include <epoxy/gl.h>
 
 struct xmir_window;
+struct xmir_output;
 
 struct xmir_screen {
     ScreenPtr screen;
 
-    int depth, rootless, windowed, doubled;
+    int depth, rootless, doubled;
     enum {glamor_off=0, glamor_dri, glamor_egl, glamor_egl_sync} glamor;
 
     CreateScreenResourcesProcPtr CreateScreenResources;
@@ -102,6 +103,8 @@ struct xmir_screen {
     int dpi;
 
     DRI2InfoRec dri2;
+
+    struct xmir_output *windowed;
 };
 
 struct xmir_pixmap {
