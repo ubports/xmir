@@ -195,7 +195,7 @@ xmir_output_screen_resized(struct xmir_screen *xmir_screen)
 }
 
 static struct xmir_output*
-xmir_output_create(struct xmir_screen *xmir_screen,  const char *name)
+xmir_output_create(struct xmir_screen *xmir_screen, const char *name)
 {
     struct xmir_output *xmir_output;
 
