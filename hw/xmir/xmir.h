@@ -157,12 +157,10 @@ struct xmir_input {
 
 struct xmir_output {
     struct xorg_list link;
-    struct wl_output *output;
     struct xmir_screen *xmir_screen;
     RROutputPtr randr_output;
     RRCrtcPtr randr_crtc;
     int32_t x, y, width, height;
-    Rotation rotation;
 };
 
 extern Bool xmir_debug_logging;
