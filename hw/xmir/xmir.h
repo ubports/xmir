@@ -53,7 +53,7 @@ struct xmir_window;
 struct xmir_screen {
     ScreenPtr screen;
 
-    int depth, rootless, doubled;
+    int depth, rootless, windowed, doubled;
     enum {glamor_off=0, glamor_dri, glamor_egl, glamor_egl_sync} glamor;
 
     CreateScreenResourcesProcPtr CreateScreenResources;
