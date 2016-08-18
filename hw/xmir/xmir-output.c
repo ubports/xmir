@@ -144,6 +144,34 @@ xmir_output_update(struct xmir_output *xmir_output, MirDisplayOutput *mir_output
 }
 
 static void
+xmir_screen_update_windowed_output(struct xmir_screen *xmir_screen)
+{
+    struct xmir_output *xmir_output = xmir_screen->windowed;
+    RRModePtr randr_mode;
+
+    RROutputSetConnection(xmir_output->randr_output, RR_Connected);
+    RROutputSetSubpixelOrder(xmir_output->randr_output, SubPixelUnknown);
+
+    xmir_output->width = xmir_screen->screen->width;
+    xmir_output->height = xmir_screen->screen->height;
+    xmir_output->x = 0;
+    xmir_output->y = 0;
+
+    randr_mode = xmir_cvt(xmir_output->width, xmir_output->height, 60, 0, 0);
+    randr_mode->mode.width = xmir_output->width;
+    randr_mode->mode.height = xmir_output->height;
+    sprintf(randr_mode->name, "%dx%d@%.1fHz",
+            randr_mode->mode.width, randr_mode->mode.height,
+            RRVerticalRefresh(&randr_mode->mode)/1.0f);
+
+    RROutputSetPhysicalSize(xmir_output->randr_output, 0, 0);
+    RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
+    RRCrtcNotify(xmir_output->randr_crtc, randr_mode,
+                 xmir_output->x, xmir_output->y,
+                 RR_Rotate_0, NULL, 1, &xmir_output->randr_output);
+}
+
+static void
 xmir_output_screen_resized(struct xmir_screen *xmir_screen)
 {
     ScreenPtr screen = xmir_screen->screen;
@@ -166,15 +194,15 @@ xmir_output_screen_resized(struct xmir_screen *xmir_screen)
     update_desktop_dimensions();
 }
 
-static void
-xmir_output_create(struct xmir_screen *xmir_screen, MirDisplayOutput *mir_output, const char *name)
+static struct xmir_output*
+xmir_output_create(struct xmir_screen *xmir_screen,  const char *name)
 {
     struct xmir_output *xmir_output;
 
     xmir_output = calloc(sizeof *xmir_output, 1);
     if (xmir_output == NULL) {
         FatalError("No memory for creating output\n");
-        return;
+        return NULL;
     }
 
     xmir_output->xmir_screen = xmir_screen;
@@ -184,8 +212,7 @@ xmir_output_create(struct xmir_screen *xmir_screen, MirDisplayOutput *mir_output
     RRCrtcGammaSetSize(xmir_output->randr_crtc, 256);
     RROutputSetCrtcs(xmir_output->randr_output, &xmir_output->randr_crtc, 1);
     xorg_list_append(&xmir_output->link, &xmir_screen->output_list);
-    if (mir_output)
-        xmir_output_update(xmir_output, mir_output);
+    return xmir_output;
 }
 
 void
@@ -303,8 +330,6 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         return;
 
     if (!xmir_screen->windowed) {
-        xmir_screen->windowed = 1;
-
         XMIR_DEBUG(("Root resized, removing all outputs and inserting fake output\n"));
 
         while (!xorg_list_is_empty(&xmir_screen->output_list)) {
@@ -314,6 +339,8 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
             RROutputDestroy(xmir_output->randr_output);
             xmir_output_destroy(xmir_output);
         }
+
+        xmir_screen->windowed = xmir_output_create(xmir_screen, "Windowed");
     }
 
     XMIR_DEBUG(("Output resized %ix%i with rotation %i\n",
@@ -383,6 +410,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
         miPointerSetScreen(pDev, 0, x, y);
     }
 
+    xmir_screen_update_windowed_output(xmir_screen);
     if (ConnectionInfo)
         RRScreenSizeNotify(xmir_screen->screen);
     update_desktop_dimensions();
@@ -422,6 +450,7 @@ xmir_screen_init_output(struct xmir_screen *xmir_screen)
     for (i = 0; i < display_config->num_outputs; i++) {
         char name[32];
         MirDisplayOutput *mir_output = &display_config->outputs[i];
+        struct xmir_output *xmir_output;
         const char* output_type_str = xmir_get_output_type_str(mir_output);
         int type_count = i;
 
@@ -429,7 +458,10 @@ xmir_screen_init_output(struct xmir_screen *xmir_screen)
             type_count = output_type_count[mir_output->type]++;
 
         snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
-        xmir_output_create(xmir_screen, mir_output, name);
+        xmir_output = xmir_output_create(xmir_screen, name);
+        if (!xmir_output)
+            return FALSE;
+        xmir_output_update(xmir_output, mir_output);
     }
 
     RRScreenSetSizeRange(xmir_screen->screen, 320, 200, INT16_MAX, INT16_MAX);
