@@ -122,8 +122,8 @@ xmir_output_update(struct xmir_output *xmir_output, MirDisplayOutput *mir_output
         /* Odd resolutions like 1366x768 don't show correctly otherwise */
         randr_mode->mode.width = mode->horizontal_resolution;
         randr_mode->mode.height = mode->vertical_resolution;
-        sprintf(randr_mode->name, "%dx%d@%.1fHz",
-                randr_mode->mode.width, randr_mode->mode.height, mode->refresh_rate);
+        sprintf(randr_mode->name, "%dx%d",
+                randr_mode->mode.width, randr_mode->mode.height);
 
         RROutputSetPhysicalSize(xmir_output->randr_output, mir_output->physical_width_mm, mir_output->physical_height_mm);
         RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
@@ -160,9 +160,8 @@ xmir_screen_update_windowed_output(struct xmir_screen *xmir_screen)
     randr_mode = xmir_cvt(xmir_output->width, xmir_output->height, 60, 0, 0);
     randr_mode->mode.width = xmir_output->width;
     randr_mode->mode.height = xmir_output->height;
-    sprintf(randr_mode->name, "%dx%d@%.1fHz",
-            randr_mode->mode.width, randr_mode->mode.height,
-            RRVerticalRefresh(&randr_mode->mode)/1.0f);
+    sprintf(randr_mode->name, "%dx%d",
+            randr_mode->mode.width, randr_mode->mode.height);
 
     RROutputSetPhysicalSize(xmir_output->randr_output, 0, 0);
     RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
