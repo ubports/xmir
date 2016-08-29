@@ -357,7 +357,8 @@ xmir_glamor_copy_egl_common(DrawablePtr src, PixmapPtr src_pixmap,
     struct xmir_screen *xmir_screen = xmir_screen_get(src->pScreen);
     DebugF("Box: (%i,%i)->(%i,%i)\n", ext->x1, ext->y1, ext->x2, ext->y2);
 
-    if (epoxy_has_gl_extension("GL_EXT_framebuffer_blit") && !xmir_screen->doubled && !orientation) {
+    if (xmir_screen->glamor_has_GL_EXT_framebuffer_blit &&
+        !xmir_screen->doubled && !orientation) {
         glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->fbo->fb);
 
         glBlitFramebuffer(ext->x1, ext->y2, ext->x2, ext->y1,
@@ -835,6 +836,9 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
         ErrorF("GL_OES_EGL_image not available\n");
         return FALSE;
     }
+
+    xmir_screen->glamor_has_GL_EXT_framebuffer_blit =
+        epoxy_has_gl_extension("GL_EXT_framebuffer_blit");
 
     if (!xmir_screen->gbm && xmir_screen->glamor != glamor_egl_sync) {
         xmir_screen->swap_context = eglCreateContext(xmir_screen->egl_display, egl_config, EGL_NO_CONTEXT, gles2_attribs);

@@ -105,6 +105,7 @@ struct xmir_screen {
     DRI2InfoRec dri2;
 
     struct xmir_output *windowed;
+    Bool glamor_has_GL_EXT_framebuffer_blit;
 };
 
 struct xmir_pixmap {
