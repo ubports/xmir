@@ -389,7 +389,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window, int width, int height
 
     screen->SetScreenPixmap(pixmap);
 
-    SetRootClip(screen, TRUE);
+    SetRootClip(screen, ROOT_CLIP_FULL);
 
     box.x1 = box.y1 = 0;
     box.x2 = window_width;
