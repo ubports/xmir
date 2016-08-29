@@ -550,6 +550,8 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
     case mir_event_type_keymap:
         xmir_handle_keymap_event(xmir_input, mir_event_get_keymap_event(ev));
         break;
+    case mir_event_type_input_device_state:
+        break;
     default:
         ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
         break;
