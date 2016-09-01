@@ -1,6 +1,9 @@
 xorg-server (2:1.18.4-0ubuntu0.1) UNRELEASED; urgency=medium
 
   * New upstream bugfix release.
+  * randr-adjust-masters-last-set-time.diff,
+    randr-do-not-check-the-screen-size.diff:
+    Fix issues changing display mode on prime setups. (LP: #1586260)
 
  -- Timo Aaltonen <tjaalton@debian.org>  Mon, 01 Aug 2016 14:36:15 +0300
 
