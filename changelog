@@ -5,6 +5,8 @@ xorg-server (2:1.18.4-0ubuntu0.1) xenial; urgency=medium
     randr-do-not-check-the-screen-size.diff:
     Fix issues changing display mode on prime setups. (LP: #1586260)
   * os-treat-ssh-as-a-non-local-client.diff: Dropped, upstream.
+  * drm_device_keep_trying.patch: Dropped, shouldn't be needed anymore,
+    and causes issues on non-x86 archs. (LP: #1581076)
 
  -- Timo Aaltonen <tjaalton@debian.org>  Thu, 01 Sep 2016 10:28:26 +0300
 
