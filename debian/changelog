@@ -1,3 +1,13 @@
+xorg-server (2:1.18.4-1ubuntu6) yakkety; urgency=medium
+
+  * debian/patches/xmir.patch:
+    - Don't call epoxy every frame (LP: #1617932)
+    - Ignore 'unknown 11 event' (LP: #1617925)
+    - Improve root window resizing code
+    - Make randr mode names simpler
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Wed, 07 Sep 2016 15:50:30 +1200
+
 xorg-server (2:1.18.4-1ubuntu5) yakkety; urgency=medium
 
   * drm_device_keep_trying.patch: Dropped, shouldn't be needed anymore, and

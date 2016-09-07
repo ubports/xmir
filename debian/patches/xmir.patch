@@ -1,4 +1,4 @@
-From f270f91a106d212e5b4a920a64e88f56d40a8336 Mon Sep 17 00:00:00 2001
+From 8467ede06b3b40fae1d362d73cfa313737e0defc Mon Sep 17 00:00:00 2001
 From: Robert Ancell <robert.ancell@canonical.com>
 Date: Fri, 29 Apr 2016 14:57:53 +0200
 Subject: [PATCH xserver 1/3] XMir DDX
@@ -23,13 +23,13 @@ Contributions from:
  hw/xmir/xmir-cursor.c       |  210 ++++++
  hw/xmir/xmir-cvt.c          |  304 ++++++++
  hw/xmir/xmir-dri2.c         |  551 ++++++++++++++
- hw/xmir/xmir-glamor.c       | 1160 +++++++++++++++++++++++++++++
- hw/xmir/xmir-input.c        |  609 +++++++++++++++
- hw/xmir/xmir-output.c       |  428 +++++++++++
+ hw/xmir/xmir-glamor.c       | 1164 +++++++++++++++++++++++++++++
+ hw/xmir/xmir-input.c        |  611 +++++++++++++++
+ hw/xmir/xmir-output.c       |  476 ++++++++++++
  hw/xmir/xmir-thread-proxy.c |  115 +++
  hw/xmir/xmir.c              | 1729 +++++++++++++++++++++++++++++++++++++++++++
- hw/xmir/xmir.h              |  230 ++++++
- 18 files changed, 7915 insertions(+), 2 deletions(-)
+ hw/xmir/xmir.h              |  232 ++++++
+ 18 files changed, 7971 insertions(+), 2 deletions(-)
  create mode 100644 hw/xmir/.gitignore
  create mode 100644 hw/xmir/Makefile.am
  create mode 100644 hw/xmir/dri2/Makefile.am
@@ -3806,10 +3806,10 @@ index 0000000..e1d02f0
 +}
 diff --git a/hw/xmir/xmir-glamor.c b/hw/xmir/xmir-glamor.c
 new file mode 100644
-index 0000000..7ad0245
+index 0000000..61d4c10
 --- /dev/null
 +++ b/hw/xmir/xmir-glamor.c
-@@ -0,0 +1,1160 @@
+@@ -0,0 +1,1164 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -4169,7 +4169,8 @@ index 0000000..7ad0245
 +    struct xmir_screen *xmir_screen = xmir_screen_get(src->pScreen);
 +    DebugF("Box: (%i,%i)->(%i,%i)\n", ext->x1, ext->y1, ext->x2, ext->y2);
 +
-+    if (epoxy_has_gl_extension("GL_EXT_framebuffer_blit") && !xmir_screen->doubled && !orientation) {
++    if (xmir_screen->glamor_has_GL_EXT_framebuffer_blit &&
++        !xmir_screen->doubled && !orientation) {
 +        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src_pixmap_priv->fbo->fb);
 +
 +        glBlitFramebuffer(ext->x1, ext->y2, ext->x2, ext->y1,
@@ -4648,6 +4649,9 @@ index 0000000..7ad0245
 +        return FALSE;
 +    }
 +
++    xmir_screen->glamor_has_GL_EXT_framebuffer_blit =
++        epoxy_has_gl_extension("GL_EXT_framebuffer_blit");
++
 +    if (!xmir_screen->gbm && xmir_screen->glamor != glamor_egl_sync) {
 +        xmir_screen->swap_context = eglCreateContext(xmir_screen->egl_display, egl_config, EGL_NO_CONTEXT, gles2_attribs);
 +        if (!xmir_screen->swap_context) {
@@ -4972,10 +4976,10 @@ index 0000000..7ad0245
 +}
 diff --git a/hw/xmir/xmir-input.c b/hw/xmir/xmir-input.c
 new file mode 100644
-index 0000000..21b7abe
+index 0000000..f9887ea
 --- /dev/null
 +++ b/hw/xmir/xmir-input.c
-@@ -0,0 +1,609 @@
+@@ -0,0 +1,611 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5527,6 +5531,8 @@ index 0000000..21b7abe
 +    case mir_event_type_keymap:
 +        xmir_handle_keymap_event(xmir_input, mir_event_get_keymap_event(ev));
 +        break;
++    case mir_event_type_input_device_state:
++        break;
 +    default:
 +        ErrorF("Received an unknown %u event\n", mir_event_get_type(ev));
 +        break;
@@ -5587,10 +5593,10 @@ index 0000000..21b7abe
 +}
 diff --git a/hw/xmir/xmir-output.c b/hw/xmir/xmir-output.c
 new file mode 100644
-index 0000000..1927215
+index 0000000..860e89b
 --- /dev/null
 +++ b/hw/xmir/xmir-output.c
-@@ -0,0 +1,428 @@
+@@ -0,0 +1,476 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -5715,8 +5721,8 @@ index 0000000..1927215
 +        /* Odd resolutions like 1366x768 don't show correctly otherwise */
 +        randr_mode->mode.width = mode->horizontal_resolution;
 +        randr_mode->mode.height = mode->vertical_resolution;
-+        sprintf(randr_mode->name, "%dx%d@%.1fHz",
-+                randr_mode->mode.width, randr_mode->mode.height, mode->refresh_rate);
++        sprintf(randr_mode->name, "%dx%d",
++                randr_mode->mode.width, randr_mode->mode.height);
 +
 +        RROutputSetPhysicalSize(xmir_output->randr_output, mir_output->physical_width_mm, mir_output->physical_height_mm);
 +        RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
@@ -5734,6 +5740,33 @@ index 0000000..1927215
 +        RRCrtcNotify(xmir_output->randr_crtc, NULL,
 +                     0, 0, RR_Rotate_0, NULL, 1, &xmir_output->randr_output);
 +    }
++}
++
++static void
++xmir_screen_update_windowed_output(struct xmir_screen *xmir_screen)
++{
++    struct xmir_output *xmir_output = xmir_screen->windowed;
++    RRModePtr randr_mode;
++
++    RROutputSetConnection(xmir_output->randr_output, RR_Connected);
++    RROutputSetSubpixelOrder(xmir_output->randr_output, SubPixelUnknown);
++
++    xmir_output->width = xmir_screen->screen->width;
++    xmir_output->height = xmir_screen->screen->height;
++    xmir_output->x = 0;
++    xmir_output->y = 0;
++
++    randr_mode = xmir_cvt(xmir_output->width, xmir_output->height, 60, 0, 0);
++    randr_mode->mode.width = xmir_output->width;
++    randr_mode->mode.height = xmir_output->height;
++    sprintf(randr_mode->name, "%dx%d",
++            randr_mode->mode.width, randr_mode->mode.height);
++
++    RROutputSetPhysicalSize(xmir_output->randr_output, 0, 0);
++    RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
++    RRCrtcNotify(xmir_output->randr_crtc, randr_mode,
++                 xmir_output->x, xmir_output->y,
++                 RR_Rotate_0, NULL, 1, &xmir_output->randr_output);
 +}
 +
 +static void
@@ -5759,15 +5792,15 @@ index 0000000..1927215
 +    update_desktop_dimensions();
 +}
 +
-+static void
-+xmir_output_create(struct xmir_screen *xmir_screen, MirDisplayOutput *mir_output, const char *name)
++static struct xmir_output*
++xmir_output_create(struct xmir_screen *xmir_screen, const char *name)
 +{
 +    struct xmir_output *xmir_output;
 +
 +    xmir_output = calloc(sizeof *xmir_output, 1);
 +    if (xmir_output == NULL) {
 +        FatalError("No memory for creating output\n");
-+        return;
++        return NULL;
 +    }
 +
 +    xmir_output->xmir_screen = xmir_screen;
@@ -5777,8 +5810,7 @@ index 0000000..1927215
 +    RRCrtcGammaSetSize(xmir_output->randr_crtc, 256);
 +    RROutputSetCrtcs(xmir_output->randr_output, &xmir_output->randr_crtc, 1);
 +    xorg_list_append(&xmir_output->link, &xmir_screen->output_list);
-+    if (mir_output)
-+        xmir_output_update(xmir_output, mir_output);
++    return xmir_output;
 +}
 +
 +void
@@ -5809,6 +5841,9 @@ index 0000000..1927215
 +    MirDisplayConfiguration *new_config;
 +    MirDisplayOutput **mir_output;
 +    struct xmir_output *xmir_output;
++
++    if (xmir_screen->windowed)
++        return;
 +
 +    new_config = mir_connection_create_display_config(xmir_screen->conn);
 +    if (new_config->num_outputs != xmir_screen->display->num_outputs)
@@ -5892,6 +5927,20 @@ index 0000000..1927215
 +    if (xmir_screen->rootless)
 +        return;
 +
++    if (!xmir_screen->windowed) {
++        XMIR_DEBUG(("Root resized, removing all outputs and inserting fake output\n"));
++
++        while (!xorg_list_is_empty(&xmir_screen->output_list)) {
++            struct xmir_output *xmir_output = xorg_list_first_entry(&xmir_screen->output_list, typeof(*xmir_output), link);
++
++            RRCrtcDestroy(xmir_output->randr_crtc);
++            RROutputDestroy(xmir_output->randr_output);
++            xmir_output_destroy(xmir_output);
++        }
++
++        xmir_screen->windowed = xmir_output_create(xmir_screen, "Windowed");
++    }
++
 +    XMIR_DEBUG(("Output resized %ix%i with rotation %i\n",
 +                width, height, xmir_window->orientation));
 +
@@ -5939,7 +5988,7 @@ index 0000000..1927215
 +
 +    screen->SetScreenPixmap(pixmap);
 +
-+    SetRootClip(screen, TRUE);
++    SetRootClip(screen, ROOT_CLIP_FULL);
 +
 +    box.x1 = box.y1 = 0;
 +    box.x2 = window_width;
@@ -5959,6 +6008,7 @@ index 0000000..1927215
 +        miPointerSetScreen(pDev, 0, x, y);
 +    }
 +
++    xmir_screen_update_windowed_output(xmir_screen);
 +    if (ConnectionInfo)
 +        RRScreenSizeNotify(xmir_screen->screen);
 +    update_desktop_dimensions();
@@ -5998,6 +6048,7 @@ index 0000000..1927215
 +    for (i = 0; i < display_config->num_outputs; i++) {
 +        char name[32];
 +        MirDisplayOutput *mir_output = &display_config->outputs[i];
++        struct xmir_output *xmir_output;
 +        const char* output_type_str = xmir_get_output_type_str(mir_output);
 +        int type_count = i;
 +
@@ -6005,7 +6056,10 @@ index 0000000..1927215
 +            type_count = output_type_count[mir_output->type]++;
 +
 +        snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
-+        xmir_output_create(xmir_screen, mir_output, name);
++        xmir_output = xmir_output_create(xmir_screen, name);
++        if (!xmir_output)
++            return FALSE;
++        xmir_output_update(xmir_output, mir_output);
 +    }
 +
 +    RRScreenSetSizeRange(xmir_screen->screen, 320, 200, INT16_MAX, INT16_MAX);
@@ -7877,10 +7931,10 @@ index 0000000..f53eda6
 +}
 diff --git a/hw/xmir/xmir.h b/hw/xmir/xmir.h
 new file mode 100644
-index 0000000..a62a66f
+index 0000000..771027a
 --- /dev/null
 +++ b/hw/xmir/xmir.h
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,232 @@
 +/*
 + * Copyright © 2015 Canonical Ltd
 + *
@@ -7932,6 +7986,7 @@ index 0000000..a62a66f
 +#include <epoxy/gl.h>
 +
 +struct xmir_window;
++struct xmir_output;
 +
 +struct xmir_screen {
 +    ScreenPtr screen;
@@ -7985,6 +8040,9 @@ index 0000000..a62a66f
 +    int dpi;
 +
 +    DRI2InfoRec dri2;
++
++    struct xmir_output *windowed;
++    Bool glamor_has_GL_EXT_framebuffer_blit;
 +};
 +
 +struct xmir_pixmap {
@@ -8037,12 +8095,10 @@ index 0000000..a62a66f
 +
 +struct xmir_output {
 +    struct xorg_list link;
-+    struct wl_output *output;
 +    struct xmir_screen *xmir_screen;
 +    RROutputPtr randr_output;
 +    RRCrtcPtr randr_crtc;
 +    int32_t x, y, width, height;
-+    Rotation rotation;
 +};
 +
 +extern Bool xmir_debug_logging;
@@ -8112,5 +8168,5 @@ index 0000000..a62a66f
 +
 +#endif
 -- 
-2.8.1
+2.9.3
 
