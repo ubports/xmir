@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015 Canonical Ltd
+ * Copyright © 2015-2016 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -159,7 +159,8 @@ pointer_convert_xy(struct xmir_input *xmir_input,
     /* reflection test parameters */
     bool magic_x_invert = false, magic_y_invert = false;
 
-    DebugF("Raw input %i,%i in window (%i,%i)->(%i,%i) orientation %i and scale %i\n", *x, *y, dx, dy, dx + w, dy + h, xmir_window->orientation, scale);
+    DebugF("Raw input %i,%i in window (%i,%i)->(%i,%i) orientation %i and scale %i\n",
+           *x, *y, dx, dy, dx + w, dy + h, xmir_window->orientation, scale);
 
     if (magic_x_invert)
         reflect_x = !reflect_x;
@@ -169,17 +170,24 @@ pointer_convert_xy(struct xmir_input *xmir_input,
 
     switch (xmir_window->orientation) {
     case 90:
-        reflect_x = !reflect_x; swap_xy = true; break;
+        reflect_x = !reflect_x;
+        swap_xy = true;
+        break;
     case 180:
-        reflect_x = !reflect_x; reflect_y = !reflect_y; break;
+        reflect_x = !reflect_x;
+        reflect_y = !reflect_y;
+        break;
     case 270:
-        reflect_y = !reflect_y; swap_xy = true; break;
+        reflect_y = !reflect_y;
+        swap_xy = true;
+        break;
     }
 
     if (!swap_xy) {
         sx = *x;
         sy = *y;
-    } else {
+    }
+    else {
         sx = *y;
         sy = *x;
     }
@@ -259,16 +267,18 @@ pointer_handle_button(struct xmir_input *xmir_input,
                       MirPointerEvent const *pev)
 {
     DeviceIntPtr dev = xmir_input->pointer;
-    struct {MirPointerButton mir_button; int x_button;} map[3] =
-    {
+    struct {
+        MirPointerButton mir_button;
+        int x_button;
+    } map[3] = {
         {mir_pointer_button_primary, 1},   /* Usually left button */
         {mir_pointer_button_secondary, 3}, /* Middle button */
         {mir_pointer_button_tertiary, 2},  /* Right button */
     };
     int i;
     ValuatorMask mask;
-    valuator_mask_zero(&mask);
 
+    valuator_mask_zero(&mask);
     for (i = 0; i < 3; ++i) {
         MirPointerButton mir_button = map[i].mir_button;
         int x_button = map[i].x_button;
@@ -364,7 +374,9 @@ xmir_xy_to_window(ScreenPtr screen, SpritePtr sprite, int x, int y)
 }
 
 static void
-fake_touch_move(struct xmir_input *xmir_input, struct xmir_window *xmir_window, int sx, int sy)
+fake_touch_move(struct xmir_input *xmir_input,
+                struct xmir_window *xmir_window,
+                int sx, int sy)
 {
     ValuatorMask mask;
 
@@ -385,10 +397,13 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
 {
     switch (mir_input_event_get_type(ev)) {
     case mir_input_event_type_key: {
-        MirKeyboardEvent const *kev = mir_input_event_get_keyboard_event(ev);
-        MirKeyboardAction action = mir_keyboard_event_action(kev);
-        int code = mir_keyboard_event_scan_code(kev) + 8;
-        ValuatorMask mask;
+        MirKeyboardEvent const *kev;
+        MirKeyboardAction action;
+        int code;
+
+        kev = mir_input_event_get_keyboard_event(ev);
+        action = mir_keyboard_event_action(kev);
+        code = mir_keyboard_event_scan_code(kev) + 8;
 
         /*
          * Note: mir_keyboard_action_repeat must KeyRelease then KeyPress
@@ -445,7 +460,10 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
             break;
         case mir_touch_action_down:
             xmir_input->touch_id = mir_touch_event_id(tev, i);
-            if (!pointer_ensure_focus(xmir_input, xmir_window, xmir_input->touch, sx, sy))
+            if (!pointer_ensure_focus(xmir_input,
+                                      xmir_window,
+                                      xmir_input->touch,
+                                      sx, sy))
                 fake_touch_move(xmir_input, xmir_window, sx, sy);
             QueuePointerEvents(xmir_input->touch, ButtonPress, 1, 0, &mask);
             break;
@@ -484,7 +502,7 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
 
 static void
 xmir_handle_keymap_event(struct xmir_input *xmir_input,
-                                MirKeymapEvent const* ev)
+                         MirKeymapEvent const* ev)
 {
     char * buffer = NULL;
     size_t length = 0;
@@ -513,15 +531,24 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
                                          void *arg)
 {
     const MirEvent *ev = arg;
-    struct xmir_input *xmir_input = xorg_list_first_entry(&xmir_screen->input_list, struct xmir_input, link);
+    struct xmir_input *xmir_input;
 
+    xmir_input = xorg_list_first_entry(&xmir_screen->input_list,
+                                       struct xmir_input,
+                                       link);
     switch (mir_event_get_type(ev))
     {
     case mir_event_type_input:
-        xmir_window_handle_input_event(xmir_input, xmir_window, mir_event_get_input_event(ev));
+        xmir_window_handle_input_event(xmir_input,
+                                       xmir_window,
+                                       mir_event_get_input_event(ev));
         break;
-    case mir_event_type_surface:
-        xmir_handle_surface_event(xmir_window, mir_surface_event_get_attribute(mir_event_get_surface_event(ev)), mir_surface_event_get_attribute_value(mir_event_get_surface_event(ev)));
+    case mir_event_type_surface: {
+        const MirSurfaceEvent *surface = mir_event_get_surface_event(ev);
+        xmir_handle_surface_event(xmir_window,
+                                  mir_surface_event_get_attribute(surface),
+                                  mir_surface_event_get_attribute_value(surface));
+        }
         break;
     case mir_event_type_resize: {
         WindowPtr window = xmir_window->window;
@@ -539,8 +566,11 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
     case mir_event_type_prompt_session_state_change:
         ErrorF("No idea about prompt_session_state_change\n");
         break;
-    case mir_event_type_orientation:
-        xmir_output_handle_orientation(xmir_window, mir_orientation_event_get_direction(mir_event_get_orientation_event(ev)));
+    case mir_event_type_orientation: {
+        const MirOrientationEvent *orientation = mir_event_get_orientation_event(ev);
+        xmir_output_handle_orientation(xmir_window,
+                                       mir_orientation_event_get_direction(orientation));
+        }
         break;
     case mir_event_type_close_surface:
         xmir_close_surface(xmir_window);
@@ -592,9 +622,15 @@ InitInput(int argc, char *argv[])
     xmir_input->xmir_screen = xmir_screen;
     xorg_list_add(&xmir_input->link, &xmir_screen->input_list);
     xmir_input->touch_id = -1;
-    xmir_input->pointer = add_device(xmir_input, "xmir-pointer", xmir_pointer_proc);
-    xmir_input->touch = add_device(xmir_input, "xmir-fake-touch-pointer", xmir_pointer_proc);
-    xmir_input->keyboard = add_device(xmir_input, "xmir-keyboard", xmir_keyboard_proc);
+    xmir_input->pointer = add_device(xmir_input,
+                                     "xmir-pointer",
+                                     xmir_pointer_proc);
+    xmir_input->touch = add_device(xmir_input,
+                                   "xmir-fake-touch-pointer",
+                                   xmir_pointer_proc);
+    xmir_input->keyboard = add_device(xmir_input,
+                                      "xmir-keyboard",
+                                      xmir_keyboard_proc);
 }
 
 void
