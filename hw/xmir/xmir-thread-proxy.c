@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012-2015 Canonical Ltd
+ * Copyright © 2012-2016 Canonical Ltd
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Soft-
@@ -59,30 +59,31 @@ xmir_wakeup_handler(void* data, int err, void* read_mask)
 void
 xmir_init_thread_to_eventloop(void)
 {
-	int err = pipe(pipefds);
-	if (err == -1)
-		FatalError("[XMIR] Failed to create thread-proxy pipes: %s\n", strerror(errno));
+    int err = pipe(pipefds);
+    if (err == -1)
+        FatalError("[XMIR] Failed to create thread-proxy pipes: %s\n",
+                   strerror(errno));
 
-	/* Set the read end to not block; we'll pull from this in the event loop
-	 * We don't need to care about the write end, as that'll be written to
-	 * from its own thread
-	 */
-	fcntl(pipefds[0], F_SETFL, O_NONBLOCK);
+    /* Set the read end to not block; we'll pull from this in the event loop
+     * We don't need to care about the write end, as that'll be written to
+     * from its own thread
+     */
+    fcntl(pipefds[0], F_SETFL, O_NONBLOCK);
 
-	AddGeneralSocket(pipefds[0]);
-	RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
-				       xmir_wakeup_handler,
-				       NULL);
+    AddGeneralSocket(pipefds[0]);
+    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
+                                   xmir_wakeup_handler,
+                                   NULL);
 }
 
 void
 xmir_fini_thread_to_eventloop(void)
 {
-	RemoveBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
-				     xmir_wakeup_handler, NULL);
-	RemoveGeneralSocket(pipefds[0]);
-	close(pipefds[1]);
-	close(pipefds[0]);
+    RemoveBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
+                                 xmir_wakeup_handler, NULL);
+    RemoveGeneralSocket(pipefds[0]);
+    close(pipefds[1]);
+    close(pipefds[0]);
 }
 
 void

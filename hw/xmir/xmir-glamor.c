@@ -128,7 +128,8 @@ xmir_glamor_win_get_back(struct xmir_screen *xmir_screen, struct xmir_window *xm
 
         bo = gbm_bo_import(xmir_screen->gbm, GBM_BO_IMPORT_FD, &gbm_data, GBM_BO_USE_RENDERING);
         xmir_pixmap->fake_back = false;
-    } else {
+    }
+    else {
         bo = gbm_bo_create(xmir_screen->gbm, draw->width, draw->height,
                            GBM_FORMAT_ARGB8888,
                            GBM_BO_USE_RENDERING);
@@ -256,7 +257,8 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
         if (reflect_x) {
             dbox.x1 = box->x2 + dstx;
             dbox.x2 = box->x1 + dstx;
-        } else {
+        }
+        else {
             dbox.x1 = box->x1 + dstx;
             dbox.x2 = box->x2 + dstx;
         }
@@ -264,7 +266,8 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
         if (reflect_y) {
             dbox.y1 = box->y2 + dsty;
             dbox.y2 = box->y1 + dsty;
-        } else {
+        }
+        else {
             dbox.y1 = box->y1 + dsty;
             dbox.y2 = box->y2 + dsty;
         }
@@ -290,13 +293,15 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
         /* bottom left */
         vertices[6] = _tx1;
         vertices[7] = _ty2;
-    } else {
+    }
+    else {
         float _tx1, _tx2, _ty1, _ty2;
 
         if (reflect_x) {
             dbox.y1 = box->x2 + dstx;
             dbox.y2 = box->x1 + dstx;
-        } else {
+        }
+        else {
             dbox.y1 = box->x1 + dstx;
             dbox.y2 = box->x2 + dstx;
         }
@@ -304,7 +309,8 @@ xmir_glamor_copy_egl_tex(int fbo, DrawablePtr src, PixmapPtr src_pixmap, glamor_
         if (reflect_y) {
             dbox.x1 = box->y2 + dsty;
             dbox.x2 = box->y1 + dsty;
-        } else {
+        }
+        else {
             dbox.x1 = box->y1 + dsty;
             dbox.x2 = box->y2 + dsty;
         }
@@ -364,7 +370,8 @@ xmir_glamor_copy_egl_common(DrawablePtr src, PixmapPtr src_pixmap,
         glBlitFramebuffer(ext->x1, ext->y2, ext->x2, ext->y1,
                           ext->x1 + dx, ext->y2 + dy, ext->x2 + dx, ext->y1 + dy,
                           GL_COLOR_BUFFER_BIT, GL_LINEAR);
-    } else
+    }
+    else
         xmir_glamor_copy_egl_tex(0, src, src_pixmap, src_pixmap_priv, ext, width, height, dx, dy, orientation);
 }
 
@@ -402,7 +409,8 @@ xmir_glamor_copy_gbm(struct xmir_screen *xmir_screen, struct xmir_window *xmir_w
 
         xmir_win->front_pixmap = back;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    } else {
+    }
+    else {
         xmir_win->front_pixmap = xmir_win->back_pixmap;
         xmir_win->back_pixmap = NULL;
     }
@@ -786,7 +794,8 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
         /* In GBM mode no mir functions are used in any way.
          * This means using the GBM device directly is safe.. */
         xmir_screen->egl_display = eglGetDisplay(xmir_screen->gbm);
-    } else
+    }
+    else
         xmir_screen->egl_display = eglGetDisplay(mir_connection_get_egl_native_display(xmir_screen->conn));
 
     if (xmir_screen->egl_display == EGL_NO_DISPLAY) {
@@ -817,7 +826,8 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
 
     if (!epoxy_has_egl_extension(xmir_screen->egl_display, "EGL_KHR_surfaceless_context")) {
         xmir_screen->egl_surface = eglCreatePbufferSurface(xmir_screen->egl_display, egl_config, pbuffer_attribs);
-    } else
+    }
+    else
         xmir_screen->egl_surface = EGL_NO_SURFACE;
 
     if (!eglMakeCurrent(xmir_screen->egl_display,

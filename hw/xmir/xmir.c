@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015 Canonical Ltd
+ * Copyright © 2015-2016 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -77,12 +77,12 @@ static Atom get_atom(const char *name, Atom *cache, Bool create)
     return *cache;
 }
 
-#define GET_ATOM(_a)  get_atom(#_a, &known_atom._a, False)
-#define MAKE_ATOM(_a) get_atom(#_a, &known_atom._a, True)
+#define GET_ATOM(_a)  get_atom(#_a, &known_atom._a, FALSE)
+#define MAKE_ATOM(_a) get_atom(#_a, &known_atom._a, TRUE)
 
 extern __GLXprovider __glXDRI2Provider;
 
-Bool xmir_debug_logging = False;
+Bool xmir_debug_logging = FALSE;
 
 static const char get_title_from_top_window[] = "@";
 
@@ -175,22 +175,27 @@ ddxProcessArgument(int argc, char *argv[], int i)
              strcmp(argv[i], "-title") == 0 ||
              strcmp(argv[i], "-mir") == 0) {
         return 2;
-    } else if (!strcmp(argv[i], "-novtswitch") ||
+    }
+    else if (!strcmp(argv[i], "-novtswitch") ||
                !strncmp(argv[i], "vt", 2)) {
         return 1;
     /* Bypass unity8 "security" */
-    } else if (!strncmp(argv[i], "--desktop_file_hint=", strlen("--desktop_file_hint="))) {
+    }
+    else if (!strncmp(argv[i], "--desktop_file_hint=", strlen("--desktop_file_hint="))) {
         return 1;
-    } else if (!strcmp(argv[i], "-fd")) {
+    }
+    else if (!strcmp(argv[i], "-fd")) {
         if (!seen_shared)
             NoListenAll = 1;
 
         return 2;
-    } else if (!strcmp(argv[i], "-shared")) {
+    }
+    else if (!strcmp(argv[i], "-shared")) {
         seen_shared = 1;
         NoListenAll = 0;
         return 1;
-    } else if (!strcmp(argv[i], "-listen")) {
+    }
+    else if (!strcmp(argv[i], "-listen")) {
         seen_shared = 1;
         NoListenAll = 0;
         return 0;
@@ -224,7 +229,9 @@ xmir_window_get(WindowPtr window)
 void
 xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap)
 {
-    return dixSetPrivate(&pixmap->devPrivates, &xmir_pixmap_private_key, xmir_pixmap);
+    return dixSetPrivate(&pixmap->devPrivates,
+                         &xmir_pixmap_private_key,
+                         xmir_pixmap);
 }
 
 static Bool
@@ -242,8 +249,9 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
                     size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
                     memcpy(buf, p->data, len);
                     buf[len] = '\0';
-                    return True;
-                } else {
+                    return TRUE;
+                }
+                else {
                     ErrorF("xmir_get_window_prop_string8: Atom %d is not "
                            "an 8-bit string as expected\n", atom);
                     break;
@@ -255,7 +263,7 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
 
     if (bufsize)
         buf[0] = '\0';
-    return False;
+    return FALSE;
 }
 
 static Bool
@@ -280,7 +288,8 @@ xmir_get_window_prop_window(WindowPtr window, ATOM atom)
                                         DixReadAccess) != Success)
                         ptr = NULL;
                     return ptr;
-                } else {
+                }
+                else {
                     ErrorF("xmir_get_window_prop_window: Atom %d is not "
                            "a Window as expected\n", atom);
                     return NULL;
@@ -301,7 +310,8 @@ xmir_get_window_prop_atom(WindowPtr window, ATOM name)
             if (p->propertyName == name) {
                 if (p->type == XA_ATOM) {
                     return *(Atom*)p->data;
-                } else {
+                }
+                else {
                     ErrorF("xmir_get_window_prop_atom: Atom %d is not "
                            "an Atom as expected\n", name);
                     return 0;
@@ -385,7 +395,9 @@ xmir_window_disable_damage_tracking(struct xmir_window *xmir_win)
 }
 
 static void
-xmir_sw_copy(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win, RegionPtr dirty)
+xmir_sw_copy(struct xmir_screen *xmir_screen,
+             struct xmir_window *xmir_win,
+             RegionPtr dirty)
 {
     PixmapPtr pix = xmir_screen->screen->GetWindowPixmap(xmir_win->window);
     int x1 = dirty->extents.x1, y1 = dirty->extents.y1;
@@ -483,9 +495,11 @@ void xmir_repaint(struct xmir_window *xmir_win)
     if (strcmp(xmir_screen->title, get_title_from_top_window)) {
         /* Fixed title mode. Never change it. */
         named = NULL;
-    } else if (xmir_screen->rootless) {
+    }
+    else if (xmir_screen->rootless) {
         named = xmir_win->window;
-    } else { /* Try and guess from the most relevant app window */
+    }
+    else { /* Try and guess from the most relevant app window */
         WindowPtr top = xmir_screen->screen->root->firstChild;
         WindowPtr top_named = NULL;
         WindowPtr top_normal = NULL;
@@ -587,7 +601,8 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
             XID vlist[2] = {buf_width, buf_height};
             ConfigureWindow(xmir_win->window, CWWidth|CWHeight, vlist,
                             serverClient);
-        } else {
+        }
+        else {
             /* Output resizing takes time, so start it going and let it
              * finish next frame or so...
              */
@@ -640,7 +655,9 @@ xmir_create_window(WindowPtr window)
     screen->CreateWindow = xmir_create_window;
 
     if (ret)
-        dixSetPrivate(&window->devPrivates, &xmir_window_private_key, xmir_window);
+        dixSetPrivate(&window->devPrivates,
+                      &xmir_window_private_key,
+                      xmir_window);
     else
         free(xmir_window);
 
@@ -707,13 +724,15 @@ xmir_realize_window(WindowPtr window)
     if (wm_hints) {
         XMIR_DEBUG(("\tWM_HINTS={flags=0x%lx,input=%s}\n",
                     wm_hints->flags, wm_hints->input?"True":"False"));
-    } else {
+    }
+    else {
         XMIR_DEBUG(("\tWM_HINTS=<none>\n"));
     }
 
     if (!window->viewable) {
         return ret;
-    } else if (xmir_screen->rootless) {
+    }
+    else if (xmir_screen->rootless) {
         if (!window->parent || window->parent == screen->root) {
             compRedirectWindow(serverClient, window,
                                CompositeRedirectManual);
@@ -722,7 +741,8 @@ xmir_realize_window(WindowPtr window)
         }
         if (window->redirectDraw != RedirectDrawManual)
             return ret;
-    } else if (window->parent) {
+    }
+    else if (window->parent) {
         return ret;
     }
 
@@ -781,7 +801,8 @@ xmir_realize_window(WindowPtr window)
 
     if (xmir_screen->neverclosed) {
         spec = mir_connection_create_spec_for_changes(xmir_screen->conn);
-    } else if (positioning_parent) {
+    }
+    else if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
         if (rel && rel->surface) {
             short dx = window->drawable.x - rel->window->drawable.x;
@@ -792,11 +813,13 @@ xmir_realize_window(WindowPtr window)
                 spec = mir_connection_create_spec_for_tooltip(
                     xmir_screen->conn, mir_width, mir_height, pixel_format,
                     rel->surface, &placement);
-            } else if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
+            }
+            else if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
                 spec = mir_connection_create_spec_for_modal_dialog(
                     xmir_screen->conn, mir_width, mir_height, pixel_format,
                     rel->surface);
-            } else {  /* Probably a menu. If not, still close enough... */
+            }
+            else {  /* Probably a menu. If not, still close enough... */
                 MirEdgeAttachment edge = mir_edge_attachment_any;
                 if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU))
                     edge = mir_edge_attachment_vertical;
@@ -812,7 +835,8 @@ xmir_realize_window(WindowPtr window)
         if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
             spec = mir_connection_create_spec_for_dialog(
                 xmir_screen->conn, mir_width, mir_height, pixel_format);
-        } else {
+        }
+        else {
             spec = mir_connection_create_spec_for_normal_surface(
                 xmir_screen->conn, mir_width, mir_height, pixel_format);
         }
@@ -835,7 +859,8 @@ xmir_realize_window(WindowPtr window)
 
         xmir_window->surface = xmir_screen->neverclosed;
         mir_surface_apply_spec(xmir_window->surface, spec);
-    } else {
+    }
+    else {
         mir_surface_spec_set_buffer_usage(spec,
                                           xmir_screen->glamor
                                           ? mir_buffer_usage_hardware
@@ -857,12 +882,15 @@ xmir_realize_window(WindowPtr window)
 
     xmir_window->has_free_buffer = TRUE;
     if (!mir_surface_is_valid(xmir_window->surface)) {
-        ErrorF("failed to create a surface: %s\n", mir_surface_get_error_message(xmir_window->surface));
+        ErrorF("failed to create a surface: %s\n",
+               mir_surface_get_error_message(xmir_window->surface));
         return FALSE;
     }
     if (!xmir_screen->flatten_top)
         xmir_screen->flatten_top = xmir_window;
-    mir_surface_set_event_handler(xmir_window->surface, xmir_surface_handle_event, xmir_window);
+    mir_surface_set_event_handler(xmir_window->surface,
+                                  xmir_surface_handle_event,
+                                  xmir_window);
 
     xmir_window_enable_damage_tracking(xmir_window);
 
@@ -950,9 +978,10 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
             Window id = (state == mir_surface_focused) ?
                         window->drawable.id : None;
             SetInputFocus(serverClient, keyboard, id, RevertToParent,
-                          CurrentTime, False);
+                          CurrentTime, FALSE);
         }
-    } else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
+    }
+    else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
         /*
          * So as to not break default behaviour, we only hack focus within
          * the root window when in Unity8 invasive mode (-title @).
@@ -962,18 +991,21 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
             id = xmir_screen->saved_focus;
             if (id == None)
                 id = PointerRoot;
-        } else {
+        }
+        else {
             xmir_screen->saved_focus = xmir_get_current_input_focus(keyboard);
             id = None;
         }
         SetInputFocus(serverClient, keyboard, id, RevertToNone, CurrentTime,
-                      False);
+                      FALSE);
     }
     /* else normal root window mode -- Xmir does not interfere in focus */
 }
 
 void
-xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr, int val)
+xmir_handle_surface_event(struct xmir_window *xmir_window,
+                          MirSurfaceAttrib attr,
+                          int val)
 {
     switch (attr) {
     case mir_surface_attrib_type:
@@ -1016,7 +1048,8 @@ xmir_close_surface(struct xmir_window *xmir_window)
         event.u.clientMessage.u.l.longs0 = GET_ATOM(WM_DELETE_WINDOW);
         event.u.clientMessage.u.l.longs1 = CurrentTime;
         DeliverEvents(window, &event, 1, NullWindow);
-    } else {
+    }
+    else {
         ErrorF("Root window closed, shutting down Xmir\n");
         GiveUp(0);
         /*DeleteWindow(window, 1); ? */
@@ -1029,7 +1062,8 @@ xmir_unmap_input(struct xmir_screen *xmir_screen, WindowPtr window)
     struct xmir_input *xmir_input;
 
     xorg_list_for_each_entry(xmir_input, &xmir_screen->input_list, link) {
-        if (xmir_input->focus_window && xmir_input->focus_window->window == window)
+        if (xmir_input->focus_window &&
+            xmir_input->focus_window->window == window)
             xmir_input->focus_window = NULL;
     }
 }
@@ -1050,7 +1084,9 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
     ReparentWindow(benef->window, xmir_screen->screen->root,
                    0, 0, serverClient);
     compRedirectWindow(serverClient, benef->window, CompositeRedirectManual);
-    compRedirectSubwindows(serverClient, benef->window, CompositeRedirectAutomatic);
+    compRedirectSubwindows(serverClient,
+                           benef->window,
+                           CompositeRedirectAutomatic);
 
     xorg_list_for_each_entry(other, &xmir_screen->flattened_list,
                              link_flattened) {
@@ -1129,7 +1165,9 @@ xmir_clear_to_black(MirSurface *surface)
 }
 
 static void
-xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destroyed)
+xmir_unmap_surface(struct xmir_screen *xmir_screen,
+                   WindowPtr window,
+                   BOOL destroyed)
 {
     struct xmir_window *xmir_window =
         dixLookupPrivate(&window->devPrivates, &xmir_window_private_key);
@@ -1172,7 +1210,8 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen, WindowPtr window, BOOL destr
         if (xmir_screen->neverclose) {
             xmir_screen->neverclosed = xmir_window->surface;
             xmir_clear_to_black(xmir_screen->neverclosed);
-        } else {
+        }
+        else {
             mir_surface_release_sync(xmir_window->surface);
         }
 
@@ -1321,7 +1360,8 @@ DPMSSet(ClientPtr client, int level)
     if (level != DPMSModeOn) {
         if (xmir_is_unblank(screenIsSaved))
             rc = dixSaveScreens(client, SCREEN_SAVER_FORCER, ScreenSaverActive);
-    } else {
+    }
+    else {
         if (!xmir_is_unblank(screenIsSaved))
             rc = dixSaveScreens(client, SCREEN_SAVER_OFF, ScreenSaverReset);
     }
@@ -1375,7 +1415,11 @@ xmir_create_screen_resources(ScreenPtr screen)
         return ret;
 
     if (!xmir_screen->rootless)
-        screen->devPrivate = screen->CreatePixmap(screen, screen->width, screen->height, screen->rootDepth, CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
+        screen->devPrivate = screen->CreatePixmap(screen,
+                                                  screen->width,
+                                                  screen->height,
+                                                  screen->rootDepth,
+                                                  CREATE_PIXMAP_USAGE_BACKING_PIXMAP);
     else
         screen->devPrivate = fbCreatePixmap(screen, 0, 0, screen->rootDepth, 0);
 
@@ -1469,30 +1513,42 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
             xmir_screen->rootless = 1;
-        } else if (strcmp(argv[i], "-flatten") == 0) {
-            xmir_screen->flatten = True;
-        } else if (strcmp(argv[i], "-neverclose") == 0) {
-            xmir_screen->neverclose = True;
-        } else if (strcmp(argv[i], "-title") == 0) {
+        }
+        else if (strcmp(argv[i], "-flatten") == 0) {
+            xmir_screen->flatten = TRUE;
+        }
+        else if (strcmp(argv[i], "-neverclose") == 0) {
+            xmir_screen->neverclose = TRUE;
+        }
+        else if (strcmp(argv[i], "-title") == 0) {
             xmir_screen->title = argv[++i];
-        } else if (strcmp(argv[i], "-mir") == 0) {
+        }
+        else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
-        } else if (strcmp(argv[i], "-mirSocket") == 0) {
+        }
+        else if (strcmp(argv[i], "-mirSocket") == 0) {
             socket = argv[++i];
-        } else if (strcmp(argv[i], "-sw") == 0) {
+        }
+        else if (strcmp(argv[i], "-sw") == 0) {
             xmir_screen->glamor = glamor_off;
-        } else if (strcmp(argv[i], "-egl") == 0) {
+        }
+        else if (strcmp(argv[i], "-egl") == 0) {
             if (xmir_screen->glamor != glamor_egl_sync)
                 xmir_screen->glamor = glamor_egl;
-        } else if (strcmp(argv[i], "-2x") == 0) {
+        }
+        else if (strcmp(argv[i], "-2x") == 0) {
             xmir_screen->doubled = 1;
-        } else if (strcmp(argv[i], "-debug") == 0) {
-            xmir_debug_logging = True;
-        } else if (strcmp(argv[i], "-damage") == 0) {
+        }
+        else if (strcmp(argv[i], "-debug") == 0) {
+            xmir_debug_logging = TRUE;
+        }
+        else if (strcmp(argv[i], "-damage") == 0) {
             /* Ignored. Damage-all is now the default and only option. */
-        } else if (strcmp(argv[i], "-egl_sync") == 0) {
+        }
+        else if (strcmp(argv[i], "-egl_sync") == 0) {
             xmir_screen->glamor = glamor_egl_sync;
-        } else if (strcmp(argv[i], "-fd") == 0) {
+        }
+        else if (strcmp(argv[i], "-fd") == 0) {
             client_fd = (int)strtol(argv[++i], (char **)NULL, 0);
         }
     }

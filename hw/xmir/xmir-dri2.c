@@ -131,7 +131,8 @@ xmir_dri2_reusebuffer_notify(DrawablePtr draw, DRI2BufferPtr buf)
     if (xmir_window->surface) {
         buf->driverPrivate = xmir_glamor_win_get_back(xmir_screen, xmir_window, &xmir_window->window->drawable);
         xmir_pixmap = xmir_pixmap_get(buf->driverPrivate);
-    } else {
+    }
+    else {
         struct xmir_window *xmir_window_parent = xmir_window_swappable_parent((WindowPtr)draw);
 
         if (xmir_window_parent && xmir_window_parent->back_pixmap)
@@ -237,7 +238,8 @@ xmir_dri2_create_buffer(ScreenPtr screen, DrawablePtr pDraw,
             xmir_window = xmir_window_parent;
 
         pixmap = screen->GetWindowPixmap((WindowPtr)pDraw);
-    } else
+    }
+    else
         pixmap = (PixmapPtr)pDraw;
 
     ret->attachment = attachment;
@@ -329,7 +331,8 @@ xmir_dri2_copy_region(ScreenPtr pScreen, DrawablePtr draw, RegionPtr region,
         if (draw->type == DRAWABLE_WINDOW) {
             pixmap = screen->GetWindowPixmap((WindowPtr)draw);
             xmir_window = xmir_window_get((WindowPtr)draw);
-        } else
+        }
+        else
             pixmap = (PixmapPtr)draw;
 
         dx = draw->x - pixmap->screen_x;
@@ -368,7 +371,8 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
 
         /* Make sure DRI2GetBuffers blocks, there is no updated buffer until the next flip */
         DRI2SwapLimit(draw, 1);
-    } else {
+    }
+    else {
         pixmap = (PixmapPtr)draw;
         memset(target_msc, 0, sizeof(*target_msc));
     }
@@ -400,7 +404,8 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
             swap_pix = *xmir_pixmap;
             *xmir_pixmap = *xmir_pixmap_get(src->driverPrivate);
             *xmir_pixmap_get(src->driverPrivate) = swap_pix;
-        } else {
+        }
+        else {
             PixmapPtr dsrc = src->driverPrivate;
             int dx = draw->x - pixmap->screen_x, dy = draw->y - pixmap->screen_y;
 
@@ -419,7 +424,8 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
                                         dx, dy, xmir_window ? xmir_window->orientation : 0);
         }
         RegionTranslate(&region, draw->x, draw->y);
-    } else {
+    }
+    else {
         if (!xmir_window->surface)
             xmir_window = xmir_window_get(screen->root);
 
@@ -467,7 +473,8 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
     if (type != DRI2_FLIP_COMPLETE) {
         DamageDamageRegion(draw, &region);
         RegionUninit(&region);
-    } else
+    }
+    else
         DamageReportDamage(xmir_window->damage, &xmir_window->region);
 
     return 1;
