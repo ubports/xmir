@@ -484,7 +484,7 @@ xmir_swap(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
 
 void xmir_repaint(struct xmir_window *xmir_win)
 {
-    struct xmir_screen *xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
+    struct xmir_screen *xmir_screen;
     RegionPtr dirty = &xmir_win->region;
     char wm_name[256];
     WindowPtr named = NULL;
@@ -492,6 +492,7 @@ void xmir_repaint(struct xmir_window *xmir_win)
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
+    xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
     if (strcmp(xmir_screen->title, get_title_from_top_window)) {
         /* Fixed title mode. Never change it. */
         named = NULL;
