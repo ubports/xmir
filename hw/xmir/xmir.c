@@ -609,10 +609,6 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
              */
             xmir_output_handle_resize(xmir_win, buf_width, buf_height);
         }
-        /* Admittedly the client won't have time to redraw itself in the
-         * new size before the below repaint, but the important bit is that
-         * the X server is using the correct buffer dimensions immediately.
-         */
     }
 
     if (xserver_lagging)
