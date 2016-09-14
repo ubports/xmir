@@ -1,6 +1,6 @@
 xorg-server (2:1.18.4-0ubuntu0.1) xenial; urgency=medium
 
-  * New upstream bugfix release.
+  * New upstream bugfix release. (LP: #1619142)
   * randr-adjust-masters-last-set-time.diff,
     randr-do-not-check-the-screen-size.diff:
     Fix issues changing display mode on prime setups. (LP: #1586260)
