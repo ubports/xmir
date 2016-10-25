@@ -52,3 +52,4 @@ xmir-desktop-file-hint-flag.patch
 xi2-resize-touch.patch
 randr-adjust-masters-last-set-time.diff
 randr-do-not-check-the-screen-size.diff
+modesetting-unifdef-slave-support.diff
