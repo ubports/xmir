@@ -14,6 +14,7 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
     to confflags.
   * 232-xf86compatoutput-valgrind.patch: This was added upstream
     already, no need to carry a duplicate check.
+  * xmir.patch: Don't check for aiglx enable flag, dropped upstream.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Nov 2016 12:48:29 +0200
 

@@ -134,7 +134,7 @@ Contributions from:
 +Xmir
 --- /dev/null
 +++ b/hw/xmir/Makefile.am
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,60 @@
 +bin_PROGRAMS = Xmir
 +
 +if DRI2
@@ -187,11 +187,10 @@ Contributions from:
 +Xmir_LDADD += dri2/libdri2.la
 +endif
 +
-+if AIGLX_DRI_LOADER
 +aiglx_lib = $(top_builddir)/glx/libglxdri.la
++
 +if NO_UNDEFINED
 +aiglx_lib += $(LIBDRM_LIBS) $(PIXMAN_LIBS)
-+endif
 +endif
 +
 +relink:
