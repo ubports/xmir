@@ -31,11 +31,9 @@ Signed-off-by: Nikhil Mahale <nmahale@nvidia.com>
  randr/rrcrtc.c | 19 ++++++-------------
  1 file changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/randr/rrcrtc.c b/randr/rrcrtc.c
-index 566a3db..82db9a8 100644
 --- a/randr/rrcrtc.c
 +++ b/randr/rrcrtc.c
-@@ -1176,27 +1176,20 @@ ProcRRSetCrtcConfig(ClientPtr client)
+@@ -1313,27 +1313,20 @@ ProcRRSetCrtcConfig(ClientPtr client)
  
  #ifdef RANDR_12_INTERFACE
          /*
@@ -67,7 +65,7 @@ index 566a3db..82db9a8 100644
  
              RRTransformCompute(stuff->x, stuff->y,
                                 mode->mode.width, mode->mode.height,
-@@ -1206,13 +1199,13 @@ ProcRRSetCrtcConfig(ClientPtr client)
+@@ -1343,13 +1336,13 @@ ProcRRSetCrtcConfig(ClientPtr client)
  
              RRModeGetScanoutSize(mode, &transform, &source_width,
                                   &source_height);
@@ -83,5 +81,3 @@ index 566a3db..82db9a8 100644
                  client->errorValue = stuff->y;
                  free(outputs);
                  return BadValue;
--- 2.8.2 ----------------------------------------------------------------------------------- This email message is for the sole use of the intended recipient(s) and may contain confidential information. Any unauthorized review, use, disclosure or distribution is prohibited. If you are not the intended recipient, please contact the sender by reply email and destroy all copies of the original message. ----------------------------------------------------------------------------------- _______________________________________________ xorg-devel@lists.x.org: X.Org development Archives: http://lists.x.org/archives/xorg-devel Info: https://lists.x.org/mailman/listinfo/xorg-devel
-

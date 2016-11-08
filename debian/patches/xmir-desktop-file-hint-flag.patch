@@ -8,11 +8,9 @@ Subject: [PATCH xserver 2/3] xmir: Ignore --desktop_file_hint flag required by
  hw/xmir/xmir.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/hw/xmir/xmir.c b/hw/xmir/xmir.c
-index 5526958..ea85f1a 100644
 --- a/hw/xmir/xmir.c
 +++ b/hw/xmir/xmir.c
-@@ -172,6 +172,9 @@ ddxProcessArgument(int argc, char *argv[], int i)
+@@ -178,6 +178,9 @@ ddxProcessArgument(int argc, char *argv[
      } else if (!strcmp(argv[i], "-novtswitch") ||
                 !strncmp(argv[i], "vt", 2)) {
          return 1;
@@ -22,6 +20,3 @@ index 5526958..ea85f1a 100644
      } else if (!strcmp(argv[i], "-fd")) {
          if (!seen_shared)
              NoListenAll = 1;
--- 
-2.7.4
-

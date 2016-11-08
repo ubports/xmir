@@ -41,15 +41,10 @@ no-nv.patch
 
 # hybrid graphics fixes
 228_autobind_gpu.patch
-xf86-inactive-gpuscreen.patch
-config-add-no-removal.patch
 xf86-ignore-conflicting-rr-caps.patch
-fix-detach-gpu.patch
 disable-rotation-transform-gpuscreens.patch
 
 xmir.patch
 xmir-desktop-file-hint-flag.patch
 xi2-resize-touch.patch
-randr-adjust-masters-last-set-time.diff
 randr-do-not-check-the-screen-size.diff
-modesetting-unifdef-slave-support.diff

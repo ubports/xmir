@@ -32,7 +32,7 @@ Author: Robert Hooker <sarvatt@ubuntu.com>
  
 --- a/hw/xfree86/common/xf86pciBus.c
 +++ b/hw/xfree86/common/xf86pciBus.c
-@@ -1189,6 +1189,7 @@ xf86VideoPtrToDriverList(struct pci_devi
+@@ -1205,6 +1205,7 @@ xf86VideoPtrToDriverList(struct pci_devi
      {
          int idx = 0;
  

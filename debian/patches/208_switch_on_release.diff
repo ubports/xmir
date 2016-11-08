@@ -102,17 +102,17 @@ Bug: https://bugs.freedesktop.org/show_bug.cgi?id=865
          filter->upAction = *pAction;
          if (!(filter->upAction.mods.flags & XkbSA_LockNoLock))
              xkbi->state.locked_mods |= pAction->mods.mask;
-@@ -1250,9 +1311,12 @@ XkbHandleActions(DeviceIntPtr dev, Devic
-                 sendEvent = _XkbFilterLatchState(xkbi, filter, key, &act);
-                 break;
-             case XkbSA_LockMods:
-+                filter = _XkbNextFreeFilter(xkbi);
-+                sendEvent = _XkbFilterLockMods(xkbi, filter, key, &act);
-+                break;
-             case XkbSA_LockGroup:
-                 filter = _XkbNextFreeFilter(xkbi);
--                sendEvent = _XkbFilterLockState(xkbi, filter, key, &act);
-+                sendEvent = _XkbFilterLockGroup(xkbi, filter, key, &act);
-                 break;
-             case XkbSA_ISOLock:
-                 filter = _XkbNextFreeFilter(xkbi);
+@@ -1244,9 +1305,12 @@ XkbActionGetFilter(DeviceIntPtr dev, Dev
+         *sendEvent = _XkbFilterLatchState(xkbi, filter, key, act);
+         break;
+     case XkbSA_LockMods:
++        filter = _XkbNextFreeFilter(xkbi);
++        sendEvent = _XkbFilterLockMods(xkbi, filter, key, &act);
++        break;
+     case XkbSA_LockGroup:
+         filter = _XkbNextFreeFilter(xkbi);
+-        *sendEvent = _XkbFilterLockState(xkbi, filter, key, act);
++        *sendEvent = _XkbFilterLockGroup(xkbi, filter, key, act);
+         break;
+     case XkbSA_ISOLock:
+         filter = _XkbNextFreeFilter(xkbi);

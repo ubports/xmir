@@ -2,7 +2,7 @@ Description: Patch from Mandriva to allow the use of an extra-modules-dir so tha
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -464,6 +464,10 @@ AC_ARG_WITH(module-dir,      AS_HELP_STR
+@@ -460,6 +460,10 @@ AC_ARG_WITH(module-dir,      AS_HELP_STR
  				  [Directory where modules are installed (default: $libdir/xorg/modules)]),
  				[ moduledir="$withval" ],
  				[ moduledir="${libdir}/xorg/modules" ])
@@ -13,7 +13,7 @@ Description: Patch from Mandriva to allow the use of an extra-modules-dir so tha
  AC_ARG_WITH(log-dir,         AS_HELP_STRING([--with-log-dir=DIR],
  				  [Directory where log files are kept (default: $localstatedir/log)]),
  				[ logdir="$withval" ],
-@@ -2077,6 +2081,7 @@ if test "x$XORG" = xyes; then
+@@ -2106,6 +2110,7 @@ if test "x$XORG" = xyes; then
  	AC_DEFINE_DIR(XF86CONFIGFILE, XF86CONFIGFILE, [Name of configuration file])
  	AC_DEFINE_DIR(__XCONFIGDIR__, XF86CONFIGDIR, [Name of configuration directory])
  	AC_DEFINE_DIR(DEFAULT_MODULE_PATH, moduledir, [Default module search path])
@@ -23,7 +23,7 @@ Description: Patch from Mandriva to allow the use of an extra-modules-dir so tha
  	AC_DEFINE_DIR(DEFAULT_LOGPREFIX, LOGPREFIX, [Default logfile prefix])
 --- a/hw/xfree86/common/xf86Config.c
 +++ b/hw/xfree86/common/xf86Config.c
-@@ -641,11 +641,22 @@ configFiles(XF86ConfFilesPtr fileconf)
+@@ -658,11 +658,22 @@ configFiles(XF86ConfFilesPtr fileconf)
  
      /* ModulePath */
  
