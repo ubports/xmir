@@ -22,7 +22,6 @@ xfree86-no-xv-for-gpuscreens.patch
 no-nv.patch
 
 ## waiting for review by upstream
-111_armel-drv-fallbacks.patch
 122_xext_fix_card32_overflow_in_xauth.patch
 #   https://bugs.freedesktop.org/show_bug.cgi?id=27134
 #   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
