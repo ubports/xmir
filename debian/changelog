@@ -10,6 +10,8 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
     the package as it wasn't used.
   * 111_armel-drv-fallbacks.patch: Dropped, we don't ship these drivers
     anymore.
+  * rules: Drop the workaround that adds lt_cv_prog_compiler_static_works=no
+    to confflags.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Nov 2016 12:48:29 +0200
 
