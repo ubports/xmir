@@ -17,7 +17,6 @@
 226_fall_back_to_autoconfiguration.patch
 
 ## send upstream
-232-xf86compatoutput-valgrind.patch
 xfree86-no-xv-for-gpuscreens.patch
 no-nv.patch
 
