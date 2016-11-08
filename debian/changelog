@@ -6,6 +6,8 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
       modesetting-unifdef-slave-support.diff: Dropped, upstream
     - config-add-no-removal.patch, xf86-inactive-gpuscreen.patch,
       fix-detach-gpu.patch: Dropped, more or less obsolete
+  * 190_cache-xkbcomp_output_for_fast_start_up.patch: Cleaned up from
+    the package as it wasn't used.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Nov 2016 12:48:29 +0200
 
