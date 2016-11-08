@@ -661,7 +661,7 @@ void
 DeepCopyDeviceClasses(DeviceIntPtr from, DeviceIntPtr to,
                       DeviceChangedEvent *dce)
 {
-    OsBlockSIGIO();
+    input_lock();
 
     /* generic feedback classes, not tied to pointer and/or keyboard */
     DeepCopyFeedbackClasses(from, to);
@@ -671,7 +671,7 @@ DeepCopyDeviceClasses(DeviceIntPtr from, DeviceIntPtr to,
     if ((dce->flags & DEVCHANGE_POINTER_EVENT))
         DeepCopyPointerClasses(from, to);
 
-    OsReleaseSIGIO();
+    input_unlock();
 }
 
 /**
@@ -1763,6 +1763,10 @@ ProcessDeviceEvent(InternalEvent *ev, DeviceIntPtr device)
 
     switch (event->type) {
     case ET_KeyPress:
+        /* Don't deliver focus events (e.g. from KeymapNotify when running
+         * nested) to clients. */
+        if (event->source_type == EVENT_SOURCE_FOCUS)
+            return;
         if (!grab && CheckDeviceGrabs(device, event, 0))
             return;
         break;

@@ -220,11 +220,39 @@ glamor_copy_cpu_fbo(DrawablePtr src,
 
     glamor_get_drawable_deltas(dst, dst_pixmap, &dst_xoff, &dst_yoff);
 
-    fbGetDrawable(src, src_bits, src_stride, src_bpp, src_xoff, src_yoff);
+    if (bitplane) {
+        PixmapPtr src_pix = fbCreatePixmap(screen, dst_pixmap->drawable.width,
+                                           dst_pixmap->drawable.height,
+                                           dst->depth, 0);
 
-    glamor_upload_boxes(dst_pixmap, box, nbox, src_xoff + dx, src_yoff + dy,
-                        dst_xoff, dst_yoff,
-                        (uint8_t *) src_bits, src_stride * sizeof (FbBits));
+        if (!src_pix) {
+            glamor_finish_access(src);
+            goto bail;
+        }
+
+        src_pix->drawable.x = -dst->x;
+        src_pix->drawable.y = -dst->y;
+
+        fbGetDrawable(&src_pix->drawable, src_bits, src_stride, src_bpp, src_xoff,
+                      src_yoff);
+
+        if (src->bitsPerPixel > 1)
+            fbCopyNto1(src, &src_pix->drawable, gc, box, nbox, dx, dy,
+                       reverse, upsidedown, bitplane, closure);
+        else
+            fbCopy1toN(src, &src_pix->drawable, gc, box, nbox, dx, dy,
+                       reverse, upsidedown, bitplane, closure);
+
+        glamor_upload_boxes(dst_pixmap, box, nbox, src_xoff, src_yoff,
+                            dst_xoff, dst_yoff, (uint8_t *) src_bits,
+                            src_stride * sizeof(FbBits));
+        fbDestroyPixmap(src_pix);
+    } else {
+        fbGetDrawable(src, src_bits, src_stride, src_bpp, src_xoff, src_yoff);
+        glamor_upload_boxes(dst_pixmap, box, nbox, src_xoff + dx, src_yoff + dy,
+                            dst_xoff, dst_yoff,
+                            (uint8_t *) src_bits, src_stride * sizeof (FbBits));
+    }
     glamor_finish_access(src);
 
     return TRUE;
@@ -323,6 +351,9 @@ glamor_copy_fbo_fbo_draw(DrawablePtr src,
         goto bail_ctx;
 
     if (!glamor_set_alu(screen, gc ? gc->alu : GXcopy))
+        goto bail_ctx;
+
+    if (bitplane && !glamor_priv->can_copyplane)
         goto bail_ctx;
 
     if (bitplane) {
@@ -616,9 +647,9 @@ glamor_copy_gl(DrawablePtr src,
                 return glamor_copy_fbo_fbo_draw(src, dst, gc, box, nbox, dx, dy,
                                                 reverse, upsidedown, bitplane, closure);
         }
-        if (bitplane == 0)
-            return glamor_copy_cpu_fbo(src, dst, gc, box, nbox, dx, dy,
-                                       reverse, upsidedown, bitplane, closure);
+
+        return glamor_copy_cpu_fbo(src, dst, gc, box, nbox, dx, dy,
+                                   reverse, upsidedown, bitplane, closure);
     } else if (GLAMOR_PIXMAP_PRIV_HAS_FBO(src_priv) &&
                dst_priv->type != GLAMOR_DRM_ONLY &&
                bitplane == 0) {

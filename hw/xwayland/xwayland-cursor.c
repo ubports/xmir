@@ -76,6 +76,7 @@ static Bool
 xwl_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
 {
     PixmapPtr pixmap;
+    struct xwl_screen *xwl_screen;
     struct xwl_seat *xwl_seat;
 
     pixmap = dixGetPrivate(&cursor->devPrivates, &xwl_cursor_private_key);
@@ -85,9 +86,9 @@ xwl_unrealize_cursor(DeviceIntPtr device, ScreenPtr screen, CursorPtr cursor)
     dixSetPrivate(&cursor->devPrivates, &xwl_cursor_private_key, NULL);
 
     /* When called from FreeCursor(), device is always NULL */
-    if (device) {
-        xwl_seat = device->public.devicePrivate;
-        if (xwl_seat && cursor == xwl_seat->x_cursor)
+    xwl_screen = xwl_screen_get(screen);
+    xorg_list_for_each_entry(xwl_seat, &xwl_screen->seat_list, link) {
+        if (cursor == xwl_seat->x_cursor)
             xwl_seat->x_cursor = NULL;
     }
 
@@ -100,6 +101,8 @@ frame_callback(void *data,
                uint32_t time)
 {
     struct xwl_seat *xwl_seat = data;
+
+    wl_callback_destroy (xwl_seat->cursor_frame_cb);
     xwl_seat->cursor_frame_cb = NULL;
     if (xwl_seat->cursor_needs_update) {
         xwl_seat->cursor_needs_update = FALSE;
@@ -166,12 +169,19 @@ xwl_set_cursor(DeviceIntPtr device,
                ScreenPtr screen, CursorPtr cursor, int x, int y)
 {
     struct xwl_seat *xwl_seat;
+    Bool cursor_visibility_changed;
 
     xwl_seat = device->public.devicePrivate;
     if (xwl_seat == NULL)
         return;
 
+    cursor_visibility_changed = !!xwl_seat->x_cursor ^ !!cursor;
+
     xwl_seat->x_cursor = cursor;
+
+    if (cursor_visibility_changed)
+        xwl_seat_cursor_visibility_changed(xwl_seat);
+
     xwl_seat_set_cursor(xwl_seat);
 }
 

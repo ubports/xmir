@@ -31,8 +31,7 @@
 
 #define MESA_EGL_NO_X11_HEADERS
 #include <gbm.h>
-#include <epoxy/egl.h>
-#include <epoxy/gl.h>
+#include <glamor_egl.h>
 
 #include <glamor.h>
 #include <glamor_context.h>
@@ -292,9 +291,10 @@ xwl_drm_init_egl(struct xwl_screen *xwl_screen)
         return;
     }
 
-    xwl_screen->egl_display = eglGetDisplay(xwl_screen->gbm);
+    xwl_screen->egl_display = glamor_egl_get_display(EGL_PLATFORM_GBM_MESA,
+                                                     xwl_screen->gbm);
     if (xwl_screen->egl_display == EGL_NO_DISPLAY) {
-        ErrorF("eglGetDisplay() failed\n");
+        ErrorF("glamor_egl_get_display() failed\n");
         return;
     }
 
@@ -347,7 +347,7 @@ xwl_drm_handle_device(void *data, struct wl_drm *drm, const char *device)
    xwl_screen->drm_fd = open(xwl_screen->device_name, O_RDWR | O_CLOEXEC);
    if (xwl_screen->drm_fd == -1) {
        ErrorF("wayland-egl: could not open %s (%s)\n",
-	      xwl_screen->device_name, strerror(errno));
+              xwl_screen->device_name, strerror(errno));
        return;
    }
 
@@ -415,11 +415,6 @@ xwl_screen_init_glamor(struct xwl_screen *xwl_screen,
     xwl_screen->expecting_event++;
 
     return TRUE;
-}
-
-void
-glamor_egl_destroy_pixmap_image(PixmapPtr pixmap)
-{
 }
 
 int

@@ -1,3 +1,36 @@
+xorg-server (2:1.18.99.902-1) experimental; urgency=medium
+
+  [ Timo Aaltonen ]
+  * New upstream release candidate 1.
+  * control: Bump libxfont-dev build-dependency.
+  * patches:
+    - refreshed
+    - glamor-Declare-pos-in-the-composite-glyph.diff dropped, upstream
+  * control: Add libxcb-xkb-dev to build-depends.
+  * serverminver: Bumped.
+  * watch: Fix a typo.
+
+  [ Emilio Pozuelo Monfort ]
+  * New upstream release candidate 2.
+  * rules: Drop aiglx enable/disable flags, removed upstream.
+  * control: Bump x11proto-core-dev requirement.
+  * control: Add wayland-protocols build-dep on linux for Xwayland.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Sat, 05 Nov 2016 19:56:43 +0100
+
+xorg-server (2:1.18.4-2) unstable; urgency=medium
+
+  [ Julien Cristau ]
+  * Adjust bug script to look for log files in $HOME/.local/share/xorg in
+    addition to /var/log, to handle unprivileged Xorg.
+  * Update a bunch of URLs in packaging to https.
+
+  [ Andreas Boll ]
+  * Add glamor-Declare-pos-in-the-composite-glyph.diff from upstream
+    (Closes: #834054).
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 06 Sep 2016 16:09:04 +0300
+
 xorg-server (2:1.18.4-1ubuntu7) zesty; urgency=medium
 
   * modesetting-unifdef-slave-support.diff: Fix modesetting slave output
