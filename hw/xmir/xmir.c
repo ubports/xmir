@@ -36,6 +36,7 @@
 #include <glx_extinit.h>
 #include <X11/Xatom.h>
 
+#include <mir_toolkit/version.h>
 #include <mir_toolkit/mir_surface.h>
 
 #include "compint.h"
@@ -807,9 +808,16 @@ xmir_realize_window(WindowPtr window)
             MirRectangle placement = {dx, dy, 0, 0};
 
             if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP)) {
+                /* Why doesn't the API version match the Mir version?! */
+#if MIR_CLIENT_VERSION >= MIR_VERSION_NUMBER(3,4,0)
                 spec = mir_connection_create_spec_for_tip(
                     xmir_screen->conn, mir_width, mir_height, pixel_format,
                     rel->surface, &placement, mir_edge_attachment_any);
+#else
+                spec = mir_connection_create_spec_for_tooltip(
+                    xmir_screen->conn, mir_width, mir_height, pixel_format,
+                    rel->surface, &placement);
+#endif
             }
             else if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
                 spec = mir_connection_create_spec_for_modal_dialog(
