@@ -470,6 +470,8 @@ xmir_window_handle_input_event(struct xmir_input *xmir_input,
         case mir_touch_action_change:
             fake_touch_move(xmir_input, xmir_window, sx, sy);
             break;
+        default:
+            break;
         }
         break;
 
