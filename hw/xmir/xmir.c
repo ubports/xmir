@@ -1571,7 +1571,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         xmir_screen->title = xmir_screen->rootless ? get_title_from_top_window
                                                    : "Xmir root window";
 
-#ifdef __arm__
+#if defined(__arm__) || defined(__aarch64__)
     if (xmir_screen->glamor == glamor_dri) {
         XMIR_DEBUG(("ARM architecture: Defaulting to software mode because "
                     "glamor is not stable\n"));
