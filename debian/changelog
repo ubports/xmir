@@ -25,6 +25,9 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
     - Support both Mir 0.24 and 0.25 client APIs
     - Fix crashing on arm64 (LP: #1642297)
 
+  [ Timo Aaltonen ]
+  * xmir-fixes.diff: Port to new glamor api.
+
  -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
 
 xorg-server (2:1.18.99.902-1) experimental; urgency=medium
