@@ -1,11 +1,4 @@
-xorg-server (2:1.19.0-1) UNRELEASED; urgency=medium
-
-  * New upstream release.
-  * rules: Explicitly disable glamor on hurd. Should fix FTBFS on hurd.
-
- -- Andreas Boll <andreas.boll.dev@gmail.com>  Mon, 07 Nov 2016 14:55:16 +0100
-
-xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.19.0-1ubuntu1) UNRELEASED; urgency=medium
 
   [ Timo Aaltonen ]
   * Merge from Debian experimental.
@@ -23,6 +16,7 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
   * 232-xf86compatoutput-valgrind.patch: This was added upstream
     already, no need to carry a duplicate check.
   * xmir.patch: Don't check for aiglx enable flag, dropped upstream.
+  * xmir-fixes.diff: Port to new glamor api.
 
   [ Robert Ancell ]
   * debian/patches/xmir.patch:
@@ -32,10 +26,14 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
     - Support both Mir 0.24 and 0.25 client APIs
     - Fix crashing on arm64 (LP: #1642297)
 
-  [ Timo Aaltonen ]
-  * xmir-fixes.diff: Port to new glamor api.
-
  -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
+
+xorg-server (2:1.19.0-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+  * rules: Explicitly disable glamor on hurd. Should fix FTBFS on hurd.
+
+ -- Andreas Boll <andreas.boll.dev@gmail.com>  Mon, 07 Nov 2016 14:55:16 +0100
 
 xorg-server (2:1.18.99.902-1) experimental; urgency=medium
 
