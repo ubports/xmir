@@ -1,5 +1,6 @@
-xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.18.99.902-1ubuntu2) UNRELEASED; urgency=medium
 
+  [ Timo Aaltonen ]
   * Merge from Debian experimental.
     - Patches refreshed
     - randr-adjust-masters-last-set-time.diff,
@@ -16,7 +17,15 @@ xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
     already, no need to carry a duplicate check.
   * xmir.patch: Don't check for aiglx enable flag, dropped upstream.
 
- -- Timo Aaltonen <tjaalton@debian.org>  Tue, 08 Nov 2016 12:48:29 +0200
+  [ Robert Ancell ]
+  * debian/patches/xmir.patch:
+  * debian/patches/xmir-desktop-file-hint-flag.patch:
+    - Refresh
+    - Fix warnings when built against lp:mir/0.25
+    - Support both Mir 0.24 and 0.25 client APIs
+    - Fix crashing on arm64 (LP: #1642297)
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
 
 xorg-server (2:1.18.99.902-1) experimental; urgency=medium
 
