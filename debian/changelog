@@ -1,4 +1,4 @@
-xorg-server (2:1.18.99.902-1ubuntu2) UNRELEASED; urgency=medium
+xorg-server (2:1.18.99.902-1ubuntu1) UNRELEASED; urgency=medium
 
   [ Timo Aaltonen ]
   * Merge from Debian experimental.
