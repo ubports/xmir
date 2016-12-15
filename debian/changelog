@@ -1,3 +1,9 @@
+xorg-server (2:1.18.4-1ubuntu9) UNRELEASED; urgency=medium
+
+  * control: Depend on libxfont1-dev.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 13:42:11 +0200
+
 xorg-server (2:1.18.4-1ubuntu8) zesty; urgency=medium
 
   * xvfb-run: Bump default bitdepth to 16 so that GLX works.
