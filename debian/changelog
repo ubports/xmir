@@ -1,8 +1,8 @@
-xorg-server (2:1.18.4-1ubuntu8) UNRELEASED; urgency=medium
+xorg-server (2:1.18.4-1ubuntu8) zesty; urgency=medium
 
   * xvfb-run: Bump default bitdepth to 16 so that GLX works.
 
- -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 12:32:32 +0200
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 12:33:01 +0200
 
 xorg-server (2:1.18.4-1ubuntu7) zesty; urgency=medium
 
