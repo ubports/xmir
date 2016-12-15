@@ -1,8 +1,8 @@
-xorg-server (2:1.18.4-1ubuntu9) UNRELEASED; urgency=medium
+xorg-server (2:1.18.4-1ubuntu9) zesty; urgency=medium
 
   * control: Depend on libxfont1-dev.
 
- -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 13:42:11 +0200
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 13:44:15 +0200
 
 xorg-server (2:1.18.4-1ubuntu8) zesty; urgency=medium
 
