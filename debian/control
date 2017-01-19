@@ -393,7 +393,7 @@ Description: Xmir X server
  This package provides an X server running on top of Mir, using Mir
  input devices for input and forwarding either the root window or individual
  top-level windows as wayland surfaces.
- 
+
 Package: xserver-xorg-xmir
 Architecture: all
 Depends: ${shlibs:Depends},
