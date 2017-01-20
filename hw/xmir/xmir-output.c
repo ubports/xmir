@@ -78,7 +78,7 @@ xmir_output_dpms(struct xmir_screen *xmir_screen, int mode)
     MirPowerMode mir_mode = mir_power_mode_on;
     Bool unchanged = TRUE;
 
-    if (xmir_screen->rootless)
+    if (xmir_screen->rootless || xmir_screen->windowed)
         return FALSE;
 
     switch (mode) {
