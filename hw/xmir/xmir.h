@@ -180,6 +180,8 @@ void xmir_close_surface(struct xmir_window *);
 
 void xmir_repaint(struct xmir_window *);
 
+void xmir_disable_screensaver(struct xmir_screen *xmir_screen);
+
 /* xmir-input.c */
 Bool xmir_screen_init_cursor(struct xmir_screen *xmir_screen);
 

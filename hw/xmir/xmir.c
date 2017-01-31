@@ -1351,7 +1351,7 @@ Bool
 DPMSSupported(void)
 {
     struct xmir_screen *xmir_screen = xmir_screen_get(screenInfo.screens[0]);
-    return !xmir_screen->rootless;
+    return !xmir_screen->rootless && !xmir_screen->windowed;
 }
 
 int
@@ -1484,6 +1484,12 @@ xmir_set_screen_pixmap(PixmapPtr pixmap)
         screen->DestroyPixmap(old_front);
 }
 
+void
+xmir_disable_screensaver(struct xmir_screen *xmir_screen)
+{
+    ScreenSaverTime = 0;
+}
+
 static Bool
 xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 {
@@ -1518,6 +1524,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rootless") == 0) {
             xmir_screen->rootless = 1;
+            xmir_disable_screensaver(xmir_screen);
         }
         else if (strcmp(argv[i], "-flatten") == 0) {
             xmir_screen->flatten = TRUE;
