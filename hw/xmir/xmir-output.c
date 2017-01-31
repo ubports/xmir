@@ -362,6 +362,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window,
         }
 
         xmir_screen->windowed = xmir_output_create(xmir_screen, "Windowed");
+        xmir_disable_screensaver(xmir_screen);
     }
 
     XMIR_DEBUG(("Output resized %ix%i with rotation %i\n",
