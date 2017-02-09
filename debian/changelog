@@ -1,3 +1,33 @@
+xorg-server (2:1.19.1-4ubuntu1) UNRELEASED; urgency=medium
+
+  [ Timo Aaltonen ]
+  * Merge from Debian experimental.
+    - Patches refreshed
+    - randr-adjust-masters-last-set-time.diff,
+      modesetting-unifdef-slave-support.diff: Dropped, upstream
+    - config-add-no-removal.patch, xf86-inactive-gpuscreen.patch,
+      fix-detach-gpu.patch: Dropped, more or less obsolete
+  * 190_cache-xkbcomp_output_for_fast_start_up.patch: Cleaned up from
+    the package as it wasn't used.
+  * 111_armel-drv-fallbacks.patch: Dropped, we don't ship these drivers
+    anymore.
+  * rules: Drop the workaround that adds lt_cv_prog_compiler_static_works=no
+    to confflags.
+  * 232-xf86compatoutput-valgrind.patch: This was added upstream
+    already, no need to carry a duplicate check.
+  * xmir.patch: Don't check for aiglx enable flag, dropped upstream.
+  * xmir-fixes.diff: Port to new glamor api.
+
+  [ Robert Ancell ]
+  * debian/patches/xmir.patch:
+  * debian/patches/xmir-desktop-file-hint-flag.patch:
+    - Refresh
+    - Fix warnings when built against lp:mir/0.25
+    - Support both Mir 0.24 and 0.25 client APIs
+    - Fix crashing on arm64 (LP: #1642297)
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
+
 xorg-server (2:1.19.1-4) unstable; urgency=medium
 
   * rules: Only set the suid bit on Xorg.wrap when building arch:any
@@ -59,36 +89,6 @@ xorg-server (2:1.19.0-2) unstable; urgency=medium
   * Bump Standards-Version to 3.9.8; no changes needed.
 
  -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 23 Nov 2016 19:32:09 +0100
-
-xorg-server (2:1.19.0-1ubuntu1) UNRELEASED; urgency=medium
-
-  [ Timo Aaltonen ]
-  * Merge from Debian experimental.
-    - Patches refreshed
-    - randr-adjust-masters-last-set-time.diff,
-      modesetting-unifdef-slave-support.diff: Dropped, upstream
-    - config-add-no-removal.patch, xf86-inactive-gpuscreen.patch,
-      fix-detach-gpu.patch: Dropped, more or less obsolete
-  * 190_cache-xkbcomp_output_for_fast_start_up.patch: Cleaned up from
-    the package as it wasn't used.
-  * 111_armel-drv-fallbacks.patch: Dropped, we don't ship these drivers
-    anymore.
-  * rules: Drop the workaround that adds lt_cv_prog_compiler_static_works=no
-    to confflags.
-  * 232-xf86compatoutput-valgrind.patch: This was added upstream
-    already, no need to carry a duplicate check.
-  * xmir.patch: Don't check for aiglx enable flag, dropped upstream.
-  * xmir-fixes.diff: Port to new glamor api.
-
-  [ Robert Ancell ]
-  * debian/patches/xmir.patch:
-  * debian/patches/xmir-desktop-file-hint-flag.patch:
-    - Refresh
-    - Fix warnings when built against lp:mir/0.25
-    - Support both Mir 0.24 and 0.25 client APIs
-    - Fix crashing on arm64 (LP: #1642297)
-
- -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
 
 xorg-server (2:1.19.0-1) unstable; urgency=medium
 
