@@ -1,3 +1,65 @@
+xorg-server (2:1.19.1-4) unstable; urgency=medium
+
+  * rules: Only set the suid bit on Xorg.wrap when building arch:any
+    packages. Thanks Julien Cristau.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Fri, 20 Jan 2017 00:22:09 +0100
+
+xorg-server (2:1.19.1-3) unstable; urgency=medium
+
+  * rules: Fix setting suid bit on Xorg.wrap.
+  * rules: Don't ignore errors when setting the suid bit.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Thu, 19 Jan 2017 19:14:06 +0100
+
+xorg-server (2:1.19.1-2) unstable; urgency=medium
+
+  * rules: Fix udeb regression from dh migration. Should also fix FTBFS
+    on hurd and kfreebsd.
+  * rules: Add --fail-missing to dh_install.
+  * rules: Remove unused vars config_backend_main and
+    config_backend_udeb.
+
+ -- Andreas Boll <andreas.boll.dev@gmail.com>  Wed, 18 Jan 2017 09:46:53 +0100
+
+xorg-server (2:1.19.1-1) unstable; urgency=medium
+
+  [ Emilio Pozuelo Monfort ]
+  * Switch to dh.
+  * Drop build-deps on automake and libtool, dh-autoreconf depends on
+    them for us.
+  * rules: use install consistently.
+  * Drop pre-wheezy Breaks.
+
+  [ Andreas Boll ]
+  * New upstream release.
+    - AttendClient of grab-pervious client must queue to
+      saved_ready_clients [v2] (Closes: #846779, #850940).
+    - present: Only call present_flip_notify if vblank->queued == FALSE
+      (Closes: #849250).
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Tue, 17 Jan 2017 20:43:34 +0100
+
+xorg-server (2:1.19.0-3) unstable; urgency=medium
+
+  * Drop xserver-xorg-core-dbg in favor of xserver-xorg-core-dbgsym.
+  * Cherry-pick upstream commit d6da2086951,
+    Revert "damage: Make damageRegionProcessPending take a damage not a
+    drawable". Fixes a crash caused by trying to free an invalid pointer.
+    Closes: #847025, #848321.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Fri, 16 Dec 2016 19:39:45 +0100
+
+xorg-server (2:1.19.0-2) unstable; urgency=medium
+
+  * Disable glamor on the udeb build. It's not needed there.
+    This has the side effect of fixing the Hurd build.
+  * debian/patches/02_kbsd-input-devd.diff:
+    - Ported to NotifyFd. Fixes the kFreeBSD build.
+  * Bump Standards-Version to 3.9.8; no changes needed.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 23 Nov 2016 19:32:09 +0100
+
 xorg-server (2:1.19.0-1ubuntu1) UNRELEASED; urgency=medium
 
   [ Timo Aaltonen ]
@@ -28,12 +90,16 @@ xorg-server (2:1.19.0-1ubuntu1) UNRELEASED; urgency=medium
 
  -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
 
-xorg-server (2:1.19.0-1) UNRELEASED; urgency=medium
+xorg-server (2:1.19.0-1) unstable; urgency=medium
 
+  [ Andreas Boll ]
   * New upstream release.
   * rules: Explicitly disable glamor on hurd. Should fix FTBFS on hurd.
 
- -- Andreas Boll <andreas.boll.dev@gmail.com>  Mon, 07 Nov 2016 14:55:16 +0100
+  [ Emilio Pozuelo Monfort ]
+  * Upload to unstable.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Tue, 22 Nov 2016 23:27:39 +0100
 
 xorg-server (2:1.18.99.902-1) experimental; urgency=medium
 
