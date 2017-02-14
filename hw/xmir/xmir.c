@@ -902,7 +902,27 @@ xmir_handle_surface_event(struct xmir_window *xmir_window, MirSurfaceAttrib attr
         break;
     case mir_surface_attrib_focus:
         XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
-        xmir_handle_focus_event(xmir_window, (MirSurfaceFocusState)val);
+        if (xmir_window->surface) {  /* It's a real Mir window */
+            xmir_window->xmir_screen->last_focus =
+                (val == mir_surface_focused) ? xmir_window->window : NULL;
+        }
+        /* Warning: Confusion alert!
+         * In Mir, "focus" means on top and has keyboard focus.
+         * In X and the rest of the world, "focus" just means keyboard focus
+         * and not necessarily on top. But this event came from Mir so we
+         * can assume for now that we are on top and have focus. Until the Mir
+         * semantics change... which they should.
+        {
+        struct xmir_input *xmir_input =
+            xorg_list_first_entry(&xmir_window->xmir_screen->input_list,
+                struct xmir_input, link);
+        Window focussed = (val == mir_surface_focused) ?
+            xmir_window->window->drawable.id : 0;
+        SetInputFocus(serverClient, GetMaster(xmir_input->keyboard, MASTER_KEYBOARD), focussed,
+                      RevertToNone, CurrentTime, False);
+        }
+         */
+
         break;
     case mir_surface_attrib_dpi:
         XMIR_DEBUG(("DPI: %i\n", val));
