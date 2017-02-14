@@ -28,7 +28,7 @@ Xmir_SOURCES =				\
 
 Xmir_LDADD =				\
 	$(glamor_lib)			\
-	$(aiglx_lib)			\
+	$(glxdri_lib)			\
 	$(XMIR_LIBS)			\
 	$(XMIR_SYS_LIBS)		\
 	$(XSERVER_SYS_LIBS)
@@ -50,11 +50,9 @@ if DRI2
 Xmir_LDADD += dri2/libdri2.la
 endif
 
-if AIGLX_DRI_LOADER
-aiglx_lib = $(top_builddir)/glx/libglxdri.la
+glxdri_lib = $(top_builddir)/glx/libglxdri.la
 if NO_UNDEFINED
-aiglx_lib += $(LIBDRM_LIBS) $(PIXMAN_LIBS)
-endif
+glxdri_lib += $(LIBDRM_LIBS) $(PIXMAN_LIBS)
 endif
 
 relink:
