@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015-2016 Canonical Ltd
+ * Copyright © 2015-2017 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -409,7 +409,7 @@ xmir_sw_copy(struct xmir_screen *xmir_screen,
     MirGraphicsRegion region;
 
     mir_buffer_stream_get_graphics_region(
-        mir_surface_get_buffer_stream(xmir_win->surface), &region);
+        mir_window_get_buffer_stream(xmir_win->surface), &region);
 
     /*
      * Our window region (and hence damage region) might be a little ahead of
@@ -447,7 +447,7 @@ xmir_get_current_buffer_dimensions(
 {
     MirBufferPackage *package;
     MirGraphicsRegion reg;
-    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+    MirBufferStream *stream = mir_window_get_buffer_stream(xmir_win->surface);
 
     switch (xmir_screen->glamor) {
     case glamor_off:
@@ -475,7 +475,7 @@ xmir_get_current_buffer_dimensions(
 static void
 xmir_swap(struct xmir_screen *xmir_screen, struct xmir_window *xmir_win)
 {
-    MirBufferStream *stream = mir_surface_get_buffer_stream(xmir_win->surface);
+    MirBufferStream *stream = mir_window_get_buffer_stream(xmir_win->surface);
     struct xmir_swap *swap = calloc(sizeof(struct xmir_swap), 1);
     swap->server_generation = serverGeneration;
     swap->xmir_screen = xmir_screen;
@@ -534,11 +534,11 @@ void xmir_repaint(struct xmir_window *xmir_win)
     if (named &&
         xmir_get_window_name(named, wm_name, sizeof wm_name) &&
         strcmp(wm_name, xmir_win->wm_name)) {
-        MirSurfaceSpec *rename =
-            mir_connection_create_spec_for_changes(xmir_screen->conn);
-        mir_surface_spec_set_name(rename, wm_name);
-        mir_surface_apply_spec(xmir_win->surface, rename);
-        mir_surface_spec_release(rename);
+        MirWindowSpec *rename =
+            mir_create_window_spec(xmir_screen->conn);
+        mir_window_spec_set_name(rename, wm_name);
+        mir_window_apply_spec(xmir_win->surface, rename);
+        mir_window_spec_release(rename);
         strncpy(xmir_win->wm_name, wm_name, sizeof(xmir_win->wm_name));
     }
 
@@ -575,7 +575,7 @@ xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
     int buf_width, buf_height;
     Bool xserver_lagging, xclient_lagging;
 
-    if (!xmir_win->damage || !mir_surface_is_valid(xmir_win->surface)) {
+    if (!xmir_win->damage || !mir_window_is_valid(xmir_win->surface)) {
         if (xmir_win->damage)
             ErrorF("Buffer-available recieved for invalid surface?\n");
         return;
@@ -681,9 +681,9 @@ xmir_realize_window(WindowPtr window)
     Atom wm_type = 0;
     int mir_width = window->drawable.width / (1 + xmir_screen->doubled);
     int mir_height = window->drawable.height / (1 + xmir_screen->doubled);
-    MirSurfaceSpec* spec = NULL;
+    MirWindowSpec* spec = NULL;
     WindowPtr wm_transient_for = NULL, positioning_parent = NULL;
-    MirPersistentId *persistent_id = NULL;
+    MirWindowId *persistent_id = NULL;
     XWMHints *wm_hints = NULL;
     char wm_name[1024];
 
@@ -798,7 +798,7 @@ xmir_realize_window(WindowPtr window)
     }
 
     if (xmir_screen->neverclosed) {
-        spec = mir_connection_create_spec_for_changes(xmir_screen->conn);
+        spec = mir_create_window_spec(xmir_screen->conn);
     }
     else if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
@@ -810,8 +810,8 @@ xmir_realize_window(WindowPtr window)
             if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_TOOLTIP)) {
                 /* Why doesn't the API version match the Mir version?! */
 #if MIR_CLIENT_VERSION >= MIR_VERSION_NUMBER(3,4,0)
-                spec = mir_connection_create_spec_for_tip(
-                    xmir_screen->conn, mir_width, mir_height, pixel_format,
+                spec = mir_create_tip_window_spec(
+                    xmir_screen->conn, mir_width, mir_height,
                     rel->surface, &placement, mir_edge_attachment_any);
 #else
                 spec = mir_connection_create_spec_for_tooltip(
@@ -820,17 +820,17 @@ xmir_realize_window(WindowPtr window)
 #endif
             }
             else if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
-                spec = mir_connection_create_spec_for_modal_dialog(
-                    xmir_screen->conn, mir_width, mir_height, pixel_format,
+                spec = mir_create_modal_dialog_window_spec(
+                    xmir_screen->conn, mir_width, mir_height,
                     rel->surface);
             }
             else {  /* Probably a menu. If not, still close enough... */
                 MirEdgeAttachment edge = mir_edge_attachment_any;
                 if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DROPDOWN_MENU))
                     edge = mir_edge_attachment_vertical;
-                spec = mir_connection_create_spec_for_menu(
+                spec = mir_create_menu_window_spec(
                     xmir_screen->conn,
-                    mir_width, mir_height, pixel_format, rel->surface,
+                    mir_width, mir_height, rel->surface,
                     &placement, edge);
             }
         }
@@ -838,19 +838,19 @@ xmir_realize_window(WindowPtr window)
 
     if (!spec) {
         if (wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG)) {
-            spec = mir_connection_create_spec_for_dialog(
-                xmir_screen->conn, mir_width, mir_height, pixel_format);
+            spec = mir_create_dialog_window_spec(
+                xmir_screen->conn, mir_width, mir_height);
         }
         else {
-            spec = mir_connection_create_spec_for_normal_surface(
-                xmir_screen->conn, mir_width, mir_height, pixel_format);
+            spec = mir_create_normal_window_spec(
+                xmir_screen->conn, mir_width, mir_height);
         }
     }
 
     if (strcmp(xmir_screen->title, get_title_from_top_window))
-        mir_surface_spec_set_name(spec, xmir_screen->title);
+        mir_window_spec_set_name(spec, xmir_screen->title);
     else if (xmir_screen->rootless)
-        mir_surface_spec_set_name(spec, wm_name);
+        mir_window_spec_set_name(spec, wm_name);
 
     xmir_window->surface_width = mir_width;
     xmir_window->surface_height = mir_height;
@@ -858,42 +858,42 @@ xmir_realize_window(WindowPtr window)
     xmir_window->buf_height = mir_height;
 
     if (xmir_screen->neverclosed) {
-        mir_surface_spec_set_width(spec, mir_width);
-        mir_surface_spec_set_height(spec, mir_height);
-        mir_surface_spec_set_pixel_format(spec, pixel_format);
+        mir_window_spec_set_width(spec, mir_width);
+        mir_window_spec_set_height(spec, mir_height);
+        mir_window_spec_set_pixel_format(spec, pixel_format);
 
         xmir_window->surface = xmir_screen->neverclosed;
-        mir_surface_apply_spec(xmir_window->surface, spec);
+        mir_window_apply_spec(xmir_window->surface, spec);
     }
     else {
-        mir_surface_spec_set_buffer_usage(spec,
+        mir_window_spec_set_buffer_usage(spec,
                                           xmir_screen->glamor
                                           ? mir_buffer_usage_hardware
                                           : mir_buffer_usage_software);
-        xmir_window->surface = mir_surface_create_sync(spec);
+        xmir_window->surface = mir_create_window_sync(spec);
     }
-    mir_surface_spec_release(spec);
+    mir_window_spec_release(spec);
 
     persistent_id =
-        mir_surface_request_persistent_id_sync(xmir_window->surface);
-    if (mir_persistent_id_is_valid(persistent_id)) {
-        const char *str = mir_persistent_id_as_string(persistent_id);
+        mir_window_request_window_id_sync(xmir_window->surface);
+    if (mir_window_id_is_valid(persistent_id)) {
+        const char *str = mir_window_id_as_string(persistent_id);
         dixChangeWindowProperty(serverClient, window,
                                 MAKE_ATOM(_MIR_WM_PERSISTENT_ID),
                                 XA_STRING, 8, PropModeReplace,
                                 strlen(str), (void*)str, FALSE);
     }
-    mir_persistent_id_release(persistent_id);
+    mir_window_id_release(persistent_id);
 
     xmir_window->has_free_buffer = TRUE;
-    if (!mir_surface_is_valid(xmir_window->surface)) {
+    if (!mir_window_is_valid(xmir_window->surface)) {
         ErrorF("failed to create a surface: %s\n",
-               mir_surface_get_error_message(xmir_window->surface));
+               mir_window_get_error_message(xmir_window->surface));
         return FALSE;
     }
     if (!xmir_screen->flatten_top)
         xmir_screen->flatten_top = xmir_window;
-    mir_surface_set_event_handler(xmir_window->surface,
+    mir_window_set_event_handler(xmir_window->surface,
                                   xmir_surface_handle_event,
                                   xmir_window);
 
@@ -906,13 +906,13 @@ xmir_realize_window(WindowPtr window)
 }
 
 static const char *
-xmir_surface_type_str(MirSurfaceType type)
+xmir_surface_type_str(MirWindowType type)
 {
     return "unk";
 }
 
 static const char *
-xmir_surface_state_str(MirSurfaceState state)
+xmir_surface_state_str(MirWindowState state)
 {
     switch (state) {
     case mir_surface_state_unknown: return "unknown";
@@ -926,17 +926,17 @@ xmir_surface_state_str(MirSurfaceState state)
 }
 
 static const char *
-xmir_surface_focus_str(MirSurfaceFocusState focus)
+xmir_surface_focus_str(MirWindowFocusState focus)
 {
     switch (focus) {
     case mir_surface_unfocused: return "unfocused";
-    case mir_surface_focused: return "focused";
+    case mir_window_focus_state_focused: return "focused";
     default: return "???";
     }
 }
 
 static const char *
-xmir_surface_vis_str(MirSurfaceVisibility vis)
+xmir_surface_vis_str(MirWindowVisibility vis)
 {
     switch (vis) {
     case mir_surface_visibility_occluded: return "hidden";
@@ -961,7 +961,7 @@ xmir_get_current_input_focus(DeviceIntPtr kbd)
 
 static void
 xmir_handle_focus_event(struct xmir_window *xmir_window,
-                        MirSurfaceFocusState state)
+                        MirWindowFocusState state)
 {
     struct xmir_screen *xmir_screen = xmir_window->xmir_screen;
     DeviceIntPtr keyboard = inputInfo.keyboard; /*PickKeyboard(serverClient);*/
@@ -970,7 +970,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
         return;
 
     if (xmir_window->surface) {  /* It's a real Mir window */
-        xmir_screen->last_focus = (state == mir_surface_focused) ?
+        xmir_screen->last_focus = (state == mir_window_focus_state_focused) ?
                                   xmir_window->window : NULL;
     }
 
@@ -980,7 +980,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
         Bool refuse_focus = window->overrideRedirect ||
             (hints && (hints->flags & InputHint) && !hints->input);
         if (!refuse_focus) {
-            Window id = (state == mir_surface_focused) ?
+            Window id = (state == mir_window_focus_state_focused) ?
                         window->drawable.id : None;
             SetInputFocus(serverClient, keyboard, id, RevertToParent,
                           CurrentTime, FALSE);
@@ -992,7 +992,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
          * the root window when in Unity8 invasive mode (-title @).
          */
         Window id = None;
-        if (state == mir_surface_focused) {
+        if (state == mir_window_focus_state_focused) {
             id = xmir_screen->saved_focus;
             if (id == None)
                 id = PointerRoot;
@@ -1009,7 +1009,7 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
 
 void
 xmir_handle_surface_event(struct xmir_window *xmir_window,
-                          MirSurfaceAttrib attr,
+                          MirWindowAttrib attr,
                           int val)
 {
     switch (attr) {
@@ -1024,7 +1024,7 @@ xmir_handle_surface_event(struct xmir_window *xmir_window,
         break;
     case mir_surface_attrib_focus:
         XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
-        xmir_handle_focus_event(xmir_window, (MirSurfaceFocusState)val);
+        xmir_handle_focus_event(xmir_window, (MirWindowFocusState)val);
         break;
     case mir_surface_attrib_dpi:
         XMIR_DEBUG(("DPI: %i\n", val));
@@ -1098,7 +1098,7 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
         ReparentWindow(other->window, benef->window, 0, 0, serverClient);
     }
 
-    mir_surface_set_event_handler(benef->surface, xmir_surface_handle_event,
+    mir_window_set_event_handler(benef->surface, xmir_surface_handle_event,
                                   benef);
 
     xmir_window_enable_damage_tracking(benef);
@@ -1108,9 +1108,9 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
 }
 
 static void
-xmir_clear_to_black(MirSurface *surface)
+xmir_clear_to_black(MirWindow *surface)
 {   /* Admittedly, this will only work for software surfaces */
-    MirBufferStream *stream = mir_surface_get_buffer_stream(surface);
+    MirBufferStream *stream = mir_window_get_buffer_stream(surface);
     MirGraphicsRegion region;
 
     /* On error mir_buffer_stream_get_graphics_region leaves us uninitialized */
@@ -1197,7 +1197,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen,
     if (!xmir_window->surface)
         return;
 
-    mir_surface_set_event_handler(xmir_window->surface, NULL, NULL);
+    mir_window_set_event_handler(xmir_window->surface, NULL, NULL);
 
     if (xmir_screen->flatten && xmir_screen->flatten_top == xmir_window) {
         xmir_screen->flatten_top = NULL;
@@ -1217,7 +1217,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen,
             xmir_clear_to_black(xmir_screen->neverclosed);
         }
         else {
-            mir_surface_release_sync(xmir_window->surface);
+            mir_window_release_sync(xmir_window->surface);
         }
 
         xmir_window->surface = NULL;
@@ -1286,12 +1286,12 @@ xmir_resize_window(WindowPtr window, int x, int y,
 
     if (xmir_window->surface) {
         /* This is correct in theory but most Mir shells don't do it yet */
-        MirSurfaceSpec *changes =
-            mir_connection_create_spec_for_changes(xmir_screen->conn);
-        mir_surface_spec_set_width(changes, w);
-        mir_surface_spec_set_height(changes, h);
-        mir_surface_apply_spec(xmir_window->surface, changes);
-        mir_surface_spec_release(changes);
+        MirWindowSpec *changes =
+            mir_create_window_spec(xmir_screen->conn);
+        mir_window_spec_set_width(changes, w);
+        mir_window_spec_set_height(changes, h);
+        mir_window_apply_spec(xmir_window->surface, changes);
+        mir_window_spec_release(changes);
 
         XMIR_DEBUG(("X window %p resized to %ux%u %+d%+d with sibling %p\n",
                     window, w, h, x, y, sib));
@@ -1321,7 +1321,7 @@ xmir_close_screen(ScreenPtr screen)
 
     if (xmir_screen->glamor)
         xmir_glamor_fini(xmir_screen);
-    mir_display_config_destroy(xmir_screen->display);
+    mir_display_config_release(xmir_screen->display);
     mir_connection_release(xmir_screen->conn);
 
     xmir_fini_thread_to_eventloop();
@@ -1391,7 +1391,7 @@ xmir_save_screen(ScreenPtr screen, int mode)
 }
 
 static void
-xmir_block_handler(ScreenPtr screen, void *ptv, void *read_mask)
+xmir_block_handler(ScreenPtr screen, void *ptv)
 {
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     struct xmir_window *xmir_window, *next;
@@ -1601,7 +1601,10 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
     }
     xmir_screen->conn = conn;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     mir_connection_get_platform(xmir_screen->conn, &xmir_screen->platform);
+#pragma GCC diagnostic pop
 
     xorg_list_init(&xmir_screen->output_list);
     xorg_list_init(&xmir_screen->input_list);
@@ -1636,7 +1639,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         }
     }
 
-    xmir_screen->display = mir_connection_create_display_config(conn);
+    xmir_screen->display = mir_connection_create_display_configuration(conn);
     if (xmir_screen->display == NULL) {
         FatalError("could not create display config\n");
         return FALSE;
