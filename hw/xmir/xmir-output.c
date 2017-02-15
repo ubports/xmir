@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015-2016 Canonical Ltd
+ * Copyright © 2015-2017 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -32,34 +32,6 @@
 #include "glamor_priv.h"
 #include "mipointer.h"
 
-static const char*
-xmir_get_output_type_str(MirDisplayOutput *mir_output)
-{
-    const char *str = "Invalid";
-
-    switch(mir_output->type)
-    {
-    case mir_display_output_type_vga: str = "VGA"; break;
-    case mir_display_output_type_dvii: str = "DVI"; break;
-    case mir_display_output_type_dvid: str = "DVI"; break;
-    case mir_display_output_type_dvia: str = "DVI"; break;
-    case mir_display_output_type_composite: str = "Composite"; break;
-    case mir_display_output_type_svideo: str = "TV"; break;
-    case mir_display_output_type_lvds: str = "LVDS"; break;
-    case mir_display_output_type_component: str = "CTV"; break;
-    case mir_display_output_type_ninepindin: str = "DIN"; break;
-    case mir_display_output_type_displayport: str = "DP"; break;
-    case mir_display_output_type_hdmia: str = "HDMI"; break;
-    case mir_display_output_type_hdmib: str = "HDMI"; break;
-    case mir_display_output_type_tv: str = "TV"; break;
-    case mir_display_output_type_edp: str = "eDP"; break;
-    case mir_display_output_type_unknown: str = "None"; break;
-    default: break;
-    }
-
-    return str;
-}
-
 static Rotation
 to_rr_rotation(MirOrientation orient)
 {
@@ -74,9 +46,10 @@ to_rr_rotation(MirOrientation orient)
 Bool
 xmir_output_dpms(struct xmir_screen *xmir_screen, int mode)
 {
-    MirDisplayConfiguration *display_config = xmir_screen->display;
+    MirDisplayConfig *display_config = xmir_screen->display;
     MirPowerMode mir_mode = mir_power_mode_on;
     Bool unchanged = TRUE;
+    int num_outputs;
 
     if (xmir_screen->rootless || xmir_screen->windowed)
         return FALSE;
@@ -90,54 +63,65 @@ xmir_output_dpms(struct xmir_screen *xmir_screen, int mode)
 
     DebugF("Setting DPMS mode to %d\n", mode);
 
-    for (int i = 0; i < display_config->num_outputs; i++) {
-        if (display_config->outputs[i].power_mode != mir_mode) {
-            display_config->outputs[i].power_mode = mir_mode;
+    num_outputs = mir_display_config_get_num_outputs(display_config);
+    for (int i = 0; i < num_outputs; i++) {
+        MirOutput *output = mir_display_config_get_mutable_output(display_config, i);
+        MirPowerMode power_mode = mir_output_get_power_mode(output);
+        if (power_mode != mir_mode) {
+            mir_output_set_power_mode(output, mir_mode);
             unchanged = FALSE;
         }
     }
 
     if (!unchanged)
-        mir_wait_for(mir_connection_apply_display_config(xmir_screen->conn,
-                                                         xmir_screen->display));
+        mir_connection_apply_session_display_config(xmir_screen->conn,
+                                                    xmir_screen->display);
 
     return TRUE;
 }
 
 static void
-xmir_output_update(struct xmir_output *xmir_output, MirDisplayOutput *mir_output)
+xmir_output_update(struct xmir_output *xmir_output, MirOutput const *mir_output)
 {
+    MirOutputConnectionState connection_state;
+    bool output_is_connected;
+
+    connection_state = mir_output_get_connection_state(mir_output);
+    output_is_connected = !(connection_state == mir_output_connection_state_disconnected);
+
     RROutputSetConnection(xmir_output->randr_output,
-                          mir_output->connected ? RR_Connected : RR_Disconnected);
+                          output_is_connected ? RR_Connected : RR_Disconnected);
     RROutputSetSubpixelOrder(xmir_output->randr_output, SubPixelUnknown);
 
-    if (mir_output->connected && mir_output->used) {
-        MirDisplayMode *mode = &mir_output->modes[mir_output->current_mode];
+    if (output_is_connected) {
+        MirOutputMode const *mode = mir_output_get_current_mode(mir_output);
         RRModePtr randr_mode;
+        double refresh_rate;
 
-        xmir_output->width = mode->horizontal_resolution;
-        xmir_output->height = mode->vertical_resolution;
-        xmir_output->x = mir_output->position_x;
-        xmir_output->y = mir_output->position_y;
+        xmir_output->width = mir_output_mode_get_width(mode);
+        xmir_output->height = mir_output_mode_get_height(mode);
+        xmir_output->x = mir_output_get_position_x(mir_output);
+        xmir_output->y = mir_output_get_position_y(mir_output);
 
+        refresh_rate = mir_output_mode_get_refresh_rate(mode);
         randr_mode = xmir_cvt(xmir_output->width, xmir_output->height,
-                              mode->refresh_rate, 0, 0);
+                              refresh_rate, 0, 0);
         /* Odd resolutions like 1366x768 don't show correctly otherwise */
-        randr_mode->mode.width = mode->horizontal_resolution;
-        randr_mode->mode.height = mode->vertical_resolution;
+        randr_mode->mode.width = mir_output_mode_get_width(mode);
+        randr_mode->mode.height = mir_output_mode_get_height(mode);
         sprintf(randr_mode->name, "%dx%d",
                 randr_mode->mode.width,
                 randr_mode->mode.height);
 
         RROutputSetPhysicalSize(xmir_output->randr_output,
-                                mir_output->physical_width_mm,
-                                mir_output->physical_height_mm);
+                                mir_output_get_physical_width_mm(mir_output),
+                                mir_output_get_physical_height_mm(mir_output));
         RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
 
         /* TODO: Hook up subpixel order when available (LP: #1393578) */
         RRCrtcNotify(xmir_output->randr_crtc, randr_mode,
                      xmir_output->x, xmir_output->y,
-                     to_rr_rotation(mir_output->orientation),
+                     to_rr_rotation(mir_output_get_orientation(mir_output)),
                      NULL, 1, &xmir_output->randr_output);
     }
     else {
@@ -252,25 +236,31 @@ xmir_randr_set_config(ScreenPtr pScreen,
 static void
 xmir_update_config(struct xmir_screen *xmir_screen)
 {
-    MirDisplayConfiguration *new_config;
-    MirDisplayOutput **mir_output;
+    MirDisplayConfig *new_config;
     struct xmir_output *xmir_output;
+    int old_num_outputs, new_num_outputs;
+    MirOutput const *mir_output;
+    int i;
 
     if (xmir_screen->windowed)
         return;
 
-    new_config = mir_connection_create_display_config(xmir_screen->conn);
-    if (new_config->num_outputs != xmir_screen->display->num_outputs)
+    new_config = mir_connection_create_display_configuration(xmir_screen->conn);
+    new_num_outputs = mir_display_config_get_num_outputs(new_config);
+    old_num_outputs = mir_display_config_get_num_outputs(xmir_screen->display);
+    if (new_num_outputs != old_num_outputs)
         FatalError("Number of outputs changed on update.\n");
 
-    mir_display_config_destroy(xmir_screen->display);
+    mir_display_config_release(xmir_screen->display);
     xmir_screen->display = new_config;
 
-    mir_output = &new_config->outputs;
+    i = 0;
     xorg_list_for_each_entry(xmir_output, &xmir_screen->output_list, link) {
-        xmir_output_update(xmir_output, *mir_output);
-        mir_output++;
+        mir_output = mir_display_config_get_output(new_config, i);
+        xmir_output_update(xmir_output, mir_output);
+        ++i;
     }
+
     xmir_output_screen_resized(xmir_screen);
 }
 
@@ -299,7 +289,7 @@ xmir_output_handle_resize(struct xmir_window *xmir_window,
     DeviceIntPtr pDev;
 
     MirOrientation old = xmir_window->orientation;
-    xmir_window->orientation = mir_surface_get_orientation(xmir_window->surface);
+    xmir_window->orientation = mir_window_get_orientation(xmir_window->surface);
 
     if (width < 0 && height < 0) {
         if (old % 180 == xmir_window->orientation % 180) {
@@ -465,7 +455,8 @@ xmir_screen_init_output(struct xmir_screen *xmir_screen)
 {
     rrScrPrivPtr rp;
     int i;
-    MirDisplayConfiguration *display_config = xmir_screen->display;
+    MirDisplayConfig *display_config = xmir_screen->display;
+    int num_outputs;
     int output_type_count[mir_display_output_type_edp + 1] = {};
 
     if (!RRScreenInit(xmir_screen->screen))
@@ -475,18 +466,22 @@ xmir_screen_init_output(struct xmir_screen *xmir_screen)
                                                       &xmir_display_config_callback,
                                                       xmir_screen);
 
-    for (i = 0; i < display_config->num_outputs; i++) {
+    num_outputs = mir_display_config_get_num_outputs(display_config);
+    for (i = 0; i < num_outputs; i++) {
         char name[32];
-        MirDisplayOutput *mir_output = &display_config->outputs[i];
+        int type_count;
+        MirOutput const *mir_output;
+        MirOutputType output_type;
+        const char* output_type_str;
         struct xmir_output *xmir_output;
-        const char* output_type_str = xmir_get_output_type_str(mir_output);
-        int type_count = i;
 
-        if (mir_output->type >= 0 &&
-            mir_output->type <= mir_display_output_type_edp)
-            type_count = output_type_count[mir_output->type]++;
-
+        mir_output = mir_display_config_get_output(display_config, i);
+        output_type = mir_output_get_type(mir_output);
+        output_type_str = mir_output_type_name(output_type);
+        if (output_type_str)
+            type_count = output_type_count[output_type]++;
         snprintf(name, sizeof name, "%s-%d", output_type_str, type_count);
+
         xmir_output = xmir_output_create(xmir_screen, name);
         if (!xmir_output)
             return FALSE;

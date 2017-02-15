@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015-2016 Canonical Ltd
+ * Copyright © 2015-2017 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -70,7 +70,7 @@ struct xmir_screen {
     struct xorg_list damage_window_list;
 
     MirConnection *conn;
-    MirDisplayConfiguration *display;
+    MirDisplayConfig *display;
     MirPlatformPackage platform;
 
     /* Bookkeeping for eglSwapBuffers */
@@ -94,7 +94,7 @@ struct xmir_screen {
     Bool destroying_root;
     Bool closing;
     const char *title;
-    MirSurface *neverclosed;
+    MirWindow *neverclosed;
     struct xorg_list flattened_list;
     struct xmir_window *flatten_top;
     WindowPtr last_focus;
@@ -116,7 +116,7 @@ struct xmir_pixmap {
 
 struct xmir_window {
     struct xmir_screen *xmir_screen;
-    MirSurface *surface;
+    MirWindow *surface;
     WindowPtr window;
     DamagePtr damage;
     RegionRec region;
@@ -172,7 +172,7 @@ struct xmir_screen *xmir_screen_get(ScreenPtr screen);
 struct xmir_pixmap *xmir_pixmap_get(PixmapPtr pixmap);
 void xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap);
 
-void xmir_handle_surface_event(struct xmir_window *, MirSurfaceAttrib, int);
+void xmir_handle_surface_event(struct xmir_window *, MirWindowAttrib, int);
 void xmir_handle_buffer_available(struct xmir_screen *xmir_screen,
                                   struct xmir_window *xmir_win,
                                   void *unused);
@@ -224,7 +224,7 @@ void xmir_process_from_eventloop(void);
 void xmir_process_from_eventloop_except(const struct xmir_window*);
 
 /* xmir-input.c */
-void xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev, void *context);
+void xmir_surface_handle_event(MirWindow *surface, MirEvent const* ev, void *context);
 
 #define XMIR_CREATE_PIXMAP_USAGE_FLIP 0x10000000
 

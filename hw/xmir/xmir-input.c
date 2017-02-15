@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015-2016 Canonical Ltd
+ * Copyright © 2015-2017 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -545,11 +545,11 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
                                        xmir_window,
                                        mir_event_get_input_event(ev));
         break;
-    case mir_event_type_surface: {
-        const MirSurfaceEvent *surface = mir_event_get_surface_event(ev);
+    case mir_event_type_window: {
+        const MirWindowEvent *surface = mir_event_get_window_event(ev);
         xmir_handle_surface_event(xmir_window,
-                                  mir_surface_event_get_attribute(surface),
-                                  mir_surface_event_get_attribute_value(surface));
+                                  mir_window_event_get_attribute(surface),
+                                  mir_window_event_get_attribute_value(surface));
         }
         break;
     case mir_event_type_resize: {
@@ -574,10 +574,10 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
                                        mir_orientation_event_get_direction(orientation));
         }
         break;
-    case mir_event_type_close_surface:
+    case mir_event_type_close_window:
         xmir_close_surface(xmir_window);
         break;
-    case mir_event_type_surface_output:
+    case mir_event_type_window_output:
         break;
     case mir_event_type_keymap:
         xmir_handle_keymap_event(xmir_input, mir_event_get_keymap_event(ev));
@@ -592,7 +592,7 @@ xmir_handle_surface_event_in_main_thread(struct xmir_screen *xmir_screen,
 }
 
 void
-xmir_surface_handle_event(MirSurface *surface, MirEvent const* ev,
+xmir_surface_handle_event(MirWindow *surface, MirEvent const* ev,
                           void *context)
 {
     struct xmir_window *xmir_window = context;

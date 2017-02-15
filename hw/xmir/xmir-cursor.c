@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015-2016 Canonical Ltd
+ * Copyright © 2015-2017 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -93,6 +93,8 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
     MirCursorConfiguration *config;
     MirBufferStream *stream;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (!cursor) {
         config = mir_cursor_configuration_from_name(mir_disabled_cursor_name);
         goto apply;
@@ -102,6 +104,7 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
         config = mir_cursor_configuration_from_name(mir_arrow_cursor_name);
         goto apply;
     }
+#pragma GCC diagnostic pop
 
     stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
     if (stream) {
@@ -142,11 +145,10 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
 apply:
     if (!xmir_input->xmir_screen->rootless) {
         struct xmir_window *w = xmir_window_get(xmir_input->xmir_screen->screen->root);
-        mir_wait_for(mir_surface_configure_cursor(w->surface, config));
+        mir_window_configure_cursor(w->surface, config);
     }
     else if (xmir_input->focus_window)
-        mir_wait_for(mir_surface_configure_cursor(xmir_input->focus_window->surface,
-                                                  config));
+        mir_window_configure_cursor(xmir_input->focus_window->surface, config);
     mir_cursor_configuration_destroy(config);
 }
 
