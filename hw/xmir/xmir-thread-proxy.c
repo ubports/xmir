@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012-2016 Canonical Ltd
+ * Copyright © 2012-2017 Canonical Ltd
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Soft-
@@ -50,10 +50,9 @@ struct message {
 static int pipefds[2];
 
 static void
-xmir_wakeup_handler(void* data, int err, void* read_mask)
+xmir_socket_ready(int fd, int ready, void *data)
 {
-    if (err >= 0 && FD_ISSET(pipefds[0], (fd_set *)read_mask))
-        xmir_process_from_eventloop();
+    xmir_process_from_eventloop();
 }
 
 void
@@ -70,18 +69,13 @@ xmir_init_thread_to_eventloop(void)
      */
     fcntl(pipefds[0], F_SETFL, O_NONBLOCK);
 
-    AddGeneralSocket(pipefds[0]);
-    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
-                                   xmir_wakeup_handler,
-                                   NULL);
+    SetNotifyFd(pipefds[0], xmir_socket_ready, X_NOTIFY_READ, NULL);
 }
 
 void
 xmir_fini_thread_to_eventloop(void)
 {
-    RemoveBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
-                                 xmir_wakeup_handler, NULL);
-    RemoveGeneralSocket(pipefds[0]);
+    RemoveNotifyFd(pipefds[0]);
     close(pipefds[1]);
     close(pipefds[0]);
 }
