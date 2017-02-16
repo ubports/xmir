@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015 Canonical Ltd
+ * Copyright © 2015-2017 Canonical Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software
  * and its documentation for any purpose is hereby granted without
@@ -118,7 +118,7 @@ xmir_glamor_win_get_back(struct xmir_screen *xmir_screen, struct xmir_window *xm
         MirNativeBuffer *buffer;
         struct gbm_import_fd_data gbm_data;
 
-        mir_buffer_stream_get_current_buffer(mir_surface_get_buffer_stream(xmir_win->surface), &buffer);
+        mir_buffer_stream_get_current_buffer(mir_window_get_buffer_stream(xmir_win->surface), &buffer);
 
         gbm_data.fd = buffer->fd[0];
         gbm_data.width = buffer->width;
@@ -689,7 +689,7 @@ xmir_glamor_realize_window(struct xmir_screen *xmir_screen, struct xmir_window *
     if (xmir_screen->gbm)
         return;
 
-    egl_win = mir_buffer_stream_get_egl_native_window(mir_surface_get_buffer_stream(xmir_window->surface));
+    egl_win = mir_buffer_stream_get_egl_native_window(mir_window_get_buffer_stream(xmir_window->surface));
 
     xmir_window->egl_surface = eglCreateWindowSurface(xmir_screen->egl_display, eglconfig, (EGLNativeWindowType)egl_win, NULL);
 }
@@ -747,7 +747,10 @@ xmir_glamor_unrealize_window(struct xmir_screen *xmir_screen, struct xmir_window
 static void
 xmir_drm_set_gbm_device_response(MirConnection *con, MirPlatformMessage* reply, void* context)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     mir_platform_message_release(reply);
+#pragma GCC diagnostic pop
 }
 
 static Bool
@@ -771,6 +774,8 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
 
 
     if (xmir_screen->drm_fd > 0) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         struct MirMesaSetGBMDeviceRequest req = {
             .device = gbm_create_device(xmir_screen->drm_fd)
         };
@@ -791,6 +796,7 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
                 &xmir_drm_set_gbm_device_response,
                 NULL));
         mir_platform_message_release(msg);
+#pragma GCC diagnostic pop
         /* In GBM mode no mir functions are used in any way.
          * This means using the GBM device directly is safe.. */
         xmir_screen->egl_display = eglGetDisplay(xmir_screen->gbm);
