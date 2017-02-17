@@ -108,6 +108,21 @@ ScrnInfoPtr xf86ScreenToScrn(ScreenPtr pScreen)
     return &rec;
 }
 
+/* Required by GLX module */
+void
+xf86ProcessOptions(int scrnIndex, XF86OptionPtr options, OptionInfoPtr optinfo)
+{
+}
+
+/* Required by GLX module */
+const char *
+xf86GetOptValString(const OptionInfoRec *table, int token)
+{
+    /* This may bite us in the bum since it sends up hardcoding "mesa" as the GL
+     * vendor, but... */
+    return NULL;
+}
+
 void
 ddxGiveUp(enum ExitCode error)
 {
