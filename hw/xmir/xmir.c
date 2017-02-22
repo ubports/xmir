@@ -872,10 +872,10 @@ xmir_realize_window(WindowPtr window)
     xmir_window->buf_width = mir_width;
     xmir_window->buf_height = mir_height;
 
+    mir_window_spec_set_pixel_format(spec, pixel_format);
     if (xmir_screen->neverclosed) {
         mir_window_spec_set_width(spec, mir_width);
         mir_window_spec_set_height(spec, mir_height);
-        mir_window_spec_set_pixel_format(spec, pixel_format);
 
         xmir_window->surface = xmir_screen->neverclosed;
         mir_window_apply_spec(xmir_window->surface, spec);
