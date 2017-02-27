@@ -20,7 +20,7 @@
  
          xmir_win->image = eglCreateImageKHR(xmir_screen->egl_display, xmir_screen->egl_context, EGL_GL_TEXTURE_2D_KHR, (EGLClientBuffer)(intptr_t)src_pixmap_priv->fbo->tex, attribs);
          if (!xmir_win->image) {
-@@ -925,12 +919,6 @@ xmir_glamor_fini(struct xmir_screen *xmi
+@@ -931,12 +925,6 @@ xmir_glamor_fini(struct xmir_screen *xmi
      free(xmir_screen->device_name);
  }
  
@@ -33,7 +33,7 @@
  static void
  xmir_glamor_get_name_from_bo(int drm_fd, struct gbm_bo *bo, int *name)
  {
-@@ -1019,12 +1007,6 @@ glamor_egl_dri3_fd_name_from_tex(ScreenP
+@@ -1025,12 +1013,6 @@ glamor_egl_dri3_fd_name_from_tex(ScreenP
      return fd;
  }
  
@@ -46,7 +46,7 @@
  static PixmapPtr
  xmir_glamor_create_pixmap(ScreenPtr screen,
                            int width, int height, int depth, unsigned int hint)
-@@ -1105,12 +1087,6 @@ free:
+@@ -1111,12 +1093,6 @@ free:
      return glamor_create_pixmap(screen, width, height, depth, hint);
  }
  

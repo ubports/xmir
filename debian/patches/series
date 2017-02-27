@@ -42,7 +42,6 @@ xf86-ignore-conflicting-rr-caps.patch
 disable-rotation-transform-gpuscreens.patch
 
 xmir.patch
-xmir-desktop-file-hint-flag.patch
 xi2-resize-touch.patch
 randr-do-not-check-the-screen-size.diff
 xmir-fixes.diff

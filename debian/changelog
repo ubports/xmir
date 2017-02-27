@@ -15,15 +15,13 @@ xorg-server (2:1.19.1-4ubuntu1) UNRELEASED; urgency=medium
     to confflags.
   * 232-xf86compatoutput-valgrind.patch: This was added upstream
     already, no need to carry a duplicate check.
-  * xmir.patch: Don't check for aiglx enable flag, dropped upstream.
   * xmir-fixes.diff: Port to new glamor api.
 
   [ Robert Ancell ]
   * debian/patches/xmir.patch:
-  * debian/patches/xmir-desktop-file-hint-flag.patch:
     - Refresh
     - Fix warnings when built against lp:mir/0.25
-    - Support both Mir 0.24 and 0.25 client APIs
+    - Support both Mir 0.24, 0.25 and 0.26 client APIs
     - Fix crashing on arm64 (LP: #1642297)
 
  -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
