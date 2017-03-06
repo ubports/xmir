@@ -1,18 +1,4 @@
-xorg-server (2:1.19.2-1) unstable; urgency=medium
-
-  [ Andreas Boll ]
-  * xserver-xorg-core.bug.script: Change udevadm path from /sbin to /bin
-    (Closes: #852584).
-
-  [ Emilio Pozuelo Monfort ]
-  * New upstream stable release.
-    - CVE-2017-2624: Timing attack against MIT cookie. Closes: #856398.
-  * control: Build-depend on libbsd-dev everywhere, needed for
-    arc4random_buf for the above fix.
-
- -- Emilio Pozuelo Monfort <pochu@debian.org>  Fri, 03 Mar 2017 15:41:15 +0100
-
-xorg-server (2:1.19.1-4ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.19.2-1ubuntu1) UNRELEASED; urgency=medium
 
   [ Timo Aaltonen ]
   * Merge from Debian experimental.
@@ -39,6 +25,20 @@ xorg-server (2:1.19.1-4ubuntu1) UNRELEASED; urgency=medium
     - Fix crashing on arm64 (LP: #1642297)
 
  -- Robert Ancell <robert.ancell@canonical.com>  Thu, 17 Nov 2016 15:25:26 +1300
+
+xorg-server (2:1.19.2-1) unstable; urgency=medium
+
+  [ Andreas Boll ]
+  * xserver-xorg-core.bug.script: Change udevadm path from /sbin to /bin
+    (Closes: #852584).
+
+  [ Emilio Pozuelo Monfort ]
+  * New upstream stable release.
+    - CVE-2017-2624: Timing attack against MIT cookie. Closes: #856398.
+  * control: Build-depend on libbsd-dev everywhere, needed for
+    arc4random_buf for the above fix.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Fri, 03 Mar 2017 15:41:15 +0100
 
 xorg-server (2:1.19.1-4) unstable; urgency=medium
 
