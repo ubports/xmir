@@ -15,7 +15,6 @@ xorg-server (2:1.19.2-1ubuntu1) UNRELEASED; urgency=medium
     to confflags.
   * 232-xf86compatoutput-valgrind.patch: This was added upstream
     already, no need to carry a duplicate check.
-  * xmir-fixes.diff: Port to new glamor api.
 
   [ Robert Ancell ]
   * debian/patches/xmir.patch:

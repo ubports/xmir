@@ -44,4 +44,3 @@ disable-rotation-transform-gpuscreens.patch
 xmir.patch
 xi2-resize-touch.patch
 randr-do-not-check-the-screen-size.diff
-xmir-fixes.diff

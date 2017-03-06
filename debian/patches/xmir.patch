@@ -49,7 +49,7 @@ Contributions from:
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -654,6 +654,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
+@@ -658,6 +658,7 @@ AC_ARG_ENABLE(xvfb,    	      AS_HELP_ST
  AC_ARG_ENABLE(xnest,   	      AS_HELP_STRING([--enable-xnest], [Build Xnest server (default: auto)]), [XNEST=$enableval], [XNEST=auto])
  AC_ARG_ENABLE(xquartz,        AS_HELP_STRING([--enable-xquartz], [Build Xquartz server for OS-X (default: auto)]), [XQUARTZ=$enableval], [XQUARTZ=auto])
  AC_ARG_ENABLE(xwayland,       AS_HELP_STRING([--enable-xwayland], [Build Xwayland server (default: auto)]), [XWAYLAND=$enableval], [XWAYLAND=auto])
@@ -57,7 +57,7 @@ Contributions from:
  AC_ARG_ENABLE(standalone-xpbproxy, AS_HELP_STRING([--enable-standalone-xpbproxy], [Build a standalone xpbproxy (in addition to the one integrated into Xquartz as a separate thread) (default: no)]), [STANDALONE_XPBPROXY=$enableval], [STANDALONE_XPBPROXY=no])
  AC_ARG_ENABLE(xwin,    	      AS_HELP_STRING([--enable-xwin], [Build XWin server (default: auto)]), [XWIN=$enableval], [XWIN=auto])
  AC_ARG_ENABLE(glamor,         AS_HELP_STRING([--enable-glamor], [Build glamor dix module (default: auto)]), [GLAMOR=$enableval], [GLAMOR=auto])
-@@ -772,6 +773,7 @@ case $host_os in
+@@ -776,6 +777,7 @@ case $host_os in
  			XVFB=no
  			XNEST=no
  			XWAYLAND=no
@@ -65,7 +65,7 @@ Contributions from:
  
  			COMPOSITE=no
  			DGA=no
-@@ -2553,6 +2555,27 @@ if test "x$XWAYLAND" = xyes; then
+@@ -2557,6 +2559,27 @@ if test "x$XWAYLAND" = xyes; then
  	AC_SUBST(WAYLAND_PROTOCOLS_DATADIR, `$PKG_CONFIG --variable=pkgdatadir wayland-protocols`)
  fi
  
@@ -93,7 +93,7 @@ Contributions from:
  
  dnl and the rest of these are generic, so they're in config.h
  dnl 
-@@ -2702,6 +2725,8 @@ hw/kdrive/fbdev/Makefile
+@@ -2706,6 +2729,8 @@ hw/kdrive/fbdev/Makefile
  hw/kdrive/linux/Makefile
  hw/kdrive/src/Makefile
  hw/xwayland/Makefile
@@ -3798,7 +3798,7 @@ Contributions from:
 +}
 --- /dev/null
 +++ b/hw/xmir/xmir-glamor.c
-@@ -0,0 +1,1180 @@
+@@ -0,0 +1,1156 @@
 +/*
 + * Copyright © 2015-2017 Canonical Ltd
 + *
@@ -4046,11 +4046,6 @@ Contributions from:
 +    glVertexAttribPointer(GLAMOR_VERTEX_SOURCE, 2, GL_FLOAT, GL_FALSE,
 +                          2 * sizeof(float), texcoords);
 +    glEnableVertexAttribArray(GLAMOR_VERTEX_SOURCE);
-+    if (!fbo) {
-+        glUseProgram(glamor_priv->finish_access_prog[0]);
-+        glUniform1i(glamor_priv->finish_access_revert[0], REVERT_NONE);
-+        glUniform1i(glamor_priv->finish_access_swap_rb[0], SWAP_NONE_UPLOADING);
-+    }
 +
 +    if (!swap_xy) {
 +        float _tx1, _tx2, _ty1, _ty2;
@@ -4407,7 +4402,6 @@ Contributions from:
 +         * rotating back and forth.
 +         */
 +        glamor_set_pixmap_type(src_pixmap, GLAMOR_TEXTURE_DRM);
-+        src_pixmap_priv->fbo->external = TRUE;
 +
 +        xmir_win->image = eglCreateImageKHR(xmir_screen->egl_display, xmir_screen->egl_context, EGL_GL_TEXTURE_2D_KHR, (EGLClientBuffer)(intptr_t)src_pixmap_priv->fbo->tex, attribs);
 +        if (!xmir_win->image) {
@@ -4732,12 +4726,6 @@ Contributions from:
 +    free(xmir_screen->device_name);
 +}
 +
-+void
-+glamor_egl_destroy_textured_pixmap(PixmapPtr pixmap)
-+{
-+    glamor_destroy_textured_pixmap(pixmap);
-+}
-+
 +static void
 +xmir_glamor_get_name_from_bo(int drm_fd, struct gbm_bo *bo, int *name)
 +{
@@ -4826,12 +4814,6 @@ Contributions from:
 +    return fd;
 +}
 +
-+unsigned int
-+glamor_egl_create_argb8888_based_texture(ScreenPtr screen, int w, int h, Bool linear)
-+{
-+    return 0;
-+}
-+
 +static PixmapPtr
 +xmir_glamor_create_pixmap(ScreenPtr screen,
 +                          int width, int height, int depth, unsigned int hint)
@@ -4910,12 +4892,6 @@ Contributions from:
 +    }
 +
 +    return glamor_create_pixmap(screen, width, height, depth, hint);
-+}
-+
-+void
-+glamor_egl_destroy_pixmap_image(PixmapPtr pixmap)
-+{
-+    /* XXX: Unused */
 +}
 +
 +static Bool
