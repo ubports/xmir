@@ -156,7 +156,7 @@ void
 ddxUseMsg(void)
 {
     ErrorF("-rootless              Run rootless\n");
-    ErrorF("  -flatten             Flatten rootless X windows into a single surface\n");
+    ErrorF("  -flatten none|all|overrideredirects   Flatten rootless X windows into their parent surface\n");
     ErrorF("    -neverclose        Never close the flattened rootless window\n");
     ErrorF("-title <name>          Set window title (@ = automatic)\n");
     ErrorF("-sw                    disable glamor rendering\n");
@@ -177,7 +177,6 @@ ddxProcessArgument(int argc, char *argv[], int i)
     static int seen_shared;
 
     if (strcmp(argv[i], "-rootless") == 0 ||
-        strcmp(argv[i], "-flatten") == 0 ||
         strcmp(argv[i], "-neverclose") == 0 ||
         strcmp(argv[i], "-sw") == 0 ||
         strcmp(argv[i], "-egl") == 0 ||
@@ -188,6 +187,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
         return 1;
     }
     else if (strcmp(argv[i], "-mirSocket") == 0 ||
+             strcmp(argv[i], "-flatten") == 0 ||
              strcmp(argv[i], "-title") == 0 ||
              strcmp(argv[i], "-mir") == 0) {
         return 2;
@@ -796,7 +796,10 @@ xmir_realize_window(WindowPtr window)
             positioning_parent = xmir_screen->last_focus;
     }
 
-    if (xmir_screen->flatten && xmir_screen->flatten_top) {
+    if (xmir_screen->flatten_top &&
+        (xmir_screen->flatten == flatten_all ||
+         (xmir_screen->flatten == flatten_overrideredirects &&
+          window->overrideRedirect))) {
         WindowPtr top = xmir_screen->flatten_top->window;
         int dx = window->drawable.x - top->drawable.x;
         int dy = window->drawable.y - top->drawable.y;
@@ -1535,7 +1538,17 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
             xmir_disable_screensaver(xmir_screen);
         }
         else if (strcmp(argv[i], "-flatten") == 0) {
-            xmir_screen->flatten = TRUE;
+            const char *what = argv[++i];
+            if (!strcmp(what, "none"))
+                xmir_screen->flatten = flatten_none;
+            else if (!strcmp(what, "all"))
+                xmir_screen->flatten = flatten_all;
+            else if (!strcmp(what, "overrideredirects"))
+                xmir_screen->flatten = flatten_overrideredirects;
+            else {
+                FatalError("Invalid -flatten mode `%s'\n", what);
+                return FALSE;
+            }
         }
         else if (strcmp(argv[i], "-neverclose") == 0) {
             xmir_screen->neverclose = TRUE;

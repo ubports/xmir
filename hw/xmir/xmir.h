@@ -89,7 +89,7 @@ struct xmir_screen {
     void *egl_surface;
 
     MirPixelFormat depth24_pixel_format, depth32_pixel_format;
-    Bool flatten;
+    enum {flatten_none=0, flatten_all, flatten_overrideredirects} flatten;
     Bool neverclose;
     Bool destroying_root;
     Bool closing;
