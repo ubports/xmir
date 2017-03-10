@@ -161,8 +161,6 @@ xmir_dri2_reusebuffer_notify(DrawablePtr draw, DRI2BufferPtr buf)
 static void
 xmir_dri2_auth_magic_reply(MirConnection* con, MirPlatformMessage* reply, Bool* ret)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     struct MirMesaAuthMagicResponse const* response;
     unsigned int opcode = mir_platform_message_get_opcode(reply);
     MirPlatformMessageData data = mir_platform_message_get_data(reply);
@@ -182,14 +180,11 @@ xmir_dri2_auth_magic_reply(MirConnection* con, MirPlatformMessage* reply, Bool* 
     if (response->status == 0)
         *ret = 1;
     mir_platform_message_release(reply);
-#pragma GCC diagnostic pop
 }
 
 static Bool
 xmir_dri2_auth_magic(ScreenPtr screen, uint32_t magic)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     struct xmir_screen *xmir_screen = xmir_screen_get(screen);
     Bool ret = 0;
     MirPlatformMessage *msg = NULL;
@@ -214,7 +209,6 @@ xmir_dri2_auth_magic(ScreenPtr screen, uint32_t magic)
     }
 
     return ret;
-#pragma GCC diagnostic pop
 }
 
 static DRI2BufferPtr

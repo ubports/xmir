@@ -93,8 +93,6 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
     MirCursorConfiguration *config;
     MirBufferStream *stream;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (!cursor) {
         config = mir_cursor_configuration_from_name(mir_disabled_cursor_name);
         goto apply;
@@ -104,7 +102,6 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
         config = mir_cursor_configuration_from_name(mir_arrow_cursor_name);
         goto apply;
     }
-#pragma GCC diagnostic pop
 
     stream = dixGetPrivate(&cursor->devPrivates, &xmir_cursor_private_key);
     if (stream) {

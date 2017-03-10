@@ -1616,10 +1616,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
     }
     xmir_screen->conn = conn;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     mir_connection_get_platform(xmir_screen->conn, &xmir_screen->platform);
-#pragma GCC diagnostic pop
 
     xorg_list_init(&xmir_screen->output_list);
     xorg_list_init(&xmir_screen->input_list);

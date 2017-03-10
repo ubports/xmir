@@ -741,10 +741,7 @@ xmir_glamor_unrealize_window(struct xmir_screen *xmir_screen, struct xmir_window
 static void
 xmir_drm_set_gbm_device_response(MirConnection *con, MirPlatformMessage* reply, void* context)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     mir_platform_message_release(reply);
-#pragma GCC diagnostic pop
 }
 
 static Bool
@@ -768,8 +765,6 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
 
 
     if (xmir_screen->drm_fd > 0) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         struct MirMesaSetGBMDeviceRequest req = {
             .device = gbm_create_device(xmir_screen->drm_fd)
         };
@@ -790,7 +785,6 @@ xmir_drm_init_egl(struct xmir_screen *xmir_screen)
                 &xmir_drm_set_gbm_device_response,
                 NULL));
         mir_platform_message_release(msg);
-#pragma GCC diagnostic pop
         /* In GBM mode no mir functions are used in any way.
          * This means using the GBM device directly is safe.. */
         xmir_screen->egl_display = eglGetDisplay(xmir_screen->gbm);
