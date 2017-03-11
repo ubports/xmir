@@ -25,7 +25,7 @@ no-nv.patch
 #   https://bugs.freedesktop.org/show_bug.cgi?id=27134
 #   http://lists.x.org/archives/xorg-devel/2010-April/007777.html
 #   Resent to mailing list, Feb 2013
-208_switch_on_release.diff
+#208_switch_on_release.diff
 #   https://bugs.freedesktop.org/show_bug.cgi?id=865
 #   - Violates XKB spec: Section 6.3, SA_LockGroup
 #   http://lists.freedesktop.org/archives/xorg-devel/2013-January/035046.html
