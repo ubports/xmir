@@ -28,4 +28,3 @@ xf86-ignore-conflicting-rr-caps.patch
 
 xmir.patch
 xi2-resize-touch.patch
-randr-do-not-check-the-screen-size.diff

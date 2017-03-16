@@ -23,6 +23,8 @@ xorg-server (2:1.19.3-1ubuntu1) UNRELEASED; urgency=medium
     review found issues and it never got applied.
   * xfree86-no-xv-for-gpuscreens.patch: Drop bogus buglink.
   * 227_null_ptr_midispcur.patch: Dropped, upstream didn't accept it.
+  * randr-do-not-check-the-screen-size.diff: Dropped, can't reproduce
+    #1586260 anymore without the patch.
 
   [ Robert Ancell ]
   * debian/patches/xmir.patch:
