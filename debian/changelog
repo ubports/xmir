@@ -15,7 +15,7 @@ xorg-server (2:1.19.3-1ubuntu1) UNRELEASED; urgency=medium
     to confflags.
   * 232-xf86compatoutput-valgrind.patch: This was added upstream
     already, no need to carry a duplicate check.
-  * 208_switch_on_release.diff: Disabled, doesn't work with 1.19.
+  * 208_switch_on_release.diff: Dropped, doesn't work with 1.19.
   * 228_autobind_gpu.patch: Update from Fedora, fixes nvidia.
   * disable-rotation-transform-gpuscreens.patch: Dropped, nvidia
     supports rotation now.
