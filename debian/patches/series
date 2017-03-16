@@ -39,7 +39,6 @@ no-nv.patch
 # hybrid graphics fixes
 228_autobind_gpu.patch
 xf86-ignore-conflicting-rr-caps.patch
-disable-rotation-transform-gpuscreens.patch
 
 xmir.patch
 xi2-resize-touch.patch

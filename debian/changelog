@@ -1,6 +1,8 @@
 xorg-server (2:1.19.2-1ubuntu3) UNRELEASED; urgency=medium
 
   * 228_autobind_gpu.patch: Update from Fedora, fixes nvidia.
+  * disable-rotation-transform-gpuscreens.patch: Dropped, nvidia
+    supports rotation now.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Thu, 16 Mar 2017 11:44:22 +0200
 
