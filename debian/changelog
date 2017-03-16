@@ -1,3 +1,9 @@
+xorg-server (2:1.19.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 15 Mar 2017 20:53:42 +0100
+
 xorg-server (2:1.19.2-1ubuntu3) UNRELEASED; urgency=medium
 
   * 228_autobind_gpu.patch: Update from Fedora, fixes nvidia.
