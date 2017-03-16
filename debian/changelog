@@ -22,6 +22,7 @@ xorg-server (2:1.19.3-1ubuntu1) UNRELEASED; urgency=medium
   * 122_xext_fix_card32_overflow_in_xauth.patch: Dropped, upstream
     review found issues and it never got applied.
   * xfree86-no-xv-for-gpuscreens.patch: Drop bogus buglink.
+  * 227_null_ptr_midispcur.patch: Dropped, upstream didn't accept it.
 
   [ Robert Ancell ]
   * debian/patches/xmir.patch:

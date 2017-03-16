@@ -20,11 +20,6 @@
 xfree86-no-xv-for-gpuscreens.patch
 no-nv.patch
 
-## waiting for review by upstream
-227_null_ptr_midispcur.patch
-#   https://bugs.freedesktop.org/show_bug.cgi?id=24181
-#   Probably is just papering over issue; needs further analysis
-
 ## upstream patches
 
 # hybrid graphics fixes
