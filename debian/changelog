@@ -1,3 +1,9 @@
+xorg-server (2:1.19.2-1ubuntu3) UNRELEASED; urgency=medium
+
+  * 228_autobind_gpu.patch: Update from Fedora, fixes nvidia.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 16 Mar 2017 11:44:22 +0200
+
 xorg-server (2:1.19.2-1ubuntu2) zesty; urgency=medium
 
   * 208_switch_on_release.diff: Disabled, doesn't work with 1.19.
