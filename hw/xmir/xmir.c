@@ -157,7 +157,6 @@ ddxUseMsg(void)
 {
     ErrorF("-rootless              Run rootless\n");
     ErrorF("  -flatten none|all|overrideredirects   Flatten rootless X windows into their parent surface\n");
-    ErrorF("    -neverclose        Never close the flattened rootless window\n");
     ErrorF("-title <name>          Set window title (@ = automatic)\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
@@ -177,7 +176,6 @@ ddxProcessArgument(int argc, char *argv[], int i)
     static int seen_shared;
 
     if (strcmp(argv[i], "-rootless") == 0 ||
-        strcmp(argv[i], "-neverclose") == 0 ||
         strcmp(argv[i], "-sw") == 0 ||
         strcmp(argv[i], "-egl") == 0 ||
         strcmp(argv[i], "-egl_sync") == 0 ||
@@ -815,10 +813,7 @@ xmir_realize_window(WindowPtr window)
         return ret;
     }
 
-    if (xmir_screen->neverclosed) {
-        spec = mir_create_window_spec(xmir_screen->conn);
-    }
-    else if (positioning_parent) {
+    if (positioning_parent) {
         struct xmir_window *rel = xmir_window_get(positioning_parent);
         if (rel && rel->surface) {
             short dx = window->drawable.x - rel->window->drawable.x;
@@ -869,20 +864,10 @@ xmir_realize_window(WindowPtr window)
     xmir_window->buf_height = mir_height;
 
     mir_window_spec_set_pixel_format(spec, pixel_format);
-    if (xmir_screen->neverclosed) {
-        mir_window_spec_set_width(spec, mir_width);
-        mir_window_spec_set_height(spec, mir_height);
-
-        xmir_window->surface = xmir_screen->neverclosed;
-        mir_window_apply_spec(xmir_window->surface, spec);
-    }
-    else {
-        mir_window_spec_set_buffer_usage(spec,
-                                          xmir_screen->glamor
-                                          ? mir_buffer_usage_hardware
-                                          : mir_buffer_usage_software);
-        xmir_window->surface = mir_create_window_sync(spec);
-    }
+    mir_window_spec_set_buffer_usage(spec, xmir_screen->glamor ?
+                                           mir_buffer_usage_hardware :
+                                           mir_buffer_usage_software);
+    xmir_window->surface = mir_create_window_sync(spec);
     mir_window_spec_release(spec);
 
     persistent_id =
@@ -1119,68 +1104,6 @@ xmir_bequeath_surface(struct xmir_window *dying, struct xmir_window *benef)
 }
 
 static void
-xmir_clear_to_black(MirWindow *surface)
-{   /* Admittedly, this will only work for software surfaces */
-    MirBufferStream *stream = mir_window_get_buffer_stream(surface);
-    MirGraphicsRegion region;
-
-    /* On error mir_buffer_stream_get_graphics_region leaves us uninitialized */
-    region.pixel_format = mir_pixel_format_invalid;
-    mir_buffer_stream_get_graphics_region(stream, &region);
-
-    switch (region.pixel_format) {
-        case mir_pixel_format_invalid: return; /* Probably hardware surface */
-        case mir_pixel_format_abgr_8888:
-        case mir_pixel_format_xbgr_8888:
-        case mir_pixel_format_argb_8888:
-        case mir_pixel_format_xrgb_8888: {
-            int y;
-            uint32_t *dest = (uint32_t*)region.vaddr;
-            for (y = 0; y < region.height; ++y) {
-                int x;
-                for (x = 0; x < region.width; ++x)
-                    dest[x] = 0xff000000;
-                dest = (uint32_t*)((char*)dest + region.stride);
-            }
-            break;
-        }
-        case mir_pixel_format_bgr_888:
-        case mir_pixel_format_rgb_888: {
-            int y;
-            char *dest = region.vaddr;
-            for (y = 0; y < region.height; ++y) {
-                memset(dest, 0, region.width*3);
-                dest += region.stride;
-            }
-            break;
-        }
-        case mir_pixel_format_rgb_565:
-        case mir_pixel_format_rgba_5551:
-        case mir_pixel_format_rgba_4444: {
-            uint16_t fill = 0;
-            int y;
-            uint16_t *dest = (uint16_t*)region.vaddr;
-            switch (region.pixel_format) {
-                case mir_pixel_format_rgb_565:   fill = 0x0000; break;
-                case mir_pixel_format_rgba_5551: fill = 0x0001; break;
-                case mir_pixel_format_rgba_4444: fill = 0x000f; break;
-                default: fill = 0;
-            }
-            for (y = 0; y < region.height; ++y) {
-                int x;
-                for (x = 0; x < region.width; ++x)
-                    dest[x] = fill;
-                dest = (uint16_t*)((char*)dest + region.stride);
-            }
-            break;
-        }
-        default:
-            return;
-    }
-    mir_buffer_stream_swap_buffers(stream, NULL, NULL);
-}
-
-static void
 xmir_unmap_surface(struct xmir_screen *xmir_screen,
                    WindowPtr window,
                    BOOL destroyed)
@@ -1223,14 +1146,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen,
     }
 
     if (xmir_window->surface) {
-        if (xmir_screen->neverclose) {
-            xmir_screen->neverclosed = xmir_window->surface;
-            xmir_clear_to_black(xmir_screen->neverclosed);
-        }
-        else {
-            mir_window_release_sync(xmir_window->surface);
-        }
-
+        mir_window_release_sync(xmir_window->surface);
         xmir_window->surface = NULL;
     }
 
@@ -1550,9 +1466,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
                 return FALSE;
             }
         }
-        else if (strcmp(argv[i], "-neverclose") == 0) {
-            xmir_screen->neverclose = TRUE;
-        }
         else if (strcmp(argv[i], "-title") == 0) {
             xmir_screen->title = argv[++i];
         }
@@ -1588,10 +1501,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     if (xmir_screen->flatten && !xmir_screen->rootless) {
         FatalError("-flatten is not valid without -rootless\n");
-        return FALSE;
-    }
-    if (xmir_screen->neverclose && !xmir_screen->flatten) {
-        FatalError("-neverclose is not valid without -rootless -flatten\n");
         return FALSE;
     }
 
