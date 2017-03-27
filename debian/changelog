@@ -1,4 +1,4 @@
-xorg-server (2:1.19.3-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.19.3-1ubuntu1) zesty; urgency=medium
 
   [ Timo Aaltonen ]
   * Merge from Debian experimental.
@@ -33,7 +33,7 @@ xorg-server (2:1.19.3-1ubuntu1) UNRELEASED; urgency=medium
     - Support both Mir 0.24, 0.25 and 0.26 client APIs
     - Fix crashing on arm64 (LP: #1642297)
 
- -- Timo Aaltonen <tjaalton@debian.org>  Mon, 06 Mar 2017 14:13:12 +0200
+ -- Timo Aaltonen <tjaalton@debian.org>  Mon, 27 Mar 2017 19:43:08 +0300
 
 xorg-server (2:1.19.3-1) unstable; urgency=medium
 
