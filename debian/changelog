@@ -161,6 +161,18 @@ xorg-server (2:1.18.4-2) unstable; urgency=medium
 
  -- Timo Aaltonen <tjaalton@debian.org>  Tue, 06 Sep 2016 16:09:04 +0300
 
+xorg-server (2:1.18.4-1ubuntu9) zesty; urgency=medium
+
+  * control: Depend on libxfont1-dev.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 13:44:15 +0200
+
+xorg-server (2:1.18.4-1ubuntu8) zesty; urgency=medium
+
+  * xvfb-run: Bump default bitdepth to 16 so that GLX works.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Dec 2016 12:33:01 +0200
+
 xorg-server (2:1.18.4-1ubuntu7) zesty; urgency=medium
 
   * modesetting-unifdef-slave-support.diff: Fix modesetting slave output
