@@ -118,7 +118,10 @@ xmir_output_update(struct xmir_output *xmir_output, MirOutput const *mir_output)
                                 mir_output_get_physical_height_mm(mir_output));
         RROutputSetModes(xmir_output->randr_output, &randr_mode, 1, 1);
 
-        /* TODO: Hook up subpixel order when available (LP: #1393578) */
+        /* Yes, Mir and XrandR's (XRender's) subpixel enums match up */
+        RROutputSetSubpixelOrder(xmir_output->randr_output,
+            mir_output_get_subpixel_arrangement(mir_output));
+
         RRCrtcNotify(xmir_output->randr_crtc, randr_mode,
                      xmir_output->x, xmir_output->y,
                      to_rr_rotation(mir_output_get_orientation(mir_output)),
