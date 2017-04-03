@@ -1222,14 +1222,12 @@ xmir_property_changed(WindowPtr window, int state, Atom atom)
     xmir_screen->PropertyChanged = screen->PropertyChanged;
     screen->PropertyChanged = xmir_property_changed;
 
-    if (xmir_window->surface) {
-        XMIR_DEBUG(("X window %p property %s %s\n",
-                    window,
-                    NameForAtom(atom)?:"?",
-                    state == PropertyDelete ? "deleted" :
-                    state == PropertyNewValue ? "changed" :
-                                                "confused"));
-    }
+    XMIR_DEBUG(("X window %p property %s %s\n",
+                window,
+                NameForAtom(atom)?:"?",
+                state == PropertyDelete ? "deleted" :
+                state == PropertyNewValue ? "changed" :
+                                            "confused"));
 }
 
 static void
