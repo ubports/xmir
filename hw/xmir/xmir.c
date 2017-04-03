@@ -1471,6 +1471,17 @@ xmir_disable_screensaver(struct xmir_screen *xmir_screen)
     ScreenSaverTime = 0;
 }
 
+static CARD32
+add_client_fd(OsTimerPtr timer, CARD32 time, void *arg)
+{
+    int *client_fd = (int *)arg;
+    if (!AddClientOnOpenFD(*client_fd))
+        FatalError("Failed to add client fd\n");
+
+    TimerFree(timer);
+    return 0;
+}
+
 static Bool
 xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 {
@@ -1572,10 +1583,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 #endif
 
     if (client_fd != -1) {
-        if (!AddClientOnOpenFD(client_fd)) {
-            FatalError("failed to connect to client fd %d\n", client_fd);
-            return FALSE;
-        }
+        TimerSet(NULL, 0, 1, add_client_fd, &client_fd);
     }
 
     conn = mir_connect_sync(socket, appid);
