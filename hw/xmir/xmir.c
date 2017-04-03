@@ -1259,6 +1259,36 @@ xmir_resize_window(WindowPtr window, int x, int y,
     xmir_window_update_region(xmir_window);
 }
 
+static void
+xmir_xevent_callback(CallbackListPtr *list, void *xmir_data, void *call_data)
+{
+    struct xmir_screen *xmir_screen = (struct xmir_screen*)xmir_data;
+    const EventInfoRec *event_info = (EventInfoRec*)call_data;
+    int i;
+
+    for (i = 0; i < event_info->count; ++i) {
+        const xEventPtr event = event_info->events + i;
+        switch (event->u.u.type) {
+        case PropertyNotify:
+            {
+                Window window = event->u.property.window;
+                Atom atom = event->u.property.atom;
+                int state = event->u.property.state;
+                XMIR_DEBUG(("X window event PropertyNotify on window "
+                            "%p: %s %s\n",
+                            window,
+                            NameForAtom(atom)?:"?",
+                            state == PropertyDelete ? "deleted" :
+                            state == PropertyNewValue ? "changed" :
+                                                        "confused"));
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 static Bool
 xmir_close_screen(ScreenPtr screen)
 {
@@ -1266,6 +1296,7 @@ xmir_close_screen(ScreenPtr screen)
     struct xmir_output *xmir_output, *next_xmir_output;
     Bool ret;
 
+    DeleteCallback(&EventCallback, xmir_xevent_callback, xmir_screen);
     xmir_screen->closing = TRUE;
 
     if (xmir_screen->glamor && xmir_screen->gbm)
@@ -1719,6 +1750,8 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
                         visual->nplanes));
         }
     }
+
+    AddCallback(&EventCallback, xmir_xevent_callback, xmir_screen);
 
     return ret;
 }
