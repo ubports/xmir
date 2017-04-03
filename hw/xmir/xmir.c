@@ -311,35 +311,26 @@ xmir_get_window_prop_window(WindowPtr window, ATOM atom)
     return NULL;
 }
 
-static const Atom*
-xmir_get_window_prop_atoms(WindowPtr window, Atom name, int *count)
+static Atom
+xmir_get_window_prop_atom(WindowPtr window, ATOM name)
 {
     if (window->optional) {
         PropertyPtr p = window->optional->userProps;
         while (p) {
             if (p->propertyName == name) {
                 if (p->type == XA_ATOM) {
-                    if (count)
-                        *count = p->size;
-                    return (Atom*)p->data;
+                    return *(Atom*)p->data;
                 }
                 else {
-                    ErrorF("xmir_get_window_prop_atoms: Atom %d is not "
+                    ErrorF("xmir_get_window_prop_atom: Atom %d is not "
                            "an Atom as expected\n", name);
-                    return NULL;
+                    return 0;
                 }
             }
             p = p->next;
         }
     }
-    return NULL;
-}
-
-static Atom
-xmir_get_window_prop_atom(WindowPtr window, ATOM name)
-{
-    Atom *first = xmir_get_window_prop_atoms(window, name, NULL);
-    return first ? *first : 0;
+    return 0;
 }
 
 enum XWMHints_flag {
@@ -511,12 +502,6 @@ void xmir_repaint(struct xmir_window *xmir_win)
     if (!xmir_win->has_free_buffer)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
-    /*
-     * TODO: Move this into the new xmir_property_changed callback.
-     *       Although some of it is likely to get deleted instead, since we
-     *       may never need or want title propagation again (which was for
-     *       Ubuntu Touch).
-     */
     xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
     if (strcmp(xmir_screen->title, get_title_from_top_window)) {
         /* Fixed title mode. Never change it. */
@@ -1210,29 +1195,6 @@ xmir_destroy_window(WindowPtr window)
 }
 
 static void
-xmir_property_changed(WindowPtr window, int state, Atom atom)
-{
-    ScreenPtr screen = window->drawable.pScreen;
-    struct xmir_screen *xmir_screen = xmir_screen_get(screen);
-    struct xmir_window *xmir_window = xmir_window_get(window);
-
-    screen->PropertyChanged = xmir_screen->PropertyChanged;
-    if (screen->PropertyChanged)
-        (*screen->PropertyChanged)(window, state, atom);
-    xmir_screen->PropertyChanged = screen->PropertyChanged;
-    screen->PropertyChanged = xmir_property_changed;
-
-    if (xmir_window->surface) {
-        XMIR_DEBUG(("X window %p property %s %s\n",
-                    window,
-                    NameForAtom(atom)?:"?",
-                    state == PropertyDelete ? "deleted" :
-                    state == PropertyNewValue ? "changed" :
-                                                "confused"));
-    }
-}
-
-static void
 xmir_resize_window(WindowPtr window, int x, int y,
                    unsigned int w, unsigned int h, WindowPtr sib)
 {
@@ -1731,9 +1693,6 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     xmir_screen->UnrealizeWindow = pScreen->UnrealizeWindow;
     pScreen->UnrealizeWindow = xmir_unrealize_window;
-
-    xmir_screen->PropertyChanged = pScreen->PropertyChanged;
-    pScreen->PropertyChanged = xmir_property_changed;
 
     xmir_screen->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = xmir_close_screen;

@@ -353,11 +353,6 @@ dixChangeWindowProperty(ClientPtr pClient, WindowPtr pWin, Atom property,
     if (sendevent)
         deliverPropertyNotifyEvent(pWin, PropertyNewValue, pProp->propertyName);
 
-    if (pWin->drawable.pScreen->PropertyChanged) {
-        (pWin->drawable.pScreen->PropertyChanged)(pWin, PropertyNewValue,
-                                                  pProp->propertyName);
-    }
-
     return Success;
 }
 
@@ -386,11 +381,6 @@ DeleteProperty(ClientPtr client, WindowPtr pWin, Atom propName)
         }
 
         deliverPropertyNotifyEvent(pWin, PropertyDelete, pProp->propertyName);
-        if (pWin->drawable.pScreen->PropertyChanged) {
-            (pWin->drawable.pScreen->PropertyChanged)(pWin, PropertyDelete,
-                                                      pProp->propertyName);
-        }
-
         free(pProp->data);
         dixFreeObjectWithPrivates(pProp, PRIVATE_PROPERTY);
     }
