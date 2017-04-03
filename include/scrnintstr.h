@@ -313,6 +313,10 @@ typedef int (*ConfigNotifyProcPtr) (WindowPtr /*pWin */ ,
                                     int /*bw */ ,
                                     WindowPtr /*pSib */ );
 
+typedef void (*PropertyChangedProcPtr) (WindowPtr /*pWin */ ,
+                                        int /*state */ ,
+                                        Atom /*atom */ );
+
 typedef void (*MoveWindowProcPtr) (WindowPtr /*pWin */ ,
                                    int /*x */ ,
                                    int /*y */ ,
@@ -611,6 +615,7 @@ typedef struct _Screen {
     MarkWindowProcPtr MarkWindow;
     MarkOverlappedWindowsProcPtr MarkOverlappedWindows;
     ConfigNotifyProcPtr ConfigNotify;
+    PropertyChangedProcPtr PropertyChanged;
     MoveWindowProcPtr MoveWindow;
     ResizeWindowProcPtr ResizeWindow;
     GetLayerWindowProcPtr GetLayerWindow;

@@ -64,6 +64,7 @@ struct xmir_screen {
     RealizeWindowProcPtr RealizeWindow;
     UnrealizeWindowProcPtr UnrealizeWindow;
     ResizeWindowProcPtr ResizeWindow;
+    PropertyChangedProcPtr PropertyChanged;
 
     struct xorg_list output_list;
     struct xorg_list input_list;
