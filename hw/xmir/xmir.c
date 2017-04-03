@@ -503,6 +503,8 @@ void xmir_repaint(struct xmir_window *xmir_win)
         ErrorF("ERROR: xmir_repaint requested without a buffer to paint to\n");
 
     xmir_screen = xmir_screen_get(xmir_win->window->drawable.pScreen);
+
+    /* TODO: Move this naming logic into xmir_property_notify_callback */
     if (strcmp(xmir_screen->title, get_title_from_top_window)) {
         /* Fixed title mode. Never change it. */
         named = NULL;
@@ -1224,6 +1226,35 @@ xmir_resize_window(WindowPtr window, int x, int y,
 }
 
 static void
+xmir_property_notify_callback(XID id, Atom atom, int state)
+{
+    WindowPtr window;
+    if (dixLookupWindow(&window, id, serverClient, DixReadAccess) != Success)
+        return;
+
+    XMIR_DEBUG(("xmir_property_notify_callback: window %p %s %s\n",
+                window,
+                NameForAtom(atom)?:"?",
+                state == PropertyDelete ? "deleted" :
+                state == PropertyNewValue ? "changed" :
+                                            "confused"));
+
+    /* TODO: Handle things like window name changes more efficiently here */
+}
+
+static void
+xmir_client_message_callback(XID id, Atom atom, const INT32 data[5])
+{
+    WindowPtr window;
+    if (dixLookupWindow(&window, id, serverClient, DixReadAccess) != Success)
+        return;
+
+    XMIR_DEBUG(("xmir_client_message_callback: window %p %s\n",
+                window,
+                NameForAtom(atom)?:"?"));
+}
+
+static void
 xmir_xevent_callback(CallbackListPtr *list, void *xmir_data, void *call_data)
 {
     struct xmir_screen *xmir_screen = (struct xmir_screen*)xmir_data;
@@ -1234,18 +1265,14 @@ xmir_xevent_callback(CallbackListPtr *list, void *xmir_data, void *call_data)
         const xEventPtr event = event_info->events + i;
         switch (event->u.u.type) {
         case PropertyNotify:
-            {
-                Window window = event->u.property.window;
-                Atom atom = event->u.property.atom;
-                int state = event->u.property.state;
-                XMIR_DEBUG(("X window event PropertyNotify on window "
-                            "%p: %s %s\n",
-                            window,
-                            NameForAtom(atom)?:"?",
-                            state == PropertyDelete ? "deleted" :
-                            state == PropertyNewValue ? "changed" :
-                                                        "confused"));
-            }
+            xmir_property_notify_callback(event->u.property.window,
+                                          event->u.property.atom,
+                                          event->u.property.state);
+            break;
+        case ClientMessage:
+            xmir_client_message_callback(event->u.clientMessage.window,
+                                         event->u.clientMessage.u.l.type,
+                                         &event->u.clientMessage.u.l.longs0);
             break;
         default:
             break;
