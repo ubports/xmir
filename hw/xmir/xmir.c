@@ -367,10 +367,10 @@ xmir_del_window_prop_atoms(WindowPtr window, Atom name, Atom del_value)
         if (new_list) {
             memcpy(new_list, existing, i * sizeof(Atom));
             memcpy(new_list+i, existing+i+1, (count - i - 1) * sizeof(Atom));
+            dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
+                                    PropModeReplace, count-1, new_list, FALSE);
             free(new_list);
         }
-        dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
-                                PropModeReplace, count-1, &new_list, FALSE);
         return TRUE;
     }
     else
