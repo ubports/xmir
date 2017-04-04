@@ -1303,8 +1303,12 @@ xmir_window_state_change(WindowPtr window, enum net_wm_state_action action,
     if (!xmir_window || !xmir_window->surface)
         return;
 
-    XMIR_DEBUG(("xmir_window_state_change: window %p states %lu %lu\n",
-                window, states[0], states[1]));
+    XMIR_DEBUG(("xmir_window_state_change: window %p %s states %lu %lu\n",
+                window,
+                action == _NET_WM_STATE_REMOVE ? "remove" :
+                action == _NET_WM_STATE_ADD    ? "add" :
+                action == _NET_WM_STATE_TOGGLE ? "toggle" : "unknown-action",
+                states[0], states[1]));
 
     const Atom _NET_WM_STATE = GET_ATOM(_NET_WM_STATE);
     int s;
