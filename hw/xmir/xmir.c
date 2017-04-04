@@ -48,6 +48,8 @@
 static struct {
     Atom UTF8_STRING;
     Atom _NET_WM_NAME;
+    Atom _NET_WM_STATE;
+    Atom _NET_WM_STATE_FULLSCREEN;
     Atom WM_PROTOCOLS;
     Atom WM_DELETE_WINDOW;
     Atom _NET_WM_WINDOW_TYPE;
@@ -80,6 +82,12 @@ static Atom get_atom(const char *name, Atom *cache, Bool create)
 
 #define GET_ATOM(_a)  get_atom(#_a, &known_atom._a, FALSE)
 #define MAKE_ATOM(_a) get_atom(#_a, &known_atom._a, TRUE)
+
+enum net_wm_state_action {
+    _NET_WM_STATE_REMOVE = 0,   /* remove/unset property */
+    _NET_WM_STATE_ADD = 1,      /* add/set property */
+    _NET_WM_STATE_TOGGLE = 2    /* toggle property  */
+};
 
 extern __GLXprovider __glXDRI2Provider;
 
@@ -311,26 +319,70 @@ xmir_get_window_prop_window(WindowPtr window, ATOM atom)
     return NULL;
 }
 
-static Atom
-xmir_get_window_prop_atom(WindowPtr window, ATOM name)
+static const Atom*
+xmir_get_window_prop_atoms(WindowPtr window, Atom name, int *count)
 {
-    if (window->optional) {
-        PropertyPtr p = window->optional->userProps;
-        while (p) {
-            if (p->propertyName == name) {
-                if (p->type == XA_ATOM) {
-                    return *(Atom*)p->data;
-                }
-                else {
-                    ErrorF("xmir_get_window_prop_atom: Atom %d is not "
-                           "an Atom as expected\n", name);
-                    return 0;
-                }
-            }
-            p = p->next;
+    PropertyPtr p;
+    if (count)
+        *count = 0;
+    if (!dixLookupProperty(&p, window, name, serverClient, DixReadAccess)) {
+        if (p->type == XA_ATOM) {
+            if (count)
+                *count = p->size;
+            return (Atom*)p->data;
+        }
+        else {
+            ErrorF("xmir_get_window_prop_atoms: Atom %d is not "
+                   "an Atom as expected\n", name);
+            return 0;
         }
     }
     return 0;
+}
+
+static void
+xmir_set_window_prop_atoms(WindowPtr window, Atom name, Atom set_value)
+{
+    int i, count;
+    const Atom *existing = xmir_get_window_prop_atoms(window, name, &count);
+    for (i = 0; i < count; ++i) {
+       if (existing[i] == set_value)
+           return;
+    }
+    dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
+                            PropModeAppend, 1, &set_value, FALSE);
+}
+
+static Bool
+xmir_del_window_prop_atoms(WindowPtr window, Atom name, Atom del_value)
+{
+    int i, count;
+    const Atom *existing = xmir_get_window_prop_atoms(window, name, &count);
+    for (i = 0; i < count; ++i) {
+       if (existing[i] == del_value)
+           break;
+    }
+    if (i < count) {
+        Atom *new_list = malloc(sizeof(Atom) * count);
+        if (new_list) {
+            memcpy(new_list, existing, i * sizeof(Atom));
+            memcpy(new_list+i, existing+i+1, (count - i - 1) * sizeof(Atom));
+            free(new_list);
+        }
+        dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
+                                PropModeReplace, count-1, &new_list, FALSE);
+        return TRUE;
+    }
+    else
+        return FALSE;
+}
+
+static Atom
+xmir_get_window_prop_atom(WindowPtr window, Atom name)
+{
+    int count;
+    const Atom *ret = xmir_get_window_prop_atoms(window, name, &count);
+    return ret ? *ret : 0;
 }
 
 enum XWMHints_flag {
@@ -1244,6 +1296,54 @@ xmir_property_notify_callback(WindowPtr recipient, XID id, Atom atom, int state)
 }
 
 static void
+xmir_window_state_change(WindowPtr window, enum net_wm_state_action action,
+                         const INT32 states[2])
+{
+    struct xmir_window *xmir_window = xmir_window_get(window);
+    if (!xmir_window || !xmir_window->surface)
+        return;
+
+    XMIR_DEBUG(("xmir_window_state_change: window %p states %lu %lu\n",
+                window, states[0], states[1]));
+
+    const Atom _NET_WM_STATE = GET_ATOM(_NET_WM_STATE);
+    int s;
+    for (s = 0; s < 2; ++s) {
+        INT32 state = states[s];
+        if (!state)
+            continue;
+        switch (action) {
+        case _NET_WM_STATE_REMOVE:
+            xmir_del_window_prop_atoms(window, _NET_WM_STATE, state);
+            break;
+        case _NET_WM_STATE_ADD:
+            xmir_set_window_prop_atoms(window, _NET_WM_STATE, state);
+            break;
+        case _NET_WM_STATE_TOGGLE:
+            if (xmir_del_window_prop_atoms(window, _NET_WM_STATE, state))
+                action = _NET_WM_STATE_REMOVE;
+            else {
+                xmir_set_window_prop_atoms(window, _NET_WM_STATE, state);
+                action = _NET_WM_STATE_ADD;
+            }
+            break;
+        default:
+            break;
+        }
+
+        if (state == GET_ATOM(_NET_WM_STATE_FULLSCREEN)) {
+            MirWindowSpec *change =
+                mir_create_window_spec(xmir_window->xmir_screen->conn);
+            mir_window_spec_set_state(change,
+                action == _NET_WM_STATE_ADD ? mir_window_state_fullscreen
+                                            : mir_window_state_restored);
+            mir_window_apply_spec(xmir_window->surface, change);
+            mir_window_spec_release(change);
+        }
+    }
+}
+
+static void
 xmir_client_message_callback(WindowPtr recipient, XID id,
                              Atom atom, const INT32 data[5])
 {
@@ -1255,6 +1355,10 @@ xmir_client_message_callback(WindowPtr recipient, XID id,
                 recipient,
                 window,
                 NameForAtom(atom)?:"?"));
+
+    if (atom == GET_ATOM(_NET_WM_STATE))
+        xmir_window_state_change(window, (enum net_wm_state_action)data[0],
+                                 data+1);
 }
 
 static void
