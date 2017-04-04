@@ -579,6 +579,7 @@ typedef struct {
 
 /*
  *  EventCallback stuff
+ *  (called per-client so is filtered, missing non-selected events)
  */
 
 extern _X_EXPORT CallbackListPtr EventCallback;
@@ -588,6 +589,19 @@ typedef struct {
     xEventPtr events;
     int count;
 } EventInfoRec;
+
+/*
+ *  WindowEventCallback stuff
+ *  (called per-window unfiltered, prior to any selection filtering)
+ */
+
+extern _X_EXPORT CallbackListPtr WindowEventCallback;
+
+typedef struct {
+    WindowPtr recipient;
+    xEventPtr events;
+    int count;
+} WindowEventInfoRec;
 
 /*
  *  DeviceEventCallback stuff

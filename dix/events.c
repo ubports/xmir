@@ -201,6 +201,7 @@ xi2_get_type(const xEvent *event)
 #define XE_KBPTR (xE->u.keyButtonPointer)
 
 CallbackListPtr EventCallback;
+CallbackListPtr WindowEventCallback;
 CallbackListPtr DeviceEventCallback;
 
 #define DNPMCOUNT 8
@@ -2246,6 +2247,14 @@ DeliverEventsToWindow(DeviceIntPtr pDev, WindowPtr pWin, xEvent
     Mask deliveryMask = 0;      /* If a grab occurs due to a button press, then
                                    this mask is the mask of the grab. */
     int type = pEvents->u.u.type;
+
+    if (WindowEventCallback) {
+        WindowEventInfoRec eventinfo;
+        eventinfo.recipient = pWin;
+        eventinfo.events = pEvents;
+        eventinfo.count = count;
+        CallCallbacks(&WindowEventCallback, &eventinfo);
+    }
 
     /* Deliver to window owner */
     if ((filter == CantBeFiltered) || core_get_type(pEvents) != 0) {

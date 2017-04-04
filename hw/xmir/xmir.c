@@ -1226,13 +1226,14 @@ xmir_resize_window(WindowPtr window, int x, int y,
 }
 
 static void
-xmir_property_notify_callback(XID id, Atom atom, int state)
+xmir_property_notify_callback(WindowPtr recipient, XID id, Atom atom, int state)
 {
     WindowPtr window;
     if (dixLookupWindow(&window, id, serverClient, DixReadAccess) != Success)
         return;
 
-    XMIR_DEBUG(("xmir_property_notify_callback: window %p %s %s\n",
+    XMIR_DEBUG(("xmir_property_notify_callback: recipient %p window %p %s %s\n",
+                recipient,
                 window,
                 NameForAtom(atom)?:"?",
                 state == PropertyDelete ? "deleted" :
@@ -1243,34 +1244,39 @@ xmir_property_notify_callback(XID id, Atom atom, int state)
 }
 
 static void
-xmir_client_message_callback(XID id, Atom atom, const INT32 data[5])
+xmir_client_message_callback(WindowPtr recipient, XID id,
+                             Atom atom, const INT32 data[5])
 {
     WindowPtr window;
     if (dixLookupWindow(&window, id, serverClient, DixReadAccess) != Success)
         return;
 
-    XMIR_DEBUG(("xmir_client_message_callback: window %p %s\n",
+    XMIR_DEBUG(("xmir_client_message_callback: recipient %p window %p %s\n",
+                recipient,
                 window,
                 NameForAtom(atom)?:"?"));
 }
 
 static void
-xmir_xevent_callback(CallbackListPtr *list, void *xmir_data, void *call_data)
+xmir_window_event_callback(CallbackListPtr *list, void *xmir_data,
+                           void *call_data)
 {
     /* struct xmir_screen *xmir_screen = (struct xmir_screen*)xmir_data; */
-    const EventInfoRec *event_info = (EventInfoRec*)call_data;
+    const WindowEventInfoRec *event_info = (WindowEventInfoRec*)call_data;
     int i;
 
     for (i = 0; i < event_info->count; ++i) {
         const xEventPtr event = event_info->events + i;
-        switch (event->u.u.type) {
+        switch (event->u.u.type & 0x7f) {
         case PropertyNotify:
-            xmir_property_notify_callback(event->u.property.window,
+            xmir_property_notify_callback(event_info->recipient,
+                                          event->u.property.window,
                                           event->u.property.atom,
                                           event->u.property.state);
             break;
         case ClientMessage:
-            xmir_client_message_callback(event->u.clientMessage.window,
+            xmir_client_message_callback(event_info->recipient,
+                                         event->u.clientMessage.window,
                                          event->u.clientMessage.u.l.type,
                                          &event->u.clientMessage.u.l.longs0);
             break;
@@ -1287,7 +1293,8 @@ xmir_close_screen(ScreenPtr screen)
     struct xmir_output *xmir_output, *next_xmir_output;
     Bool ret;
 
-    DeleteCallback(&EventCallback, xmir_xevent_callback, xmir_screen);
+    DeleteCallback(&WindowEventCallback, xmir_window_event_callback,
+                   xmir_screen);
     xmir_screen->closing = TRUE;
 
     if (xmir_screen->glamor && xmir_screen->gbm)
@@ -1747,7 +1754,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         }
     }
 
-    AddCallback(&EventCallback, xmir_xevent_callback, xmir_screen);
+    AddCallback(&WindowEventCallback, xmir_window_event_callback, xmir_screen);
 
     return ret;
 }
