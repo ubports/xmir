@@ -1257,7 +1257,7 @@ xmir_client_message_callback(XID id, Atom atom, const INT32 data[5])
 static void
 xmir_xevent_callback(CallbackListPtr *list, void *xmir_data, void *call_data)
 {
-    struct xmir_screen *xmir_screen = (struct xmir_screen*)xmir_data;
+    /* struct xmir_screen *xmir_screen = (struct xmir_screen*)xmir_data; */
     const EventInfoRec *event_info = (EventInfoRec*)call_data;
     int i;
 
