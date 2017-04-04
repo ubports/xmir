@@ -370,11 +370,10 @@ xmir_del_window_prop_atoms(WindowPtr window, Atom name, Atom del_value)
             dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
                                     PropModeReplace, count-1, new_list, FALSE);
             free(new_list);
+            return TRUE;
         }
-        return TRUE;
     }
-    else
-        return FALSE;
+    return FALSE;
 }
 
 static Atom
