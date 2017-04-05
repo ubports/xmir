@@ -769,6 +769,8 @@ xmir_realize_window(WindowPtr window)
     MirWindowId *persistent_id = NULL;
     XWMHints *wm_hints = NULL;
     char wm_name[1024];
+    int i, initial_props = 0;
+    const Atom *initial_prop = NULL;
 
     screen->RealizeWindow = xmir_screen->RealizeWindow;
     ret = (*screen->RealizeWindow) (window);
@@ -940,6 +942,13 @@ xmir_realize_window(WindowPtr window)
     xmir_window->surface_height = mir_height;
     xmir_window->buf_width = mir_width;
     xmir_window->buf_height = mir_height;
+
+    initial_prop = xmir_get_window_prop_atoms(window, GET_ATOM(_NET_WM_STATE),
+                                              &initial_props);
+    for (i = 0; i < initial_props; ++i) {
+        if (initial_prop[i] == GET_ATOM(_NET_WM_STATE_FULLSCREEN))
+            mir_window_spec_set_state(spec, mir_window_state_fullscreen);
+    }
 
     mir_window_spec_set_pixel_format(spec, pixel_format);
     mir_window_spec_set_buffer_usage(spec, xmir_screen->glamor ?
