@@ -52,6 +52,8 @@ static struct {
     Atom _NET_WM_NAME;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_FULLSCREEN;
+    Atom _NET_WM_STATE_MAXIMIZED_VERT;
+    Atom _NET_WM_STATE_MAXIMIZED_HORZ;
     Atom WM_PROTOCOLS;
     Atom WM_DELETE_WINDOW;
     Atom _NET_WM_WINDOW_TYPE;
@@ -1339,6 +1341,7 @@ xmir_window_state_change(WindowPtr window, enum net_wm_state_action action,
     struct xmir_window *xmir_window = xmir_window_get(window);
     const Atom _NET_WM_STATE = GET_ATOM(_NET_WM_STATE);
     int s;
+    MirWindowState new_state = mir_window_state_unknown;
 
     if (!xmir_window || !xmir_window->surface)
         return;
@@ -1373,15 +1376,30 @@ xmir_window_state_change(WindowPtr window, enum net_wm_state_action action,
             break;
         }
 
-        if (state == GET_ATOM(_NET_WM_STATE_FULLSCREEN)) {
-            MirWindowSpec *change =
-                mir_create_window_spec(xmir_window->xmir_screen->conn);
-            mir_window_spec_set_state(change,
-                action == _NET_WM_STATE_ADD ? mir_window_state_fullscreen
-                                            : mir_window_state_restored);
-            mir_window_apply_spec(xmir_window->surface, change);
-            mir_window_spec_release(change);
+        if (action == _NET_WM_STATE_REMOVE) {
+            new_state = mir_window_state_restored;
         }
+        else if (state == GET_ATOM(_NET_WM_STATE_FULLSCREEN)) {
+            new_state = mir_window_state_fullscreen;
+        }
+        else if (state == GET_ATOM(_NET_WM_STATE_MAXIMIZED_VERT)) {
+            new_state = new_state == mir_window_state_horizmaximized
+                        ? mir_window_state_maximized
+                        : mir_window_state_vertmaximized;
+        }
+        else if (state == GET_ATOM(_NET_WM_STATE_MAXIMIZED_HORZ)) {
+            new_state = new_state == mir_window_state_vertmaximized
+                        ? mir_window_state_maximized
+                        : mir_window_state_horizmaximized;
+        }
+    }
+
+    if (new_state != mir_window_state_unknown) {
+        MirWindowSpec *change =
+            mir_create_window_spec(xmir_window->xmir_screen->conn);
+        mir_window_spec_set_state(change, new_state);
+        mir_window_apply_spec(xmir_window->surface, change);
+        mir_window_spec_release(change);
     }
 }
 
