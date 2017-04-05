@@ -169,6 +169,7 @@ ddxUseMsg(void)
 {
     ErrorF("-rootless              Run rootless\n");
     ErrorF("  -flatten none|all|overrideredirects   Flatten rootless X windows into their parent surface\n");
+    ErrorF("  -ignoreunfocus WM_CLASS,...  Ignore unfocus events on certain windows\n");
     ErrorF("-title <name>          Set window title (@ = automatic)\n");
     ErrorF("-sw                    disable glamor rendering\n");
     ErrorF("-egl                   force use of EGL calls, disables DRI2 pass-through\n");
@@ -199,6 +200,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
     else if (strcmp(argv[i], "-mirSocket") == 0 ||
              strcmp(argv[i], "-flatten") == 0 ||
              strcmp(argv[i], "-title") == 0 ||
+             strcmp(argv[i], "-ignoreunfocus") == 0 ||
              strcmp(argv[i], "-mir") == 0) {
         return 2;
     }
@@ -256,7 +258,7 @@ xmir_pixmap_set(PixmapPtr pixmap, struct xmir_pixmap *xmir_pixmap)
                          xmir_pixmap);
 }
 
-static Bool
+static size_t
 xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
                              char *buf, size_t bufsize)
 {
@@ -271,7 +273,7 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
                     size_t len = p->size >= bufsize ? bufsize - 1 : p->size;
                     memcpy(buf, p->data, len);
                     buf[len] = '\0';
-                    return TRUE;
+                    return len;
                 }
                 else {
                     ErrorF("xmir_get_window_prop_string8: Atom %d is not "
@@ -285,7 +287,7 @@ xmir_get_window_prop_string8(WindowPtr window, ATOM atom,
 
     if (bufsize)
         buf[0] = '\0';
-    return FALSE;
+    return 0;
 }
 
 static Bool
@@ -1051,6 +1053,38 @@ xmir_get_current_input_focus(DeviceIntPtr kbd)
     return id;
 }
 
+/* This function is a workaround for Mir bug LP: #1671771 */
+static Bool
+xmir_should_ignore_unfocus(struct xmir_screen *xmir_screen, WindowPtr window)
+{
+    char wm_class[1024];
+    size_t wm_class_len;
+
+    if (!xmir_screen->ignore_unfocus)
+        return FALSE;
+
+    wm_class_len = xmir_get_window_prop_string8(window, XA_WM_CLASS, wm_class,
+                                                sizeof(wm_class));
+    if (wm_class_len) {
+        const char *str = wm_class;
+        while (str < (wm_class + wm_class_len)) {
+            const char *blacklisted = strstr(xmir_screen->ignore_unfocus, str);
+            if (blacklisted) {
+                if (blacklisted == xmir_screen->ignore_unfocus ||
+                    blacklisted[-1] == ',') {
+                    char tail = blacklisted[strlen(str)];
+                    if (tail == ',' || tail == '\0') {
+                        return TRUE;
+                    }
+                }
+            }
+            str += strlen(str) + 1;
+        }
+    }
+
+    return FALSE;
+}
+
 static void
 xmir_handle_focus_event(struct xmir_window *xmir_window,
                         MirWindowFocusState state)
@@ -1074,8 +1108,9 @@ xmir_handle_focus_event(struct xmir_window *xmir_window,
         if (!refuse_focus) {
             Window id = (state == mir_window_focus_state_focused) ?
                         window->drawable.id : None;
-            SetInputFocus(serverClient, keyboard, id, RevertToParent,
-                          CurrentTime, FALSE);
+            if (id != None || !xmir_should_ignore_unfocus(xmir_screen, window))
+                SetInputFocus(serverClient, keyboard, id, RevertToParent,
+                              CurrentTime, FALSE);
         }
     }
     else if (!strcmp(xmir_screen->title, get_title_from_top_window)) {
@@ -1714,6 +1749,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         else if (strcmp(argv[i], "-title") == 0) {
             xmir_screen->title = argv[++i];
         }
+        else if (strcmp(argv[i], "-ignoreunfocus") == 0) {
+            xmir_screen->ignore_unfocus = argv[++i];
+        }
         else if (strcmp(argv[i], "-mir") == 0) {
             appid = argv[++i];
         }
@@ -1746,6 +1784,11 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 
     if (xmir_screen->flatten && !xmir_screen->rootless) {
         FatalError("-flatten is not valid without -rootless\n");
+        return FALSE;
+    }
+
+    if (xmir_screen->ignore_unfocus && !xmir_screen->rootless) {
+        FatalError("-ignoreunfocus is not valid without -rootless\n");
         return FALSE;
     }
 

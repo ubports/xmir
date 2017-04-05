@@ -92,6 +92,7 @@ struct xmir_screen {
     enum {flatten_none=0, flatten_all, flatten_overrideredirects} flatten;
     Bool destroying_root;
     Bool closing;
+    const char *ignore_unfocus;
     const char *title;
     struct xorg_list flattened_list;
     struct xmir_window *flatten_top;
