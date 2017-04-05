@@ -37,7 +37,7 @@
 #include <X11/Xatom.h>
 
 #include <mir_toolkit/version.h>
-#include <mir_toolkit/mir_surface.h>
+#include <mir_toolkit/mir_window.h>
 
 #include "compint.h"
 #include "dri2.h"
@@ -1007,12 +1007,12 @@ static const char *
 xmir_surface_state_str(MirWindowState state)
 {
     switch (state) {
-    case mir_surface_state_unknown: return "unknown";
-    case mir_surface_state_restored: return "restored";
-    case mir_surface_state_minimized: return "minimized";
-    case mir_surface_state_maximized: return "maximized";
-    case mir_surface_state_vertmaximized: return "vert maximized";
-    case mir_surface_state_fullscreen: return "fullscreen";
+    case mir_window_state_unknown: return "unknown";
+    case mir_window_state_restored: return "restored";
+    case mir_window_state_minimized: return "minimized";
+    case mir_window_state_maximized: return "maximized";
+    case mir_window_state_vertmaximized: return "vert maximized";
+    case mir_window_state_fullscreen: return "fullscreen";
     default: return "???";
     }
 }
@@ -1021,7 +1021,7 @@ static const char *
 xmir_surface_focus_str(MirWindowFocusState focus)
 {
     switch (focus) {
-    case mir_surface_unfocused: return "unfocused";
+    case mir_window_focus_state_unfocused: return "unfocused";
     case mir_window_focus_state_focused: return "focused";
     default: return "???";
     }
@@ -1031,8 +1031,8 @@ static const char *
 xmir_surface_vis_str(MirWindowVisibility vis)
 {
     switch (vis) {
-    case mir_surface_visibility_occluded: return "hidden";
-    case mir_surface_visibility_exposed: return "visible";
+    case mir_window_visibility_occluded: return "hidden";
+    case mir_window_visibility_exposed: return "visible";
     default: return "???";
     }
 }
@@ -1105,23 +1105,23 @@ xmir_handle_surface_event(struct xmir_window *xmir_window,
                           int val)
 {
     switch (attr) {
-    case mir_surface_attrib_type:
+    case mir_window_attrib_type:
         XMIR_DEBUG(("Type: %s\n", xmir_surface_type_str(val)));
         break;
-    case mir_surface_attrib_state:
+    case mir_window_attrib_state:
         XMIR_DEBUG(("State: %s\n", xmir_surface_state_str(val)));
         break;
-    case mir_surface_attrib_swapinterval:
+    case mir_window_attrib_swapinterval:
         XMIR_DEBUG(("Swap interval: %i\n", val));
         break;
-    case mir_surface_attrib_focus:
+    case mir_window_attrib_focus:
         XMIR_DEBUG(("Focus: %s\n", xmir_surface_focus_str(val)));
         xmir_handle_focus_event(xmir_window, (MirWindowFocusState)val);
         break;
-    case mir_surface_attrib_dpi:
+    case mir_window_attrib_dpi:
         XMIR_DEBUG(("DPI: %i\n", val));
         break;
-    case mir_surface_attrib_visibility:
+    case mir_window_attrib_visibility:
         XMIR_DEBUG(("Visibility: %s\n", xmir_surface_vis_str(val)));
         break;
     default:
