@@ -826,6 +826,13 @@ xmir_realize_window(WindowPtr window)
         return ret;
     }
     else if (xmir_screen->rootless) {
+        /*
+         * Mir's client API doesn't yet support desktop windows,
+         * so hide it... (LP: #1672949)
+         */
+        if (wm_type && wm_type == GET_ATOM(_NET_WM_WINDOW_TYPE_DESKTOP))
+            return ret;
+
         if (!window->parent || window->parent == screen->root) {
             compRedirectWindow(serverClient, window,
                                CompositeRedirectManual);
