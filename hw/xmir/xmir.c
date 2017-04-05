@@ -1323,6 +1323,7 @@ xmir_property_notify_callback(WindowPtr recipient, XID id, Atom atom, int state)
     if (dixLookupWindow(&window, id, serverClient, DixReadAccess) != Success)
         return;
 
+    /* Too noisy
     XMIR_DEBUG(("xmir_property_notify_callback: recipient %p window %p %s %s\n",
                 recipient,
                 window,
@@ -1330,6 +1331,7 @@ xmir_property_notify_callback(WindowPtr recipient, XID id, Atom atom, int state)
                 state == PropertyDelete ? "deleted" :
                 state == PropertyNewValue ? "changed" :
                                             "confused"));
+    */
 
     /* TODO: Handle things like window name changes more efficiently here */
 }
