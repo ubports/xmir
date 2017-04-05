@@ -93,6 +93,7 @@ struct xmir_screen {
     Bool neverclose;
     Bool destroying_root;
     Bool closing;
+    const char *ignore_unfocus;
     const char *title;
     MirWindow *neverclosed;
     struct xorg_list flattened_list;
