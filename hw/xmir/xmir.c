@@ -966,17 +966,6 @@ xmir_realize_window(WindowPtr window)
     xmir_window->surface = mir_create_window_sync(spec);
     mir_window_spec_release(spec);
 
-    persistent_id =
-        mir_window_request_window_id_sync(xmir_window->surface);
-    if (mir_window_id_is_valid(persistent_id)) {
-        const char *str = mir_window_id_as_string(persistent_id);
-        dixChangeWindowProperty(serverClient, window,
-                                MAKE_ATOM(_MIR_WM_PERSISTENT_ID),
-                                XA_STRING, 8, PropModeReplace,
-                                strlen(str), (void*)str, FALSE);
-    }
-    mir_window_id_release(persistent_id);
-
     xmir_window->has_free_buffer = TRUE;
     if (!mir_window_is_valid(xmir_window->surface)) {
         ErrorF("failed to create a surface: %s\n",
@@ -990,6 +979,17 @@ xmir_realize_window(WindowPtr window)
                                   xmir_window);
 
     xmir_window_enable_damage_tracking(xmir_window);
+
+    persistent_id =
+        mir_window_request_window_id_sync(xmir_window->surface);
+    if (mir_window_id_is_valid(persistent_id)) {
+        const char *str = mir_window_id_as_string(persistent_id);
+        dixChangeWindowProperty(serverClient, window,
+                                MAKE_ATOM(_MIR_WM_PERSISTENT_ID),
+                                XA_STRING, 8, PropModeReplace,
+                                strlen(str), (void*)str, FALSE);
+    }
+    mir_window_id_release(persistent_id);
 
     if (xmir_screen->glamor)
         xmir_glamor_realize_window(xmir_screen, xmir_window, window);
