@@ -47,6 +47,8 @@
 
 static struct {
     Atom UTF8_STRING;
+    Atom _NET_SUPPORTING_WM_CHECK;
+    Atom _NET_SUPPORTED;
     Atom _NET_WM_NAME;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_FULLSCREEN;
@@ -732,6 +734,25 @@ xmir_window_update_region(struct xmir_window *xmir_window)
     RegionReset(&xmir_window->region, &box);
 }
 
+static void
+xmir_setup_rootless_wm(WindowPtr root)
+{
+    Atom wm_features[4];
+    wm_features[0] = MAKE_ATOM(_NET_WM_NAME);
+    wm_features[1] = MAKE_ATOM(_NET_WM_STATE);
+    wm_features[2] = MAKE_ATOM(_NET_WM_STATE_FULLSCREEN);
+    wm_features[3] = MAKE_ATOM(_NET_WM_WINDOW_TYPE);
+    dixChangeWindowProperty(serverClient, root, MAKE_ATOM(_NET_SUPPORTED),
+                            XA_ATOM, 32, PropModeReplace,
+                            sizeof(wm_features)/sizeof(wm_features[0]),
+                            wm_features, FALSE);
+
+    dixChangeWindowProperty(serverClient, root,
+                            MAKE_ATOM(_NET_SUPPORTING_WM_CHECK),
+                            XA_WINDOW, 32, PropModeReplace,
+                            1, &root->drawable.id, FALSE);
+}
+
 static Bool
 xmir_realize_window(WindowPtr window)
 {
@@ -760,6 +781,14 @@ xmir_realize_window(WindowPtr window)
         RegionNull(&window->winSize);
     }
     xmir_window_update_region(xmir_window);
+
+    /*
+     * Set up additional properties that Firefox (and others?) insist must
+     * exist before they cooperate. To be fair, it is the standard...
+     * https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html
+     */
+    if (xmir_screen->rootless && window == screen->root)
+        xmir_setup_rootless_wm(window);
 
     xmir_get_window_name(window, wm_name, sizeof wm_name);
     wm_type = xmir_get_window_prop_atom(window, GET_ATOM(_NET_WM_WINDOW_TYPE));
