@@ -352,7 +352,7 @@ xmir_set_window_prop_atoms(WindowPtr window, Atom name, Atom set_value)
            return;
     }
     dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
-                            PropModeAppend, 1, &set_value, FALSE);
+                            PropModeAppend, 1, &set_value, TRUE);
 }
 
 static Bool
@@ -370,7 +370,7 @@ xmir_del_window_prop_atoms(WindowPtr window, Atom name, Atom del_value)
             memcpy(new_list, existing, i * sizeof(Atom));
             memcpy(new_list+i, existing+i+1, (count - i - 1) * sizeof(Atom));
             dixChangeWindowProperty(serverClient, window, name, XA_ATOM, 32,
-                                    PropModeReplace, count-1, new_list, FALSE);
+                                    PropModeReplace, count-1, new_list, TRUE);
             free(new_list);
             return TRUE;
         }
