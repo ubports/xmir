@@ -387,7 +387,13 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
     if ((!xmir_pixmap || xmir_pixmap->fake_back) && (!xmir_window || !xmir_window->surface)) {
         PixmapRegionInit(&region, src->driverPrivate);
 
-        if (draw->width == pixmap->drawable.width && draw->height == pixmap->drawable.height) {
+        /*
+         * FIXME: This is disabled because it seems to be causing heavy
+         * flickering in the only app known to hit this code path (Chromium).
+         * Disabling it works around all visible Chromium glitches
+         * (LP: #1510025)
+         */
+        if (0 && draw->width == pixmap->drawable.width && draw->height == pixmap->drawable.height) {
             glamor_pixmap_fbo *glamor_front, *glamor_back;
             struct xmir_pixmap swap_pix;
             struct xmir_screen *xmir_screen = xmir_screen_get(screen);
