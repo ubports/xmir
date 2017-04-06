@@ -1792,6 +1792,9 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
     }
 
+    if (!xmir_screen->ignore_unfocus)
+        xmir_screen->ignore_unfocus = "Firefox,chromium-browser,google-chrome";
+
     if (!xmir_screen->title)
         xmir_screen->title = xmir_screen->rootless ? get_title_from_top_window
                                                    : "Xmir root window";
