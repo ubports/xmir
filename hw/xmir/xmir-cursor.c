@@ -122,6 +122,13 @@ xmir_input_set_cursor(struct xmir_input *xmir_input, CursorPtr cursor)
                                                           cursor->bits->height,
                                                           mir_pixel_format_argb_8888,
                                                           mir_buffer_usage_software);
+        if (!stream) {
+            ErrorF("xmir_input_set_cursor: "
+                   "mir_connection_create_buffer_stream_sync failed\n");
+            return;
+        }
+
+        mir_buffer_stream_set_swapinterval(stream, 0);
         dixSetPrivate(&cursor->devPrivates, &xmir_cursor_private_key, stream);
         mir_buffer_stream_get_graphics_region(stream, &region);
     }
