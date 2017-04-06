@@ -381,15 +381,21 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
     if ((!xmir_pixmap || xmir_pixmap->fake_back) && (!xmir_window || !xmir_window->surface)) {
         PixmapRegionInit(&region, src->driverPrivate);
 
-        if (draw->width == pixmap->drawable.width && draw->height == pixmap->drawable.height) {
+        /*
+         * FIXME: This is disabled because it seems to be causing heavy
+         * flickering in the only app known to hit this code path (Chromium).
+         * Disabling it works around all visible Chromium glitches
+         * (LP: #1510025)
+         */
+        if (0 && draw->width == pixmap->drawable.width && draw->height == pixmap->drawable.height) {
             glamor_pixmap_fbo *glamor_front, *glamor_back;
             struct xmir_pixmap swap_pix;
             struct xmir_screen *xmir_screen = xmir_screen_get(screen);
 
             /* Exchange pixmap data with the front glamor pixmap, and update src name/pitch */
-            DebugF("%s: Exchanging glamor pixmap from %ux%u to %ux%u\n",
+            XMIR_DEBUG(("%s: Exchanging glamor pixmap from %ux%u to %ux%u\n",
                    GetClientCmdName(client), draw->width, draw->height,
-                   pixmap->drawable.width, pixmap->drawable.height);
+                   pixmap->drawable.width, pixmap->drawable.height));
             type = DRI2_EXCHANGE_COMPLETE;
 
             src->pitch = gbm_bo_get_stride(xmir_pixmap->bo);
@@ -412,12 +418,12 @@ xmir_dri2_schedule_swap(ClientPtr client, DrawablePtr draw, DRI2BufferPtr dest, 
             type = DRI2_BLIT_COMPLETE;
             glamor_set_destination_pixmap(pixmap);
 
-            DebugF("%s: Blitting into glamor pixmap from src %u,%u %ux%u@%u draw %u,%u %ux%u@%u to %u,%u %ux%u@%u\n",
+            XMIR_DEBUG(("%s: Blitting into glamor pixmap from src %u,%u %ux%u@%u draw %u,%u %ux%u@%u to %u,%u %ux%u@%u\n",
                    GetClientCmdName(client), dsrc->drawable.x, dsrc->drawable.y,
                    dsrc->drawable.width, dsrc->drawable.height, dsrc->drawable.depth,
                    draw->x, draw->y, draw->width, draw->height, draw->depth,
                    pixmap->drawable.x, pixmap->drawable.y,
-                   pixmap->drawable.width, pixmap->drawable.height, pixmap->drawable.depth);
+                   pixmap->drawable.width, pixmap->drawable.height, pixmap->drawable.depth));
 
             xmir_glamor_copy_egl_common(&dsrc->drawable, dsrc, glamor_get_pixmap_private(dsrc),
                                         RegionExtents(&region), dsrc->drawable.width, dsrc->drawable.height,
