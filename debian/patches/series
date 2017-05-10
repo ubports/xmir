@@ -28,3 +28,4 @@ xf86-ignore-conflicting-rr-caps.patch
 
 xmir.patch
 xi2-resize-touch.patch
+sync-i965-ids.diff
