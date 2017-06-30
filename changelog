@@ -1,3 +1,9 @@
+xorg-server (2:1.18.4-0ubuntu0.3) xenial; urgency=medium
+
+  * control: Build against libxfont1-dev. (LP: #1687981)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Mon, 26 Jun 2017 14:53:19 +0300
+
 xorg-server (2:1.18.4-0ubuntu0.2) xenial; urgency=medium
 
   * modesetting-unifdef-slave-support.diff: Fix modesetting slave output
