@@ -43,7 +43,6 @@ xf86-inactive-gpuscreen.patch
 config-add-no-removal.patch
 xf86-ignore-conflicting-rr-caps.patch
 fix-detach-gpu.patch
-disable-rotation-transform-gpuscreens.patch
 
 xmir.patch
 xmir-desktop-file-hint-flag.patch
