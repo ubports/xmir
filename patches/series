@@ -50,3 +50,8 @@ xi2-resize-touch.patch
 randr-adjust-masters-last-set-time.diff
 randr-do-not-check-the-screen-size.diff
 modesetting-unifdef-slave-support.diff
+CVE-2017-10971-1.patch
+CVE-2017-10971-2.patch
+CVE-2017-10971-3.patch
+CVE-2017-10972.patch
+CVE-2017-2624.patch
