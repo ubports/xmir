@@ -1,6 +1,6 @@
 xorg-server (2:1.18.4-0ubuntu0.4) xenial; urgency=medium
 
-  * control: Build against libxfont1-dev. (LP: #1687981)
+  * control: Build against libxfont1-dev. (LP: #1687981, #1707691)
   * disable-rotation-transform-gpuscreens.patch: Dropped, NVIDIA driver
     supports rotation now. (LP: #1706287)
 
