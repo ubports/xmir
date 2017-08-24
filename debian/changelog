@@ -4,6 +4,8 @@ xorg-server (2:1.19.3-1ubuntu4) UNRELEASED; urgency=medium
     (LP: #1712571)
   * xwayland-pointer-confine.diff: Add pointer locking/confinement fixes
     to xwayland.
+  * xwayland-add-grab-protocol-support.diff: Add support for keyboard
+    grabbing to xwayland. Bump wayland-protocols build-dependency to 1.9.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Thu, 24 Aug 2017 14:33:30 +0300
 

@@ -1,0 +1,255 @@
+From 0a448d133f4f1c913b1c2cb05accff31c74a3dbf Mon Sep 17 00:00:00 2001
+From: Olivier Fourdan <ofourdan@redhat.com>
+Date: Wed, 12 Jul 2017 11:51:08 +0200
+Subject: [PATCH] xwayland: Add grab protocol support
+
+The keyboard grabbing protocol for Xwayland is included in
+wayland-protocol 1.9.
+
+Update the wayland-protocol required version in both configure and meson
+builds and add support for this new protocol in Xwayland.
+
+Signed-off-by: Olivier Fourdan <ofourdan@redhat.com>
+Reviewed-by: Peter Hutterer <peter.hutterer@who-t.net>
+Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
+---
+ configure.ac                 |  2 +-
+ hw/xwayland/Makefile.am      |  9 +++-
+ hw/xwayland/xwayland-input.c | 99 ++++++++++++++++++++++++++++++++++++++++++++
+ hw/xwayland/xwayland.c       |  2 +-
+ hw/xwayland/xwayland.h       |  5 ++-
+ meson.build                  |  2 +-
+ 6 files changed, 114 insertions(+), 5 deletions(-)
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -2526,7 +2526,7 @@ AM_CONDITIONAL(XFAKESERVER, [test "x$KDR
+ 
+ dnl Xwayland DDX
+ 
+-XWAYLANDMODULES="wayland-client >= 1.3.0 wayland-protocols >= 1.5 $LIBDRM epoxy"
++XWAYLANDMODULES="wayland-client >= 1.3.0 wayland-protocols >= 1.9 $LIBDRM epoxy"
+ if test "x$XF86VIDMODE" = xyes; then
+ 	XWAYLANDMODULES="$XWAYLANDMODULES $VIDMODEPROTO"
+ fi
+--- a/hw/xwayland/Makefile.am
++++ b/hw/xwayland/Makefile.am
+@@ -58,7 +58,9 @@ Xwayland_built_sources +=					\
+ 	pointer-constraints-unstable-v1-client-protocol.h	\
+ 	pointer-constraints-unstable-v1-protocol.c		\
+ 	tablet-unstable-v2-client-protocol.h			\
+-	tablet-unstable-v2-protocol.c
++	tablet-unstable-v2-protocol.c				\
++	xwayland-keyboard-grab-unstable-v1-protocol.c		\
++	xwayland-keyboard-grab-unstable-v1-client-protocol.h
+ 
+ nodist_Xwayland_SOURCES = $(Xwayland_built_sources)
+ CLEANFILES = $(Xwayland_built_sources)
+@@ -86,6 +88,11 @@ tablet-unstable-v2-protocol.c: $(WAYLAND
+ tablet-unstable-v2-client-protocol.h: $(WAYLAND_PROTOCOLS_DATADIR)/unstable/tablet/tablet-unstable-v2.xml
+ 	$(AM_V_GEN)$(WAYLAND_SCANNER) client-header < $< > $@
+ 
++xwayland-keyboard-grab-unstable-v1-protocol.c : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/xwayland-keyboard-grab/xwayland-keyboard-grab-unstable-v1.xml
++	$(AM_V_GEN)$(WAYLAND_SCANNER) code < $< > $@
++xwayland-keyboard-grab-unstable-v1-client-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/xwayland-keyboard-grab/xwayland-keyboard-grab-unstable-v1.xml
++	$(AM_V_GEN)$(WAYLAND_SCANNER) client-header < $< > $@
++
+ %-protocol.c : %.xml
+ 	$(AM_V_GEN)$(WAYLAND_SCANNER) code < $< > $@
+ 
+--- a/hw/xwayland/xwayland-input.c
++++ b/hw/xwayland/xwayland-input.c
+@@ -1022,6 +1022,85 @@ static const struct wl_touch_listener to
+     touch_handle_cancel
+ };
+ 
++static struct xwl_seat *
++find_matching_seat(DeviceIntPtr device)
++{
++    DeviceIntPtr dev;
++
++    for (dev = inputInfo.devices; dev; dev = dev->next)
++        if (dev->deviceProc == xwl_keyboard_proc &&
++            device == GetMaster(dev, MASTER_KEYBOARD))
++                return (struct xwl_seat *) dev->public.devicePrivate;
++
++    return NULL;
++}
++
++static void
++release_grab(struct xwl_seat *xwl_seat)
++{
++    if (xwl_seat->keyboard_grab)
++        zwp_xwayland_keyboard_grab_v1_destroy(xwl_seat->keyboard_grab);
++    xwl_seat->keyboard_grab = NULL;
++}
++
++static void
++set_grab(struct xwl_seat *xwl_seat, struct xwl_window *xwl_window)
++{
++    struct xwl_screen *xwl_screen;
++
++    if (!xwl_window)
++        return;
++
++    /* We already have a grab */
++    if (xwl_seat->keyboard_grab)
++        release_grab (xwl_seat);
++
++    xwl_screen = xwl_seat->xwl_screen;
++    if (xwl_screen->wp_grab)
++        xwl_seat->keyboard_grab =
++            zwp_xwayland_keyboard_grab_manager_v1_grab_keyboard(xwl_screen->wp_grab,
++                                                                xwl_window->surface,
++                                                                xwl_seat->seat);
++}
++
++static void
++xwl_keyboard_activate_grab(DeviceIntPtr device, GrabPtr grab, TimeStamp time, Bool passive)
++{
++    struct xwl_seat *xwl_seat = device->public.devicePrivate;
++
++    /* We are not interested in passive grabs */
++    if (!passive) {
++        /* If the device is the MASTER_KEYBOARD, we don't have an xwl_seat */
++        if (xwl_seat == NULL)
++            xwl_seat = find_matching_seat(device);
++        if (xwl_seat)
++            set_grab(xwl_seat, xwl_window_from_window(grab->window));
++    }
++
++    ActivateKeyboardGrab(device, grab, time, passive);
++}
++
++static void
++xwl_keyboard_deactivate_grab(DeviceIntPtr device)
++{
++    struct xwl_seat *xwl_seat = device->public.devicePrivate;
++
++    /* If the device is the MASTER_KEYBOARD, we don't have an xwl_seat */
++    if (xwl_seat == NULL)
++        xwl_seat = find_matching_seat(device);
++    if (xwl_seat)
++        release_grab (xwl_seat);
++
++    DeactivateKeyboardGrab(device);
++}
++
++static void
++setup_keyboard_grab_handler (DeviceIntPtr device)
++{
++    device->deviceGrab.ActivateGrab = xwl_keyboard_activate_grab;
++    device->deviceGrab.DeactivateGrab = xwl_keyboard_deactivate_grab;
++}
++
+ static DeviceIntPtr
+ add_device(struct xwl_seat *xwl_seat,
+            const char *driver, DeviceProc device_proc)
+@@ -1110,6 +1189,8 @@ release_relative_pointer(struct xwl_seat
+ static void
+ init_keyboard(struct xwl_seat *xwl_seat)
+ {
++    DeviceIntPtr master;
++
+     xwl_seat->wl_keyboard = wl_seat_get_keyboard(xwl_seat->seat);
+     wl_keyboard_add_listener(xwl_seat->wl_keyboard,
+                              &keyboard_listener, xwl_seat);
+@@ -1121,6 +1202,10 @@ init_keyboard(struct xwl_seat *xwl_seat)
+     }
+     EnableDevice(xwl_seat->keyboard, TRUE);
+     xwl_seat->keyboard->key->xkbInfo->checkRepeat = keyboard_check_repeat;
++
++    master = GetMaster(xwl_seat->keyboard, MASTER_KEYBOARD);
++    if (master)
++        setup_keyboard_grab_handler(master);
+ }
+ 
+ static void
+@@ -1178,6 +1263,7 @@ seat_handle_capabilities(void *data, str
+     if (caps & WL_SEAT_CAPABILITY_KEYBOARD && xwl_seat->wl_keyboard == NULL) {
+         init_keyboard(xwl_seat);
+     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && xwl_seat->wl_keyboard) {
++        release_grab(xwl_seat);
+         release_keyboard(xwl_seat);
+     }
+ 
+@@ -1277,6 +1363,7 @@ xwl_seat_destroy(struct xwl_seat *xwl_se
+ 
+     release_tablet_manager_seat(xwl_seat);
+ 
++    release_grab(xwl_seat);
+     wl_seat_destroy(xwl_seat->seat);
+     xwl_cursor_release(&xwl_seat->cursor);
+     wl_array_release(&xwl_seat->keys);
+@@ -2317,6 +2404,16 @@ init_pointer_constraints(struct xwl_scre
+ }
+ 
+ static void
++init_keyboard_grab(struct xwl_screen *xwl_screen,
++                   uint32_t id, uint32_t version)
++{
++    xwl_screen->wp_grab =
++         wl_registry_bind(xwl_screen->registry, id,
++                          &zwp_xwayland_keyboard_grab_manager_v1_interface,
++                          1);
++}
++
++static void
+ input_handler(void *data, struct wl_registry *registry, uint32_t id,
+               const char *interface, uint32_t version)
+ {
+@@ -2331,6 +2428,8 @@ input_handler(void *data, struct wl_regi
+         init_pointer_constraints(xwl_screen, id, version);
+     } else if (strcmp(interface, "zwp_tablet_manager_v2") == 0) {
+         init_tablet_manager(xwl_screen, id, version);
++    } else if (strcmp(interface, "zwp_xwayland_keyboard_grab_manager_v1") == 0) {
++        init_keyboard_grab(xwl_screen, id, version);
+     }
+ }
+ 
+--- a/hw/xwayland/xwayland.c
++++ b/hw/xwayland/xwayland.c
+@@ -142,7 +142,7 @@ xwl_close_screen(ScreenPtr screen)
+     return screen->CloseScreen(screen);
+ }
+ 
+-static struct xwl_window *
++struct xwl_window *
+ xwl_window_from_window(WindowPtr window)
+ {
+     struct xwl_window *xwl_window;
+--- a/hw/xwayland/xwayland.h
++++ b/hw/xwayland/xwayland.h
+@@ -45,6 +45,7 @@
+ #include "relative-pointer-unstable-v1-client-protocol.h"
+ #include "pointer-constraints-unstable-v1-client-protocol.h"
+ #include "tablet-unstable-v2-client-protocol.h"
++#include "xwayland-keyboard-grab-unstable-v1-client-protocol.h"
+ 
+ struct xwl_screen {
+     int width;
+@@ -80,7 +81,7 @@ struct xwl_screen {
+     struct wl_shell *shell;
+     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
+     struct zwp_pointer_constraints_v1 *pointer_constraints;
+-
++    struct zwp_xwayland_keyboard_grab_manager_v1 *wp_grab;
+     uint32_t serial;
+ 
+ #define XWL_FORMAT_ARGB8888 (1 << 0)
+@@ -185,6 +186,7 @@ struct xwl_seat {
+     struct xorg_list tablets;
+     struct xorg_list tablet_tools;
+     struct xorg_list tablet_pads;
++    struct zwp_xwayland_keyboard_grab_v1 *keyboard_grab;
+ };
+ 
+ struct xwl_tablet {
+@@ -304,6 +306,7 @@ RRModePtr xwayland_cvt(int HDisplay, int
+ void xwl_pixmap_set_private(PixmapPtr pixmap, struct xwl_pixmap *xwl_pixmap);
+ struct xwl_pixmap *xwl_pixmap_get(PixmapPtr pixmap);
+ 
++struct xwl_window *xwl_window_from_window(WindowPtr window);
+ 
+ Bool xwl_shm_create_screen_resources(ScreenPtr screen);
+ PixmapPtr xwl_shm_create_pixmap(ScreenPtr screen, int width, int height,
