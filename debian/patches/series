@@ -33,3 +33,4 @@ CVE-2017-10971-1.patch
 CVE-2017-10971-2.patch
 CVE-2017-10971-3.patch
 CVE-2017-10972.patch
+xwayland-tablet.diff
