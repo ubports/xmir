@@ -2,6 +2,8 @@ xorg-server (2:1.19.3-1ubuntu4) UNRELEASED; urgency=medium
 
   * xwayland-tablet.diff: Add support for Wacom tablets in xwayland.
     (LP: #1712571)
+  * xwayland-pointer-confine.diff: Add pointer locking/confinement fixes
+    to xwayland.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Thu, 24 Aug 2017 14:33:30 +0300
 
