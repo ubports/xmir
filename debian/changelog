@@ -1,3 +1,21 @@
+xorg-server (2:1.19.3-1ubuntu3) artful; urgency=medium
+
+  * SECURITY UPDATE: DoS and possible code execution in endianness
+    conversion of X Events
+    - debian/patches/CVE-2017-10971-1.patch: do not try to swap
+      GenericEvent in Xi/sendexev.c.
+    - debian/patches/CVE-2017-10971-2.patch: verify all events in
+      ProcXSendExtensionEvent in Xi/sendexev.c.
+    - debian/patches/CVE-2017-10971-3.patch: disallow GenericEvent in
+      SendEvent request in dix/events.c, dix/swapreq.c.
+    - CVE-2017-10971
+  * SECURITY UPDATE: information leak in XEvent handling
+    - debian/patches/CVE-2017-10972.patch: zero target buffer in
+      SProcXSendExtensionEvent in Xi/sendexev.c.
+    - CVE-2017-10972
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Mon, 17 Jul 2017 09:34:04 -0400
+
 xorg-server (2:1.19.3-1ubuntu2) artful; urgency=medium
 
   * sync-i965-ids.diff: Sync i965 pci-id's from mesa.

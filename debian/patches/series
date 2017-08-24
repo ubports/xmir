@@ -29,3 +29,7 @@ xf86-ignore-conflicting-rr-caps.patch
 xmir.patch
 xi2-resize-touch.patch
 sync-i965-ids.diff
+CVE-2017-10971-1.patch
+CVE-2017-10971-2.patch
+CVE-2017-10971-3.patch
+CVE-2017-10972.patch
