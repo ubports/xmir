@@ -1,4 +1,4 @@
-xorg-server (2:1.19.3-1ubuntu4) UNRELEASED; urgency=medium
+xorg-server (2:1.19.3-1ubuntu4) artful; urgency=medium
 
   * xwayland-tablet.diff: Add support for Wacom tablets in xwayland.
     (LP: #1712571)
@@ -7,7 +7,7 @@ xorg-server (2:1.19.3-1ubuntu4) UNRELEASED; urgency=medium
   * xwayland-add-grab-protocol-support.diff: Add support for keyboard
     grabbing to xwayland. Bump wayland-protocols build-dependency to 1.9.
 
- -- Timo Aaltonen <tjaalton@debian.org>  Thu, 24 Aug 2017 14:33:30 +0300
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 25 Aug 2017 08:32:17 +0300
 
 xorg-server (2:1.19.3-1ubuntu3) artful; urgency=medium
 
