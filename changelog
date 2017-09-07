@@ -1,3 +1,9 @@
+xorg-server (2:1.18.4-0ubuntu0.5) xenial; urgency=medium
+
+  * Fix shrinking behavior in rrCheckPixmapBounding. (LP: #1715586)
+
+ -- Kai-Heng Feng <kai.heng.feng@canonical.com>  Thu, 07 Sep 2017 17:23:55 +0800
+
 xorg-server (2:1.18.4-0ubuntu0.4) xenial; urgency=medium
 
   * control: Build against libxfont1-dev. (LP: #1687981, #1707691)
