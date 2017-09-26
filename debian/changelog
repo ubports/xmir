@@ -1,3 +1,14 @@
+xorg-server (2:1.19.3-1ubuntu7) UNRELEASED; urgency=medium
+
+  * Sync from xserver-1.19-branch, drop upstreamed patches:
+    CVE-2017-10971-{1,2,3}.patch,
+    CVE-2017-10972.patch,
+    add-cfl-cnl-ids.diff,
+    sync-i965-ids.diff,
+    xwayland-pointer-confine.diff
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 26 Sep 2017 10:46:51 +0300
+
 xorg-server (2:1.19.3-1ubuntu6) artful; urgency=medium
 
   * xwayland-add-grab-protocol-support.diff: Dropped, causes issues with
