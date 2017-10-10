@@ -1,3 +1,10 @@
+xorg-server (2:1.19.4-1ubuntu1) artful; urgency=medium
+
+  * Merge from Debian.
+    - new bugfix release
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 10 Oct 2017 11:13:48 +0300
+
 xorg-server (2:1.19.4-1) unstable; urgency=medium
 
   [ Sven Joachim ]
