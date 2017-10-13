@@ -1,3 +1,15 @@
+xorg-server (2:1.19.5-0ubuntu1) UNRELEASED; urgency=medium
+
+  * New upstream release
+    - Fix CVE's:
+      CVE-2017-12176, CVE-2017-12177, CVE-2017-12178, CVE-2017-12179,
+      CVE-2017-12180, CVE-2017-12181, CVE-2017-12182, CVE-2017-12183,
+      CVE-2017-12184, CVE-2017-12185, CVE-2017-12186, CVE-2017-12187
+    - Revert a commit that regressed PRIME sync
+    - os: Make sure big requests have sufficient length.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 13 Oct 2017 08:41:43 +0300
+
 xorg-server (2:1.19.4-1ubuntu2) artful; urgency=medium
 
   * xvfb-run: Keep redirecting stderr to stdout, autopkgtests need it.
