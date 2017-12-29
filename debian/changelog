@@ -1,3 +1,9 @@
+xorg-server (2:1.18.4.1+ubports) xenial; urgency=medium
+
+  * Import to ubports
+
+ -- Marius Gripsgard <marius@ubports.com>  Fri, 29 Dec 2017 19:36:04 +0100
+
 xorg-server (2:1.18.4-0ubuntu0.5) xenial; urgency=medium
 
   * Fix shrinking behavior in rrCheckPixmapBounding. (LP: #1715586)
