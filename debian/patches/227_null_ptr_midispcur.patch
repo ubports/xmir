@@ -1,0 +1,18 @@
+Description: Check for NULL pointer before dereferencing pointer from miGetDCDevice.
+ Fixes crash after connecting a bluetooth keyboard.
+Author: Bryce Harrington <bryce@ubuntu.com>
+Bug-Ubuntu: https://launchpad.net/bugs/930936
+
+--- a/mi/midispcur.c
++++ b/mi/midispcur.c
+@@ -421,6 +421,10 @@ miDCRestoreUnderCursor(DeviceIntPtr pDev
+     GCPtr pGC;
+ 
+     pBuffer = miGetDCDevice(pDev, pScreen);
++
++    if (!pBuffer)
++        return FALSE;
++
+     pSave = pBuffer->pSave;
+ 
+     pWin = pScreen->root;
