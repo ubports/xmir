@@ -7,7 +7,6 @@
 aclocal.m4
 autom4te.cache/
 autoscan.log
-ChangeLog
 compile
 config.guess
 config.h
