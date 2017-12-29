@@ -44,8 +44,6 @@ config-add-no-removal.patch
 xf86-ignore-conflicting-rr-caps.patch
 fix-detach-gpu.patch
 
-xmir.patch
-xmir-desktop-file-hint-flag.patch
 xi2-resize-touch.patch
 randr-adjust-masters-last-set-time.diff
 randr-do-not-check-the-screen-size.diff
