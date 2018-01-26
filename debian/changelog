@@ -1,9 +1,9 @@
-xorg-server (2:1.19.6-1ubuntu1) UNRELEASED; urgency=medium
+xorg-server (2:1.19.6-1ubuntu1) bionic; urgency=medium
 
   * Merge with Debian.
   * XShmGetImage_fix_censoring.patch: Dropped, upstream.
 
- -- Timo Aaltonen <tjaalton@debian.org>  Fri, 26 Jan 2018 17:06:40 +0200
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 26 Jan 2018 17:27:50 +0200
 
 xorg-server (2:1.19.6-1) unstable; urgency=medium
 
