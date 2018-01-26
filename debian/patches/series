@@ -29,3 +29,4 @@ xf86-ignore-conflicting-rr-caps.patch
 xmir.patch
 xi2-resize-touch.patch
 xwayland-tablet.diff
+XShmGetImage_fix_censoring.patch

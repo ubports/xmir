@@ -1,0 +1,29 @@
+Description: XShmGetImage: fix censoring
+Origin: upstream, https://cgit.freedesktop.org/xorg/xserver/commit/?id=885636b7d42b3c7b
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/1723732
+Last-Update: 2017-10-15
+
+--- a/Xext/shm.c
++++ b/Xext/shm.c
+@@ -650,9 +650,8 @@
+                wBorderWidth((WindowPtr) pDraw) + (int) pDraw->height)
+             return BadMatch;
+         visual = wVisual(((WindowPtr) pDraw));
+-        pVisibleRegion = NotClippedByChildren((WindowPtr) pDraw);
+-        if (pVisibleRegion)
+-            RegionTranslate(pVisibleRegion, -pDraw->x, -pDraw->y);
++        if (pDraw->type == DRAWABLE_WINDOW)
++            pVisibleRegion = &((WindowPtr) pDraw)->borderClip;
+     }
+     else {
+         if (stuff->x < 0 ||
+@@ -715,9 +714,6 @@
+         }
+     }
+ 
+-    if (pVisibleRegion)
+-        RegionDestroy(pVisibleRegion);
+-
+     if (client->swapped) {
+         swaps(&xgi.sequenceNumber);
+         swapl(&xgi.length);
