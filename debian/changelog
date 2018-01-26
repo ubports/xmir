@@ -1,6 +1,7 @@
 xorg-server (2:1.19.6-1ubuntu1) UNRELEASED; urgency=medium
 
   * Merge with Debian.
+  * XShmGetImage_fix_censoring.patch: Dropped, upstream.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Fri, 26 Jan 2018 17:06:40 +0200
 
