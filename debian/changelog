@@ -1,3 +1,42 @@
+xorg-server (2:1.19.6-1) unstable; urgency=medium
+
+  [ Emilio Pozuelo Monfort ]
+  * Use --sourcedir=debian/tmp/udeb for the udeb package and
+    --sourcedir=debian/tmp/main for the rest, so that we don't have
+    to specify where the files come from as well as where they should
+    be installed to in *.install.
+  * Install xorg-server.pc to a multiarch location. Based on a patch
+    from Helmut Grohne. Closes: #836453.
+  * Move xserver-xorg-legacy to priority optional, as priority extra is
+    deprecated.
+  * Make calculation of xserver-xorg-core's xinput/video ABI provides more
+    robust.
+  * Use ${prefix} rather than ${libexecdir} for --with-module-dir, as the
+    module dir ends up in the pkg-config file, where libexecdir is not
+    defined.
+
+  [ Timo Aaltonen ]
+  * New upstream release.
+  * 07-glx-do-not-pick-srgb-config-for-32bit-rgba-visual.diff: Add a
+    patch from upstream to fix potential issues with mesa git.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 18 Jan 2018 14:11:18 +0200
+
+xorg-server (2:1.19.5-1) unstable; urgency=high
+
+  [ Emilio Pozuelo Monfort ]
+  * rules: Try to simplify a bit flags handling and move them
+    to rules.flags.
+  * rules: Remove --disable-silent-rules, dh passes that for us.
+
+  [ Andreas Boll ]
+  * New upstream release.
+    - CVE-2017-12176, CVE-2017-12177, CVE-2017-12178, CVE-2017-12179,
+    - CVE-2017-12180, CVE-2017-12181, CVE-2017-12182, CVE-2017-12183,
+    - CVE-2017-12184, CVE-2017-12185, CVE-2017-12186, CVE-2017-12187
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 13 Oct 2017 11:28:05 +0200
+
 xorg-server (2:1.19.5-0ubuntu2) artful; urgency=medium
 
   * Backport upstream patch to fix cropping in XShmGetImage (LP: #1723732).
