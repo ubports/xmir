@@ -1,3 +1,10 @@
+xorg-server (2:1.19.6-1ubuntu2) UNRELEASED; urgency=medium
+
+  * improve-outputclass.diff: Backport commits from upstream to improve
+    OutputClass to support options and overriding primary GPU.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Feb 2018 15:08:45 +0200
+
 xorg-server (2:1.19.6-1ubuntu1) bionic; urgency=medium
 
   * Merge with Debian.
