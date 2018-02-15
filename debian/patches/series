@@ -10,7 +10,6 @@
 
 ## Ubuntu patches, not upstreamable
 168_glibc_trace_to_stderr.patch
-188_default_primary_to_first_busid.patch
 226_fall_back_to_autoconfiguration.patch
 
 ## send upstream
