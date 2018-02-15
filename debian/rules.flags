@@ -17,7 +17,6 @@ confflags += \
 	--disable-strict-compilation \
 	--disable-debug \
 	--with-int10=x86emu \
-	--with-extra-module-dir="/usr/lib/${DEB_HOST_MULTIARCH}/xorg/extra-modules,/usr/lib/xorg/extra-modules" \
 	--with-os-vendor="$(VENDOR)" \
 	--with-builderstring="$(SOURCE_NAME) $(SOURCE_VERSION) ($(SUPPORT))" \
 	--with-xkb-path=/usr/share/X11/xkb \

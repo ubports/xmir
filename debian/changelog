@@ -2,6 +2,8 @@ xorg-server (2:1.19.6-1ubuntu2) UNRELEASED; urgency=medium
 
   * improve-outputclass.diff: Backport commits from upstream to improve
     OutputClass to support options and overriding primary GPU.
+  * 191-Xorg-add-an-extra-module-path.patch, rules.flags: Drop adding
+    extra-modules dir, not necessary anymore with outputclass additions.
 
  -- Timo Aaltonen <tjaalton@debian.org>  Thu, 15 Feb 2018 15:08:45 +0200
 
