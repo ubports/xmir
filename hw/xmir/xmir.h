@@ -98,6 +98,8 @@ struct xmir_screen {
     struct xmir_window *flatten_top;
     WindowPtr last_focus;
     Window saved_focus;
+    int listen_fds[5];
+    int listen_fd_count;
 
     int dpi;
 

@@ -181,6 +181,7 @@ ddxUseMsg(void)
     ErrorF("-mirSocket <socket>    use the specified socket for mir\n");
     ErrorF("-2x                    double the fun (2x resolution compared to onscreen)\n");
     ErrorF("-debug                 Log everything Xmir is doing\n");
+    ErrorF("-listen fd             add give fd as a listen socket\n");
 }
 
 int
@@ -220,9 +221,9 @@ ddxProcessArgument(int argc, char *argv[], int i)
         return 1;
     }
     else if (!strcmp(argv[i], "-listen")) {
-        seen_shared = 1;
-        NoListenAll = 0;
-        return 0;
+      if (!seen_shared)
+          NoListenAll = 1;
+      return 2;
     }
 
     return 0;
@@ -1697,6 +1698,15 @@ add_client_fd(OsTimerPtr timer, CARD32 time, void *arg)
     return 0;
 }
 
+static void
+listen_on_fds(struct xmir_screen *xmir_screen)
+{
+    int i;
+
+    for (i = 0; i < xmir_screen->listen_fd_count; i++)
+        ListenOnOpenFD(xmir_screen->listen_fds[i], FALSE);
+}
+
 static Bool
 xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
 {
@@ -1780,6 +1790,16 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         else if (strcmp(argv[i], "-fd") == 0) {
             client_fd = (int)strtol(argv[++i], (char **)NULL, 0);
         }
+        else if (strcmp(argv[i], "-listen") == 0) {
+            if (xmir_screen->listen_fd_count ==
+                ARRAY_SIZE(xmir_screen->listen_fds))
+                FatalError("Too many -listen arguments given, max is %ld\n",
+                           ARRAY_SIZE(xmir_screen->listen_fds));
+
+            xmir_screen->listen_fds[xmir_screen->listen_fd_count++] =
+                atoi(argv[i + 1]);
+            i++;
+        }
     }
 
     if (xmir_screen->flatten && !xmir_screen->rootless) {
@@ -1790,6 +1810,10 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     if (xmir_screen->ignore_unfocus && !xmir_screen->rootless) {
         FatalError("-ignoreunfocus is not valid without -rootless\n");
         return FALSE;
+    }
+
+    if (xmir_screen->listen_fd_count > 0) {
+        listen_on_fds(xmir_screen);
     }
 
     if (!xmir_screen->ignore_unfocus)
