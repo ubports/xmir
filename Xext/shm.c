@@ -650,9 +650,8 @@ ProcShmGetImage(ClientPtr client)
                wBorderWidth((WindowPtr) pDraw) + (int) pDraw->height)
             return BadMatch;
         visual = wVisual(((WindowPtr) pDraw));
-        pVisibleRegion = NotClippedByChildren((WindowPtr) pDraw);
-        if (pVisibleRegion)
-            RegionTranslate(pVisibleRegion, -pDraw->x, -pDraw->y);
+        if (pDraw->type == DRAWABLE_WINDOW)
+            pVisibleRegion = &((WindowPtr) pDraw)->borderClip;
     }
     else {
         if (stuff->x < 0 ||
@@ -714,9 +713,6 @@ ProcShmGetImage(ClientPtr client)
             }
         }
     }
-
-    if (pVisibleRegion)
-        RegionDestroy(pVisibleRegion);
 
     if (client->swapped) {
         swaps(&xgi.sequenceNumber);
@@ -1238,6 +1234,7 @@ ProcShmCreateSegment(ClientPtr client)
     };
 
     REQUEST_SIZE_MATCH(xShmCreateSegmentReq);
+    LEGAL_NEW_RESOURCE(stuff->shmseg, client);
     if ((stuff->readOnly != xTrue) && (stuff->readOnly != xFalse)) {
         client->errorValue = stuff->readOnly;
         return BadValue;

@@ -26,9 +26,9 @@ dnl
 dnl Process this file with autoconf to create configure.
 
 AC_PREREQ(2.60)
-AC_INIT([xorg-server], 1.19.1, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
-RELEASE_DATE="2017-01-11"
-RELEASE_NAME="Maeuntang"
+AC_INIT([xorg-server], 1.19.6, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], xorg-server)
+RELEASE_DATE="2017-12-20"
+RELEASE_NAME="Lousiana Gumbo"
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
@@ -134,7 +134,7 @@ AM_CONDITIONAL(SPECIAL_DTRACE_OBJECTS, [test "x$SPECIAL_DTRACE_OBJECTS" = "xyes"
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h stdlib.h string.h unistd.h dlfcn.h stropts.h \
- fnmatch.h sys/mkdev.h sys/utsname.h])
+ fnmatch.h sys/mkdev.h sys/sysmacros.h sys/utsname.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -221,8 +221,12 @@ AC_CHECK_FUNCS([backtrace ffs geteuid getuid issetugid getresuid \
 	mmap posix_fallocate seteuid shmctl64 strncasecmp vasprintf vsnprintf \
 	walkcontext setitimer poll epoll_create1])
 AC_CONFIG_LIBOBJ_DIR([os])
-AC_REPLACE_FUNCS([reallocarray strcasecmp strcasestr strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([reallocarray strcasecmp strcasestr strlcat strlcpy strndup\
+	timingsafe_memcmp])
 AM_CONDITIONAL(POLL, [test "x$ac_cv_func_poll" = "xyes"])
+
+AC_CHECK_LIB([bsd], [arc4random_buf])
+AC_CHECK_FUNCS([arc4random_buf])
 
 AC_CHECK_DECLS([program_invocation_short_name], [], [], [[#include <errno.h>]])
 
@@ -1846,7 +1850,7 @@ if test "x$XNEST" = xyes; then
 	if test "x$have_xnest" = xno; then
 		AC_MSG_ERROR([Xnest build explicitly requested, but required modules not found.])
 	fi
-	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $RENDER_LIB $DAMAGE_LIB  $DRI3_LIB $PRESENT_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $MAIN_LIB $DIX_LIB $OS_LIB"
+	XNEST_LIBS="$FB_LIB $FIXES_LIB $MI_LIB $XEXT_LIB $DBE_LIB $RECORD_LIB $GLX_LIBS $RANDR_LIB $DAMAGE_LIB  $DRI3_LIB $PRESENT_LIB $MIEXT_SYNC_LIB $MIEXT_DAMAGE_LIB $RENDER_LIB $MIEXT_SHADOW_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $COMPOSITE_LIB $MAIN_LIB $DIX_LIB $OS_LIB"
 	XNEST_SYS_LIBS="$XNESTMODULES_LIBS $GLX_SYS_LIBS"
 	AC_SUBST([XNEST_LIBS])
 	AC_SUBST([XNEST_SYS_LIBS])
@@ -2332,7 +2336,7 @@ if test "x$DMX" = xyes; then
 	fi
 	DMX_INCLUDES="$XEXT_INC $RENDER_INC $RECORD_INC"
 	XDMX_CFLAGS="$DMXMODULES_CFLAGS"
-	XDMX_LIBS="$FB_LIB $MI_LIB $XEXT_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $DRI3_LIB $PRESENT_LIB $MIEXT_SYNC_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $COMPOSITE_LIB $DAMAGE_LIB $MAIN_LIB $DIX_LIB $RANDR_LIB $CONFIG_LIB $OS_LIB $FIXES_LIB"
+	XDMX_LIBS="$FB_LIB $MI_LIB $XEXT_LIB $PRESENT_LIB $RANDR_LIB $RENDER_LIB $RECORD_LIB $XI_LIB $XKB_LIB $XKB_STUB_LIB $DRI3_LIB $MIEXT_SYNC_LIB $MIEXT_SHADOW_LIB $MIEXT_DAMAGE_LIB $COMPOSITE_LIB $DAMAGE_LIB $MAIN_LIB $DIX_LIB $CONFIG_LIB $OS_LIB $FIXES_LIB"
 	XDMX_SYS_LIBS="$DMXMODULES_LIBS"
 	AC_SUBST([XDMX_CFLAGS])
 	AC_SUBST([XDMX_LIBS])
@@ -2666,6 +2670,7 @@ hw/xfree86/shadowfb/Makefile
 hw/xfree86/vbe/Makefile
 hw/xfree86/vgahw/Makefile
 hw/xfree86/x86emu/Makefile
+hw/xfree86/xkb/Makefile
 hw/xfree86/utils/Makefile
 hw/xfree86/utils/man/Makefile
 hw/xfree86/utils/cvt/Makefile

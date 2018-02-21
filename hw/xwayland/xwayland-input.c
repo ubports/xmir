@@ -516,6 +516,9 @@ pointer_handle_frame(void *data, struct wl_pointer *wl_pointer)
 {
     struct xwl_seat *xwl_seat = data;
 
+    if (!xwl_seat->focus_window)
+        return;
+
     dispatch_pointer_motion_event(xwl_seat);
 }
 
@@ -565,6 +568,9 @@ relative_pointer_handle_relative_motion(void *data,
     xwl_seat->pending_pointer_event.dy = wl_fixed_to_double(dyf);
     xwl_seat->pending_pointer_event.dx_unaccel = wl_fixed_to_double(dx_unaccelf);
     xwl_seat->pending_pointer_event.dy_unaccel = wl_fixed_to_double(dy_unaccelf);
+
+    if (!xwl_seat->focus_window)
+        return;
 
     if (wl_proxy_get_version((struct wl_proxy *) xwl_seat->wl_pointer) < 5)
         dispatch_pointer_motion_event(xwl_seat);
@@ -1027,8 +1033,6 @@ release_relative_pointer(struct xwl_seat *xwl_seat)
 static void
 init_keyboard(struct xwl_seat *xwl_seat)
 {
-    DeviceIntPtr master;
-
     xwl_seat->wl_keyboard = wl_seat_get_keyboard(xwl_seat->seat);
     wl_keyboard_add_listener(xwl_seat->wl_keyboard,
                              &keyboard_listener, xwl_seat);
@@ -1040,9 +1044,6 @@ init_keyboard(struct xwl_seat *xwl_seat)
     }
     EnableDevice(xwl_seat->keyboard, TRUE);
     xwl_seat->keyboard->key->xkbInfo->checkRepeat = keyboard_check_repeat;
-    master = GetMaster(xwl_seat->keyboard, MASTER_KEYBOARD);
-    if (master)
-        master->key->xkbInfo->checkRepeat = keyboard_check_repeat;
 }
 
 static void
@@ -1523,11 +1524,38 @@ xwl_seat_emulate_pointer_warp(struct xwl_seat *xwl_seat,
                                    x, y);
 }
 
+static Bool
+xwl_seat_maybe_lock_on_hidden_cursor(struct xwl_seat *xwl_seat)
+{
+    /* Some clients use hidden cursor+confineTo+relative motion
+     * to implement infinite panning (eg. 3D views), lock the
+     * pointer for so the relative pointer is used.
+     */
+    if (xwl_seat->x_cursor ||
+        !xwl_seat->cursor_confinement_window)
+        return FALSE;
+
+    if (!xwl_seat->focus_window)
+        return FALSE;
+
+    if (xwl_seat->confined_pointer)
+        xwl_seat_destroy_confined_pointer(xwl_seat);
+
+    xwl_seat_create_pointer_warp_emulator(xwl_seat);
+    xwl_pointer_warp_emulator_lock(xwl_seat->pointer_warp_emulator);
+    return TRUE;
+}
+
 void
 xwl_seat_cursor_visibility_changed(struct xwl_seat *xwl_seat)
 {
-    if (xwl_seat->pointer_warp_emulator && xwl_seat->x_cursor != NULL)
+    if (xwl_seat->pointer_warp_emulator && xwl_seat->x_cursor != NULL) {
         xwl_seat_destroy_pointer_warp_emulator(xwl_seat);
+    } else if (!xwl_seat->x_cursor && xwl_seat->cursor_confinement_window) {
+        /* If the cursor goes hidden as is confined, lock it for
+         * relative motion to work. */
+        xwl_seat_maybe_lock_on_hidden_cursor(xwl_seat);
+    }
 }
 
 void
@@ -1564,6 +1592,9 @@ xwl_seat_confine_pointer(struct xwl_seat *xwl_seat,
     xwl_seat->cursor_confinement_window = xwl_window;
 
     if (xwl_seat->pointer_warp_emulator)
+        return;
+
+    if (xwl_seat_maybe_lock_on_hidden_cursor(xwl_seat))
         return;
 
     xwl_seat->confined_pointer =

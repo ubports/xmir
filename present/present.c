@@ -118,6 +118,18 @@ present_flip_pending_pixmap(ScreenPtr screen)
 }
 
 static Bool
+present_check_output_slaves_active(ScreenPtr pScreen)
+{
+    ScreenPtr pSlave;
+
+    xorg_list_for_each_entry(pSlave, &pScreen->slave_list, slave_head) {
+        if (RRHasScanoutPixmap(pSlave))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+static Bool
 present_check_flip(RRCrtcPtr    crtc,
                    WindowPtr    window,
                    PixmapPtr    pixmap,
@@ -145,7 +157,7 @@ present_check_flip(RRCrtcPtr    crtc,
         return FALSE;
 
     /* Fail to flip if we have slave outputs */
-    if (screen->output_slaves)
+    if (screen->output_slaves && present_check_output_slaves_active(screen))
         return FALSE;
 
     /* Make sure the window hasn't been redirected with Composite */
@@ -210,13 +222,13 @@ present_vblank_notify(present_vblank_ptr vblank, CARD8 kind, CARD8 mode, uint64_
     int         n;
 
     if (vblank->window)
-        present_send_complete_notify(vblank->window, kind, mode, vblank->serial, ust, crtc_msc - vblank->msc_offset);
+        present_send_complete_notify(vblank->window, kind, mode, vblank->serial, ust, crtc_msc - vblank->msc_offset, vblank->client);
     for (n = 0; n < vblank->num_notifies; n++) {
         WindowPtr   window = vblank->notifies[n].window;
         CARD32      serial = vblank->notifies[n].serial;
 
         if (window)
-            present_send_complete_notify(window, kind, mode, serial, ust, crtc_msc - vblank->msc_offset);
+            present_send_complete_notify(window, kind, mode, serial, ust, crtc_msc - vblank->msc_offset, vblank->client);
     }
 }
 
@@ -531,8 +543,6 @@ present_event_notify(uint64_t event_id, uint64_t ust, uint64_t msc)
             present_execute(vblank, ust, msc);
             return;
         }
-        if (match < 0)
-            break;
     }
     xorg_list_for_each_entry(vblank, &present_flip_queue, event_queue) {
         if (vblank->event_id == event_id) {
@@ -778,6 +788,7 @@ present_execute(present_vblank_ptr vblank, uint64_t ust, uint64_t crtc_msc)
 int
 present_pixmap(WindowPtr window,
                PixmapPtr pixmap,
+               ClientPtr client,
                CARD32 serial,
                RegionPtr valid,
                RegionPtr update,
@@ -888,6 +899,7 @@ present_pixmap(WindowPtr window,
     xorg_list_append(&vblank->window_list, &window_priv->vblank);
     xorg_list_init(&vblank->event_queue);
 
+    vblank->client = client;
     vblank->screen = screen;
     vblank->window = window;
     vblank->pixmap = pixmap;
@@ -995,8 +1007,6 @@ present_abort_vblank(ScreenPtr screen, RRCrtcPtr crtc, uint64_t event_id, uint64
             vblank->queued = FALSE;
             return;
         }
-        if (match < 0)
-            break;
     }
     xorg_list_for_each_entry(vblank, &present_flip_queue, event_queue) {
         if (vblank->event_id == event_id) {
@@ -1009,6 +1019,7 @@ present_abort_vblank(ScreenPtr screen, RRCrtcPtr crtc, uint64_t event_id, uint64
 
 int
 present_notify_msc(WindowPtr window,
+                   ClientPtr client,
                    CARD32 serial,
                    uint64_t target_msc,
                    uint64_t divisor,
@@ -1016,6 +1027,7 @@ present_notify_msc(WindowPtr window,
 {
     return present_pixmap(window,
                           NULL,
+                          client,
                           serial,
                           NULL, NULL,
                           0, 0,
