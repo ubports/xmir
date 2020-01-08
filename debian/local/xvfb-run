@@ -71,9 +71,10 @@ find_free_servernum() {
     #local i
 
     i=$SERVERNUM
-    while [ -f /tmp/.X$i-lock ]; do
+    while [ -f /tmp/.X$i-lock ] || [ -f /tmp/.X$i-xvfb-run-lock ]; do
         i=$(($i + 1))
     done
+    touch /tmp/.X$i-xvfb-run-lock
     echo $i
 }
 
@@ -90,6 +91,10 @@ clean_up() {
     fi
     if [ -n "$XVFBPID" ]; then
         kill "$XVFBPID" >>"$ERRORFILE" 2>&1
+    fi
+
+    if [ -f "/tmp/.X$SERVERNUM-xvfb-run-lock" ]; then
+        rm /tmp/.X$SERVERNUM-xvfb-run-lock
     fi
 }
 
@@ -142,6 +147,7 @@ fi
 
 # tidy up after ourselves
 trap clean_up EXIT
+trap true INT TERM KILL
 
 # If the user did not specify an X authorization file to use, set up a temporary
 # directory to house one.
