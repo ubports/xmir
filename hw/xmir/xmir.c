@@ -1539,6 +1539,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     MirConnection *conn;
     Pixel red_mask, blue_mask, green_mask;
     int ret, bpc, i;
+    Bool has_depth32_pixel_format;
     int client_fd = -1;
     char *socket = NULL;
     const char *appid = "XMIR";
@@ -1715,6 +1716,7 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
     if (xmir_screen->glamor)
         xmir_screen_init_glamor(xmir_screen);
 
+    /* Add 24-bit visual */
     bpc = 8;
     green_mask = 0x00ff00;
     switch (xmir_screen->depth24_pixel_format)
@@ -1729,14 +1731,38 @@ xmir_screen_init(ScreenPtr pScreen, int argc, char **argv)
         blue_mask = 0xff0000;
         break;
     default:
-        ErrorF("No Mir-compatible TrueColor formats\n");
+        ErrorF("No Mir-compatible 24-bit TrueColor formats\n");
         return FALSE;
     }
 
-    miSetVisualTypesAndMasks(xmir_screen->depth,
+    miSetVisualTypesAndMasks(/* depth */ 24,
                              ((1 << TrueColor) | (1 << DirectColor)),
                              bpc, TrueColor,
                              red_mask, green_mask, blue_mask);
+
+    /* Set 32-bit visual for those that look for it. */
+    has_depth32_pixel_format = TRUE;
+    switch (xmir_screen->depth32_pixel_format)
+    {
+    case mir_pixel_format_argb_8888:
+        red_mask = 0xff0000;
+        blue_mask = 0x0000ff;
+        break;
+    case mir_pixel_format_abgr_8888:
+        red_mask = 0x0000ff;
+        blue_mask = 0xff0000;
+        break;
+    default:
+        ErrorF("No Mir-compatible 32-bit TrueColor formats (ignored)\n");
+        has_depth32_pixel_format = FALSE;
+    }
+
+    if (has_depth32_pixel_format) {
+        miSetVisualTypesAndMasks(/* depth */ 32,
+                                 ((1 << TrueColor) | (1 << DirectColor)),
+                                 bpc, TrueColor,
+                                 red_mask, green_mask, blue_mask);
+    }
 
     miSetPixmapDepths();
 
