@@ -790,7 +790,9 @@ xmir_realize_window(WindowPtr window)
             positioning_parent = xmir_screen->last_focus;
     }
 
-    if (xmir_screen->flatten && xmir_screen->flatten_top) {
+    if (xmir_screen->flatten && xmir_screen->flatten_top &&
+          (wm_type != GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG) &&
+          wm_type != GET_ATOM(_NET_WM_WINDOW_TYPE_NORMAL))) {
         WindowPtr top = xmir_screen->flatten_top->window;
         int dx = window->drawable.x - top->drawable.x;
         int dy = window->drawable.y - top->drawable.y;
@@ -1218,6 +1220,7 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen,
 {
     struct xmir_window *xmir_window =
         dixLookupPrivate(&window->devPrivates, &xmir_window_private_key);
+    Atom wm_type;
 
     if (!xmir_window)
         return;
@@ -1240,8 +1243,11 @@ xmir_unmap_surface(struct xmir_screen *xmir_screen,
         return;
 
     mir_window_set_event_handler(xmir_window->surface, NULL, NULL);
+    wm_type = xmir_get_window_prop_atom(window, GET_ATOM(_NET_WM_WINDOW_TYPE));
 
-    if (xmir_screen->flatten && xmir_screen->flatten_top == xmir_window) {
+    if (xmir_screen->flatten && xmir_screen->flatten_top == xmir_window &&
+          (wm_type != GET_ATOM(_NET_WM_WINDOW_TYPE_DIALOG) &&
+          wm_type != GET_ATOM(_NET_WM_WINDOW_TYPE_NORMAL))) {
         xmir_screen->flatten_top = NULL;
         if (!xorg_list_is_empty(&xmir_screen->flattened_list)) {
             xmir_screen->flatten_top =
